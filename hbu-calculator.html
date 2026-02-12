@@ -610,6 +610,84 @@
             }
 
             .print-date { display: block !important; }
+
+            .legislation-section {
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #ddd;
+                padding: 1rem;
+            }
+            .legislation-section .legislation-card {
+                page-break-inside: avoid;
+                border-left-color: #4299e1 !important;
+            }
+        }
+
+        /* Legislation Section */
+        .legislation-section {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 1.75rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 2rem;
+        }
+
+        .legislation-section h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .legislation-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .legislation-card {
+            background: #f8fafc;
+            border-left: 4px solid #4299e1;
+            border-radius: 0 8px 8px 0;
+            padding: 1rem 1.25rem;
+        }
+
+        .legislation-card strong {
+            color: var(--primary);
+            font-size: 0.92rem;
+            display: block;
+            margin-bottom: 0.35rem;
+        }
+
+        .legislation-card p {
+            color: var(--text-light);
+            font-size: 0.82rem;
+            margin: 0;
+            line-height: 1.45;
+        }
+
+        .legislation-badge {
+            display: inline-block;
+            background: #ebf8ff;
+            color: #2b6cb0;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.15rem 0.5rem;
+            border-radius: 12px;
+            margin-right: 0.3rem;
+            margin-bottom: 0.25rem;
+            border: 1px solid #bee3f8;
+        }
+
+        .legislation-badges {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .legislation-badges .leg-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 0.35rem;
         }
     </style>
 </head>
@@ -801,6 +879,8 @@
 
         <div class="result-cards" id="resultCards"></div>
 
+        <div class="legislation-section" id="legislationSection" style="display:none;"></div>
+
         <div class="details-section">
             <h3>Full Scoring Breakdown — All Uses Evaluated</h3>
             <div style="overflow-x: auto;">
@@ -857,6 +937,124 @@ const NEIGHBORHOOD_CENTROIDS = {
     southbay:     { lat: 33.8358, lon: -118.3406 },
     harbor:       { lat: 33.7361, lon: -118.2922 },
     boyleheights: { lat: 34.0345, lon: -118.2120 },
+};
+
+// Map Nominatim suburb/neighbourhood names → our dropdown IDs
+const SUBURB_TO_NEIGHBORHOOD = {
+    'downtown': 'dtla',
+    'downtown los angeles': 'dtla',
+    'little tokyo': 'dtla',
+    'arts district': 'dtla',
+    'chinatown': 'dtla',
+    'civic center': 'dtla',
+    'bunker hill': 'dtla',
+    'financial district': 'dtla',
+    'skid row': 'dtla',
+    'hollywood': 'hollywood',
+    'east hollywood': 'hollywood',
+    'thai town': 'hollywood',
+    'hollywood hills': 'hollywood',
+    'los feliz': 'silverlake',
+    'koreatown': 'koreatown',
+    'pico-union': 'koreatown',
+    'westlake': 'koreatown',
+    'west los angeles': 'westside',
+    'west la': 'westside',
+    'sawtelle': 'westside',
+    'westwood': 'westside',
+    'brentwood': 'westside',
+    'bel air': 'westside',
+    'santa monica': 'santamonica',
+    'west hollywood': 'santamonica',
+    'weho': 'santamonica',
+    'beverly hills': 'beverly',
+    'beverly grove': 'beverly',
+    'beverlywood': 'beverly',
+    'century city': 'beverly',
+    'mid-wilshire': 'midcity',
+    'mid wilshire': 'midcity',
+    'mid-city': 'midcity',
+    'mid city': 'midcity',
+    'miracle mile': 'midcity',
+    'hancock park': 'midcity',
+    'larchmont': 'midcity',
+    'windsor square': 'midcity',
+    'park la brea': 'midcity',
+    'fairfax': 'midcity',
+    'south los angeles': 'southla',
+    'south la': 'southla',
+    'watts': 'southla',
+    'florence': 'southla',
+    'vermont square': 'southla',
+    'vermont-slauson': 'southla',
+    'green meadows': 'southla',
+    'north hollywood': 'valleyeast',
+    'noho': 'valleyeast',
+    'studio city': 'valleyeast',
+    'valley village': 'valleyeast',
+    'sun valley': 'valleyeast',
+    'panorama city': 'valleyeast',
+    'arleta': 'valleyeast',
+    'pacoima': 'valleyeast',
+    'sylmar': 'valleyeast',
+    'sherman oaks': 'valleywest',
+    'encino': 'valleywest',
+    'tarzana': 'valleywest',
+    'woodland hills': 'valleywest',
+    'reseda': 'valleywest',
+    'canoga park': 'valleywest',
+    'winnetka': 'valleywest',
+    'chatsworth': 'valleywest',
+    'northridge': 'valleywest',
+    'granada hills': 'valleywest',
+    'west hills': 'valleywest',
+    'silver lake': 'silverlake',
+    'silverlake': 'silverlake',
+    'echo park': 'silverlake',
+    'elysian valley': 'silverlake',
+    'atwater village': 'silverlake',
+    'highland park': 'highland',
+    'eagle rock': 'highland',
+    'glassell park': 'highland',
+    'mount washington': 'highland',
+    'cypress park': 'highland',
+    'el sereno': 'highland',
+    'venice': 'venice',
+    'mar vista': 'venice',
+    'del rey': 'venice',
+    'playa vista': 'venice',
+    'playa del rey': 'venice',
+    'marina del rey': 'venice',
+    'culver city': 'culver',
+    'palms': 'culver',
+    'rancho park': 'culver',
+    'cheviot hills': 'culver',
+    'castle heights': 'culver',
+    'exposition park': 'exposition',
+    'university park': 'exposition',
+    'leimert park': 'exposition',
+    'jefferson park': 'exposition',
+    'west adams': 'exposition',
+    'baldwin hills': 'exposition',
+    'crenshaw': 'exposition',
+    'torrance': 'southbay',
+    'gardena': 'southbay',
+    'carson': 'southbay',
+    'hawthorne': 'southbay',
+    'inglewood': 'southbay',
+    'lawndale': 'southbay',
+    'el segundo': 'southbay',
+    'manhattan beach': 'southbay',
+    'hermosa beach': 'southbay',
+    'redondo beach': 'southbay',
+    'san pedro': 'harbor',
+    'wilmington': 'harbor',
+    'harbor city': 'harbor',
+    'harbor gateway': 'harbor',
+    'boyle heights': 'boyleheights',
+    'east los angeles': 'boyleheights',
+    'east la': 'boyleheights',
+    'lincoln heights': 'boyleheights',
 };
 
 // LA Metro Rail stations (lat, lon)
@@ -939,8 +1137,26 @@ function haversine(lat1, lon1, lat2, lon2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Detect nearest neighborhood from coordinates
-function detectNeighborhood(lat, lon) {
+// Detect nearest neighborhood from coordinates + Nominatim address details
+function detectNeighborhood(lat, lon, addressDetails) {
+    // Try Nominatim address fields first (suburb, neighbourhood, city_district)
+    if (addressDetails) {
+        const fields = [
+            addressDetails.suburb,
+            addressDetails.neighbourhood,
+            addressDetails.city_district,
+            addressDetails.quarter,
+        ];
+        for (const field of fields) {
+            if (field) {
+                const key = field.toLowerCase().trim();
+                if (SUBURB_TO_NEIGHBORHOOD[key]) {
+                    return SUBURB_TO_NEIGHBORHOOD[key];
+                }
+            }
+        }
+    }
+    // Fall back to centroid distance
     let best = 'westside';
     let bestDist = Infinity;
     for (const [key, c] of Object.entries(NEIGHBORHOOD_CENTROIDS)) {
@@ -964,12 +1180,21 @@ function detectTransitProximity(lat, lon) {
 }
 
 // Detect if address is on a major arterial
-function detectArterial(address) {
-    const lower = address.toLowerCase();
+function detectArterial(addressString, addressDetails) {
+    // Try Nominatim road field first (most accurate — avoids matching neighborhood names)
+    if (addressDetails && addressDetails.road) {
+        const road = addressDetails.road.toLowerCase();
+        for (const art of MAJOR_ARTERIALS) {
+            if (road.includes(art)) return 'major';
+        }
+        if (/\bblvd\b|\bboulevard\b|\bave\b|\bavenue\b/.test(road)) return 'secondary';
+        return 'residential';
+    }
+    // Fall back to full address string
+    const lower = addressString.toLowerCase();
     for (const art of MAJOR_ARTERIALS) {
         if (lower.includes(art)) return 'major';
     }
-    // Check for "blvd" or "ave" as secondary indicators
     if (/\bblvd\b|\bboulevard\b|\bave\b|\bavenue\b/.test(lower)) return 'secondary';
     return 'residential';
 }
@@ -989,19 +1214,26 @@ function mapZoningCode(rawZone) {
 
 // === API CALLS ===
 
-// Geocode via Census Bureau
+// Geocode via OpenStreetMap Nominatim (CORS-friendly)
 async function geocodeAddress(address) {
-    const url = `https://geocoding.geo.census.gov/geocoder/locations/onelineaddress?address=${encodeURIComponent(address)}&benchmark=Public_AR_Current&format=json`;
-    const resp = await fetch(url);
+    // Append Los Angeles CA if not already present to improve results
+    let query = address;
+    if (!/los\s*angeles/i.test(query) && !/\bLA\b/.test(query)) {
+        query += ', Los Angeles, CA';
+    }
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=1&countrycodes=us`;
+    const resp = await fetch(url, {
+        headers: { 'Accept': 'application/json' }
+    });
     if (!resp.ok) throw new Error('Geocoding service unavailable');
     const data = await resp.json();
-    const matches = data?.result?.addressMatches;
-    if (!matches || matches.length === 0) throw new Error('Address not found. Try including city and zip code.');
-    const m = matches[0];
+    if (!data || data.length === 0) throw new Error('Address not found. Try including city and zip code.');
+    const m = data[0];
     return {
-        lat: m.coordinates.y,
-        lon: m.coordinates.x,
-        matched: m.matchedAddress
+        lat: parseFloat(m.lat),
+        lon: parseFloat(m.lon),
+        matched: m.display_name,
+        address: m.address || {},
     };
 }
 
@@ -1021,8 +1253,8 @@ async function fetchZoning(lat, lon) {
         }
         return null;
     } catch (e) {
-        console.warn('ZIMAS zoning query failed:', e);
-        return null;
+        console.warn('ZIMAS zoning query failed (may be CORS):', e);
+        return { error: 'cors' };
     }
 }
 
@@ -1047,8 +1279,8 @@ async function fetchParcelInfo(lat, lon) {
         }
         return null;
     } catch (e) {
-        console.warn('Parcel query failed:', e);
-        return null;
+        console.warn('Parcel query failed (may be CORS):', e);
+        return { error: 'cors' };
     }
 }
 
@@ -1148,7 +1380,9 @@ async function lookupAddress() {
     let statusParts = [`<span class="status-item ok">Matched: ${coords.matched}</span>`];
 
     // Apply zoning
-    if (zoningResult && zoningResult.mapped) {
+    if (zoningResult && zoningResult.error === 'cors') {
+        statusParts.push(`<span class="status-item warn">Zoning: ZIMAS blocked by browser — select manually</span>`);
+    } else if (zoningResult && zoningResult.mapped) {
         const sel = document.getElementById('zoning');
         const opt = sel.querySelector(`option[value="${zoningResult.mapped}"]`);
         if (opt) {
@@ -1166,7 +1400,9 @@ async function lookupAddress() {
     }
 
     // Apply parcel size
-    if (parcelResult && parcelResult.area && parcelResult.area > 0) {
+    if (parcelResult && parcelResult.error === 'cors') {
+        statusParts.push(`<span class="status-item warn">Parcel size: County GIS blocked by browser — enter manually</span>`);
+    } else if (parcelResult && parcelResult.area && parcelResult.area > 0) {
         document.getElementById('parcelSize').value = Math.round(parcelResult.area);
         markAutofill('parcelSize');
         filledCount++;
@@ -1181,8 +1417,8 @@ async function lookupAddress() {
         statusParts.push(`<span class="status-item warn">Parcel size: could not retrieve — enter manually</span>`);
     }
 
-    // Detect neighborhood
-    const hood = detectNeighborhood(coords.lat, coords.lon);
+    // Detect neighborhood (using Nominatim address details when available)
+    const hood = detectNeighborhood(coords.lat, coords.lon, coords.address);
     document.getElementById('neighborhood').value = hood;
     markAutofill('neighborhood');
     filledCount++;
@@ -1193,8 +1429,8 @@ async function lookupAddress() {
     markAutofill('transit');
     filledCount++;
 
-    // Detect arterial
-    const arterial = detectArterial(coords.matched || address);
+    // Detect arterial (using Nominatim road field when available)
+    const arterial = detectArterial(coords.matched || address, coords.address);
     document.getElementById('arterial').value = arterial;
     markAutofill('arterial');
     filledCount++;
@@ -1342,6 +1578,158 @@ const RATIONALE = {
 
 
 // ============================================================
+//  CA HOUSING LEGISLATION
+// ============================================================
+
+const CA_HOUSING_LEGISLATION = [
+    {
+        id: 'sb9',
+        name: 'SB 9 (HOME Act)',
+        description: 'By-right duplex and lot splits on single-family parcels statewide.',
+        applies: (useId, inp) => inp.zoning === 'R1' && inp.parcelSize >= 2400 && ['duplex', 'adu'].includes(useId),
+        densityBonus: 1.0,
+        parkingReduction: 0,
+        softCostReduction: 0,
+        legalOverride: true,
+    },
+    {
+        id: 'ab2011',
+        name: 'AB 2011',
+        description: 'By-right affordable housing on commercially zoned land.',
+        applies: (useId, inp) => ['C1','C1.5','C2','C4','C5','CM'].includes(inp.zoning) && ['multifamily_low','multifamily_mid','multifamily_high','mixeduse'].includes(useId),
+        densityBonus: 0.35,
+        parkingReduction: 0,
+        softCostReduction: 0,
+        legalOverride: true,
+    },
+    {
+        id: 'sb6',
+        name: 'SB 6',
+        description: 'Market-rate housing permitted on commercially zoned land.',
+        applies: (useId, inp) => ['C1','C1.5','C2','C4','C5','CM'].includes(inp.zoning) && ['multifamily_low','multifamily_mid','multifamily_high','mixeduse'].includes(useId),
+        densityBonus: 0.25,
+        parkingReduction: 0,
+        softCostReduction: 0,
+        legalOverride: false,
+    },
+    {
+        id: 'sb423',
+        name: 'SB 423 (Streamlined)',
+        description: 'Streamlined ministerial approval for multifamily projects meeting affordability thresholds.',
+        applies: (useId, inp) => ['R2','R3','R4','R5','C1.5','C2','C4','TOD'].includes(inp.zoning) && ['multifamily_low','multifamily_mid','multifamily_high','mixeduse'].includes(useId),
+        densityBonus: 0,
+        parkingReduction: 0,
+        softCostReduction: 0.15,
+        legalOverride: false,
+    },
+    {
+        id: 'ab2345',
+        name: 'AB 2345 (Density Bonus)',
+        description: 'Up to 50% density bonus and reduced parking for projects including affordable units.',
+        applies: (useId, inp) => ['R2','R3','R4','R5','C1','C1.5','C2','C4','TOD'].includes(inp.zoning) && ['duplex','multifamily_low','multifamily_mid','multifamily_high','mixeduse','senior'].includes(useId),
+        densityBonus: 0.50,
+        parkingReduction: 0.20,
+        softCostReduction: 0,
+        legalOverride: false,
+    },
+    {
+        id: 'ab1763',
+        name: 'AB 1763',
+        description: 'Unlimited density for 100% affordable housing projects near transit.',
+        applies: (useId, inp) => ['adjacent','near'].includes(inp.transit) && ['multifamily_low','multifamily_mid','multifamily_high','senior'].includes(useId),
+        densityBonus: 1.0,
+        parkingReduction: 0,
+        softCostReduction: 0,
+        legalOverride: true,
+    },
+    {
+        id: 'toc',
+        name: 'TOC (LA Local)',
+        description: 'Transit Oriented Communities incentives — up to 80% density bonus and parking reductions near transit.',
+        applies: (useId, inp) => ['adjacent','near'].includes(inp.transit) && ['multifamily_low','multifamily_mid','multifamily_high','mixeduse'].includes(useId),
+        densityBonus: 0.80,
+        parkingReduction: 0.30,
+        softCostReduction: 0,
+        legalOverride: false,
+    },
+    {
+        id: 'ab2097',
+        name: 'AB 2097',
+        description: 'Eliminates minimum parking requirements within 1/2 mile of major transit stops.',
+        applies: (useId, inp) => ['adjacent','near'].includes(inp.transit),
+        densityBonus: 0,
+        parkingReduction: 1.0,
+        softCostReduction: 0,
+        legalOverride: false,
+    },
+    {
+        id: 'adu_reform',
+        name: 'ADU Reform (AB 68/SB 13/AB 881)',
+        description: 'By-right ADU construction on residential lots; no parking required near transit.',
+        applies: (useId, inp) => ['R1','R2','R3','R4','R5'].includes(inp.zoning) && useId === 'adu',
+        densityBonus: 0,
+        parkingReduction: 0,
+        softCostReduction: 0,
+        legalOverride: true,
+    },
+    {
+        id: 'sb478',
+        name: 'SB 478',
+        description: 'Sets minimum 1.0 FAR for multifamily projects on parcels up to 10,000 SF.',
+        applies: (useId, inp) => inp.parcelSize <= 10000 && ['R3','R4','R5','C1.5','C2','C4','TOD'].includes(inp.zoning) && ['multifamily_low','multifamily_mid','multifamily_high'].includes(useId),
+        densityBonus: 0,
+        parkingReduction: 0,
+        softCostReduction: 0,
+        legalOverride: false,
+        minFAR: 1.0,
+    },
+    {
+        id: 'ed1',
+        name: 'ED1 (LA Local)',
+        description: 'Executive Directive 1 — streamlined approvals and density bonus for 100% affordable and senior housing.',
+        applies: (useId, inp) => ['multifamily_low','multifamily_mid','multifamily_high','senior'].includes(useId),
+        densityBonus: 0.35,
+        parkingReduction: 0,
+        softCostReduction: 0.20,
+        legalOverride: false,
+    },
+    {
+        id: 'sb684',
+        name: 'SB 684',
+        description: 'By-right approval for 10+ unit housing projects on commercially zoned land.',
+        applies: (useId, inp) => ['C1','C1.5','C2','C4','C5','CM'].includes(inp.zoning) && ['multifamily_low','multifamily_mid','multifamily_high','mixeduse'].includes(useId),
+        densityBonus: 0,
+        parkingReduction: 0,
+        softCostReduction: 0,
+        legalOverride: true,
+    },
+];
+
+function getApplicableLegislation(useId, inp) {
+    return CA_HOUSING_LEGISLATION.filter(bill => bill.applies(useId, inp));
+}
+
+function stackLegislationEffects(legislationList) {
+    let densityBonus = 0;
+    let parkingReduction = 0;
+    let softCostReduction = 0;
+    let legalOverride = false;
+    let minFAR = 0;
+
+    for (const bill of legislationList) {
+        densityBonus = Math.max(densityBonus, bill.densityBonus || 0);
+        parkingReduction = Math.max(parkingReduction, bill.parkingReduction || 0);
+        softCostReduction += (bill.softCostReduction || 0);
+        if (bill.legalOverride) legalOverride = true;
+        minFAR = Math.max(minFAR, bill.minFAR || 0);
+    }
+
+    softCostReduction = Math.min(softCostReduction, 0.50);
+    return { densityBonus, parkingReduction, softCostReduction, legalOverride, minFAR };
+}
+
+
+// ============================================================
 //  SCORING FUNCTIONS
 // ============================================================
 
@@ -1366,10 +1754,15 @@ function getInputs() {
     };
 }
 
-function scoreLegal(useId, inp) {
+function scoreLegal(useId, inp, effects) {
     const zoneRow = ZONING_MATRIX[inp.zoning];
     if (!zoneRow) return 0;
     let base = zoneRow[useId] || 0;
+
+    // CA Housing Legislation: by-right override
+    if (effects && effects.legalOverride) {
+        base = 1.0;
+    }
 
     // Historic overlay reduces redevelopment permission
     if (inp.constHistoric && ['multifamily_high', 'hotel', 'industrial'].includes(useId)) {
@@ -1434,14 +1827,31 @@ function scorePhysical(useId, inp) {
     return Math.min(score, 1.0);
 }
 
-function scoreFinancial(useId, inp) {
-    // Estimate buildable area
-    const far = FAR_TYPICAL[useId] || 1.0;
+function scoreFinancial(useId, inp, effects) {
+    // Compute effective FAR with legislation bonuses
+    const baseFAR = FAR_TYPICAL[useId] || 1.0;
+    let far = baseFAR;
+    if (effects) {
+        far = baseFAR * (1 + effects.densityBonus);
+        if (effects.minFAR > 0) far = Math.max(far, effects.minFAR);
+    }
+
     const buildableSF = inp.parcelSize * far;
     const landValuePSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
     const landCost = inp.parcelSize * landValuePSF;
-    const buildCost = buildableSF * (BUILD_COST_PSF[useId] || 300);
-    const totalCost = landCost + buildCost;
+
+    // Build cost with parking reduction from legislation
+    let buildCostPerSF = BUILD_COST_PSF[useId] || 300;
+    if (effects && effects.parkingReduction > 0) {
+        buildCostPerSF *= (1 - effects.parkingReduction * 0.18);
+    }
+    const buildCost = buildableSF * buildCostPerSF;
+
+    // Total cost with soft cost reduction from legislation
+    let totalCost = landCost + buildCost;
+    if (effects && effects.softCostReduction > 0) {
+        totalCost *= (1 - effects.softCostReduction * 0.20);
+    }
 
     // Annual revenue
     const annualRevenue = buildableSF * (REVENUE_PSF[useId] || 30);
@@ -1492,9 +1902,15 @@ function scoreFinancial(useId, inp) {
     return Math.min(score, 1.0);
 }
 
-function scoreProductive(useId, inp) {
-    // Maximally productive = highest overall value creation relative to alternatives
-    const far = FAR_TYPICAL[useId] || 1.0;
+function scoreProductive(useId, inp, effects) {
+    // Compute effective FAR with legislation bonuses
+    const baseFAR = FAR_TYPICAL[useId] || 1.0;
+    let far = baseFAR;
+    if (effects) {
+        far = baseFAR * (1 + effects.densityBonus);
+        if (effects.minFAR > 0) far = Math.max(far, effects.minFAR);
+    }
+
     const buildableSF = inp.parcelSize * far;
     const revenuePSF = REVENUE_PSF[useId] || 30;
     const totalAnnualRev = buildableSF * revenuePSF;
@@ -1527,10 +1943,13 @@ function calculateHBU() {
 
     // Score all uses
     const results = LAND_USES.map(use => {
-        const legal      = scoreLegal(use.id, inp);
+        const legislation = getApplicableLegislation(use.id, inp);
+        const effects = stackLegislationEffects(legislation);
+
+        const legal      = scoreLegal(use.id, inp, effects);
         const physical   = scorePhysical(use.id, inp);
-        const financial  = scoreFinancial(use.id, inp);
-        const productive = scoreProductive(use.id, inp);
+        const financial  = scoreFinancial(use.id, inp, effects);
+        const productive = scoreProductive(use.id, inp, effects);
 
         // HBU must pass ALL four tests. Weight: Legal gateway, then others.
         // If legal = 0, overall = 0
@@ -1550,6 +1969,7 @@ function calculateHBU() {
             financial: Math.round(financial * 100),
             productive: Math.round(productive * 100),
             overall: Math.round(overall * 100),
+            legislation,
         };
     });
 
@@ -1582,6 +2002,13 @@ function renderResults(results, inp) {
 
     for (let i = 0; i < 3; i++) {
         const r = results[i];
+        const legBadges = r.legislation && r.legislation.length > 0
+            ? `<div class="legislation-badges">
+                   <div class="leg-label">Applicable Legislation</div>
+                   ${r.legislation.map(b => `<span class="legislation-badge">${b.name}</span>`).join('')}
+               </div>`
+            : '';
+
         const card = document.createElement('div');
         card.className = `result-card ${rankClasses[i]}`;
         card.innerHTML = `
@@ -1615,9 +2042,37 @@ function renderResults(results, inp) {
                 </div>
 
                 <div class="rationale">${RATIONALE[r.id] || ''}</div>
+                ${legBadges}
             </div>
         `;
         cardsDiv.appendChild(card);
+    }
+
+    // Legislation section — collect unique bills from top 3
+    const legSection = document.getElementById('legislationSection');
+    const allLegislation = new Map();
+    for (let i = 0; i < 3 && i < results.length; i++) {
+        if (results[i].legislation) {
+            for (const bill of results[i].legislation) {
+                if (!allLegislation.has(bill.id)) {
+                    allLegislation.set(bill.id, bill);
+                }
+            }
+        }
+    }
+
+    if (allLegislation.size > 0) {
+        legSection.style.display = 'block';
+        let legHTML = '<h3>Applicable California Housing Legislation</h3>';
+        legHTML += '<div class="legislation-cards">';
+        for (const bill of allLegislation.values()) {
+            legHTML += `<div class="legislation-card"><strong>${bill.name}</strong><p>${bill.description}</p></div>`;
+        }
+        legHTML += '</div>';
+        legSection.innerHTML = legHTML;
+    } else {
+        legSection.style.display = 'none';
+        legSection.innerHTML = '';
     }
 
     // Full table
