@@ -689,6 +689,242 @@
             color: var(--text-light);
             margin-bottom: 0.35rem;
         }
+
+        /* Analysis Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 2rem 1rem;
+        }
+
+        .modal-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .modal-top-bar {
+            position: sticky;
+            top: 0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: rgba(255,255,255,0.95);
+            border-radius: 16px 16px 0 0;
+            z-index: 10;
+            backdrop-filter: blur(6px);
+        }
+
+        .modal-close {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: #f7fafc;
+            font-size: 1.3rem;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-light);
+            transition: background 0.15s;
+        }
+        .modal-close:hover { background: #edf2f7; }
+
+        .modal-print-btn {
+            padding: 0.45rem 1.25rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: white;
+            background: var(--primary-light);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .modal-print-btn:hover { background: var(--primary); }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 1.75rem 2rem;
+        }
+        .modal-header h2 { font-size: 1.4rem; margin-bottom: 0.25rem; }
+        .modal-header p { font-size: 0.88rem; opacity: 0.85; }
+
+        .modal-body { padding: 2rem; }
+
+        .analysis-section { margin-bottom: 2rem; }
+        .analysis-section h3 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .program-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+        }
+        @media (max-width: 600px) { .program-grid { grid-template-columns: repeat(2, 1fr); } }
+        .program-item {
+            text-align: center;
+            padding: 0.85rem;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+        .program-item .program-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .program-item .program-label {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-top: 0.15rem;
+        }
+
+        .rendering-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        @media (max-width: 700px) { .rendering-container { grid-template-columns: 1fr; } }
+        .rendering-container svg {
+            width: 100%;
+            height: auto;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .budget-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        .budget-table td {
+            padding: 0.4rem 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .budget-table td:last-child {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+        .budget-table .section-header td {
+            font-weight: 700;
+            background: #f8fafc;
+            color: var(--primary);
+            padding-top: 0.75rem;
+            border-bottom: 2px solid var(--border);
+        }
+        .budget-table .subtotal td {
+            font-weight: 700;
+            background: #f0f4f8;
+        }
+        .budget-table .grand-total td {
+            font-weight: 700;
+            background: var(--primary);
+            color: white;
+            font-size: 0.92rem;
+            padding: 0.6rem 0.75rem;
+        }
+
+        .returns-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        @media (max-width: 600px) { .returns-grid { grid-template-columns: 1fr; } }
+        .return-card {
+            text-align: center;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+        .return-card .return-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        .return-card .return-label {
+            font-size: 0.78rem;
+            color: var(--text-light);
+            margin-top: 0.15rem;
+        }
+
+        .timeline-bar {
+            display: flex;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 36px;
+            margin-bottom: 0.5rem;
+        }
+        .timeline-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: white;
+            line-height: 1.2;
+            text-align: center;
+            padding: 0 0.25rem;
+        }
+        .timeline-legend {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 0.35rem;
+        }
+
+        .risk-card {
+            background: #fff5f5;
+            border-left: 4px solid #fc8181;
+            border-radius: 0 8px 8px 0;
+            padding: 0.85rem 1.1rem;
+            margin-bottom: 0.6rem;
+        }
+        .risk-card strong { color: #c53030; font-size: 0.88rem; display: block; margin-bottom: 0.2rem; }
+        .risk-card p { color: var(--text-light); font-size: 0.82rem; margin: 0; line-height: 1.45; }
+
+        .click-hint {
+            font-size: 0.75rem;
+            color: var(--primary-light);
+            text-align: center;
+            margin-top: 0.5rem;
+            font-weight: 600;
+        }
+
+        /* Print: analysis modal */
+        @media print {
+            body.printing-analysis > *:not(#analysisModal) { display: none !important; }
+            body.printing-analysis #analysisModal {
+                position: static;
+                padding: 0;
+                background: white;
+                overflow: visible;
+            }
+            body.printing-analysis .modal-content {
+                box-shadow: none;
+                border-radius: 0;
+            }
+            body.printing-analysis .modal-top-bar { display: none !important; }
+            body.printing-analysis .modal-header {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            body.printing-analysis .analysis-section { page-break-inside: avoid; }
+            body.printing-analysis .rendering-container svg { border: 1px solid #ddd; }
+            body.printing-analysis .budget-table .grand-total td {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
     </style>
 </head>
 <body>
@@ -785,8 +1021,8 @@
                         </select>
                     </div>
 
-                    <div class="field">
-                        <label>Current Site Condition</label>
+                    <div class="field" id="field-siteCondition">
+                        <label>Current Site Condition <span class="autofill-badge">auto-filled</span></label>
                         <select id="siteCondition">
                             <option value="vacant" selected>Vacant Land</option>
                             <option value="improved_under">Improved — Underutilized</option>
@@ -904,6 +1140,21 @@
         <div class="disclaimer">
             <strong>Disclaimer:</strong> This tool provides a preliminary, educational estimate only. Highest and Best Use analysis for real estate investment or appraisal purposes should be performed by a qualified MAI appraiser or licensed professional. Actual HBU depends on detailed market studies, entitlement feasibility, construction cost analysis, and site-specific due diligence. Zoning codes, overlay districts, and specific plan areas in Los Angeles change frequently — always verify with the LA Department of City Planning (ZIMAS).
         </div>
+    </div>
+</div>
+
+<!-- Analysis Detail Modal -->
+<div class="modal-overlay" id="analysisModal" style="display:none;" onclick="if(event.target===this)closeAnalysis();">
+    <div class="modal-content">
+        <div class="modal-top-bar">
+            <button type="button" class="modal-print-btn" onclick="printAnalysis()">Print / PDF</button>
+            <button type="button" class="modal-close" onclick="closeAnalysis()">&times;</button>
+        </div>
+        <div class="modal-header">
+            <h2 id="modalTitle"></h2>
+            <p id="modalSubtitle"></p>
+        </div>
+        <div class="modal-body" id="modalBody"></div>
     </div>
 </div>
 
@@ -1139,11 +1390,11 @@ function haversine(lat1, lon1, lat2, lon2) {
 
 // Detect nearest neighborhood from coordinates + Nominatim address details
 function detectNeighborhood(lat, lon, addressDetails) {
-    // Try Nominatim address fields first (suburb, neighbourhood, city_district)
+    // Try Nominatim address fields (neighbourhood is most specific, then suburb)
     if (addressDetails) {
         const fields = [
-            addressDetails.suburb,
             addressDetails.neighbourhood,
+            addressDetails.suburb,
             addressDetails.city_district,
             addressDetails.quarter,
         ];
@@ -1199,6 +1450,19 @@ function detectArterial(addressString, addressDetails) {
     return 'residential';
 }
 
+// Detect site condition from Nominatim result
+// For HBU analysis, any existing structure implies redevelopment → demolition
+function detectSiteCondition(osmClass, osmType) {
+    // Named structures (buildings, amenities, commercial, etc.)
+    const structureClasses = ['building', 'amenity', 'shop', 'office', 'tourism', 'leisure', 'craft', 'club', 'healthcare'];
+    if (structureClasses.includes(osmClass)) return 'demolition';
+    // Address resolving to a house/building → existing structure for HBU redevelopment
+    if (osmClass === 'place' && ['house', 'building', 'apartments', 'residential'].includes(osmType)) return 'demolition';
+    // Other place types (most LA parcels have structures)
+    if (osmClass === 'place') return 'demolition';
+    return 'vacant';
+}
+
 // Map ZIMAS zoning code to our dropdown values
 function mapZoningCode(rawZone) {
     if (!rawZone) return null;
@@ -1234,6 +1498,8 @@ async function geocodeAddress(address) {
         lon: parseFloat(m.lon),
         matched: m.display_name,
         address: m.address || {},
+        osmClass: m.class || '',
+        osmType: m.type || '',
     };
 }
 
@@ -1433,6 +1699,12 @@ async function lookupAddress() {
     const arterial = detectArterial(coords.matched || address, coords.address);
     document.getElementById('arterial').value = arterial;
     markAutofill('arterial');
+    filledCount++;
+
+    // Detect site condition from Nominatim class/type
+    const siteCondition = detectSiteCondition(coords.osmClass, coords.osmType);
+    document.getElementById('siteCondition').value = siteCondition;
+    markAutofill('siteCondition');
     filledCount++;
 
     // Show status
@@ -1730,6 +2002,56 @@ function stackLegislationEffects(legislationList) {
 
 
 // ============================================================
+//  BUILDING PROGRAM & BUDGET DATA
+// ============================================================
+
+const BUILDING_PARAMS = {
+    sfr:              { stories: 2,  floorH: 10, eff: 0.92, unitSF: 1800, parkRatio: 2.0,  setF: 20, setS: 5,  opex: 0.30, cap: 0.045 },
+    duplex:           { stories: 2,  floorH: 10, eff: 0.90, unitSF: 1200, parkRatio: 1.5,  setF: 15, setS: 5,  opex: 0.32, cap: 0.048 },
+    multifamily_low:  { stories: 4,  floorH: 10, eff: 0.82, unitSF: 850,  parkRatio: 1.25, setF: 10, setS: 5,  opex: 0.38, cap: 0.050 },
+    multifamily_mid:  { stories: 7,  floorH: 10, eff: 0.80, unitSF: 800,  parkRatio: 1.0,  setF: 10, setS: 5,  opex: 0.38, cap: 0.048 },
+    multifamily_high: { stories: 18, floorH: 10, eff: 0.78, unitSF: 750,  parkRatio: 1.0,  setF: 10, setS: 10, opex: 0.40, cap: 0.045 },
+    mixeduse:         { stories: 6,  floorH: 12, eff: 0.80, unitSF: 850,  parkRatio: 1.0,  setF: 0,  setS: 0,  opex: 0.38, cap: 0.050 },
+    retail:           { stories: 1,  floorH: 16, eff: 0.88, unitSF: null, parkRatio: 4.0,  setF: 0,  setS: 0,  opex: 0.35, cap: 0.055 },
+    office:           { stories: 5,  floorH: 13, eff: 0.85, unitSF: null, parkRatio: 3.0,  setF: 5,  setS: 5,  opex: 0.40, cap: 0.055 },
+    medical:          { stories: 4,  floorH: 13, eff: 0.82, unitSF: null, parkRatio: 4.0,  setF: 10, setS: 5,  opex: 0.42, cap: 0.050 },
+    hotel:            { stories: 10, floorH: 11, eff: 0.75, unitSF: 400,  parkRatio: 0.5,  setF: 5,  setS: 5,  opex: 0.55, cap: 0.060 },
+    industrial:       { stories: 1,  floorH: 24, eff: 0.92, unitSF: null, parkRatio: 1.0,  setF: 10, setS: 5,  opex: 0.28, cap: 0.055 },
+    selfstorage:      { stories: 4,  floorH: 9,  eff: 0.88, unitSF: null, parkRatio: 0.2,  setF: 5,  setS: 5,  opex: 0.30, cap: 0.060 },
+    senior:           { stories: 5,  floorH: 10, eff: 0.78, unitSF: 600,  parkRatio: 0.5,  setF: 10, setS: 5,  opex: 0.55, cap: 0.050 },
+    parking:          { stories: 5,  floorH: 11, eff: 0.90, unitSF: null, parkRatio: null, setF: 0,  setS: 0,  opex: 0.25, cap: 0.065 },
+    creative:         { stories: 3,  floorH: 14, eff: 0.85, unitSF: null, parkRatio: 2.5,  setF: 0,  setS: 0,  opex: 0.35, cap: 0.055 },
+    adu:              { stories: 2,  floorH: 9,  eff: 0.90, unitSF: 600,  parkRatio: 0,    setF: 5,  setS: 4,  opex: 0.30, cap: 0.050 },
+};
+
+const TIMELINE_MONTHS = {
+    sfr:              { entitlement: 2,  design: 2,  permits: 2, construction: 10, leaseup: 1 },
+    duplex:           { entitlement: 3,  design: 2,  permits: 2, construction: 12, leaseup: 1 },
+    multifamily_low:  { entitlement: 6,  design: 4,  permits: 3, construction: 18, leaseup: 6 },
+    multifamily_mid:  { entitlement: 8,  design: 5,  permits: 4, construction: 24, leaseup: 8 },
+    multifamily_high: { entitlement: 12, design: 8,  permits: 6, construction: 36, leaseup: 10 },
+    mixeduse:         { entitlement: 8,  design: 5,  permits: 4, construction: 22, leaseup: 8 },
+    retail:           { entitlement: 4,  design: 3,  permits: 2, construction: 10, leaseup: 4 },
+    office:           { entitlement: 6,  design: 4,  permits: 3, construction: 18, leaseup: 8 },
+    medical:          { entitlement: 6,  design: 5,  permits: 4, construction: 16, leaseup: 6 },
+    hotel:            { entitlement: 10, design: 6,  permits: 5, construction: 28, leaseup: 12 },
+    industrial:       { entitlement: 4,  design: 3,  permits: 2, construction: 10, leaseup: 3 },
+    selfstorage:      { entitlement: 4,  design: 3,  permits: 2, construction: 12, leaseup: 12 },
+    senior:           { entitlement: 8,  design: 5,  permits: 4, construction: 22, leaseup: 10 },
+    parking:          { entitlement: 4,  design: 3,  permits: 2, construction: 14, leaseup: 2 },
+    creative:         { entitlement: 4,  design: 3,  permits: 2, construction: 14, leaseup: 6 },
+    adu:              { entitlement: 1,  design: 1,  permits: 2, construction: 8,  leaseup: 1 },
+};
+
+const USE_COLORS = {
+    sfr: '#4a9e5c', duplex: '#5ba86e', multifamily_low: '#3182ce', multifamily_mid: '#2b6cb0',
+    multifamily_high: '#1a4791', mixeduse: '#805ad5', retail: '#dd6b20', office: '#2c5282',
+    medical: '#38a169', hotel: '#b83280', industrial: '#718096', selfstorage: '#a0aec0',
+    senior: '#d69e2e', parking: '#4a5568', creative: '#ed8936', adu: '#48bb78',
+};
+
+
+// ============================================================
 //  SCORING FUNCTIONS
 // ============================================================
 
@@ -1938,6 +2260,9 @@ function scoreProductive(useId, inp, effects) {
 //  MAIN CALCULATION
 // ============================================================
 
+let lastResults = null;
+let lastInputs = null;
+
 function calculateHBU() {
     const inp = getInputs();
 
@@ -1976,6 +2301,10 @@ function calculateHBU() {
     // Sort by overall descending
     results.sort((a, b) => b.overall - a.overall);
 
+    // Store for modal access
+    lastResults = results;
+    lastInputs = inp;
+
     // Render
     renderResults(results, inp);
 }
@@ -2011,6 +2340,8 @@ function renderResults(results, inp) {
 
         const card = document.createElement('div');
         card.className = `result-card ${rankClasses[i]}`;
+        card.style.cursor = 'pointer';
+        card.onclick = ((idx) => () => openAnalysis(idx))(i);
         card.innerHTML = `
             <div class="rank-banner">
                 <span class="rank-num">#${i + 1}</span>
@@ -2043,6 +2374,7 @@ function renderResults(results, inp) {
 
                 <div class="rationale">${RATIONALE[r.id] || ''}</div>
                 ${legBadges}
+                <div class="click-hint">Click for detailed analysis</div>
             </div>
         `;
         cardsDiv.appendChild(card);
@@ -2120,6 +2452,358 @@ function exportPDF() {
     // Trigger browser print dialog (user can select "Save as PDF")
     window.print();
 }
+
+
+// ============================================================
+//  DETAILED ANALYSIS MODAL
+// ============================================================
+
+function fmt(n) {
+    return '$' + Math.round(n).toLocaleString();
+}
+
+function adjustColor(hex, amount) {
+    let r = parseInt(hex.slice(1, 3), 16);
+    let g = parseInt(hex.slice(3, 5), 16);
+    let b = parseInt(hex.slice(5, 7), 16);
+    r = Math.max(0, Math.min(255, r + amount));
+    g = Math.max(0, Math.min(255, g + amount));
+    b = Math.max(0, Math.min(255, b + amount));
+    return '#' + [r, g, b].map(c => c.toString(16).padStart(2, '0')).join('');
+}
+
+function generateBudget(useId, inp, effects) {
+    const params = BUILDING_PARAMS[useId];
+    const baseFAR = FAR_TYPICAL[useId] || 1.0;
+    let far = baseFAR;
+    if (effects) {
+        far = baseFAR * (1 + effects.densityBonus);
+        if (effects.minFAR > 0) far = Math.max(far, effects.minFAR);
+    }
+
+    const gsf = Math.round(inp.parcelSize * far);
+    const nsf = Math.round(gsf * params.eff);
+    const stories = Math.max(params.stories, Math.ceil(gsf / (inp.parcelSize * 0.7)));
+    const buildingHeight = stories * params.floorH;
+    const buildingFootprint = Math.min(Math.round(inp.parcelSize * 0.7), Math.round(gsf / stories));
+    const units = params.unitSF ? Math.max(1, Math.floor(nsf / params.unitSF)) : null;
+
+    // Parking
+    const baseParkRatio = params.parkRatio || 0;
+    const parkReduction = effects ? effects.parkingReduction : 0;
+    let parkingSpaces;
+    if (useId === 'parking') {
+        parkingSpaces = Math.round(gsf / 350); // ~350 SF per space
+    } else if (units) {
+        parkingSpaces = Math.max(0, Math.ceil(units * baseParkRatio * (1 - parkReduction)));
+    } else {
+        parkingSpaces = Math.max(0, Math.ceil(gsf / 1000 * baseParkRatio * (1 - parkReduction)));
+    }
+
+    const landValuePSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
+    const landCost = inp.parcelSize * landValuePSF;
+
+    // Hard costs
+    const siteWork = inp.parcelSize * 18;
+    const demolition = (inp.siteCondition === 'demolition') ? inp.parcelSize * 12 : 0;
+    let buildCostPSF = BUILD_COST_PSF[useId] || 300;
+    if (effects && effects.parkingReduction > 0) {
+        buildCostPSF *= (1 - effects.parkingReduction * 0.18);
+    }
+    const construction = gsf * buildCostPSF;
+    const parkingCost = parkingSpaces * 45000;
+    const landscaping = Math.round(construction * 0.04);
+    const hardContingency = Math.round((siteWork + demolition + construction + parkingCost + landscaping) * 0.07);
+    const totalHard = siteWork + demolition + construction + parkingCost + landscaping + hardContingency;
+
+    // Soft costs
+    const archEng = Math.round(totalHard * 0.10);
+    const permits = Math.round(totalHard * 0.06);
+    const legal = Math.round(totalHard * 0.025);
+    const financing = Math.round((landCost + totalHard) * 0.05);
+    const marketing = Math.round(nsf * (REVENUE_PSF[useId] || 30) * 0.025);
+    const devFee = Math.round((totalHard + archEng + permits) * 0.04);
+    const softCostMult = effects && effects.softCostReduction > 0 ? (1 - effects.softCostReduction * 0.20) : 1;
+    const totalSoft = Math.round((archEng + permits + legal + financing + marketing + devFee) * softCostMult);
+
+    const totalDev = landCost + totalHard + totalSoft;
+
+    // Revenue & returns
+    const grossRevenue = nsf * (REVENUE_PSF[useId] || 30);
+    const opex = Math.round(grossRevenue * params.opex);
+    const noi = grossRevenue - opex;
+    const capRate = params.cap;
+    const stabilizedValue = Math.round(noi / capRate);
+    const yieldOnCost = noi / totalDev;
+    const devMargin = (stabilizedValue - totalDev) / totalDev;
+
+    return {
+        gsf, nsf, stories, buildingHeight, buildingFootprint, units, parkingSpaces, far,
+        landCost, siteWork, demolition, construction, buildCostPSF, parkingCost, landscaping, hardContingency, totalHard,
+        archEng, permits, legal, financing, marketing, devFee, totalSoft,
+        totalDev,
+        grossRevenue, opex, noi, capRate, stabilizedValue, yieldOnCost, devMargin,
+        params,
+    };
+}
+
+// --- SVG Rendering ---
+
+function generateSitePlanSVG(useId, inp, budget) {
+    const w = 320, h = 270;
+    const params = budget.params;
+    const color = USE_COLORS[useId] || '#3182ce';
+
+    const lotW = inp.frontage || Math.sqrt(inp.parcelSize * 2);
+    const lotD = inp.parcelSize / lotW;
+    const maxDim = Math.max(lotW, lotD);
+    const scale = 170 / maxDim;
+    const lw = lotW * scale, ld = lotD * scale;
+    const ox = (w - lw) / 2, oy = 25;
+
+    const sf = params.setF * scale, ss = params.setS * scale;
+    const bw = Math.max(20, lw - 2 * ss);
+    const bd = Math.max(20, ld - sf - ss);
+    const bx = ox + ss, by = oy + ss;
+
+    let s = `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="background:#fafbfc;">`;
+    s += `<defs><pattern id="ht" width="6" height="6" patternUnits="userSpaceOnUse"><path d="M0,6 L6,0" stroke="#ccc" stroke-width="0.5"/></pattern></defs>`;
+    // Lot
+    s += `<rect x="${ox}" y="${oy}" width="${lw}" height="${ld}" fill="#e8f5e9" stroke="#66bb6a" stroke-width="1.5" rx="2"/>`;
+    // Setback hatching (front)
+    if (sf > 2) s += `<rect x="${ox}" y="${oy + ld - sf}" width="${lw}" height="${sf}" fill="url(#ht)" opacity="0.5"/>`;
+    // Building footprint
+    s += `<rect x="${bx}" y="${by}" width="${bw}" height="${bd}" fill="${color}" opacity="0.75" stroke="${color}" stroke-width="1.5" rx="2"/>`;
+    s += `<text x="${bx + bw/2}" y="${by + bd/2 - 5}" text-anchor="middle" font-size="10" fill="white" font-weight="600">BUILDING</text>`;
+    s += `<text x="${bx + bw/2}" y="${by + bd/2 + 9}" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.85)">${budget.buildingFootprint.toLocaleString()} SF footprint</text>`;
+    // Dimensions
+    s += `<text x="${ox + lw/2}" y="${oy - 6}" text-anchor="middle" font-size="9" fill="#666">${Math.round(lotW)}' frontage</text>`;
+    // Depth label (right side, rotated)
+    s += `<text x="${ox + lw + 14}" y="${oy + ld/2}" text-anchor="middle" font-size="9" fill="#666" transform="rotate(90,${ox + lw + 14},${oy + ld/2})">${Math.round(lotD)}' depth</text>`;
+    // Street
+    s += `<rect x="${ox - 15}" y="${oy + ld + 8}" width="${lw + 30}" height="${22}" fill="#e2e8f0" rx="3"/>`;
+    s += `<text x="${ox + lw/2}" y="${oy + ld + 23}" text-anchor="middle" font-size="9" fill="#718096" font-weight="600">STREET</text>`;
+    // North arrow
+    s += `<text x="${w - 22}" y="${oy + 12}" text-anchor="middle" font-size="14" fill="#999">&#8593;</text>`;
+    s += `<text x="${w - 22}" y="${oy + 24}" text-anchor="middle" font-size="8" fill="#999" font-weight="600">N</text>`;
+    // Title
+    s += `<text x="${w/2}" y="${h - 6}" text-anchor="middle" font-size="10" fill="#999" font-weight="600">SITE PLAN</text>`;
+    s += '</svg>';
+    return s;
+}
+
+function generateElevationSVG(useId, inp, budget) {
+    const w = 320, h = 270;
+    const params = budget.params;
+    const color = USE_COLORS[useId] || '#3182ce';
+    const stories = budget.stories;
+    const totalH = budget.buildingHeight;
+
+    const maxSVGH = 190;
+    const hScale = Math.min(maxSVGH / totalH, 3.0);
+    const buildH = totalH * hScale;
+    const buildW = 180;
+    const ox = (w - buildW) / 2;
+    const groundY = h - 45;
+    const roofY = groundY - buildH;
+
+    let s = `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="background:#fafbfc;">`;
+    // Sky
+    s += `<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#dbeafe"/><stop offset="100%" stop-color="#f0f9ff"/></linearGradient></defs>`;
+    s += `<rect x="0" y="0" width="${w}" height="${groundY}" fill="url(#sky)"/>`;
+    // Ground
+    s += `<rect x="0" y="${groundY}" width="${w}" height="${h - groundY}" fill="#d4edda"/>`;
+    s += `<line x1="0" y1="${groundY}" x2="${w}" y2="${groundY}" stroke="#888" stroke-width="1.5"/>`;
+    // Building
+    s += `<rect x="${ox}" y="${roofY}" width="${buildW}" height="${buildH}" fill="${color}" stroke="${adjustColor(color, -30)}" stroke-width="1.5" rx="2"/>`;
+    // Floor lines
+    const storyH = buildH / stories;
+    for (let i = 1; i < stories; i++) {
+        const y = groundY - i * storyH;
+        s += `<line x1="${ox}" y1="${y}" x2="${ox + buildW}" y2="${y}" stroke="rgba(255,255,255,0.2)" stroke-width="0.5"/>`;
+    }
+    // Windows
+    const cols = Math.min(7, Math.max(3, Math.floor(buildW / 25)));
+    const winW = 12, winH = storyH * 0.45;
+    const winSpacing = buildW / (cols + 1);
+    for (let fl = 0; fl < stories; fl++) {
+        const fy = groundY - (fl + 1) * storyH + (storyH - winH) / 2 + winH * 0.1;
+        for (let c = 0; c < cols; c++) {
+            const wx = ox + winSpacing * (c + 1) - winW / 2;
+            s += `<rect x="${wx}" y="${fy}" width="${winW}" height="${winH}" fill="rgba(255,255,255,0.35)" rx="1"/>`;
+        }
+    }
+    // Ground floor entrance
+    if (['retail', 'mixeduse', 'hotel', 'office', 'medical', 'creative'].includes(useId)) {
+        const doorW = buildW * 0.12, doorH = storyH * 0.65;
+        s += `<rect x="${ox + buildW/2 - doorW/2}" y="${groundY - doorH}" width="${doorW}" height="${doorH}" fill="rgba(255,255,255,0.5)" rx="2"/>`;
+    }
+    // Roof line
+    s += `<line x1="${ox - 4}" y1="${roofY}" x2="${ox + buildW + 4}" y2="${roofY}" stroke="${adjustColor(color, -40)}" stroke-width="2.5"/>`;
+    // Height dimension
+    const dx = ox + buildW + 18;
+    s += `<line x1="${dx}" y1="${groundY}" x2="${dx}" y2="${roofY}" stroke="#999" stroke-width="0.75" stroke-dasharray="3,2"/>`;
+    s += `<line x1="${dx - 4}" y1="${groundY}" x2="${dx + 4}" y2="${groundY}" stroke="#999" stroke-width="1"/>`;
+    s += `<line x1="${dx - 4}" y1="${roofY}" x2="${dx + 4}" y2="${roofY}" stroke="#999" stroke-width="1"/>`;
+    s += `<text x="${dx + 8}" y="${(groundY + roofY) / 2}" font-size="9" fill="#666" font-weight="600">${totalH} ft</text>`;
+    s += `<text x="${dx + 8}" y="${(groundY + roofY) / 2 + 13}" font-size="8" fill="#999">${stories} stories</text>`;
+    // Width
+    s += `<text x="${ox + buildW/2}" y="${groundY + 16}" text-anchor="middle" font-size="9" fill="#666">${Math.round(inp.frontage || Math.sqrt(inp.parcelSize * 2))}' frontage</text>`;
+    // Title
+    s += `<text x="${w/2}" y="${h - 6}" text-anchor="middle" font-size="10" fill="#999" font-weight="600">BUILDING ELEVATION</text>`;
+    s += '</svg>';
+    return s;
+}
+
+function generateRisksHTML(useId, inp) {
+    const risks = [];
+    if (inp.constFlood) risks.push({ t: 'Flood Zone', d: 'Site is in a flood zone. Flood insurance required, ground-floor design constraints, potential FEMA elevation requirements.' });
+    if (inp.constHillside) risks.push({ t: 'Hillside Ordinance', d: 'Hillside development restrictions limit grading, height, and density. Extended entitlement timeline expected.' });
+    if (inp.constHistoric) risks.push({ t: 'Historic Overlay', d: 'Historic preservation review required. May limit demolition, facade changes, and building height.' });
+    if (inp.constFault) risks.push({ t: 'Fault Zone', d: 'Alquist-Priolo fault zone — geotechnical study required. Structural reinforcement may increase costs 10-20%.' });
+    if (inp.constCoastal) risks.push({ t: 'Coastal Zone', d: 'California Coastal Commission review required. Height, view corridor, and public access conditions likely.' });
+    if (inp.siteCondition === 'brownfield') risks.push({ t: 'Environmental Contamination', d: 'Phase II ESA recommended. Remediation costs could range from $50K to $500K+ depending on contamination type.' });
+    if (inp.siteCondition === 'demolition') risks.push({ t: 'Demolition Required', d: 'Existing structure requires demolition. Asbestos/lead survey required. Demo costs included in budget.' });
+    if (inp.utilities === 'partial') risks.push({ t: 'Utility Upgrades Needed', d: 'Utility infrastructure requires upgrades. Coordinate with LADWP and LASAN. May add $50-200K.' });
+    if (inp.utilities === 'none') risks.push({ t: 'No Utilities Available', d: 'Significant utility extension required. May add $200K-$1M+ and 6-12 months to timeline.' });
+    if (inp.topography === 'steep') risks.push({ t: 'Steep Topography', d: 'Significant grading and retaining walls required. May add 15-30% to foundation costs.' });
+    if (['multifamily_high', 'hotel'].includes(useId)) risks.push({ t: 'Construction Cost Escalation', d: 'High-rise construction is sensitive to material/labor cost changes. Lock in GMP contract early.' });
+    if (useId === 'retail') risks.push({ t: 'Retail Market Uncertainty', d: 'Evolving retail landscape. Consider flexible ground-floor design for alternative uses.' });
+    if (useId === 'office') risks.push({ t: 'Office Demand Shift', d: 'Remote work trends have shifted office demand. Consider amenity-rich design and flexible leases.' });
+    risks.push({ t: 'Entitlement Risk', d: 'LA entitlement timelines are subject to CEQA review, community opposition, and council discretion. Budget for delays.' });
+    risks.push({ t: 'Interest Rate Sensitivity', d: 'Construction and permanent financing costs fluctuate. Model scenarios at current rate +/- 100 bps.' });
+
+    let html = '<div class="analysis-section"><h3>Key Risks &amp; Considerations</h3>';
+    html += risks.map(r => `<div class="risk-card"><strong>${r.t}</strong><p>${r.d}</p></div>`).join('');
+    html += '</div>';
+    return html;
+}
+
+function openAnalysis(resultIndex) {
+    if (!lastResults || !lastInputs) return;
+    const r = lastResults[resultIndex];
+    const inp = lastInputs;
+    const effects = stackLegislationEffects(r.legislation || []);
+    const budget = generateBudget(r.id, inp, effects);
+    const tl = TIMELINE_MONTHS[r.id] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
+    const totalMonths = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
+    const neighborhoodText = document.getElementById('neighborhood').selectedOptions[0].text;
+
+    document.getElementById('modalTitle').textContent = `${r.icon} ${r.name}`;
+    document.getElementById('modalSubtitle').textContent =
+        `Detailed Development Analysis  |  ${inp.parcelSize.toLocaleString()} SF  |  ${inp.zoning} Zoning  |  ${neighborhoodText}`;
+
+    let html = '';
+
+    // --- Building Program ---
+    html += `<div class="analysis-section"><h3>Building Program</h3><div class="program-grid">
+        <div class="program-item"><div class="program-value">${budget.stories}</div><div class="program-label">Stories / ${budget.buildingHeight} ft</div></div>
+        <div class="program-item"><div class="program-value">${budget.gsf.toLocaleString()}</div><div class="program-label">Gross SF</div></div>
+        ${budget.units
+            ? `<div class="program-item"><div class="program-value">${budget.units}</div><div class="program-label">Units</div></div>`
+            : `<div class="program-item"><div class="program-value">${budget.nsf.toLocaleString()}</div><div class="program-label">Net Leasable SF</div></div>`}
+        <div class="program-item"><div class="program-value">${budget.parkingSpaces}</div><div class="program-label">Parking Spaces</div></div>
+    </div></div>`;
+
+    // --- Conceptual Renderings ---
+    html += `<div class="analysis-section"><h3>Conceptual Massing Study</h3><div class="rendering-container">
+        ${generateSitePlanSVG(r.id, inp, budget)}
+        ${generateElevationSVG(r.id, inp, budget)}
+    </div></div>`;
+
+    // --- Line Item Budget ---
+    html += `<div class="analysis-section"><h3>Development Pro Forma &mdash; Line Item Budget</h3>
+    <table class="budget-table">
+        <tr class="section-header"><td colspan="2">LAND ACQUISITION</td></tr>
+        <tr><td>Land Cost (${inp.parcelSize.toLocaleString()} SF &times; $${(LAND_VALUE_PSF[inp.neighborhood]||150).toLocaleString()}/SF)</td><td>${fmt(budget.landCost)}</td></tr>
+
+        <tr class="section-header"><td colspan="2">HARD COSTS</td></tr>
+        <tr><td>Site Work &amp; Preparation ($18/SF land)</td><td>${fmt(budget.siteWork)}</td></tr>
+        ${budget.demolition > 0 ? `<tr><td>Demolition ($12/SF land)</td><td>${fmt(budget.demolition)}</td></tr>` : ''}
+        <tr><td>Building Construction (${budget.gsf.toLocaleString()} GSF &times; $${Math.round(budget.buildCostPSF).toLocaleString()}/SF)</td><td>${fmt(budget.construction)}</td></tr>
+        <tr><td>Parking Construction (${budget.parkingSpaces} spaces &times; $45,000)</td><td>${fmt(budget.parkingCost)}</td></tr>
+        <tr><td>Landscaping &amp; Hardscape (4%)</td><td>${fmt(budget.landscaping)}</td></tr>
+        <tr><td>Hard Cost Contingency (7%)</td><td>${fmt(budget.hardContingency)}</td></tr>
+        <tr class="subtotal"><td>Subtotal Hard Costs</td><td>${fmt(budget.totalHard)}</td></tr>
+
+        <tr class="section-header"><td colspan="2">SOFT COSTS</td></tr>
+        <tr><td>Architecture &amp; Engineering (10%)</td><td>${fmt(budget.archEng)}</td></tr>
+        <tr><td>Permits &amp; Impact Fees (6%)</td><td>${fmt(budget.permits)}</td></tr>
+        <tr><td>Legal &amp; Accounting (2.5%)</td><td>${fmt(budget.legal)}</td></tr>
+        <tr><td>Financing &amp; Interest Carry (5%)</td><td>${fmt(budget.financing)}</td></tr>
+        <tr><td>Marketing &amp; Leasing</td><td>${fmt(budget.marketing)}</td></tr>
+        <tr><td>Developer Fee (4%)</td><td>${fmt(budget.devFee)}</td></tr>
+        <tr class="subtotal"><td>Subtotal Soft Costs</td><td>${fmt(budget.totalSoft)}</td></tr>
+
+        <tr class="grand-total"><td>TOTAL DEVELOPMENT COST</td><td>${fmt(budget.totalDev)}</td></tr>
+    </table></div>`;
+
+    // --- Revenue & Returns ---
+    html += `<div class="analysis-section"><h3>Revenue &amp; Return Analysis</h3>
+    <div class="returns-grid">
+        <div class="return-card"><div class="return-value">${(budget.yieldOnCost * 100).toFixed(1)}%</div><div class="return-label">Yield on Cost</div></div>
+        <div class="return-card"><div class="return-value">${(budget.capRate * 100).toFixed(1)}%</div><div class="return-label">Market Cap Rate</div></div>
+        <div class="return-card"><div class="return-value">${(budget.devMargin * 100).toFixed(0)}%</div><div class="return-label">Development Margin</div></div>
+    </div>
+    <table class="budget-table">
+        <tr><td>Annual Gross Revenue (${budget.nsf.toLocaleString()} NSF &times; $${(REVENUE_PSF[r.id]||30)}/SF)</td><td>${fmt(budget.grossRevenue)}</td></tr>
+        <tr><td>Less: Operating Expenses (${(budget.params.opex * 100).toFixed(0)}%)</td><td>(${fmt(budget.opex)})</td></tr>
+        <tr class="subtotal"><td>Net Operating Income (NOI)</td><td>${fmt(budget.noi)}</td></tr>
+        <tr><td>Estimated Stabilized Value (NOI &divide; ${(budget.capRate * 100).toFixed(1)}% cap)</td><td>${fmt(budget.stabilizedValue)}</td></tr>
+        <tr class="subtotal"><td>Development Profit / (Loss)</td><td><strong>${fmt(budget.stabilizedValue - budget.totalDev)}</strong></td></tr>
+    </table></div>`;
+
+    // --- Timeline ---
+    html += `<div class="analysis-section"><h3>Development Timeline &mdash; ${totalMonths} Months</h3>
+    <div class="timeline-bar">
+        <div class="timeline-segment" style="flex:${tl.entitlement};background:#805ad5;">Entitle<br>${tl.entitlement}mo</div>
+        <div class="timeline-segment" style="flex:${tl.design};background:#3182ce;">Design<br>${tl.design}mo</div>
+        <div class="timeline-segment" style="flex:${tl.permits};background:#38a169;">Permits<br>${tl.permits}mo</div>
+        <div class="timeline-segment" style="flex:${tl.construction};background:#dd6b20;">Construction<br>${tl.construction}mo</div>
+        <div class="timeline-segment" style="flex:${tl.leaseup};background:#e53e3e;">Lease-Up<br>${tl.leaseup}mo</div>
+    </div>
+    <div class="timeline-legend">Entitlement &rarr; Design &rarr; Permits &rarr; Construction &rarr; Lease-Up / Stabilization</div>
+    </div>`;
+
+    // --- Legislation ---
+    if (r.legislation && r.legislation.length > 0) {
+        html += `<div class="analysis-section"><h3>Applicable California Housing Legislation</h3>
+        <div class="legislation-cards">
+            ${r.legislation.map(b => `<div class="legislation-card"><strong>${b.name}</strong><p>${b.description}</p></div>`).join('')}
+        </div></div>`;
+    }
+
+    // --- Risks ---
+    html += generateRisksHTML(r.id, inp);
+
+    // --- Disclaimer ---
+    html += `<div class="disclaimer" style="margin-top:1.5rem;">
+        <strong>Disclaimer:</strong> This pro forma is a preliminary estimate for educational purposes only. Actual development costs, revenues, and timelines vary significantly based on market conditions, design specifications, entitlement outcomes, and contractor pricing. All figures should be verified through independent feasibility analysis by qualified professionals before making investment decisions.
+    </div>`;
+
+    document.getElementById('modalBody').innerHTML = html;
+    document.getElementById('analysisModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    document.getElementById('analysisModal').scrollTop = 0;
+}
+
+function closeAnalysis() {
+    document.getElementById('analysisModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function printAnalysis() {
+    document.body.classList.add('printing-analysis');
+    window.print();
+    document.body.classList.remove('printing-analysis');
+}
+
+// Close modal on Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.getElementById('analysisModal').style.display === 'block') {
+        closeAnalysis();
+    }
+});
 </script>
 
 </body>
