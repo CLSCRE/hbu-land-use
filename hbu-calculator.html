@@ -924,6 +924,128 @@
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
+            body.printing-analysis .assumptions-panel { border-color: #ddd; background: #fafafa; }
+            body.printing-analysis .assumption-input { border: none; background: transparent; padding: 0; }
+            body.printing-analysis .leg-detail-overlay { display: none !important; }
+        }
+
+        /* Editable Assumptions Panel */
+        .assumptions-panel {
+            background: #fffdf5;
+            border: 1.5px solid var(--accent);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        .assumptions-panel h4 {
+            font-size: 0.88rem;
+            color: var(--accent-dark);
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+        }
+        .assumptions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+        }
+        @media (max-width: 600px) { .assumptions-grid { grid-template-columns: repeat(2, 1fr); } }
+        .assumption-field {
+            display: flex;
+            flex-direction: column;
+        }
+        .assumption-field label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 0.2rem;
+        }
+        .assumption-input {
+            width: 100%;
+            padding: 0.45rem 0.5rem;
+            border: 1.5px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--primary);
+            background: #fffdf5;
+            transition: border-color 0.2s;
+        }
+        .assumption-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(232,168,56,0.15);
+        }
+
+        /* Clickable Legislation Cards & Badges */
+        .legislation-card.clickable {
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .legislation-card.clickable:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .legislation-badge.clickable {
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .legislation-badge.clickable:hover {
+            background: #bee3f8;
+        }
+
+        /* Legislation Detail Popup */
+        .leg-detail-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .leg-detail-content {
+            background: white;
+            border-radius: 14px;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.25);
+            overflow: hidden;
+        }
+        .leg-detail-header {
+            background: linear-gradient(135deg, #2b6cb0, #4299e1);
+            color: white;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .leg-detail-header h3 { font-size: 1.1rem; margin: 0; }
+        .leg-detail-close {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .leg-detail-close:hover { background: rgba(255,255,255,0.35); }
+        .leg-detail-body {
+            padding: 1.5rem;
+        }
+        .leg-detail-body .leg-summary {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 0.75rem;
+            font-style: italic;
+        }
+        .leg-detail-body .leg-full {
+            font-size: 0.88rem;
+            color: var(--text);
+            line-height: 1.65;
         }
     </style>
 </head>
@@ -1157,6 +1279,9 @@
         <div class="modal-body" id="modalBody"></div>
     </div>
 </div>
+
+<!-- Legislation Detail Popup -->
+<div class="leg-detail-overlay" id="legDetailModal" style="display:none;" onclick="if(event.target===this)closeLegislationDetail();"></div>
 
 <footer>
     CLS CRE Brokerage &mdash; HBU Land Use Calculator &mdash; Los Angeles, CA<br>
@@ -1858,6 +1983,7 @@ const CA_HOUSING_LEGISLATION = [
         id: 'sb9',
         name: 'SB 9 (HOME Act)',
         description: 'By-right duplex and lot splits on single-family parcels statewide.',
+        detail: 'The California HOME Act (2021) allows property owners to split single-family lots and build duplexes by-right, bypassing traditional zoning restrictions. Applies to parcels of at least 2,400 SF in urbanized areas, not in historic districts, fire hazard zones, or conservation areas. Each resulting lot must be at least 1,200 SF. Owner-occupancy is required for 3 years on one of the units if a lot split is pursued. This effectively doubles the allowed density on R1-zoned land without requiring a zone change or CUP. Impact: Significant for small infill developers targeting R1 neighborhoods.',
         applies: (useId, inp) => inp.zoning === 'R1' && inp.parcelSize >= 2400 && ['duplex', 'adu'].includes(useId),
         densityBonus: 1.0,
         parkingReduction: 0,
@@ -1868,6 +1994,7 @@ const CA_HOUSING_LEGISLATION = [
         id: 'ab2011',
         name: 'AB 2011',
         description: 'By-right affordable housing on commercially zoned land.',
+        detail: 'AB 2011 (2022) creates a streamlined, ministerial (by-right) approval pathway for 100% affordable housing on commercially zoned land. Projects must pay prevailing wages and meet affordability requirements — mixed-income projects require a percentage of units at below-market rents. Applies to sites zoned for office, retail, or parking that are not in industrial zones, coastal zones, or high fire areas. Overrides local zoning that would otherwise prohibit residential uses on commercial parcels. Impact: Unlocks large swaths of commercial land for affordable housing development across California.',
         applies: (useId, inp) => ['C1','C1.5','C2','C4','C5','CM'].includes(inp.zoning) && ['multifamily_low','multifamily_mid','multifamily_high','mixeduse'].includes(useId),
         densityBonus: 0.35,
         parkingReduction: 0,
@@ -1878,6 +2005,7 @@ const CA_HOUSING_LEGISLATION = [
         id: 'sb6',
         name: 'SB 6',
         description: 'Market-rate housing permitted on commercially zoned land.',
+        detail: 'SB 6, the Middle Class Housing Act (2022), allows market-rate residential development on commercially zoned land, provided the project meets specified objective design standards and at least 20% of units are affordable. Unlike AB 2011, SB 6 allows market-rate projects but requires the local approval process. Projects must comply with local height and FAR limits. Applies to parcels zoned for office, retail, or parking uses. Impact: Enables market-rate housing on commercial corridors where residential was previously prohibited.',
         applies: (useId, inp) => ['C1','C1.5','C2','C4','C5','CM'].includes(inp.zoning) && ['multifamily_low','multifamily_mid','multifamily_high','mixeduse'].includes(useId),
         densityBonus: 0.25,
         parkingReduction: 0,
@@ -1888,6 +2016,7 @@ const CA_HOUSING_LEGISLATION = [
         id: 'sb423',
         name: 'SB 423 (Streamlined)',
         description: 'Streamlined ministerial approval for multifamily projects meeting affordability thresholds.',
+        detail: 'SB 423 (2023) extends and strengthens SB 35\'s streamlined ministerial approval process for multifamily housing projects meeting affordability thresholds. Projects with 10%+ affordable units in jurisdictions that have not met housing production goals qualify for ministerial approval. Eliminates discretionary review, CEQA requirements, and public hearings for qualifying projects. Applies to urban infill sites in areas meeting RHNA progress standards. Impact: Dramatically reduces entitlement timelines and costs for projects meeting affordability thresholds.',
         applies: (useId, inp) => ['R2','R3','R4','R5','C1.5','C2','C4','TOD'].includes(inp.zoning) && ['multifamily_low','multifamily_mid','multifamily_high','mixeduse'].includes(useId),
         densityBonus: 0,
         parkingReduction: 0,
@@ -1898,6 +2027,7 @@ const CA_HOUSING_LEGISLATION = [
         id: 'ab2345',
         name: 'AB 2345 (Density Bonus)',
         description: 'Up to 50% density bonus and reduced parking for projects including affordable units.',
+        detail: 'AB 2345 (2020) enhances California\'s Density Bonus Law, increasing the maximum density bonus from 35% to 50% for projects including affordable units. Provides up to 4 incentives or concessions such as reduced setbacks, increased height, and reduced parking. Parking minimums reduced to 0.5 spaces per unit for projects near transit. Applies to all residential and mixed-use zones with affordable set-asides meeting specified thresholds. Impact: One of the most widely used tools by LA developers to significantly increase project density and reduce parking requirements.',
         applies: (useId, inp) => ['R2','R3','R4','R5','C1','C1.5','C2','C4','TOD'].includes(inp.zoning) && ['duplex','multifamily_low','multifamily_mid','multifamily_high','mixeduse','senior'].includes(useId),
         densityBonus: 0.50,
         parkingReduction: 0.20,
@@ -1908,6 +2038,7 @@ const CA_HOUSING_LEGISLATION = [
         id: 'ab1763',
         name: 'AB 1763',
         description: 'Unlimited density for 100% affordable housing projects near transit.',
+        detail: 'AB 1763 (2019) provides unlimited density for 100% affordable housing projects located within half a mile of a major transit stop. Eliminates maximum FAR and unit count restrictions entirely. Parking requirements are set to zero for projects within half a mile of transit. Projects must be 100% affordable with an allowance for manager units. Impact: Enables very high-density affordable development near transit without the typical density caps, making transit-adjacent sites extremely valuable for affordable housing developers.',
         applies: (useId, inp) => ['adjacent','near'].includes(inp.transit) && ['multifamily_low','multifamily_mid','multifamily_high','senior'].includes(useId),
         densityBonus: 1.0,
         parkingReduction: 0,
@@ -1918,6 +2049,7 @@ const CA_HOUSING_LEGISLATION = [
         id: 'toc',
         name: 'TOC (LA Local)',
         description: 'Transit Oriented Communities incentives — up to 80% density bonus and parking reductions near transit.',
+        detail: 'The Transit Oriented Communities (TOC) program is an LA-specific incentive providing density bonuses of up to 80% and significant parking reductions for housing projects near transit. Projects are tiered by proximity: Tier 1 (within 750 ft of a major stop) through Tier 4 (within 2,640 ft), with each tier providing increasing incentives. Affordable units must be included at specified set-aside levels. Impact: The most impactful local density incentive in Los Angeles, enabling significantly larger buildings near Metro stations.',
         applies: (useId, inp) => ['adjacent','near'].includes(inp.transit) && ['multifamily_low','multifamily_mid','multifamily_high','mixeduse'].includes(useId),
         densityBonus: 0.80,
         parkingReduction: 0.30,
@@ -1928,6 +2060,7 @@ const CA_HOUSING_LEGISLATION = [
         id: 'ab2097',
         name: 'AB 2097',
         description: 'Eliminates minimum parking requirements within 1/2 mile of major transit stops.',
+        detail: 'AB 2097 (2022) eliminates minimum parking requirements for any development within half a mile of a major transit stop in California. Applies to all land use types — residential, commercial, and mixed-use — not just affordable housing. Local jurisdictions cannot impose minimum parking requirements in these areas. Developers can still choose to build parking, but it is not mandated. Impact: Reduces development costs by $30,000 to $80,000 per eliminated parking space and enables more efficient site utilization near transit.',
         applies: (useId, inp) => ['adjacent','near'].includes(inp.transit),
         densityBonus: 0,
         parkingReduction: 1.0,
@@ -1938,6 +2071,7 @@ const CA_HOUSING_LEGISLATION = [
         id: 'adu_reform',
         name: 'ADU Reform (AB 68/SB 13/AB 881)',
         description: 'By-right ADU construction on residential lots; no parking required near transit.',
+        detail: 'California\'s ADU reform package (2019-2020) established a comprehensive by-right framework for Accessory Dwelling Units on residential lots. AB 68 allows at least one ADU on any residential lot regardless of local zoning. SB 13 eliminates impact fees for ADUs under 750 SF and caps fees for larger units. AB 881 prohibits local agencies from requiring owner-occupancy or imposing minimum lot sizes. No additional parking is required near transit. Impact: Has generated tens of thousands of new housing units statewide, particularly in single-family neighborhoods.',
         applies: (useId, inp) => ['R1','R2','R3','R4','R5'].includes(inp.zoning) && useId === 'adu',
         densityBonus: 0,
         parkingReduction: 0,
@@ -1948,6 +2082,7 @@ const CA_HOUSING_LEGISLATION = [
         id: 'sb478',
         name: 'SB 478',
         description: 'Sets minimum 1.0 FAR for multifamily projects on parcels up to 10,000 SF.',
+        detail: 'SB 478 (2021) establishes a minimum floor area ratio (FAR) of 1.0 for multifamily housing projects on parcels of 10,000 SF or less in areas zoned for at least two residential units. Prohibits local jurisdictions from imposing lot coverage limits below 60% on qualifying parcels. Prevents cities from using low FAR limits to effectively block apartment construction on small lots. Applies only to urban infill locations. Impact: Ensures meaningful development potential on small multifamily parcels that might otherwise be restricted by overly conservative FAR limits.',
         applies: (useId, inp) => inp.parcelSize <= 10000 && ['R3','R4','R5','C1.5','C2','C4','TOD'].includes(inp.zoning) && ['multifamily_low','multifamily_mid','multifamily_high'].includes(useId),
         densityBonus: 0,
         parkingReduction: 0,
@@ -1959,6 +2094,7 @@ const CA_HOUSING_LEGISLATION = [
         id: 'ed1',
         name: 'ED1 (LA Local)',
         description: 'Executive Directive 1 — streamlined approvals and density bonus for 100% affordable and senior housing.',
+        detail: 'Executive Directive 1 (2022) is an LA mayoral order streamlining approvals for 100% affordable and senior housing projects in Los Angeles. Provides expedited processing, priority permitting, and fee waivers for qualifying projects. Includes density bonus provisions beyond state law for affordable projects. Directs all city departments to prioritize affordable housing applications and reduce bureaucratic barriers. Impact: Significantly reduces entitlement timelines for affordable housing, with some projects receiving permits in weeks rather than months.',
         applies: (useId, inp) => ['multifamily_low','multifamily_mid','multifamily_high','senior'].includes(useId),
         densityBonus: 0.35,
         parkingReduction: 0,
@@ -1969,6 +2105,7 @@ const CA_HOUSING_LEGISLATION = [
         id: 'sb684',
         name: 'SB 684',
         description: 'By-right approval for 10+ unit housing projects on commercially zoned land.',
+        detail: 'SB 684 (2023) establishes a by-right (ministerial) approval pathway for housing projects of 10 or more units on commercially zoned land. Projects must meet objective design and development standards. Requires compliance with density, height, and FAR limits as defined by local jurisdictions. Overrides local discretionary review requirements and CEQA for qualifying projects on infill sites. Impact: Provides certainty and speed for developers building housing on commercial sites, reducing entitlement risk and project timelines substantially.',
         applies: (useId, inp) => ['C1','C1.5','C2','C4','C5','CM'].includes(inp.zoning) && ['multifamily_low','multifamily_mid','multifamily_high','mixeduse'].includes(useId),
         densityBonus: 0,
         parkingReduction: 0,
@@ -2334,7 +2471,7 @@ function renderResults(results, inp) {
         const legBadges = r.legislation && r.legislation.length > 0
             ? `<div class="legislation-badges">
                    <div class="leg-label">Applicable Legislation</div>
-                   ${r.legislation.map(b => `<span class="legislation-badge">${b.name}</span>`).join('')}
+                   ${r.legislation.map(b => `<span class="legislation-badge clickable" onclick="event.stopPropagation();showLegislationDetail('${b.id}')">${b.name}</span>`).join('')}
                </div>`
             : '';
 
@@ -2398,7 +2535,7 @@ function renderResults(results, inp) {
         let legHTML = '<h3>Applicable California Housing Legislation</h3>';
         legHTML += '<div class="legislation-cards">';
         for (const bill of allLegislation.values()) {
-            legHTML += `<div class="legislation-card"><strong>${bill.name}</strong><p>${bill.description}</p></div>`;
+            legHTML += `<div class="legislation-card clickable" onclick="showLegislationDetail('${bill.id}')"><strong>${bill.name}</strong><p>${bill.description}</p></div>`;
         }
         legHTML += '</div>';
         legSection.innerHTML = legHTML;
@@ -2679,12 +2816,278 @@ function generateRisksHTML(useId, inp) {
     return html;
 }
 
+
+// ============================================================
+//  EDITABLE ANALYSIS — STATE, COMPUTE, RENDER HELPERS
+// ============================================================
+
+let analysisState = {
+    resultIndex: null,
+    useId: null,
+    inp: null,
+    effects: null,
+    legislation: null,
+    assumptions: null,
+};
+
+function getDefaultAssumptions(useId, inp, effects) {
+    const params = BUILDING_PARAMS[useId];
+    const baseFAR = FAR_TYPICAL[useId] || 1.0;
+    let far = baseFAR;
+    if (effects) {
+        far = baseFAR * (1 + effects.densityBonus);
+        if (effects.minFAR > 0) far = Math.max(far, effects.minFAR);
+    }
+
+    const gsf = Math.round(inp.parcelSize * far);
+    const nsf = Math.round(gsf * params.eff);
+    const hasUnits = !!params.unitSF;
+    const unitsOrNSF = hasUnits ? Math.max(1, Math.floor(nsf / params.unitSF)) : nsf;
+
+    const baseParkRatio = params.parkRatio || 0;
+    const parkReduction = effects ? effects.parkingReduction : 0;
+    let parkingSpaces;
+    if (useId === 'parking') {
+        parkingSpaces = Math.round(gsf / 350);
+    } else if (hasUnits) {
+        parkingSpaces = Math.max(0, Math.ceil(unitsOrNSF * baseParkRatio * (1 - parkReduction)));
+    } else {
+        parkingSpaces = Math.max(0, Math.ceil(gsf / 1000 * baseParkRatio * (1 - parkReduction)));
+    }
+
+    let buildCostPSF = BUILD_COST_PSF[useId] || 300;
+    if (effects && effects.parkingReduction > 0) {
+        buildCostPSF = Math.round(buildCostPSF * (1 - effects.parkingReduction * 0.18));
+    }
+
+    return {
+        far: parseFloat(far.toFixed(2)),
+        unitsOrNSF,
+        parkingSpaces,
+        buildCostPSF: Math.round(buildCostPSF),
+        landValuePSF: LAND_VALUE_PSF[inp.neighborhood] || 150,
+        revenuePSF: REVENUE_PSF[useId] || 30,
+        opexPct: Math.round(params.opex * 100),
+        capRatePct: parseFloat((params.cap * 100).toFixed(1)),
+        parkingCostPerSpace: 45000,
+    };
+}
+
+function computeFromAssumptions(useId, inp, assumptions, effects) {
+    const params = BUILDING_PARAMS[useId];
+    const far = assumptions.far;
+    const gsf = Math.round(inp.parcelSize * far);
+    const nsf = Math.round(gsf * params.eff);
+    const stories = Math.max(params.stories, Math.ceil(gsf / (inp.parcelSize * 0.7)));
+    const buildingHeight = stories * params.floorH;
+    const buildingFootprint = Math.min(Math.round(inp.parcelSize * 0.7), Math.round(gsf / stories));
+
+    const hasUnits = !!params.unitSF;
+    const units = hasUnits ? assumptions.unitsOrNSF : null;
+    // For revenue: use user-edited NSF for non-unit uses, or units * unitSF for unit-based uses
+    const revenueNSF = hasUnits ? assumptions.unitsOrNSF * params.unitSF : assumptions.unitsOrNSF;
+    const parkingSpaces = assumptions.parkingSpaces;
+
+    const landValuePSF = assumptions.landValuePSF;
+    const landCost = inp.parcelSize * landValuePSF;
+
+    // Hard costs
+    const siteWork = inp.parcelSize * 18;
+    const demolition = (inp.siteCondition === 'demolition') ? inp.parcelSize * 12 : 0;
+    const buildCostPSF = assumptions.buildCostPSF;
+    const construction = gsf * buildCostPSF;
+    const parkingCost = parkingSpaces * assumptions.parkingCostPerSpace;
+    const landscaping = Math.round(construction * 0.04);
+    const hardContingency = Math.round((siteWork + demolition + construction + parkingCost + landscaping) * 0.07);
+    const totalHard = siteWork + demolition + construction + parkingCost + landscaping + hardContingency;
+
+    // Soft costs
+    const archEng = Math.round(totalHard * 0.10);
+    const permits = Math.round(totalHard * 0.06);
+    const legal = Math.round(totalHard * 0.025);
+    const financing = Math.round((landCost + totalHard) * 0.05);
+    const revenuePSF = assumptions.revenuePSF;
+    const marketing = Math.round(revenueNSF * revenuePSF * 0.025);
+    const devFee = Math.round((totalHard + archEng + permits) * 0.04);
+    const softCostMult = effects && effects.softCostReduction > 0 ? (1 - effects.softCostReduction * 0.20) : 1;
+    const totalSoft = Math.round((archEng + permits + legal + financing + marketing + devFee) * softCostMult);
+
+    const totalDev = landCost + totalHard + totalSoft;
+
+    // Revenue & returns — use revenueNSF so user edits to units/NSF flow through
+    const grossRevenue = revenueNSF * revenuePSF;
+    const opexRate = assumptions.opexPct / 100;
+    const opex = Math.round(grossRevenue * opexRate);
+    const noi = grossRevenue - opex;
+    const capRate = assumptions.capRatePct / 100;
+    const stabilizedValue = capRate > 0 ? Math.round(noi / capRate) : 0;
+    const yieldOnCost = totalDev > 0 ? noi / totalDev : 0;
+    const devMargin = totalDev > 0 ? (stabilizedValue - totalDev) / totalDev : 0;
+
+    return {
+        gsf, nsf, revenueNSF, stories, buildingHeight, buildingFootprint, units, parkingSpaces, far,
+        landCost, siteWork, demolition, construction, buildCostPSF, parkingCost, landscaping, hardContingency, totalHard,
+        archEng, permits, legal, financing, marketing, devFee, totalSoft,
+        totalDev,
+        grossRevenue, opex, noi, capRate, stabilizedValue, yieldOnCost, devMargin,
+        params, landValuePSF, revenuePSF, parkingCostPerSpace: assumptions.parkingCostPerSpace,
+    };
+}
+
+function renderProgramDisplay(computed) {
+    return `<div class="program-grid">
+        <div class="program-item"><div class="program-value">${computed.stories}</div><div class="program-label">Stories / ${computed.buildingHeight} ft</div></div>
+        <div class="program-item"><div class="program-value">${computed.gsf.toLocaleString()}</div><div class="program-label">Gross SF</div></div>
+        ${computed.units
+            ? `<div class="program-item"><div class="program-value">${computed.units}</div><div class="program-label">Units</div></div>`
+            : `<div class="program-item"><div class="program-value">${computed.nsf.toLocaleString()}</div><div class="program-label">Net Leasable SF</div></div>`}
+        <div class="program-item"><div class="program-value">${computed.parkingSpaces}</div><div class="program-label">Parking Spaces</div></div>
+    </div>`;
+}
+
+function renderAssumptions(assumptions, hasUnits) {
+    return `<div class="assumptions-panel">
+        <h4>Key Assumptions (editable)</h4>
+        <div class="assumptions-grid">
+            <div class="assumption-field">
+                <label>FAR</label>
+                <input type="number" class="assumption-input" id="a-far" step="0.1" min="0.1" max="20" value="${assumptions.far}" oninput="recalcAnalysis()">
+            </div>
+            <div class="assumption-field">
+                <label>${hasUnits ? 'Units' : 'Net Leasable SF'}</label>
+                <input type="number" class="assumption-input" id="a-unitsOrNSF" step="1" min="1" value="${assumptions.unitsOrNSF}" oninput="recalcAnalysis()">
+            </div>
+            <div class="assumption-field">
+                <label>Parking Spaces</label>
+                <input type="number" class="assumption-input" id="a-parkingSpaces" step="1" min="0" value="${assumptions.parkingSpaces}" oninput="recalcAnalysis()">
+            </div>
+            <div class="assumption-field">
+                <label>Build Cost $/SF</label>
+                <input type="number" class="assumption-input" id="a-buildCostPSF" step="5" min="10" value="${assumptions.buildCostPSF}" oninput="recalcAnalysis()">
+            </div>
+            <div class="assumption-field">
+                <label>Land Value $/SF</label>
+                <input type="number" class="assumption-input" id="a-landValuePSF" step="5" min="1" value="${assumptions.landValuePSF}" oninput="recalcAnalysis()">
+            </div>
+            <div class="assumption-field">
+                <label>Revenue $/SF</label>
+                <input type="number" class="assumption-input" id="a-revenuePSF" step="1" min="1" value="${assumptions.revenuePSF}" oninput="recalcAnalysis()">
+            </div>
+            <div class="assumption-field">
+                <label>OpEx %</label>
+                <input type="number" class="assumption-input" id="a-opexPct" step="1" min="0" max="100" value="${assumptions.opexPct}" oninput="recalcAnalysis()">
+            </div>
+            <div class="assumption-field">
+                <label>Cap Rate %</label>
+                <input type="number" class="assumption-input" id="a-capRatePct" step="0.1" min="0.1" max="20" value="${assumptions.capRatePct}" oninput="recalcAnalysis()">
+            </div>
+            <div class="assumption-field">
+                <label>Parking $/Space</label>
+                <input type="number" class="assumption-input" id="a-parkingCostPerSpace" step="1000" min="0" value="${assumptions.parkingCostPerSpace}" oninput="recalcAnalysis()">
+            </div>
+        </div>
+    </div>`;
+}
+
+function renderBudgetTable(computed, inp) {
+    return `<table class="budget-table">
+        <tr class="section-header"><td colspan="2">LAND ACQUISITION</td></tr>
+        <tr><td>Land Cost (${inp.parcelSize.toLocaleString()} SF &times; $${computed.landValuePSF.toLocaleString()}/SF)</td><td>${fmt(computed.landCost)}</td></tr>
+
+        <tr class="section-header"><td colspan="2">HARD COSTS</td></tr>
+        <tr><td>Site Work &amp; Preparation ($18/SF land)</td><td>${fmt(computed.siteWork)}</td></tr>
+        ${computed.demolition > 0 ? `<tr><td>Demolition ($12/SF land)</td><td>${fmt(computed.demolition)}</td></tr>` : ''}
+        <tr><td>Building Construction (${computed.gsf.toLocaleString()} GSF &times; $${Math.round(computed.buildCostPSF).toLocaleString()}/SF)</td><td>${fmt(computed.construction)}</td></tr>
+        <tr><td>Parking Construction (${computed.parkingSpaces} spaces &times; $${computed.parkingCostPerSpace.toLocaleString()})</td><td>${fmt(computed.parkingCost)}</td></tr>
+        <tr><td>Landscaping &amp; Hardscape (4%)</td><td>${fmt(computed.landscaping)}</td></tr>
+        <tr><td>Hard Cost Contingency (7%)</td><td>${fmt(computed.hardContingency)}</td></tr>
+        <tr class="subtotal"><td>Subtotal Hard Costs</td><td>${fmt(computed.totalHard)}</td></tr>
+
+        <tr class="section-header"><td colspan="2">SOFT COSTS</td></tr>
+        <tr><td>Architecture &amp; Engineering (10%)</td><td>${fmt(computed.archEng)}</td></tr>
+        <tr><td>Permits &amp; Impact Fees (6%)</td><td>${fmt(computed.permits)}</td></tr>
+        <tr><td>Legal &amp; Accounting (2.5%)</td><td>${fmt(computed.legal)}</td></tr>
+        <tr><td>Financing &amp; Interest Carry (5%)</td><td>${fmt(computed.financing)}</td></tr>
+        <tr><td>Marketing &amp; Leasing</td><td>${fmt(computed.marketing)}</td></tr>
+        <tr><td>Developer Fee (4%)</td><td>${fmt(computed.devFee)}</td></tr>
+        <tr class="subtotal"><td>Subtotal Soft Costs</td><td>${fmt(computed.totalSoft)}</td></tr>
+
+        <tr class="grand-total"><td>TOTAL DEVELOPMENT COST</td><td>${fmt(computed.totalDev)}</td></tr>
+    </table>`;
+}
+
+function renderReturnsSection(computed) {
+    return `<div class="returns-grid">
+        <div class="return-card"><div class="return-value">${(computed.yieldOnCost * 100).toFixed(1)}%</div><div class="return-label">Yield on Cost</div></div>
+        <div class="return-card"><div class="return-value">${(computed.capRate * 100).toFixed(1)}%</div><div class="return-label">Market Cap Rate</div></div>
+        <div class="return-card"><div class="return-value">${(computed.devMargin * 100).toFixed(0)}%</div><div class="return-label">Development Margin</div></div>
+    </div>
+    <table class="budget-table">
+        <tr><td>Annual Gross Revenue (${computed.revenueNSF.toLocaleString()} NSF &times; $${computed.revenuePSF}/SF)</td><td>${fmt(computed.grossRevenue)}</td></tr>
+        <tr><td>Less: Operating Expenses (${computed.grossRevenue > 0 ? Math.round(computed.opex / computed.grossRevenue * 100) : 0}%)</td><td>(${fmt(computed.opex)})</td></tr>
+        <tr class="subtotal"><td>Net Operating Income (NOI)</td><td>${fmt(computed.noi)}</td></tr>
+        <tr><td>Estimated Stabilized Value (NOI &divide; ${(computed.capRate * 100).toFixed(1)}% cap)</td><td>${fmt(computed.stabilizedValue)}</td></tr>
+        <tr class="subtotal"><td>Development Profit / (Loss)</td><td><strong>${fmt(computed.stabilizedValue - computed.totalDev)}</strong></td></tr>
+    </table>`;
+}
+
+function renderSVGs(useId, inp, computed) {
+    return `${generateSitePlanSVG(useId, inp, computed)}
+        ${generateElevationSVG(useId, inp, computed)}`;
+}
+
+function recalcAnalysis() {
+    const st = analysisState;
+    if (!st.useId || !st.inp) return;
+
+    const assumptions = {
+        far: parseFloat(document.getElementById('a-far').value) || st.assumptions.far,
+        unitsOrNSF: parseInt(document.getElementById('a-unitsOrNSF').value) || st.assumptions.unitsOrNSF,
+        parkingSpaces: parseInt(document.getElementById('a-parkingSpaces').value) || 0,
+        buildCostPSF: parseFloat(document.getElementById('a-buildCostPSF').value) || st.assumptions.buildCostPSF,
+        landValuePSF: parseFloat(document.getElementById('a-landValuePSF').value) || st.assumptions.landValuePSF,
+        revenuePSF: parseFloat(document.getElementById('a-revenuePSF').value) || st.assumptions.revenuePSF,
+        opexPct: parseFloat(document.getElementById('a-opexPct').value) || 0,
+        capRatePct: parseFloat(document.getElementById('a-capRatePct').value) || st.assumptions.capRatePct,
+        parkingCostPerSpace: parseFloat(document.getElementById('a-parkingCostPerSpace').value) || 0,
+    };
+
+    st.assumptions = assumptions;
+    const computed = computeFromAssumptions(st.useId, st.inp, assumptions, st.effects);
+
+    const progEl = document.getElementById('sect-program');
+    if (progEl) progEl.innerHTML = renderProgramDisplay(computed);
+
+    const budgetEl = document.getElementById('sect-budget');
+    if (budgetEl) budgetEl.innerHTML = renderBudgetTable(computed, st.inp);
+
+    const returnsEl = document.getElementById('sect-returns');
+    if (returnsEl) returnsEl.innerHTML = renderReturnsSection(computed);
+
+    const svgEl = document.getElementById('sect-svg');
+    if (svgEl) svgEl.innerHTML = renderSVGs(st.useId, st.inp, computed);
+}
+
+
 function openAnalysis(resultIndex) {
     if (!lastResults || !lastInputs) return;
     const r = lastResults[resultIndex];
     const inp = lastInputs;
     const effects = stackLegislationEffects(r.legislation || []);
-    const budget = generateBudget(r.id, inp, effects);
+    const hasUnits = !!BUILDING_PARAMS[r.id].unitSF;
+
+    // Set up analysisState
+    const assumptions = getDefaultAssumptions(r.id, inp, effects);
+    analysisState = {
+        resultIndex,
+        useId: r.id,
+        inp,
+        effects,
+        legislation: r.legislation || [],
+        assumptions,
+    };
+
+    const computed = computeFromAssumptions(r.id, inp, assumptions, effects);
     const tl = TIMELINE_MONTHS[r.id] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
     const totalMonths = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
     const neighborhoodText = document.getElementById('neighborhood').selectedOptions[0].text;
@@ -2695,65 +3098,22 @@ function openAnalysis(resultIndex) {
 
     let html = '';
 
-    // --- Building Program ---
-    html += `<div class="analysis-section"><h3>Building Program</h3><div class="program-grid">
-        <div class="program-item"><div class="program-value">${budget.stories}</div><div class="program-label">Stories / ${budget.buildingHeight} ft</div></div>
-        <div class="program-item"><div class="program-value">${budget.gsf.toLocaleString()}</div><div class="program-label">Gross SF</div></div>
-        ${budget.units
-            ? `<div class="program-item"><div class="program-value">${budget.units}</div><div class="program-label">Units</div></div>`
-            : `<div class="program-item"><div class="program-value">${budget.nsf.toLocaleString()}</div><div class="program-label">Net Leasable SF</div></div>`}
-        <div class="program-item"><div class="program-value">${budget.parkingSpaces}</div><div class="program-label">Parking Spaces</div></div>
-    </div></div>`;
+    // --- Building Program (re-rendered on assumption change) ---
+    html += `<div class="analysis-section"><h3>Building Program</h3><div id="sect-program">${renderProgramDisplay(computed)}</div></div>`;
 
-    // --- Conceptual Renderings ---
-    html += `<div class="analysis-section"><h3>Conceptual Massing Study</h3><div class="rendering-container">
-        ${generateSitePlanSVG(r.id, inp, budget)}
-        ${generateElevationSVG(r.id, inp, budget)}
-    </div></div>`;
+    // --- Key Assumptions (editable — NOT re-rendered) ---
+    html += `<div class="analysis-section">${renderAssumptions(assumptions, hasUnits)}</div>`;
 
-    // --- Line Item Budget ---
-    html += `<div class="analysis-section"><h3>Development Pro Forma &mdash; Line Item Budget</h3>
-    <table class="budget-table">
-        <tr class="section-header"><td colspan="2">LAND ACQUISITION</td></tr>
-        <tr><td>Land Cost (${inp.parcelSize.toLocaleString()} SF &times; $${(LAND_VALUE_PSF[inp.neighborhood]||150).toLocaleString()}/SF)</td><td>${fmt(budget.landCost)}</td></tr>
+    // --- Conceptual Renderings (re-rendered) ---
+    html += `<div class="analysis-section"><h3>Conceptual Massing Study</h3><div class="rendering-container" id="sect-svg">${renderSVGs(r.id, inp, computed)}</div></div>`;
 
-        <tr class="section-header"><td colspan="2">HARD COSTS</td></tr>
-        <tr><td>Site Work &amp; Preparation ($18/SF land)</td><td>${fmt(budget.siteWork)}</td></tr>
-        ${budget.demolition > 0 ? `<tr><td>Demolition ($12/SF land)</td><td>${fmt(budget.demolition)}</td></tr>` : ''}
-        <tr><td>Building Construction (${budget.gsf.toLocaleString()} GSF &times; $${Math.round(budget.buildCostPSF).toLocaleString()}/SF)</td><td>${fmt(budget.construction)}</td></tr>
-        <tr><td>Parking Construction (${budget.parkingSpaces} spaces &times; $45,000)</td><td>${fmt(budget.parkingCost)}</td></tr>
-        <tr><td>Landscaping &amp; Hardscape (4%)</td><td>${fmt(budget.landscaping)}</td></tr>
-        <tr><td>Hard Cost Contingency (7%)</td><td>${fmt(budget.hardContingency)}</td></tr>
-        <tr class="subtotal"><td>Subtotal Hard Costs</td><td>${fmt(budget.totalHard)}</td></tr>
+    // --- Line Item Budget (re-rendered) ---
+    html += `<div class="analysis-section"><h3>Development Pro Forma &mdash; Line Item Budget</h3><div id="sect-budget">${renderBudgetTable(computed, inp)}</div></div>`;
 
-        <tr class="section-header"><td colspan="2">SOFT COSTS</td></tr>
-        <tr><td>Architecture &amp; Engineering (10%)</td><td>${fmt(budget.archEng)}</td></tr>
-        <tr><td>Permits &amp; Impact Fees (6%)</td><td>${fmt(budget.permits)}</td></tr>
-        <tr><td>Legal &amp; Accounting (2.5%)</td><td>${fmt(budget.legal)}</td></tr>
-        <tr><td>Financing &amp; Interest Carry (5%)</td><td>${fmt(budget.financing)}</td></tr>
-        <tr><td>Marketing &amp; Leasing</td><td>${fmt(budget.marketing)}</td></tr>
-        <tr><td>Developer Fee (4%)</td><td>${fmt(budget.devFee)}</td></tr>
-        <tr class="subtotal"><td>Subtotal Soft Costs</td><td>${fmt(budget.totalSoft)}</td></tr>
+    // --- Revenue & Returns (re-rendered) ---
+    html += `<div class="analysis-section"><h3>Revenue &amp; Return Analysis</h3><div id="sect-returns">${renderReturnsSection(computed)}</div></div>`;
 
-        <tr class="grand-total"><td>TOTAL DEVELOPMENT COST</td><td>${fmt(budget.totalDev)}</td></tr>
-    </table></div>`;
-
-    // --- Revenue & Returns ---
-    html += `<div class="analysis-section"><h3>Revenue &amp; Return Analysis</h3>
-    <div class="returns-grid">
-        <div class="return-card"><div class="return-value">${(budget.yieldOnCost * 100).toFixed(1)}%</div><div class="return-label">Yield on Cost</div></div>
-        <div class="return-card"><div class="return-value">${(budget.capRate * 100).toFixed(1)}%</div><div class="return-label">Market Cap Rate</div></div>
-        <div class="return-card"><div class="return-value">${(budget.devMargin * 100).toFixed(0)}%</div><div class="return-label">Development Margin</div></div>
-    </div>
-    <table class="budget-table">
-        <tr><td>Annual Gross Revenue (${budget.nsf.toLocaleString()} NSF &times; $${(REVENUE_PSF[r.id]||30)}/SF)</td><td>${fmt(budget.grossRevenue)}</td></tr>
-        <tr><td>Less: Operating Expenses (${(budget.params.opex * 100).toFixed(0)}%)</td><td>(${fmt(budget.opex)})</td></tr>
-        <tr class="subtotal"><td>Net Operating Income (NOI)</td><td>${fmt(budget.noi)}</td></tr>
-        <tr><td>Estimated Stabilized Value (NOI &divide; ${(budget.capRate * 100).toFixed(1)}% cap)</td><td>${fmt(budget.stabilizedValue)}</td></tr>
-        <tr class="subtotal"><td>Development Profit / (Loss)</td><td><strong>${fmt(budget.stabilizedValue - budget.totalDev)}</strong></td></tr>
-    </table></div>`;
-
-    // --- Timeline ---
+    // --- Timeline (static) ---
     html += `<div class="analysis-section"><h3>Development Timeline &mdash; ${totalMonths} Months</h3>
     <div class="timeline-bar">
         <div class="timeline-segment" style="flex:${tl.entitlement};background:#805ad5;">Entitle<br>${tl.entitlement}mo</div>
@@ -2765,11 +3125,11 @@ function openAnalysis(resultIndex) {
     <div class="timeline-legend">Entitlement &rarr; Design &rarr; Permits &rarr; Construction &rarr; Lease-Up / Stabilization</div>
     </div>`;
 
-    // --- Legislation ---
+    // --- Legislation (with clickable cards) ---
     if (r.legislation && r.legislation.length > 0) {
         html += `<div class="analysis-section"><h3>Applicable California Housing Legislation</h3>
         <div class="legislation-cards">
-            ${r.legislation.map(b => `<div class="legislation-card"><strong>${b.name}</strong><p>${b.description}</p></div>`).join('')}
+            ${r.legislation.map(b => `<div class="legislation-card clickable" onclick="showLegislationDetail('${b.id}')"><strong>${b.name}</strong><p>${b.description}</p></div>`).join('')}
         </div></div>`;
     }
 
@@ -2798,10 +3158,45 @@ function printAnalysis() {
     document.body.classList.remove('printing-analysis');
 }
 
-// Close modal on Escape key
+
+// ============================================================
+//  LEGISLATION DETAIL POPUP
+// ============================================================
+
+function showLegislationDetail(billId) {
+    const bill = CA_HOUSING_LEGISLATION.find(b => b.id === billId);
+    if (!bill) return;
+
+    const modal = document.getElementById('legDetailModal');
+    modal.innerHTML = `<div class="leg-detail-content">
+        <div class="leg-detail-header">
+            <h3>${bill.name}</h3>
+            <button type="button" class="leg-detail-close" onclick="closeLegislationDetail()">&times;</button>
+        </div>
+        <div class="leg-detail-body">
+            <p class="leg-summary">${bill.description}</p>
+            <p class="leg-full">${bill.detail || bill.description}</p>
+        </div>
+    </div>`;
+    modal.style.display = 'flex';
+}
+
+function closeLegislationDetail() {
+    document.getElementById('legDetailModal').style.display = 'none';
+}
+
+
+// Close modals on Escape key
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && document.getElementById('analysisModal').style.display === 'block') {
-        closeAnalysis();
+    if (e.key === 'Escape') {
+        const legModal = document.getElementById('legDetailModal');
+        if (legModal && legModal.style.display !== 'none') {
+            closeLegislationDetail();
+            return;
+        }
+        if (document.getElementById('analysisModal').style.display === 'block') {
+            closeAnalysis();
+        }
     }
 });
 </script>
