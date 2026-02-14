@@ -3073,7 +3073,8 @@ function scoreFinancial(useId, inp, effects) {
     const buildableSF = inp.parcelSize * far;
     const nsf = buildableSF * (params ? params.eff : 0.82);
     const landValuePSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
-    const landCost = inp.parcelSize * landValuePSF;
+    // ADU is an addition — no land acquisition cost
+    const landCost = useId === 'adu' ? 0 : inp.parcelSize * landValuePSF;
 
     // Build cost with parking reduction from legislation
     let buildCostPerSF = BUILD_COST_PSF[useId] || 300;
@@ -3094,7 +3095,9 @@ function scoreFinancial(useId, inp, effects) {
     const parkingCost = parkSpaces * parkCostPerSpace;
 
     // Total cost including overhead (parking, contingency, soft costs)
-    const hardCostBase = buildCost + parkingCost + inp.parcelSize * 18;
+    // ADU site work scoped to ADU footprint only
+    const siteWorkCost = useId === 'adu' ? Math.round(buildableSF * 12) : inp.parcelSize * 18;
+    const hardCostBase = buildCost + parkingCost + siteWorkCost;
     const totalHard = hardCostBase * 1.11; // ~4% landscaping + 7% contingency
     const totalSoft = totalHard * 0.235; // ~23.5% (A&E 8%, permits 5%, legal 2%, financing 4.5%, dev fee 4%)
     let totalCost = landCost + totalHard + totalSoft;
@@ -3154,6 +3157,19 @@ function scoreFinancial(useId, inp, effects) {
         score *= 0.8;
     }
 
+    // ADU bonus: low total cost, zero parking, by-right, fastest timeline,
+    // can add to existing structure — highest ROI per dollar invested
+    if (useId === 'adu') {
+        // ADU total investment is a fraction of ground-up projects, so the dev-margin
+        // math (which divides NOI by total cost incl. land) understates its attractiveness.
+        // Boost reflects: minimal entitlement risk, 13-month timeline, no parking cost.
+        score = Math.max(score, 0.55);
+        // Extra lift for residential zones where ADU is by-right
+        if (['R1','R2','R3'].includes(inp.zoning)) score *= 1.25;
+        // ADU excels on smaller/mid-size parcels with existing structures
+        if (inp.siteCondition === 'improved' || inp.siteCondition === 'vacant') score *= 1.10;
+    }
+
     return Math.min(score, 1.0);
 }
 
@@ -3185,6 +3201,14 @@ function scoreProductive(useId, inp, effects) {
     const demandRow = NEIGHBORHOOD_DEMAND[inp.neighborhood];
     const demand = demandRow ? (demandRow[useId] || 0.7) : 0.7;
     score *= demand;
+
+    // ADU productivity: revenue-to-land-value underrates ADU because it
+    // doesn't require using the full parcel — it adds income to an existing
+    // property. Adjust to reflect incremental value-add ROI.
+    if (useId === 'adu') {
+        score = Math.max(score, 0.45);
+        if (['R1','R2','R3'].includes(inp.zoning)) score *= 1.20;
+    }
 
     return Math.min(score, 1.0);
 }
@@ -3356,6 +3380,63 @@ function renderResults(results, inp) {
         cardsDiv.appendChild(card);
     }
 
+    // ADU Quick-Win callout — show when ADU is legally permissible but not in top 3
+    const aduResult = results.find(r => r.id === 'adu');
+    const aduInTop3 = results.slice(0, 3).some(r => r.id === 'adu');
+    if (aduResult && aduResult.legal > 0 && !aduInTop3) {
+        const aduIdx = results.indexOf(aduResult);
+        const aduEffects = stackLegislationEffects(aduResult.legislation || []);
+        const aduMetrics = generateCardMetricsHTML('adu', inp, aduEffects, aduResult);
+        const aduLeg = aduResult.legislation && aduResult.legislation.length > 0
+            ? `<div class="legislation-badges"><div class="leg-label">Applicable Legislation</div>${aduResult.legislation.map(b => `<span class="legislation-badge clickable" onclick="event.stopPropagation();showLegislationDetail('${b.id}')">${b.name}</span>`).join('')}</div>` : '';
+        let aduFeasBadge = '';
+        if (aduResult.devMarginPct >= 0.15) aduFeasBadge = '<span style="display:inline-block;font-size:0.7rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;background:#f0fff4;color:#276749;margin-left:0.5rem;">FEASIBLE</span>';
+        else if (aduResult.devMarginPct >= 0) aduFeasBadge = '<span style="display:inline-block;font-size:0.7rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;background:#fffff0;color:#b7791f;margin-left:0.5rem;">MARGINAL</span>';
+        else aduFeasBadge = '<span style="display:inline-block;font-size:0.7rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;background:#fff5f5;color:#c53030;margin-left:0.5rem;">NOT FEASIBLE</span>';
+
+        const aduCard = document.createElement('div');
+        aduCard.className = 'result-card';
+        aduCard.style.cssText = 'cursor:pointer;border-left:4px solid #48bb78;margin-top:1rem;';
+        aduCard.onclick = () => openAnalysis(aduIdx);
+        aduCard.innerHTML = `
+            <div class="rank-banner" style="background:linear-gradient(135deg,#276749,#48bb78);color:white;">
+                <span class="rank-num" style="background:rgba(255,255,255,0.25);color:white;">ADU</span>
+                Quick Win — ADU Addition${aduFeasBadge}
+            </div>
+            <div class="card-body">
+                <div class="use-name">${aduResult.icon} ${aduResult.name}</div>
+                <div style="font-size:0.82rem;color:var(--text-light);margin-bottom:0.75rem;">
+                    Lowest cost, shortest timeline (~13 months), by-right under CA law. Can be added to existing structures without full redevelopment. Zero parking required near transit.
+                </div>
+                <div class="score-bar-container">
+                    <div class="score-label"><span>Legally Permissible</span><span>${aduResult.legal}%</span></div>
+                    <div class="score-bar"><div class="score-bar-fill legal" style="width: ${aduResult.legal}%"></div></div>
+                </div>
+                <div class="score-bar-container">
+                    <div class="score-label"><span>Physically Possible</span><span>${aduResult.physical}%</span></div>
+                    <div class="score-bar"><div class="score-bar-fill physical" style="width: ${aduResult.physical}%"></div></div>
+                </div>
+                <div class="score-bar-container">
+                    <div class="score-label"><span>Financially Feasible</span><span>${aduResult.financial}%</span></div>
+                    <div class="score-bar"><div class="score-bar-fill financial" style="width: ${aduResult.financial}%"></div></div>
+                </div>
+                <div class="score-bar-container">
+                    <div class="score-label"><span>Maximally Productive</span><span>${aduResult.productive}%</span></div>
+                    <div class="score-bar"><div class="score-bar-fill productive" style="width: ${aduResult.productive}%"></div></div>
+                </div>
+                <div class="overall-score">
+                    <div class="big-score">${aduResult.overall}</div>
+                    <span>/ 100<br>Overall Score</span>
+                </div>
+                ${aduMetrics}
+                <div class="rationale">${RATIONALE['adu'] || ''}</div>
+                ${aduLeg}
+                <div class="click-hint">Click for detailed analysis</div>
+            </div>
+        `;
+        cardsDiv.appendChild(aduCard);
+    }
+
     // Legislation section — collect unique bills from top 3
     const legSection = document.getElementById('legislationSection');
     const allLegislation = new Map();
@@ -3523,11 +3604,12 @@ function generateBudget(useId, inp, effects) {
     const parkingCostPerSpace = PARKING_COST_MAP[useId] || 35000;
 
     const landValuePSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
-    const landCost = inp.parcelSize * landValuePSF;
+    // ADU is an addition to an existing lot — no land acquisition needed
+    const landCost = useId === 'adu' ? 0 : inp.parcelSize * landValuePSF;
 
-    // Hard costs
-    const siteWork = inp.parcelSize * 18;
-    const demolition = (inp.siteCondition === 'demolition') ? inp.parcelSize * 12 : 0;
+    // Hard costs — ADU site work scoped to ADU footprint only
+    const siteWork = useId === 'adu' ? Math.round(gsf * 12) : inp.parcelSize * 18;
+    const demolition = (inp.siteCondition === 'demolition' && useId !== 'adu') ? inp.parcelSize * 12 : 0;
     let buildCostPSF = BUILD_COST_PSF[useId] || 300;
     if (effects && effects.parkingReduction > 0) {
         buildCostPSF *= (1 - effects.parkingReduction * 0.18);
@@ -3922,11 +4004,12 @@ function computeFromAssumptions(useId, inp, assumptions, effects) {
     const parkingSpaces = assumptions.parkingSpaces;
 
     const landValuePSF = assumptions.landValuePSF;
-    const landCost = inp.parcelSize * landValuePSF;
+    // ADU is an addition — no land acquisition cost
+    const landCost = useId === 'adu' ? 0 : inp.parcelSize * landValuePSF;
 
-    // Hard costs
-    const siteWork = inp.parcelSize * 18;
-    const demolition = (inp.siteCondition === 'demolition') ? inp.parcelSize * 12 : 0;
+    // Hard costs — ADU site work scoped to ADU footprint only
+    const siteWork = useId === 'adu' ? Math.round(gsf * 12) : inp.parcelSize * 18;
+    const demolition = (inp.siteCondition === 'demolition' && useId !== 'adu') ? inp.parcelSize * 12 : 0;
     const buildCostPSF = assumptions.buildCostPSF;
     const construction = gsf * buildCostPSF;
     const parkingCost = parkingSpaces * assumptions.parkingCostPerSpace;
