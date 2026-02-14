@@ -415,6 +415,85 @@
             line-height: 1.5;
         }
 
+        /* Key Metrics section on result cards */
+        .key-metrics {
+            margin-top: 1rem;
+            padding-top: 0.85rem;
+            border-top: 1px dashed var(--border);
+        }
+
+        .key-metrics-title {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.4rem;
+        }
+
+        .metric-item {
+            background: #f7fafc;
+            border-radius: 6px;
+            padding: 0.4rem 0.55rem;
+        }
+
+        .metric-icon-label {
+            font-size: 0.68rem;
+            color: var(--text-light);
+            margin-bottom: 0.15rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .metric-value {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .metric-value.positive { color: #276749; }
+        .metric-value.caution  { color: #b7791f; }
+        .metric-value.negative { color: #c53030; }
+
+        .risk-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+        }
+
+        .risk-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .ease-bar-bg {
+            width: 100%;
+            height: 5px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            margin-top: 0.25rem;
+            overflow: hidden;
+        }
+
+        .ease-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.4s ease;
+        }
+
         /* Details table */
         .details-section {
             background: var(--card);
@@ -591,6 +670,13 @@
             .overall-score { margin-top: 0.5rem; padding-top: 0.5rem; }
             .overall-score .big-score { font-size: 1.5rem; }
             .rationale { font-size: 0.78rem; margin-top: 0.5rem; }
+
+            .key-metrics { margin-top: 0.5rem; padding-top: 0.5rem; }
+            .key-metrics-title { font-size: 0.6rem; margin-bottom: 0.3rem; }
+            .metrics-grid { gap: 0.25rem; }
+            .metric-item { padding: 0.25rem 0.4rem; }
+            .metric-icon-label { font-size: 0.6rem; }
+            .metric-value { font-size: 0.75rem; }
 
             .details-section {
                 box-shadow: none;
@@ -805,21 +891,37 @@
         .budget-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
         }
-        .budget-table td {
-            padding: 0.4rem 0.75rem;
-            border-bottom: 1px solid var(--border);
-        }
-        .budget-table td:last-child {
+        .budget-table th {
+            padding: 0.35rem 0.6rem;
             text-align: right;
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--text-light);
+            border-bottom: 2px solid var(--border);
+        }
+        .budget-table th:first-child { text-align: left; }
+        .budget-table td {
+            padding: 0.35rem 0.6rem;
+            border-bottom: 1px solid var(--border);
             font-variant-numeric: tabular-nums;
+        }
+        .budget-table td:not(:first-child) {
+            text-align: right;
+            white-space: nowrap;
+        }
+        .budget-table td.dim {
+            color: var(--text-light);
+            font-size: 0.78rem;
         }
         .budget-table .section-header td {
             font-weight: 700;
             background: #f8fafc;
             color: var(--primary);
-            padding-top: 0.75rem;
+            padding-top: 0.65rem;
             border-bottom: 2px solid var(--border);
         }
         .budget-table .subtotal td {
@@ -830,17 +932,22 @@
             font-weight: 700;
             background: var(--primary);
             color: white;
-            font-size: 0.92rem;
-            padding: 0.6rem 0.75rem;
+            font-size: 0.88rem;
+            padding: 0.55rem 0.6rem;
+        }
+        .budget-table .pct-col {
+            font-size: 0.72rem;
+            color: var(--text-light);
         }
 
         .returns-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
             margin-bottom: 1.25rem;
         }
-        @media (max-width: 600px) { .returns-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 700px) { .returns-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 400px) { .returns-grid { grid-template-columns: 1fr; } }
         .return-card {
             text-align: center;
             padding: 1rem;
@@ -1047,9 +1154,191 @@
             color: var(--text);
             line-height: 1.65;
         }
+        /* SB 79 Transit Map */
+        .map-section {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 1.75rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-top: 2rem;
+        }
+        .map-section .section-header { text-align: center; margin-bottom: 1.25rem; }
+        .map-section .section-header h2 { font-size: 1.3rem; color: var(--primary); margin-bottom: 0.25rem; }
+        .map-section .section-subtitle { font-size: 0.88rem; color: var(--text-light); }
+        #sb79Map { width: 100%; height: 500px; border-radius: 10px; border: 1.5px solid var(--border); z-index: 1; }
+        .map-controls { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; justify-content: center; }
+        .layer-btn {
+            padding: 0.4rem 1rem; font-size: 0.82rem; font-weight: 600; border: 1.5px solid var(--border);
+            border-radius: 20px; background: #fff; color: var(--text-light); cursor: pointer; transition: all 0.2s;
+        }
+        .layer-btn:hover { border-color: var(--primary-light); color: var(--primary); }
+        .layer-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .map-legend {
+            display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; margin-top: 0.75rem;
+            padding: 0.75rem 1rem; background: #f7fafc; border-radius: 8px; font-size: 0.78rem; color: var(--text-light);
+        }
+        .map-legend .legend-item { display: flex; align-items: center; gap: 0.35rem; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .legend-line { width: 18px; height: 3px; border-radius: 2px; display: inline-block; }
+        .sb79-eligibility {
+            margin-top: 1rem; padding: 1.25rem; border-radius: 10px;
+            background: linear-gradient(135deg, #ebf8ff, #f0fff4); border: 1.5px solid #bee3f8;
+        }
+        .sb79-eligibility h3 { font-size: 1rem; color: var(--primary); margin-bottom: 0.75rem; }
+        .sb79-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.6rem; }
+        .sb79-stat { background: #fff; border-radius: 8px; padding: 0.6rem 0.75rem; text-align: center; }
+        .sb79-stat .stat-label { font-size: 0.7rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.05em; }
+        .sb79-stat .stat-value { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
+        .tier-badge, .zone-badge {
+            display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.55rem;
+            border-radius: 10px; margin-right: 0.3rem;
+        }
+        .tier-badge.tier1 { background: #e9d8fd; color: #553c9a; }
+        .tier-badge.tier2 { background: #bee3f8; color: #2b6cb0; }
+        .zone-badge.adjacent { background: #fed7d7; color: #c53030; }
+        .zone-badge.inner { background: #fefcbf; color: #975a16; }
+        .zone-badge.outer { background: #c6f6d5; color: #276749; }
+        .station-popup .popup-title { font-weight: 700; font-size: 0.92rem; margin-bottom: 0.3rem; }
+        .station-popup .popup-line { font-size: 0.8rem; color: #555; }
+        .station-popup .popup-allowances { margin-top: 0.4rem; font-size: 0.78rem; }
+        .station-popup .popup-allowances span { display: block; }
+        @media print { .map-section { display: none !important; } }
+        @media (max-width: 768px) { #sb79Map { height: 350px; } }
+
+        /* Auth Overlay */
+        #authOverlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 50%, #1a365d 100%);
+            z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.4s ease;
+        }
+        #authOverlay.fade-out { opacity: 0; pointer-events: none; }
+        .auth-box {
+            background: white; border-radius: 16px; padding: 2.5rem 2rem;
+            text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 380px; width: 90%;
+        }
+        .auth-box h2 { color: var(--primary); font-size: 1.4rem; margin-bottom: 0.25rem; }
+        .auth-box > p { color: var(--text-light); font-size: 0.92rem; margin-bottom: 1.5rem; }
+        .auth-box input[type="password"] {
+            width: 100%; padding: 0.7rem 1rem; border: 1.5px solid var(--border);
+            border-radius: 8px; font-size: 1rem; text-align: center; margin-bottom: 1rem;
+        }
+        .auth-box input[type="password"]:focus {
+            outline: none; border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(43,108,176,0.12);
+        }
+        .auth-btn {
+            display: block; width: 100%; padding: 0.75rem; font-size: 1rem; font-weight: 700;
+            color: white; background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            border: none; border-radius: 10px; cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 4px 12px rgba(232,168,56,0.35);
+        }
+        .auth-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(232,168,56,0.45); }
+        .auth-error { color: #e53e3e; font-size: 0.85rem; margin-top: 0.75rem; min-height: 1.2em; }
+        @media print { #authOverlay { display: none !important; } }
+
+        /* Opportunity Finder */
+        .finder-section {
+            margin-top: 1.5rem; padding: 1.25rem; border-radius: 10px;
+            background: var(--card); border: 1.5px solid var(--border);
+        }
+        .finder-toggle {
+            display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer; user-select: none;
+        }
+        .finder-toggle h3 { font-size: 1.05rem; color: var(--primary); margin: 0; }
+        .finder-toggle .finder-arrow {
+            font-size: 1.2rem; color: var(--text-light); transition: transform 0.2s;
+        }
+        .finder-toggle .finder-arrow.open { transform: rotate(90deg); }
+        .finder-body { display: none; margin-top: 1rem; }
+        .finder-body.open { display: block; }
+        .finder-controls {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem; margin-bottom: 1rem;
+        }
+        .finder-field label { font-size: 0.78rem; font-weight: 600; color: var(--text-light); margin-bottom: 0.2rem; display: block; }
+        .finder-field select, .finder-field input {
+            width: 100%; padding: 0.5rem 0.6rem; border: 1.5px solid var(--border);
+            border-radius: 6px; font-size: 0.88rem;
+        }
+        .finder-field select:focus, .finder-field input:focus {
+            outline: none; border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(43,108,176,0.12);
+        }
+        .finder-radios { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .finder-radios label {
+            font-size: 0.82rem; font-weight: 500; color: var(--text);
+            display: flex; align-items: center; gap: 0.25rem; cursor: pointer;
+        }
+        .finder-checks { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .finder-checks label {
+            font-size: 0.82rem; font-weight: 500; color: var(--text);
+            display: flex; align-items: center; gap: 0.25rem; cursor: pointer;
+        }
+        .finder-range-wrap { display: flex; align-items: center; gap: 0.5rem; }
+        .finder-range-wrap input[type="range"] { flex: 1; }
+        .finder-range-wrap .range-val { font-size: 0.85rem; font-weight: 700; color: var(--primary); min-width: 2.5rem; text-align: right; }
+        .finder-btn-search {
+            padding: 0.65rem 2rem; font-size: 0.95rem; font-weight: 700;
+            color: white; background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border: none; border-radius: 8px; cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 2px 8px rgba(26,54,93,0.25);
+        }
+        .finder-btn-search:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26,54,93,0.35); }
+        .finder-btn-search:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .finder-progress { display: none; margin: 1rem 0; }
+        .finder-progress.active { display: block; }
+        .finder-progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+        .finder-progress-fill { height: 100%; background: var(--primary-light); border-radius: 3px; transition: width 0.3s; width: 0; }
+        .finder-progress-text { font-size: 0.78rem; color: var(--text-light); margin-top: 0.35rem; }
+        .finder-table-wrapper { overflow-x: auto; margin-top: 1rem; }
+        .finder-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+        .finder-table th {
+            background: var(--primary); color: white; padding: 0.5rem 0.6rem;
+            text-align: left; font-weight: 600; cursor: pointer; white-space: nowrap; user-select: none;
+        }
+        .finder-table th:first-child { border-radius: 8px 0 0 0; }
+        .finder-table th:last-child { border-radius: 0 8px 0 0; }
+        .finder-table th:hover { background: var(--primary-light); }
+        .finder-table th.sort-asc::after { content: ' \u25B2'; font-size: 0.7rem; }
+        .finder-table th.sort-desc::after { content: ' \u25BC'; font-size: 0.7rem; }
+        .finder-table td { padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--border); }
+        .finder-table tr:nth-child(even) { background: #f8fafc; }
+        .finder-table tr:hover { background: #ebf8ff; cursor: pointer; }
+        .finder-table tr.highlighted { background: #bee3f8 !important; }
+        .imp-ratio-hot { color: #e53e3e; font-weight: 700; }
+        .imp-ratio-warm { color: #dd6b20; font-weight: 600; }
+        .imp-ratio-cool { color: #38a169; }
+        .finder-btn-export {
+            margin-top: 0.75rem; padding: 0.5rem 1.25rem; font-size: 0.85rem; font-weight: 600;
+            color: var(--primary); background: #ebf8ff; border: 1.5px solid #bee3f8;
+            border-radius: 8px; cursor: pointer; transition: background 0.15s;
+        }
+        .finder-btn-export:hover { background: #bee3f8; }
+        .finder-no-results { text-align: center; padding: 2rem 1rem; color: var(--text-light); font-size: 0.92rem; }
+        .finder-error { background: #fff5f5; border: 1px solid #fc8181; border-radius: 8px; padding: 1rem; color: #c53030; font-size: 0.88rem; margin-top: 1rem; }
+        .finder-summary { font-size: 0.85rem; color: var(--text-light); margin-top: 0.5rem; }
+        @media print { .finder-section { display: none !important; } }
     </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
+
+<div id="authOverlay">
+    <div class="auth-box">
+        <h2>CLS CRE Brokerage</h2>
+        <p>HBU Land Use Calculator</p>
+        <input type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter')checkAuth();">
+        <button type="button" class="auth-btn" onclick="checkAuth()">Enter</button>
+        <div class="auth-error" id="authError"></div>
+    </div>
+</div>
 
 <header>
     <h1>Highest &amp; Best Use Calculator</h1>
@@ -1098,14 +1387,14 @@
                     <div class="field" id="field-zoning">
                         <label>Zoning Designation <span class="autofill-badge">auto-filled</span></label>
                         <select id="zoning">
-                            <option value="R1">R1 — Single-Family Residential</option>
+                            <option value="R1" selected>R1 — Single-Family Residential</option>
                             <option value="R2">R2 — Two-Family Residential</option>
                             <option value="R3">R3 — Multi-Family (Low Density)</option>
                             <option value="R4">R4 — Multi-Family (Medium Density)</option>
                             <option value="R5">R5 — Multi-Family (High Density)</option>
                             <option value="C1">C1 — Limited Commercial</option>
                             <option value="C1.5">C1.5 — Limited Commercial (Mixed)</option>
-                            <option value="C2" selected>C2 — General Commercial</option>
+                            <option value="C2">C2 — General Commercial</option>
                             <option value="C4">C4 — Commercial Zone</option>
                             <option value="C5">C5 — Commercial (Highway)</option>
                             <option value="CM">CM — Commercial Manufacturing</option>
@@ -1240,7 +1529,7 @@
         <div class="legislation-section" id="legislationSection" style="display:none;"></div>
 
         <div class="details-section">
-            <h3>Full Scoring Breakdown — All Uses Evaluated</h3>
+            <h3>Scoring Breakdown — Legally Permissible Uses</h3>
             <div style="overflow-x: auto;">
                 <table class="details-table" id="detailsTable">
                     <thead>
@@ -1257,10 +1546,110 @@
                     <tbody id="detailsBody"></tbody>
                 </table>
             </div>
+
+            <div id="excludedSection" style="display:none; margin-top:1.25rem;">
+                <button id="toggleExcluded" onclick="toggleExcludedUses()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:0.5rem 1rem;font-size:0.82rem;color:var(--text-light);cursor:pointer;width:100%;text-align:left;">
+                    ▶ Show <span id="excludedCount">0</span> uses not legally permissible under current zoning
+                </button>
+                <div id="excludedTable" style="display:none; margin-top:0.75rem; opacity:0.65;">
+                    <div style="overflow-x: auto;">
+                        <table class="details-table">
+                            <thead>
+                                <tr>
+                                    <th>Land Use</th>
+                                    <th>Physical</th>
+                                    <th>Financial</th>
+                                    <th>Productive</th>
+                                    <th>Why Excluded</th>
+                                </tr>
+                            </thead>
+                            <tbody id="excludedBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="disclaimer">
             <strong>Disclaimer:</strong> This tool provides a preliminary, educational estimate only. Highest and Best Use analysis for real estate investment or appraisal purposes should be performed by a qualified MAI appraiser or licensed professional. Actual HBU depends on detailed market studies, entitlement feasibility, construction cost analysis, and site-specific due diligence. Zoning codes, overlay districts, and specific plan areas in Los Angeles change frequently — always verify with the LA Department of City Planning (ZIMAS).
+        </div>
+
+        <!-- SB 79 Transit Opportunity Map -->
+        <div class="map-section" id="mapSection" style="display:none;">
+            <div class="section-header">
+                <h2>SB 79 Transit Opportunity Map</h2>
+                <p class="section-subtitle">Interactive map showing transit stations, SB 79 zones, and development opportunities</p>
+            </div>
+            <div class="map-controls" id="mapControls">
+                <button type="button" class="layer-btn active" onclick="toggleMapLayer('tier1')">Tier 1 (Heavy Rail)</button>
+                <button type="button" class="layer-btn active" onclick="toggleMapLayer('tier2')">Tier 2 (Metrolink)</button>
+                <button type="button" class="layer-btn active" onclick="toggleMapLayer('zones')">SB 79 Zones</button>
+                <button type="button" class="layer-btn active" onclick="toggleMapLayer('property')">Your Property</button>
+            </div>
+            <div id="sb79Map" style="height:500px;"></div>
+            <div class="map-legend" id="mapLegend"></div>
+            <div class="sb79-eligibility" id="sb79Eligibility" style="display:none;"></div>
+
+            <!-- SB 79 Opportunity Finder -->
+            <div class="finder-section" id="finderSection">
+                <div class="finder-toggle" onclick="toggleFinder()">
+                    <h3>SB 79 Opportunity Finder</h3>
+                    <span class="finder-arrow" id="finderArrow">&#9654;</span>
+                </div>
+                <div class="finder-body" id="finderBody">
+                    <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:1rem;">
+                        Select a transit station and set filters to find underbuilt parcels that SB 79 unlocks for higher-density development.
+                    </p>
+                    <div class="finder-controls">
+                        <div class="finder-field" style="grid-column: span 2;">
+                            <label>Transit Station</label>
+                            <select id="finderStation"></select>
+                        </div>
+                        <div class="finder-field">
+                            <label>Search Radius</label>
+                            <div class="finder-radios">
+                                <label><input type="radio" name="finderRadius" value="200"> Adjacent (200ft)</label>
+                                <label><input type="radio" name="finderRadius" value="1320"> Inner (1/4 mi)</label>
+                                <label><input type="radio" name="finderRadius" value="2640" checked> Outer (1/2 mi)</label>
+                            </div>
+                        </div>
+                        <div class="finder-field">
+                            <label>Use Type</label>
+                            <div class="finder-checks">
+                                <label><input type="checkbox" class="finderUseType" value="Residential" checked> Residential</label>
+                                <label><input type="checkbox" class="finderUseType" value="Commercial" checked> Commercial</label>
+                                <label><input type="checkbox" class="finderUseType" value="Industrial"> Industrial</label>
+                                <label><input type="checkbox" class="finderUseType" value="Vacant" checked> Vacant</label>
+                            </div>
+                        </div>
+                        <div class="finder-field">
+                            <label>Min Lot Size (sq ft)</label>
+                            <input type="number" id="finderMinLot" value="2500" min="0" step="500">
+                        </div>
+                        <div class="finder-field">
+                            <label>Max Lot Size (sq ft)</label>
+                            <input type="number" id="finderMaxLot" value="100000" min="0" step="500">
+                        </div>
+                        <div class="finder-field">
+                            <label>Max Improvement Ratio (lower = more underbuilt)</label>
+                            <div class="finder-range-wrap">
+                                <input type="range" id="finderMaxRatio" min="0" max="5" step="0.1" value="2.0" oninput="document.getElementById('finderRatioVal').textContent=this.value">
+                                <span class="range-val" id="finderRatioVal">2.0</span>
+                            </div>
+                        </div>
+                        <div class="finder-field">
+                            <label>Year Built Before</label>
+                            <input type="number" id="finderYearBefore" value="2000" min="1900" max="2026">
+                        </div>
+                    </div>
+                    <button type="button" class="finder-btn-search" id="finderSearchBtn" onclick="runOpportunitySearch()">Find Opportunities</button>
+                    <div class="finder-progress" id="finderProgress">
+                        <div class="finder-progress-bar"><div class="finder-progress-fill" id="finderProgressFill"></div></div>
+                        <div class="finder-progress-text" id="finderProgressText">Querying parcels...</div>
+                    </div>
+                    <div id="finderResultsArea"></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -1289,6 +1678,35 @@
 </footer>
 
 <script>
+// ============================================================
+//  AUTH GATE
+// ============================================================
+const AUTH_HASH = '74a763fdc61ca8d18e1810035075eb910db56488993cbcdffe6715d466690658';
+async function sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+async function checkAuth() {
+    const pw = document.getElementById('authPassword').value;
+    const hash = await sha256(pw);
+    if (hash === AUTH_HASH) {
+        sessionStorage.setItem('hbu_auth', '1');
+        const overlay = document.getElementById('authOverlay');
+        overlay.classList.add('fade-out');
+        setTimeout(() => overlay.remove(), 500);
+    } else {
+        document.getElementById('authError').textContent = 'Incorrect password. Please try again.';
+        document.getElementById('authPassword').value = '';
+        document.getElementById('authPassword').focus();
+    }
+}
+(function() {
+    if (sessionStorage.getItem('hbu_auth') === '1') {
+        const overlay = document.getElementById('authOverlay');
+        if (overlay) overlay.remove();
+    }
+})();
+
 // ============================================================
 //  ADDRESS LOOKUP ENGINE
 // ============================================================
@@ -1433,54 +1851,160 @@ const SUBURB_TO_NEIGHBORHOOD = {
     'lincoln heights': 'boyleheights',
 };
 
-// LA Metro Rail stations (lat, lon)
+// LA Metro Rail & Metrolink stations { lat, lon, name, line, tier }
+// tier 1 = heavy rail (Metro Rail), tier 2 = light rail/BRT/Metrolink
 const METRO_STATIONS = [
-    { lat: 34.0561, lon: -118.2365 }, // Union Station
-    { lat: 34.0488, lon: -118.2588 }, // 7th St/Metro Center
-    { lat: 34.0678, lon: -118.2915 }, // Wilshire/Vermont
-    { lat: 34.0624, lon: -118.3080 }, // Wilshire/Normandie
-    { lat: 34.0573, lon: -118.3273 }, // Wilshire/Western
-    { lat: 34.0620, lon: -118.3440 }, // Wilshire/La Brea
-    { lat: 34.0622, lon: -118.3615 }, // Wilshire/Fairfax
-    { lat: 34.0626, lon: -118.3766 }, // Wilshire/La Cienega
-    { lat: 34.0630, lon: -118.3945 }, // Wilshire/Rodeo
-    { lat: 34.0469, lon: -118.2600 }, // Pershing Square
-    { lat: 34.0562, lon: -118.2500 }, // Civic Center
-    { lat: 34.0620, lon: -118.2360 }, // Chinatown
-    { lat: 34.0672, lon: -118.2350 }, // Lincoln/Cypress
-    { lat: 34.0760, lon: -118.2260 }, // Heritage Square
-    { lat: 34.0890, lon: -118.2100 }, // Southwest Museum
-    { lat: 34.1014, lon: -118.3388 }, // Hollywood/Highland
-    { lat: 34.1017, lon: -118.3250 }, // Hollywood/Vine
-    { lat: 34.1017, lon: -118.3070 }, // Hollywood/Western
-    { lat: 34.0876, lon: -118.2840 }, // Vermont/Sunset
-    { lat: 34.0757, lon: -118.2915 }, // Vermont/Santa Monica
-    { lat: 34.0678, lon: -118.2916 }, // Vermont/Beverly
-    { lat: 34.1381, lon: -118.3623 }, // Universal City
-    { lat: 34.1687, lon: -118.3765 }, // North Hollywood
-    { lat: 34.1565, lon: -118.3670 }, // Valley College
-    { lat: 34.1480, lon: -118.3955 }, // Woodman
-    { lat: 34.1470, lon: -118.4180 }, // Van Nuys
-    { lat: 34.1478, lon: -118.4400 }, // Sepulveda
-    { lat: 34.0227, lon: -118.3310 }, // Expo/Crenshaw
-    { lat: 34.0183, lon: -118.3088 }, // Expo/Western
-    { lat: 34.0186, lon: -118.2862 }, // Expo/Vermont
-    { lat: 34.0222, lon: -118.2580 }, // Expo Park/USC
-    { lat: 34.0295, lon: -118.2435 }, // LATTC/Ortho Institute
-    { lat: 34.0154, lon: -118.4960 }, // Downtown Santa Monica
-    { lat: 34.0156, lon: -118.4694 }, // 26th St/Bergamot
-    { lat: 34.0135, lon: -118.4330 }, // Expo/Bundy
-    { lat: 34.0124, lon: -118.3908 }, // Expo/Sepulveda
-    { lat: 34.0168, lon: -118.3685 }, // Westwood/Rancho Park
-    { lat: 34.0209, lon: -118.3520 }, // Palms
-    { lat: 33.9340, lon: -118.3828 }, // Aviation/LAX
-    { lat: 33.9525, lon: -118.3518 }, // Hawthorne/Lennox
-    { lat: 33.9268, lon: -118.2377 }, // Willowbrook/Rosa Parks
-    { lat: 33.9160, lon: -118.2382 }, // Compton
-    { lat: 34.0458, lon: -118.2562 }, // Grand/DTLA (Regional Connector)
-    { lat: 34.0489, lon: -118.2468 }, // Historic Broadway (Regional Connector)
-    { lat: 34.0562, lon: -118.2338 }, // Little Tokyo/Arts District
+    // --- Red Line (B Line): Union Station → North Hollywood ---
+    { lat: 34.0561, lon: -118.2365, name: 'Union Station', line: 'red', tier: 1 },
+    { lat: 34.0562, lon: -118.2500, name: 'Civic Center/Grand Park', line: 'red', tier: 1 },
+    { lat: 34.0469, lon: -118.2600, name: 'Pershing Square', line: 'red', tier: 1 },
+    { lat: 34.0488, lon: -118.2588, name: '7th St/Metro Center', line: 'red', tier: 1 },
+    { lat: 34.0678, lon: -118.2915, name: 'Wilshire/Vermont', line: 'red', tier: 1 },
+    { lat: 34.1017, lon: -118.3070, name: 'Hollywood/Western', line: 'red', tier: 1 },
+    { lat: 34.1017, lon: -118.3250, name: 'Hollywood/Vine', line: 'red', tier: 1 },
+    { lat: 34.1014, lon: -118.3388, name: 'Hollywood/Highland', line: 'red', tier: 1 },
+    { lat: 34.1381, lon: -118.3623, name: 'Universal City/Studio City', line: 'red', tier: 1 },
+    { lat: 34.1687, lon: -118.3765, name: 'North Hollywood', line: 'red', tier: 1 },
+    // --- Purple Line (D Line): Wilshire corridor ---
+    { lat: 34.0624, lon: -118.3080, name: 'Wilshire/Normandie', line: 'purple', tier: 1 },
+    { lat: 34.0573, lon: -118.3273, name: 'Wilshire/Western', line: 'purple', tier: 1 },
+    { lat: 34.0620, lon: -118.3440, name: 'Wilshire/La Brea', line: 'purple', tier: 1 },
+    { lat: 34.0622, lon: -118.3615, name: 'Wilshire/Fairfax', line: 'purple', tier: 1 },
+    { lat: 34.0626, lon: -118.3766, name: 'Wilshire/La Cienega', line: 'purple', tier: 1 },
+    { lat: 34.0630, lon: -118.3945, name: 'Wilshire/Rodeo', line: 'purple', tier: 1 },
+    { lat: 34.0632, lon: -118.4170, name: 'Century City/Constellation', line: 'purple', tier: 1 },
+    { lat: 34.0638, lon: -118.4385, name: 'Westwood/UCLA', line: 'purple', tier: 1 },
+    { lat: 34.0640, lon: -118.4510, name: 'Westwood/VA Hospital', line: 'purple', tier: 1 },
+    // --- Blue/A Line: 7th/Metro → Long Beach ---
+    { lat: 34.0398, lon: -118.2610, name: 'Pico', line: 'blue_a', tier: 1 },
+    { lat: 34.0295, lon: -118.2435, name: 'LATTC/Ortho Institute', line: 'blue_a', tier: 1 },
+    { lat: 34.0222, lon: -118.2344, name: 'San Pedro St', line: 'blue_a', tier: 1 },
+    { lat: 34.0030, lon: -118.2297, name: 'Washington', line: 'blue_a', tier: 1 },
+    { lat: 33.9938, lon: -118.2296, name: 'Vernon', line: 'blue_a', tier: 1 },
+    { lat: 33.9830, lon: -118.2295, name: 'Slauson', line: 'blue_a', tier: 1 },
+    { lat: 33.9722, lon: -118.2293, name: 'Florence', line: 'blue_a', tier: 1 },
+    { lat: 33.9612, lon: -118.2340, name: 'Firestone', line: 'blue_a', tier: 1 },
+    { lat: 33.9450, lon: -118.2362, name: '103rd St/Watts Towers', line: 'blue_a', tier: 1 },
+    { lat: 33.9268, lon: -118.2377, name: 'Willowbrook/Rosa Parks', line: 'blue_a', tier: 1 },
+    { lat: 33.9160, lon: -118.2382, name: 'Compton', line: 'blue_a', tier: 1 },
+    { lat: 33.9029, lon: -118.2382, name: 'Artesia', line: 'blue_a', tier: 1 },
+    { lat: 33.8862, lon: -118.2284, name: 'Del Amo', line: 'blue_a', tier: 1 },
+    { lat: 33.8697, lon: -118.2119, name: 'Wardlow', line: 'blue_a', tier: 1 },
+    { lat: 33.8567, lon: -118.2100, name: 'Willow St', line: 'blue_a', tier: 1 },
+    { lat: 33.8470, lon: -118.1890, name: 'Pacific Coast Hwy', line: 'blue_a', tier: 1 },
+    { lat: 33.7686, lon: -118.1891, name: '1st St (Long Beach)', line: 'blue_a', tier: 1 },
+    { lat: 33.7676, lon: -118.1935, name: 'Downtown Long Beach', line: 'blue_a', tier: 1 },
+    // --- Expo/E Line: 7th/Metro → Downtown Santa Monica ---
+    { lat: 34.0222, lon: -118.2580, name: 'Expo Park/USC', line: 'expo_e', tier: 1 },
+    { lat: 34.0186, lon: -118.2862, name: 'Expo/Vermont', line: 'expo_e', tier: 1 },
+    { lat: 34.0183, lon: -118.3088, name: 'Expo/Western', line: 'expo_e', tier: 1 },
+    { lat: 34.0227, lon: -118.3310, name: 'Expo/Crenshaw', line: 'expo_e', tier: 1 },
+    { lat: 34.0252, lon: -118.3418, name: 'Farmdale', line: 'expo_e', tier: 1 },
+    { lat: 34.0289, lon: -118.3520, name: 'Expo/La Brea', line: 'expo_e', tier: 1 },
+    { lat: 34.0270, lon: -118.3710, name: 'La Cienega/Jefferson', line: 'expo_e', tier: 1 },
+    { lat: 34.0248, lon: -118.3860, name: 'Culver City', line: 'expo_e', tier: 1 },
+    { lat: 34.0209, lon: -118.3520, name: 'Palms', line: 'expo_e', tier: 1 },
+    { lat: 34.0124, lon: -118.3908, name: 'Expo/Sepulveda', line: 'expo_e', tier: 1 },
+    { lat: 34.0168, lon: -118.3685, name: 'Westwood/Rancho Park', line: 'expo_e', tier: 1 },
+    { lat: 34.0135, lon: -118.4330, name: 'Expo/Bundy', line: 'expo_e', tier: 1 },
+    { lat: 34.0156, lon: -118.4694, name: '26th St/Bergamot', line: 'expo_e', tier: 1 },
+    { lat: 34.0154, lon: -118.4960, name: 'Downtown Santa Monica', line: 'expo_e', tier: 1 },
+    // --- Gold/L Line: East LA → Azusa/APU ---
+    { lat: 34.0566, lon: -118.2338, name: 'Little Tokyo/Arts District', line: 'gold_l', tier: 1 },
+    { lat: 34.0561, lon: -118.2365, name: 'Union Station (Gold)', line: 'gold_l', tier: 1 },
+    { lat: 34.0620, lon: -118.2360, name: 'Chinatown', line: 'gold_l', tier: 1 },
+    { lat: 34.0672, lon: -118.2350, name: 'Lincoln/Cypress', line: 'gold_l', tier: 1 },
+    { lat: 34.0760, lon: -118.2260, name: 'Heritage Square/Arroyo', line: 'gold_l', tier: 1 },
+    { lat: 34.0890, lon: -118.2100, name: 'Southwest Museum', line: 'gold_l', tier: 1 },
+    { lat: 34.0960, lon: -118.1990, name: 'Highland Park', line: 'gold_l', tier: 1 },
+    { lat: 34.1118, lon: -118.1868, name: 'South Pasadena', line: 'gold_l', tier: 1 },
+    { lat: 34.1175, lon: -118.1560, name: 'Fillmore', line: 'gold_l', tier: 1 },
+    { lat: 34.1285, lon: -118.1340, name: 'Del Mar', line: 'gold_l', tier: 1 },
+    { lat: 34.1360, lon: -118.1230, name: 'Memorial Park', line: 'gold_l', tier: 1 },
+    { lat: 34.1421, lon: -118.1150, name: 'Lake', line: 'gold_l', tier: 1 },
+    { lat: 34.1497, lon: -118.1030, name: 'Allen', line: 'gold_l', tier: 1 },
+    { lat: 34.1500, lon: -118.0830, name: 'Sierra Madre Villa', line: 'gold_l', tier: 1 },
+    { lat: 34.1520, lon: -118.0520, name: 'Arcadia', line: 'gold_l', tier: 1 },
+    { lat: 34.1425, lon: -118.0310, name: 'Monrovia', line: 'gold_l', tier: 1 },
+    { lat: 34.1365, lon: -118.0090, name: 'Duarte/City of Hope', line: 'gold_l', tier: 1 },
+    { lat: 34.1360, lon: -117.9870, name: 'Irwindale', line: 'gold_l', tier: 1 },
+    { lat: 34.1370, lon: -117.9620, name: 'Azusa Downtown', line: 'gold_l', tier: 1 },
+    { lat: 34.1380, lon: -117.9440, name: 'APU/Citrus College', line: 'gold_l', tier: 1 },
+    // Gold/L Line East LA branch
+    { lat: 34.0441, lon: -118.2120, name: 'Mariachi Plaza/Boyle Heights', line: 'gold_l', tier: 1 },
+    { lat: 34.0395, lon: -118.1938, name: 'Soto', line: 'gold_l', tier: 1 },
+    { lat: 34.0335, lon: -118.1770, name: 'Indiana', line: 'gold_l', tier: 1 },
+    { lat: 34.0290, lon: -118.1620, name: 'Maravilla', line: 'gold_l', tier: 1 },
+    { lat: 34.0245, lon: -118.1475, name: 'East LA Civic Center', line: 'gold_l', tier: 1 },
+    { lat: 34.0220, lon: -118.1280, name: 'Atlantic', line: 'gold_l', tier: 1 },
+    // --- Green/C Line: Norwalk → Redondo Beach ---
+    { lat: 33.9190, lon: -118.0570, name: 'Norwalk', line: 'green_c', tier: 1 },
+    { lat: 33.9198, lon: -118.0940, name: 'Lakewood Blvd', line: 'green_c', tier: 1 },
+    { lat: 33.9204, lon: -118.1262, name: 'Long Beach Blvd', line: 'green_c', tier: 1 },
+    { lat: 33.9230, lon: -118.1706, name: 'Avalon', line: 'green_c', tier: 1 },
+    { lat: 33.9268, lon: -118.2377, name: 'Willowbrook/Rosa Parks (Green)', line: 'green_c', tier: 1 },
+    { lat: 33.9252, lon: -118.2565, name: 'Vermont/Athens', line: 'green_c', tier: 1 },
+    { lat: 33.9289, lon: -118.2735, name: 'Harbor Freeway', line: 'green_c', tier: 1 },
+    { lat: 33.9324, lon: -118.2915, name: 'Crenshaw (Green)', line: 'green_c', tier: 1 },
+    { lat: 33.9525, lon: -118.3518, name: 'Hawthorne/Lennox', line: 'green_c', tier: 1 },
+    { lat: 33.9340, lon: -118.3828, name: 'Aviation/LAX', line: 'green_c', tier: 1 },
+    { lat: 33.9262, lon: -118.3960, name: 'Mariposa', line: 'green_c', tier: 1 },
+    { lat: 33.9130, lon: -118.4030, name: 'El Segundo', line: 'green_c', tier: 1 },
+    { lat: 33.9030, lon: -118.4093, name: 'Douglas', line: 'green_c', tier: 1 },
+    { lat: 33.8920, lon: -118.4128, name: 'Redondo Beach', line: 'green_c', tier: 1 },
+    // --- K Line (Crenshaw/LAX) ---
+    { lat: 34.0227, lon: -118.3310, name: 'Expo/Crenshaw (K)', line: 'k_line', tier: 1 },
+    { lat: 34.0100, lon: -118.3340, name: 'Leimert Park', line: 'k_line', tier: 1 },
+    { lat: 33.9978, lon: -118.3320, name: 'Hyde Park', line: 'k_line', tier: 1 },
+    { lat: 33.9838, lon: -118.3290, name: 'Fairview Heights', line: 'k_line', tier: 1 },
+    { lat: 33.9680, lon: -118.3380, name: 'Downtown Inglewood', line: 'k_line', tier: 1 },
+    { lat: 33.9530, lon: -118.3560, name: 'Westchester/Veterans', line: 'k_line', tier: 1 },
+    { lat: 33.9340, lon: -118.3828, name: 'Aviation/Century (K)', line: 'k_line', tier: 1 },
+    // --- Regional Connector ---
+    { lat: 34.0458, lon: -118.2562, name: 'Grand Av Arts/Bunker Hill', line: 'connector', tier: 1 },
+    { lat: 34.0489, lon: -118.2468, name: 'Historic Broadway', line: 'connector', tier: 1 },
+    // --- Key Metrolink Stations (LA County, tier 2) ---
+    { lat: 34.0561, lon: -118.2365, name: 'LA Union Station (Metrolink)', line: 'metrolink', tier: 2 },
+    { lat: 34.1900, lon: -118.4500, name: 'Van Nuys (Metrolink)', line: 'metrolink', tier: 2 },
+    { lat: 34.2083, lon: -118.4958, name: 'Chatsworth', line: 'metrolink', tier: 2 },
+    { lat: 34.2600, lon: -118.4400, name: 'Sylmar/San Fernando', line: 'metrolink', tier: 2 },
+    { lat: 34.1480, lon: -118.2555, name: 'Glendale', line: 'metrolink', tier: 2 },
+    { lat: 34.1360, lon: -118.2410, name: 'Glendale (Tropico)', line: 'metrolink', tier: 2 },
+    { lat: 34.0930, lon: -118.2360, name: 'Lincoln Heights (Metrolink)', line: 'metrolink', tier: 2 },
+    { lat: 34.1766, lon: -118.3080, name: 'Burbank Airport North', line: 'metrolink', tier: 2 },
+    { lat: 34.1834, lon: -118.3268, name: 'Burbank Downtown', line: 'metrolink', tier: 2 },
+    { lat: 33.9017, lon: -118.2260, name: 'Compton (Metrolink)', line: 'metrolink', tier: 2 },
+    { lat: 34.0513, lon: -118.2310, name: 'LA Downtown (Commercial St)', line: 'metrolink', tier: 2 },
+    { lat: 34.0670, lon: -118.1650, name: 'Cal State LA', line: 'metrolink', tier: 2 },
+    { lat: 34.0870, lon: -118.1300, name: 'El Monte', line: 'metrolink', tier: 2 },
+    { lat: 34.1010, lon: -118.1030, name: 'Baldwin Park', line: 'metrolink', tier: 2 },
+    { lat: 34.1160, lon: -118.0550, name: 'Covina', line: 'metrolink', tier: 2 },
+    { lat: 34.0500, lon: -117.7510, name: 'Pomona Downtown', line: 'metrolink', tier: 2 },
+    { lat: 33.7710, lon: -118.1890, name: 'Long Beach (Metrolink)', line: 'metrolink', tier: 2 },
 ];
+
+// SB 79 Transit-Oriented Development tier definitions (effective July 1, 2026)
+const SB79_TIERS = {
+    1: { label: 'Tier 1 (Heavy Rail)', height: 95, density: 160, far: 4.5 },
+    2: { label: 'Tier 2 (Light Rail/BRT)', height: 85, density: 140, far: 4.0 },
+};
+const SB79_ZONES = {
+    adjacent: { maxDist: 0.038, label: '200ft (Adjacent)', parking: 0, heightMult: 1.0 },
+    inner:    { maxDist: 0.25,  label: '1/4 Mile (Inner)',  parking: 0, heightMult: 1.0 },
+    outer:    { maxDist: 0.50,  label: '1/2 Mile (Outer)',  parking: 0.5, heightMult: 0.68 },
+};
+
+// Line display colors for map markers
+const LINE_COLORS = {
+    red: '#e53e3e', purple: '#805ad5', blue_a: '#3182ce', expo_e: '#d69e2e',
+    gold_l: '#b7791f', green_c: '#38a169', k_line: '#00bcd4', connector: '#ed64a6',
+    metrolink: '#e53e3e',
+};
+const LINE_LABELS = {
+    red: 'Red/B Line', purple: 'Purple/D Line', blue_a: 'Blue/A Line', expo_e: 'Expo/E Line',
+    gold_l: 'Gold/L Line', green_c: 'Green/C Line', k_line: 'K Line (Crenshaw)', connector: 'Regional Connector',
+    metrolink: 'Metrolink',
+};
 
 // Major LA arterials for street detection
 const MAJOR_ARTERIALS = [
@@ -1555,6 +2079,46 @@ function detectTransitProximity(lat, lon) {
     return 'far';
 }
 
+// Detect SB 79 eligibility from coordinates
+function detectSB79Eligibility(lat, lon) {
+    let nearest = null;
+    let nearestDist = Infinity;
+    let nearestIdx = -1;
+    for (let i = 0; i < METRO_STATIONS.length; i++) {
+        const s = METRO_STATIONS[i];
+        const d = haversine(lat, lon, s.lat, s.lon);
+        if (d < nearestDist) {
+            nearestDist = d;
+            nearest = s;
+            nearestIdx = i;
+        }
+    }
+    if (!nearest || nearestDist > 0.5) {
+        return { eligible: false, station: nearest, distMiles: nearestDist, nearestIdx };
+    }
+    const tier = nearest.tier;
+    const tierData = SB79_TIERS[tier];
+    let zone, zoneKey;
+    if (nearestDist <= SB79_ZONES.adjacent.maxDist) { zone = SB79_ZONES.adjacent; zoneKey = 'adjacent'; }
+    else if (nearestDist <= SB79_ZONES.inner.maxDist) { zone = SB79_ZONES.inner; zoneKey = 'inner'; }
+    else { zone = SB79_ZONES.outer; zoneKey = 'outer'; }
+
+    const height = Math.round(tierData.height * zone.heightMult);
+    const far = parseFloat((tierData.far * zone.heightMult).toFixed(2));
+    const density = Math.round(tierData.density * zone.heightMult);
+    return {
+        eligible: true,
+        station: nearest,
+        nearestIdx,
+        tier,
+        tierLabel: tierData.label,
+        zone: zoneKey,
+        zoneLabel: zone.label,
+        distMiles: nearestDist,
+        allowances: { height, density, far, parking: zone.parking },
+    };
+}
+
 // Detect if address is on a major arterial
 function detectArterial(addressString, addressDetails) {
     // Try Nominatim road field first (most accurate — avoids matching neighborhood names)
@@ -1586,6 +2150,56 @@ function detectSiteCondition(osmClass, osmType) {
     // Other place types (most LA parcels have structures)
     if (osmClass === 'place') return 'demolition';
     return 'vacant';
+}
+
+// Estimate zoning when ZIMAS is blocked (fallback heuristic)
+function estimateZoningFallback(addressString, addressDetails, neighborhood) {
+    const lower = (addressString || '').toLowerCase();
+    const road = (addressDetails && addressDetails.road) ? addressDetails.road.toLowerCase() : '';
+
+    // Check if on a major commercial corridor
+    const commercialCorridors = [
+        'wilshire', 'sunset blvd', 'santa monica blvd', 'hollywood blvd', 'venice blvd',
+        'olympic', 'pico blvd', 'beverly blvd', 'melrose ave', '3rd st', 'la brea',
+        'la cienega', 'fairfax ave', 'robertson', 'highland ave', 'western ave',
+        'vermont ave', 'figueroa', 'broadway', 'spring st', 'main st',
+        'ventura blvd', 'lankershim', 'sepulveda blvd', 'van nuys blvd',
+        'colorado blvd', 'brand blvd', 'glendale ave',
+    ];
+    const isCommercialCorridor = commercialCorridors.some(c => road.includes(c) || lower.includes(c));
+
+    // Industrial areas
+    const industrialAreas = ['arts district', 'vernon', 'commerce', 'boyle heights industrial'];
+    const isIndustrial = industrialAreas.some(a => lower.includes(a));
+
+    // DTLA is mostly commercial/mixed
+    if (neighborhood === 'dtla') return isIndustrial ? 'M1' : 'C2';
+
+    // Commercial corridors
+    if (isCommercialCorridor) return 'C2';
+
+    // Check for apartment-style addresses (Nominatim type)
+    if (addressDetails && addressDetails.type === 'apartments') return 'R3';
+
+    // Residential streets — check street suffix patterns
+    const residentialSuffixes = /\b(ave|avenue|st|street|dr|drive|pl|place|way|ln|lane|ct|court|rd|road|blvd|ter|terrace|cir|circle)\b/i;
+    const isResidential = residentialSuffixes.test(road) && !isCommercialCorridor;
+
+    // Residential neighborhoods default to R1
+    const residentialHoods = ['beverly', 'westside', 'santamonica', 'valleyeast', 'valleywest',
+        'silverlake', 'highland', 'venice', 'culver', 'southbay', 'harbor'];
+    if (residentialHoods.includes(neighborhood) && isResidential) return 'R1';
+
+    // Dense residential neighborhoods
+    const denseHoods = ['koreatown', 'hollywood', 'midcity', 'exposition'];
+    if (denseHoods.includes(neighborhood) && isResidential) return 'R3';
+
+    // South LA residential
+    if (['southla', 'boyleheights'].includes(neighborhood) && isResidential) return 'R1';
+
+    // Default: R1 for residential streets, C2 for commercial
+    if (isResidential) return 'R1';
+    return null; // Can't determine — let user select
 }
 
 // Map ZIMAS zoning code to our dropdown values
@@ -1757,6 +2371,9 @@ async function lookupAddress() {
         return;
     }
 
+    // Store coordinates globally for map & SB 79 detection
+    window.lastGeocode = { lat: coords.lat, lon: coords.lon };
+
     let filledCount = 0;
 
     // Run zoning + parcel queries in parallel
@@ -1772,7 +2389,16 @@ async function lookupAddress() {
 
     // Apply zoning
     if (zoningResult && zoningResult.error === 'cors') {
-        statusParts.push(`<span class="status-item warn">Zoning: ZIMAS blocked by browser — select manually</span>`);
+        // Estimate zoning from street type and neighborhood when ZIMAS blocked
+        const estZone = estimateZoningFallback(coords.matched || address, coords.address, hood);
+        if (estZone) {
+            document.getElementById('zoning').value = estZone;
+            markAutofill('zoning');
+            filledCount++;
+            statusParts.push(`<span class="status-item warn">Zoning: ZIMAS blocked — estimated ${estZone} from location (verify manually)</span>`);
+        } else {
+            statusParts.push(`<span class="status-item warn">Zoning: ZIMAS blocked by browser — select manually</span>`);
+        }
     } else if (zoningResult && zoningResult.mapped) {
         const sel = document.getElementById('zoning');
         const opt = sel.querySelector(`option[value="${zoningResult.mapped}"]`);
@@ -1787,7 +2413,16 @@ async function lookupAddress() {
     } else if (zoningResult && zoningResult.raw) {
         statusParts.push(`<span class="status-item warn">Zoning "${zoningResult.raw}" — please select closest match</span>`);
     } else {
-        statusParts.push(`<span class="status-item warn">Zoning: could not retrieve — please select manually</span>`);
+        // Also try fallback estimation when ZIMAS returns nothing
+        const estZone = estimateZoningFallback(coords.matched || address, coords.address, hood);
+        if (estZone) {
+            document.getElementById('zoning').value = estZone;
+            markAutofill('zoning');
+            filledCount++;
+            statusParts.push(`<span class="status-item warn">Zoning: estimated ${estZone} from location (verify manually)</span>`);
+        } else {
+            statusParts.push(`<span class="status-item warn">Zoning: could not retrieve — please select manually</span>`);
+        }
     }
 
     // Apply parcel size
@@ -1923,26 +2558,42 @@ const MIN_PARCEL = {
 
 // Approx LA land value per SF by neighborhood (for relative comparisons)
 const LAND_VALUE_PSF = {
-    dtla: 280, hollywood: 210, koreatown: 190, westside: 300, santamonica: 320,
-    beverly: 400, midcity: 180, southla: 80, valleyeast: 90, valleywest: 120,
-    silverlake: 200, highland: 140, venice: 320, culver: 220, exposition: 150,
-    southbay: 110, harbor: 70, boyleheights: 100
+    dtla: 250, hollywood: 250, koreatown: 200, westside: 350, santamonica: 400,
+    beverly: 450, midcity: 180, southla: 85, valleyeast: 110, valleywest: 130,
+    silverlake: 220, highland: 150, venice: 350, culver: 260, exposition: 160,
+    southbay: 120, harbor: 80, boyleheights: 110
 };
 
-// Revenue potential per SF of building (annual, rough $/SF)
+// Revenue potential per NSF of building (annual $/SF, new-construction achievable rents)
 const REVENUE_PSF = {
-    sfr: 28, duplex: 30, multifamily_low: 34, multifamily_mid: 38,
-    multifamily_high: 42, mixeduse: 40, retail: 36, office: 38,
-    medical: 45, hotel: 55, industrial: 16, selfstorage: 14,
-    senior: 48, parking: 22, creative: 35, adu: 32
+    sfr: 40, duplex: 42, multifamily_low: 52, multifamily_mid: 58,
+    multifamily_high: 66, mixeduse: 56, retail: 52, office: 52,
+    medical: 62, hotel: 90, industrial: 22, selfstorage: 24,
+    senior: 62, parking: 30, creative: 52, adu: 46
 };
 
-// Build cost per SF (rough LA estimates)
+// Neighborhood rent multiplier — adjusts REVENUE_PSF by submarket
+const NEIGHBORHOOD_RENT_MULT = {
+    dtla: 0.95, hollywood: 1.10, koreatown: 0.88, westside: 1.25, santamonica: 1.35,
+    beverly: 1.40, midcity: 1.00, southla: 0.70, valleyeast: 0.82, valleywest: 0.85,
+    silverlake: 1.08, highland: 0.88, venice: 1.25, culver: 1.12, exposition: 0.88,
+    southbay: 0.85, harbor: 0.70, boyleheights: 0.75
+};
+
+// Parking cost per space by building type
+const PARKING_COST_MAP = {
+    sfr: 8000, duplex: 8000, multifamily_low: 30000, multifamily_mid: 40000,
+    multifamily_high: 65000, mixeduse: 40000, retail: 8000, office: 40000,
+    medical: 40000, hotel: 55000, industrial: 5000, selfstorage: 5000,
+    senior: 30000, parking: 35000, creative: 8000, adu: 5000
+};
+
+// Build cost per SF (LA 2024-2025 market)
 const BUILD_COST_PSF = {
-    sfr: 280, duplex: 260, multifamily_low: 300, multifamily_mid: 380,
-    multifamily_high: 500, mixeduse: 400, retail: 250, office: 350,
-    medical: 420, hotel: 450, industrial: 150, selfstorage: 100,
-    senior: 380, parking: 80, creative: 280, adu: 250
+    sfr: 300, duplex: 275, multifamily_low: 310, multifamily_mid: 400,
+    multifamily_high: 575, mixeduse: 420, retail: 260, office: 365,
+    medical: 430, hotel: 480, industrial: 150, selfstorage: 110,
+    senior: 400, parking: 85, creative: 290, adu: 280
 };
 
 // FAR (floor area ratio) by use — typical LA densities
@@ -2112,6 +2763,38 @@ const CA_HOUSING_LEGISLATION = [
         softCostReduction: 0,
         legalOverride: true,
     },
+    {
+        id: 'sb79',
+        name: 'SB 79 (Transit-Oriented)',
+        description: 'Overrides local zoning near qualifying transit stations — up to 95ft, 160 du/acre, 4.5 FAR.',
+        detail: 'SB 79 (effective July 1, 2026) is California\'s transit-oriented development bill that overrides local zoning near qualifying heavy and light rail stations. Tier 1 (heavy rail, including all Metro Rail lines) allows 95ft height, 160 du/acre, and 4.5 FAR. Tier 2 (light rail, BRT, qualifying Metrolink) allows 85ft height, 140 du/acre, and 4.0 FAR. Three distance zones apply: Adjacent (within 200ft of station entrance) and Inner (within 1/4 mile) get full tier benefits and zero parking requirements. Outer zone (1/4 to 1/2 mile) is limited to 65ft height and 3.25 FAR, with 0.5 parking spaces per unit. All projects require 15% affordable units. 100% affordable projects receive the full tier benefits regardless of zone. Impact: Unlocks massive upzoning near every Metro station in LA County, making transit-adjacent parcels significantly more valuable for higher-density development.',
+        applies: (useId, inp) => {
+            if (!window.lastGeocode) return false;
+            if (!['multifamily_low','multifamily_mid','multifamily_high','mixeduse','senior','hotel'].includes(useId)) return false;
+            const sb79 = detectSB79Eligibility(window.lastGeocode.lat, window.lastGeocode.lon);
+            return sb79.eligible;
+        },
+        get densityBonus() {
+            if (!window.lastGeocode) return 0;
+            const sb79 = detectSB79Eligibility(window.lastGeocode.lat, window.lastGeocode.lon);
+            if (!sb79.eligible) return 0;
+            return sb79.allowances.far / 3.0 - 1;
+        },
+        get parkingReduction() {
+            if (!window.lastGeocode) return 0;
+            const sb79 = detectSB79Eligibility(window.lastGeocode.lat, window.lastGeocode.lon);
+            if (!sb79.eligible) return 0;
+            return sb79.allowances.parking === 0 ? 1.0 : 0.5;
+        },
+        softCostReduction: 0.10,
+        legalOverride: true,
+        get minFAR() {
+            if (!window.lastGeocode) return 0;
+            const sb79 = detectSB79Eligibility(window.lastGeocode.lat, window.lastGeocode.lon);
+            if (!sb79.eligible) return 0;
+            return sb79.allowances.far;
+        },
+    },
 ];
 
 function getApplicableLegislation(useId, inp) {
@@ -2144,21 +2827,21 @@ function stackLegislationEffects(legislationList) {
 
 const BUILDING_PARAMS = {
     sfr:              { stories: 2,  floorH: 10, eff: 0.92, unitSF: 1800, parkRatio: 2.0,  setF: 20, setS: 5,  opex: 0.30, cap: 0.045 },
-    duplex:           { stories: 2,  floorH: 10, eff: 0.90, unitSF: 1200, parkRatio: 1.5,  setF: 15, setS: 5,  opex: 0.32, cap: 0.048 },
-    multifamily_low:  { stories: 4,  floorH: 10, eff: 0.82, unitSF: 850,  parkRatio: 1.25, setF: 10, setS: 5,  opex: 0.38, cap: 0.050 },
-    multifamily_mid:  { stories: 7,  floorH: 10, eff: 0.80, unitSF: 800,  parkRatio: 1.0,  setF: 10, setS: 5,  opex: 0.38, cap: 0.048 },
-    multifamily_high: { stories: 18, floorH: 10, eff: 0.78, unitSF: 750,  parkRatio: 1.0,  setF: 10, setS: 10, opex: 0.40, cap: 0.045 },
-    mixeduse:         { stories: 6,  floorH: 12, eff: 0.80, unitSF: 850,  parkRatio: 1.0,  setF: 0,  setS: 0,  opex: 0.38, cap: 0.050 },
-    retail:           { stories: 1,  floorH: 16, eff: 0.88, unitSF: null, parkRatio: 4.0,  setF: 0,  setS: 0,  opex: 0.35, cap: 0.055 },
-    office:           { stories: 5,  floorH: 13, eff: 0.85, unitSF: null, parkRatio: 3.0,  setF: 5,  setS: 5,  opex: 0.40, cap: 0.055 },
-    medical:          { stories: 4,  floorH: 13, eff: 0.82, unitSF: null, parkRatio: 4.0,  setF: 10, setS: 5,  opex: 0.42, cap: 0.050 },
-    hotel:            { stories: 10, floorH: 11, eff: 0.75, unitSF: 400,  parkRatio: 0.5,  setF: 5,  setS: 5,  opex: 0.55, cap: 0.060 },
-    industrial:       { stories: 1,  floorH: 24, eff: 0.92, unitSF: null, parkRatio: 1.0,  setF: 10, setS: 5,  opex: 0.28, cap: 0.055 },
-    selfstorage:      { stories: 4,  floorH: 9,  eff: 0.88, unitSF: null, parkRatio: 0.2,  setF: 5,  setS: 5,  opex: 0.30, cap: 0.060 },
-    senior:           { stories: 5,  floorH: 10, eff: 0.78, unitSF: 600,  parkRatio: 0.5,  setF: 10, setS: 5,  opex: 0.55, cap: 0.050 },
+    duplex:           { stories: 2,  floorH: 10, eff: 0.90, unitSF: 1200, parkRatio: 1.5,  setF: 15, setS: 5,  opex: 0.32, cap: 0.047 },
+    multifamily_low:  { stories: 4,  floorH: 10, eff: 0.82, unitSF: 850,  parkRatio: 1.25, setF: 10, setS: 5,  opex: 0.35, cap: 0.047 },
+    multifamily_mid:  { stories: 7,  floorH: 10, eff: 0.80, unitSF: 800,  parkRatio: 1.0,  setF: 10, setS: 5,  opex: 0.35, cap: 0.045 },
+    multifamily_high: { stories: 18, floorH: 10, eff: 0.78, unitSF: 750,  parkRatio: 1.0,  setF: 10, setS: 10, opex: 0.38, cap: 0.042 },
+    mixeduse:         { stories: 6,  floorH: 12, eff: 0.80, unitSF: 850,  parkRatio: 1.0,  setF: 0,  setS: 0,  opex: 0.36, cap: 0.048 },
+    retail:           { stories: 1,  floorH: 16, eff: 0.88, unitSF: null, parkRatio: 4.0,  setF: 0,  setS: 0,  opex: 0.32, cap: 0.058 },
+    office:           { stories: 5,  floorH: 13, eff: 0.85, unitSF: null, parkRatio: 3.0,  setF: 5,  setS: 5,  opex: 0.38, cap: 0.065 },
+    medical:          { stories: 4,  floorH: 13, eff: 0.82, unitSF: null, parkRatio: 4.0,  setF: 10, setS: 5,  opex: 0.40, cap: 0.055 },
+    hotel:            { stories: 10, floorH: 11, eff: 0.75, unitSF: 400,  parkRatio: 0.5,  setF: 5,  setS: 5,  opex: 0.55, cap: 0.070 },
+    industrial:       { stories: 1,  floorH: 24, eff: 0.92, unitSF: null, parkRatio: 1.0,  setF: 10, setS: 5,  opex: 0.28, cap: 0.052 },
+    selfstorage:      { stories: 4,  floorH: 9,  eff: 0.88, unitSF: null, parkRatio: 0.2,  setF: 5,  setS: 5,  opex: 0.30, cap: 0.062 },
+    senior:           { stories: 5,  floorH: 10, eff: 0.78, unitSF: 600,  parkRatio: 0.5,  setF: 10, setS: 5,  opex: 0.50, cap: 0.058 },
     parking:          { stories: 5,  floorH: 11, eff: 0.90, unitSF: null, parkRatio: null, setF: 0,  setS: 0,  opex: 0.25, cap: 0.065 },
-    creative:         { stories: 3,  floorH: 14, eff: 0.85, unitSF: null, parkRatio: 2.5,  setF: 0,  setS: 0,  opex: 0.35, cap: 0.055 },
-    adu:              { stories: 2,  floorH: 9,  eff: 0.90, unitSF: 600,  parkRatio: 0,    setF: 5,  setS: 4,  opex: 0.30, cap: 0.050 },
+    creative:         { stories: 3,  floorH: 14, eff: 0.85, unitSF: null, parkRatio: 2.5,  setF: 0,  setS: 0,  opex: 0.32, cap: 0.058 },
+    adu:              { stories: 2,  floorH: 9,  eff: 0.90, unitSF: 600,  parkRatio: 0,    setF: 5,  setS: 4,  opex: 0.30, cap: 0.048 },
 };
 
 const TIMELINE_MONTHS = {
@@ -2295,7 +2978,9 @@ function scoreFinancial(useId, inp, effects) {
         if (effects.minFAR > 0) far = Math.max(far, effects.minFAR);
     }
 
+    const params = BUILDING_PARAMS[useId];
     const buildableSF = inp.parcelSize * far;
+    const nsf = buildableSF * (params ? params.eff : 0.82);
     const landValuePSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
     const landCost = inp.parcelSize * landValuePSF;
 
@@ -2306,24 +2991,44 @@ function scoreFinancial(useId, inp, effects) {
     }
     const buildCost = buildableSF * buildCostPerSF;
 
-    // Total cost with soft cost reduction from legislation
-    let totalCost = landCost + buildCost;
+    // Parking cost (use-specific)
+    const parkCostPerSpace = PARKING_COST_MAP[useId] || 35000;
+    const baseParkRatio = params ? (params.parkRatio || 0) : 0;
+    const parkReduction = effects ? effects.parkingReduction : 0;
+    const hasUnits = params && params.unitSF;
+    let parkSpaces = 0;
+    if (useId === 'parking') parkSpaces = Math.round(buildableSF / 350);
+    else if (hasUnits) parkSpaces = Math.max(0, Math.ceil(Math.floor(nsf / params.unitSF) * baseParkRatio * (1 - parkReduction)));
+    else parkSpaces = Math.max(0, Math.ceil(buildableSF / 1000 * baseParkRatio * (1 - parkReduction)));
+    const parkingCost = parkSpaces * parkCostPerSpace;
+
+    // Total cost including overhead (parking, contingency, soft costs)
+    const hardCostBase = buildCost + parkingCost + inp.parcelSize * 18;
+    const totalHard = hardCostBase * 1.11; // ~4% landscaping + 7% contingency
+    const totalSoft = totalHard * 0.235; // ~23.5% (A&E 8%, permits 5%, legal 2%, financing 4.5%, dev fee 4%)
+    let totalCost = landCost + totalHard + totalSoft;
     if (effects && effects.softCostReduction > 0) {
-        totalCost *= (1 - effects.softCostReduction * 0.20);
+        totalCost -= totalSoft * effects.softCostReduction * 0.20;
     }
 
-    // Annual revenue
-    const annualRevenue = buildableSF * (REVENUE_PSF[useId] || 30);
+    // Annual NOI with neighborhood rent adjustment
+    const rentMult = NEIGHBORHOOD_RENT_MULT[inp.neighborhood] || 1.0;
+    const opexRate = params ? params.opex : 0.35;
+    const annualNOI = nsf * (REVENUE_PSF[useId] || 30) * rentMult * (1 - opexRate);
 
-    // Simple yield-on-cost
-    const yieldOnCost = annualRevenue / totalCost;
+    // Yield-on-cost and development margin
+    const yieldOnCost = annualNOI / totalCost;
+    const capRate = params ? params.cap : 0.05;
+    const devMargin = capRate > 0 ? (yieldOnCost / capRate - 1) : 0;
 
-    // Normalize: 3% yield = 0.2, 6% = 0.5, 10%+ = 1.0
+    // Score based on dev margin — directly ties to project profitability
     let score;
-    if (yieldOnCost >= 0.10) score = 1.0;
-    else if (yieldOnCost >= 0.06) score = 0.5 + (yieldOnCost - 0.06) / 0.04 * 0.5;
-    else if (yieldOnCost >= 0.03) score = 0.2 + (yieldOnCost - 0.03) / 0.03 * 0.3;
-    else score = yieldOnCost / 0.03 * 0.2;
+    if (devMargin >= 0.25) score = 1.0;
+    else if (devMargin >= 0.15) score = 0.75 + (devMargin - 0.15) / 0.10 * 0.25;
+    else if (devMargin >= 0.05) score = 0.45 + (devMargin - 0.05) / 0.10 * 0.30;
+    else if (devMargin >= 0) score = 0.20 + (devMargin / 0.05) * 0.25;
+    else if (devMargin >= -0.15) score = Math.max(0.02, 0.20 + devMargin * 1.2);
+    else score = 0.02;
 
     // Neighborhood demand multiplier
     const demandRow = NEIGHBORHOOD_DEMAND[inp.neighborhood];
@@ -2372,7 +3077,8 @@ function scoreProductive(useId, inp, effects) {
 
     const buildableSF = inp.parcelSize * far;
     const revenuePSF = REVENUE_PSF[useId] || 30;
-    const totalAnnualRev = buildableSF * revenuePSF;
+    const rentMult = NEIGHBORHOOD_RENT_MULT[inp.neighborhood] || 1.0;
+    const totalAnnualRev = buildableSF * revenuePSF * rentMult;
     const landValuePSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
 
     // Revenue-to-land-value ratio (higher = more productive per dollar of land)
@@ -2413,6 +3119,10 @@ function calculateHBU() {
         const financial  = scoreFinancial(use.id, inp, effects);
         const productive = scoreProductive(use.id, inp, effects);
 
+        // Compute actual dev margin for feasibility check
+        const budget = generateBudget(use.id, inp, effects);
+        const devMarginPct = budget.devMargin;
+
         // HBU must pass ALL four tests. Weight: Legal gateway, then others.
         // If legal = 0, overall = 0
         let overall;
@@ -2422,6 +3132,10 @@ function calculateHBU() {
             overall = legal * 0.25 + physical * 0.20 + financial * 0.30 + productive * 0.25;
             // Penalize further if legal is only conditional
             if (legal <= 0.5) overall *= 0.8;
+            // Feasibility gate — penalize uses that lose money
+            if (devMarginPct < -0.15) overall *= 0.50;
+            else if (devMarginPct < -0.05) overall *= 0.65;
+            else if (devMarginPct < 0) overall *= 0.80;
         }
 
         return {
@@ -2431,6 +3145,7 @@ function calculateHBU() {
             financial: Math.round(financial * 100),
             productive: Math.round(productive * 100),
             overall: Math.round(overall * 100),
+            devMarginPct,
             legislation,
         };
     });
@@ -2444,6 +3159,15 @@ function calculateHBU() {
 
     // Render
     renderResults(results, inp);
+
+    // SB 79 Map — show if we have geocoded coordinates
+    if (window.lastGeocode && typeof L !== 'undefined') {
+        const { lat, lon } = window.lastGeocode;
+        const sb79 = detectSB79Eligibility(lat, lon);
+        document.getElementById('mapSection').style.display = 'block';
+        initSB79Map(lat, lon);
+        renderSB79Eligibility(sb79);
+    }
 }
 
 
@@ -2459,21 +3183,43 @@ function renderResults(results, inp) {
     document.getElementById('resultsSummary').textContent =
         `Analysis for a ${inp.parcelSize.toLocaleString()} SF parcel, zoned ${inp.zoning}, in ${document.getElementById('neighborhood').selectedOptions[0].text}.`;
 
+    // Feasibility warning banner
+    const topMargin = results[0] ? results[0].devMarginPct : 0;
+    const anyFeasible = results.slice(0, 3).some(r => r.devMarginPct >= 0);
+    let warningHTML = '';
+    if (!anyFeasible) {
+        warningHTML = `<div style="background:#fff5f5;border:1px solid #fc8181;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:0.88rem;color:#c53030;">
+            <strong>No Feasible Development Identified</strong> — Based on current market rents, construction costs, and land values, none of the evaluated uses produce a positive development margin at this site. Consider: (1) acquiring the land below market, (2) a condo/for-sale exit strategy, (3) value-add renovation of the existing structure, or (4) holding the property.
+        </div>`;
+    } else if (topMargin < 0.10) {
+        warningHTML = `<div style="background:#fffff0;border:1px solid #ecc94b;border-radius:10px;padding:0.85rem 1.15rem;margin-bottom:1.25rem;font-size:0.85rem;color:#b7791f;">
+            <strong>Marginal Feasibility</strong> — The top-ranked use shows a ${(topMargin * 100).toFixed(0)}% development margin. Most developers target 15-25%. Profitability depends on favorable execution, cost control, and rent achievement.
+        </div>`;
+    }
+
     // Top 3 cards
     const cardsDiv = document.getElementById('resultCards');
-    cardsDiv.innerHTML = '';
+    cardsDiv.innerHTML = warningHTML;
 
     const rankLabels = ['1st — Best Use', '2nd — Alternative', '3rd — Alternative'];
     const rankClasses = ['rank-1', 'rank-2', 'rank-3'];
 
     for (let i = 0; i < 3; i++) {
         const r = results[i];
+        const effects = stackLegislationEffects(r.legislation || []);
+        const metricsHTML = generateCardMetricsHTML(r.id, inp, effects, r);
         const legBadges = r.legislation && r.legislation.length > 0
             ? `<div class="legislation-badges">
                    <div class="leg-label">Applicable Legislation</div>
                    ${r.legislation.map(b => `<span class="legislation-badge clickable" onclick="event.stopPropagation();showLegislationDetail('${b.id}')">${b.name}</span>`).join('')}
                </div>`
             : '';
+
+        // Feasibility badge
+        let feasBadge = '';
+        if (r.devMarginPct >= 0.15) feasBadge = '<span style="display:inline-block;font-size:0.7rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;background:#f0fff4;color:#276749;margin-left:0.5rem;">FEASIBLE</span>';
+        else if (r.devMarginPct >= 0) feasBadge = '<span style="display:inline-block;font-size:0.7rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;background:#fffff0;color:#b7791f;margin-left:0.5rem;">MARGINAL</span>';
+        else feasBadge = '<span style="display:inline-block;font-size:0.7rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;background:#fff5f5;color:#c53030;margin-left:0.5rem;">NOT FEASIBLE</span>';
 
         const card = document.createElement('div');
         card.className = `result-card ${rankClasses[i]}`;
@@ -2482,7 +3228,7 @@ function renderResults(results, inp) {
         card.innerHTML = `
             <div class="rank-banner">
                 <span class="rank-num">#${i + 1}</span>
-                ${rankLabels[i]}
+                ${rankLabels[i]}${feasBadge}
             </div>
             <div class="card-body">
                 <div class="use-name">${r.icon} ${r.name}</div>
@@ -2508,6 +3254,8 @@ function renderResults(results, inp) {
                     <div class="big-score">${r.overall}</div>
                     <span>/ 100<br>Overall Score</span>
                 </div>
+
+                ${metricsHTML}
 
                 <div class="rationale">${RATIONALE[r.id] || ''}</div>
                 ${legBadges}
@@ -2544,31 +3292,63 @@ function renderResults(results, inp) {
         legSection.innerHTML = '';
     }
 
-    // Full table
+    // Full table — split into permissible vs excluded
     const tbody = document.getElementById('detailsBody');
+    const excludedBody = document.getElementById('excludedBody');
     tbody.innerHTML = '';
-    results.forEach((r, i) => {
-        const tr = document.createElement('tr');
-        if (i < 3) tr.className = 'top-3';
+    excludedBody.innerHTML = '';
 
-        const formatCell = (val) => {
-            if (val >= 70) return `<span class="pass">${val}%</span>`;
-            if (val >= 40) return `<span class="partial">${val}%</span>`;
-            if (val > 0)   return `<span class="fail">${val}%</span>`;
-            return `<span class="fail">N/A</span>`;
-        };
+    const formatCell = (val) => {
+        if (val >= 70) return `<span class="pass">${val}%</span>`;
+        if (val >= 40) return `<span class="partial">${val}%</span>`;
+        if (val > 0)   return `<span class="fail">${val}%</span>`;
+        return `<span class="fail">N/A</span>`;
+    };
 
-        tr.innerHTML = `
-            <td>${i + 1}</td>
-            <td>${r.icon} ${r.name}</td>
-            <td>${formatCell(r.legal)}</td>
-            <td>${formatCell(r.physical)}</td>
-            <td>${formatCell(r.financial)}</td>
-            <td>${formatCell(r.productive)}</td>
-            <td><strong>${r.overall}%</strong></td>
-        `;
-        tbody.appendChild(tr);
+    let permissibleRank = 0;
+    let excludedCount = 0;
+    const zoningLabel = document.getElementById('zoning').selectedOptions[0].text;
+
+    results.forEach((r) => {
+        if (r.legal > 0) {
+            permissibleRank++;
+            const tr = document.createElement('tr');
+            if (permissibleRank <= 3) tr.className = 'top-3';
+            tr.innerHTML = `
+                <td>${permissibleRank}</td>
+                <td>${r.icon} ${r.name}</td>
+                <td>${formatCell(r.legal)}</td>
+                <td>${formatCell(r.physical)}</td>
+                <td>${formatCell(r.financial)}</td>
+                <td>${formatCell(r.productive)}</td>
+                <td><strong>${r.overall}%</strong></td>
+            `;
+            tbody.appendChild(tr);
+        } else {
+            excludedCount++;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${r.icon} ${r.name}</td>
+                <td>${formatCell(r.physical)}</td>
+                <td>${formatCell(r.financial)}</td>
+                <td>${formatCell(r.productive)}</td>
+                <td><span class="fail">Not permitted under ${zoningLabel} zoning</span></td>
+            `;
+            excludedBody.appendChild(tr);
+        }
     });
+
+    const excludedSection = document.getElementById('excludedSection');
+    if (excludedCount > 0) {
+        excludedSection.style.display = 'block';
+        document.getElementById('excludedCount').textContent = excludedCount;
+        // Reset toggle state
+        document.getElementById('excludedTable').style.display = 'none';
+        document.getElementById('toggleExcluded').innerHTML =
+            `▶ Show <span id="excludedCount">${excludedCount}</span> uses not legally permissible under current zoning`;
+    } else {
+        excludedSection.style.display = 'none';
+    }
 
     // Show print button
     document.getElementById('btnPrint').classList.add('visible');
@@ -2588,6 +3368,19 @@ function exportPDF() {
 
     // Trigger browser print dialog (user can select "Save as PDF")
     window.print();
+}
+
+function toggleExcludedUses() {
+    const table = document.getElementById('excludedTable');
+    const btn = document.getElementById('toggleExcluded');
+    const count = document.getElementById('excludedCount')?.textContent || '0';
+    if (table.style.display === 'none') {
+        table.style.display = 'block';
+        btn.innerHTML = `▼ Hide <span id="excludedCount">${count}</span> uses not legally permissible under current zoning`;
+    } else {
+        table.style.display = 'none';
+        btn.innerHTML = `▶ Show <span id="excludedCount">${count}</span> uses not legally permissible under current zoning`;
+    }
 }
 
 
@@ -2625,17 +3418,18 @@ function generateBudget(useId, inp, effects) {
     const buildingFootprint = Math.min(Math.round(inp.parcelSize * 0.7), Math.round(gsf / stories));
     const units = params.unitSF ? Math.max(1, Math.floor(nsf / params.unitSF)) : null;
 
-    // Parking
+    // Parking (use-specific cost per space)
     const baseParkRatio = params.parkRatio || 0;
     const parkReduction = effects ? effects.parkingReduction : 0;
     let parkingSpaces;
     if (useId === 'parking') {
-        parkingSpaces = Math.round(gsf / 350); // ~350 SF per space
+        parkingSpaces = Math.round(gsf / 350);
     } else if (units) {
         parkingSpaces = Math.max(0, Math.ceil(units * baseParkRatio * (1 - parkReduction)));
     } else {
         parkingSpaces = Math.max(0, Math.ceil(gsf / 1000 * baseParkRatio * (1 - parkReduction)));
     }
+    const parkingCostPerSpace = PARKING_COST_MAP[useId] || 35000;
 
     const landValuePSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
     const landCost = inp.parcelSize * landValuePSF;
@@ -2648,25 +3442,27 @@ function generateBudget(useId, inp, effects) {
         buildCostPSF *= (1 - effects.parkingReduction * 0.18);
     }
     const construction = gsf * buildCostPSF;
-    const parkingCost = parkingSpaces * 45000;
+    const parkingCost = parkingSpaces * parkingCostPerSpace;
     const landscaping = Math.round(construction * 0.04);
     const hardContingency = Math.round((siteWork + demolition + construction + parkingCost + landscaping) * 0.07);
     const totalHard = siteWork + demolition + construction + parkingCost + landscaping + hardContingency;
 
     // Soft costs
-    const archEng = Math.round(totalHard * 0.10);
-    const permits = Math.round(totalHard * 0.06);
-    const legal = Math.round(totalHard * 0.025);
-    const financing = Math.round((landCost + totalHard) * 0.05);
-    const marketing = Math.round(nsf * (REVENUE_PSF[useId] || 30) * 0.025);
+    const archEng = Math.round(totalHard * 0.08);
+    const permits = Math.round(totalHard * 0.05);
+    const legal = Math.round(totalHard * 0.02);
+    const financing = Math.round((landCost + totalHard) * 0.045);
+    const rentMult = NEIGHBORHOOD_RENT_MULT[inp.neighborhood] || 1.0;
+    const revenuePSF = (REVENUE_PSF[useId] || 30) * rentMult;
+    const marketing = Math.round(nsf * revenuePSF * 0.02);
     const devFee = Math.round((totalHard + archEng + permits) * 0.04);
     const softCostMult = effects && effects.softCostReduction > 0 ? (1 - effects.softCostReduction * 0.20) : 1;
     const totalSoft = Math.round((archEng + permits + legal + financing + marketing + devFee) * softCostMult);
 
     const totalDev = landCost + totalHard + totalSoft;
 
-    // Revenue & returns
-    const grossRevenue = nsf * (REVENUE_PSF[useId] || 30);
+    // Revenue & returns (neighborhood-adjusted)
+    const grossRevenue = nsf * revenuePSF;
     const opex = Math.round(grossRevenue * params.opex);
     const noi = grossRevenue - opex;
     const capRate = params.cap;
@@ -2675,12 +3471,12 @@ function generateBudget(useId, inp, effects) {
     const devMargin = (stabilizedValue - totalDev) / totalDev;
 
     return {
-        gsf, nsf, stories, buildingHeight, buildingFootprint, units, parkingSpaces, far,
-        landCost, siteWork, demolition, construction, buildCostPSF, parkingCost, landscaping, hardContingency, totalHard,
+        gsf, nsf, revenueNSF: nsf, stories, buildingHeight, buildingFootprint, units, parkingSpaces, far,
+        landCost, landValuePSF, siteWork, demolition, construction, buildCostPSF, parkingCost, parkingCostPerSpace, landscaping, hardContingency, totalHard,
         archEng, permits, legal, financing, marketing, devFee, totalSoft,
         totalDev,
         grossRevenue, opex, noi, capRate, stabilizedValue, yieldOnCost, devMargin,
-        params,
+        params, revenuePSF,
     };
 }
 
@@ -2792,6 +3588,150 @@ function generateElevationSVG(useId, inp, budget) {
     return s;
 }
 
+// ============================================================
+//  KEY METRICS HELPERS (for result cards)
+// ============================================================
+
+function formatCompactDollars(n) {
+    if (n >= 1e9) return '$' + (n / 1e9).toFixed(1) + 'B';
+    if (n >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M';
+    if (n >= 1e3) return '$' + (n / 1e3).toFixed(0) + 'K';
+    return '$' + Math.round(n).toLocaleString();
+}
+
+function approxIRR(devMargin, totalMonths) {
+    if (totalMonths <= 0 || devMargin <= -1) return 0;
+    return Math.pow(1 + devMargin, 12 / totalMonths) - 1;
+}
+
+function computeEaseOfExecution(useId, inp, effects, legalScore) {
+    let ease = 50; // base score
+
+    // Entitlement timeline — shorter is easier
+    const tl = TIMELINE_MONTHS[useId] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
+    const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
+    if (totalMo <= 20) ease += 20;
+    else if (totalMo <= 35) ease += 10;
+    else if (totalMo >= 55) ease -= 15;
+    else if (totalMo >= 45) ease -= 8;
+
+    // Legal permissibility bonus
+    if (legalScore >= 80) ease += 12;
+    else if (legalScore >= 60) ease += 6;
+    else if (legalScore < 30) ease -= 15;
+
+    // Legislation streamlining bonuses
+    if (effects && effects.legalOverride) ease += 8;
+    if (effects && effects.softCostReduction > 0) ease += Math.round(effects.softCostReduction * 10);
+    if (effects && effects.parkingReduction > 0) ease += 5;
+
+    // Site constraints penalties
+    if (inp.constHistoric) ease -= 10;
+    if (inp.constHillside) ease -= 8;
+    if (inp.constCoastal) ease -= 8;
+    if (inp.constFault) ease -= 5;
+    if (inp.constFlood) ease -= 5;
+    if (inp.siteCondition === 'brownfield') ease -= 10;
+    if (inp.topography === 'steep') ease -= 7;
+    if (inp.utilities === 'none') ease -= 10;
+    else if (inp.utilities === 'partial') ease -= 5;
+
+    // Construction complexity — high-rise / hotel harder
+    const params = BUILDING_PARAMS[useId];
+    if (params && params.stories >= 10) ease -= 10;
+    else if (params && params.stories >= 6) ease -= 5;
+
+    return Math.max(0, Math.min(100, ease));
+}
+
+function computeRiskLevel(useId, inp, legalScore, physicalScore) {
+    let riskPts = 0;
+
+    // Site constraint risks
+    if (inp.constFlood) riskPts += 12;
+    if (inp.constHillside) riskPts += 10;
+    if (inp.constHistoric) riskPts += 10;
+    if (inp.constFault) riskPts += 12;
+    if (inp.constCoastal) riskPts += 8;
+    if (inp.siteCondition === 'brownfield') riskPts += 14;
+    if (inp.topography === 'steep') riskPts += 8;
+    if (inp.utilities === 'none') riskPts += 10;
+    else if (inp.utilities === 'partial') riskPts += 5;
+
+    // Score-based risk
+    if (legalScore < 40) riskPts += 15;
+    else if (legalScore < 60) riskPts += 8;
+    if (physicalScore < 40) riskPts += 10;
+
+    // Building complexity
+    const params = BUILDING_PARAMS[useId];
+    if (params && params.stories >= 10) riskPts += 10;
+    else if (params && params.stories >= 6) riskPts += 5;
+
+    // Market risk for certain types
+    if (['office', 'retail', 'hotel'].includes(useId)) riskPts += 6;
+
+    if (riskPts >= 35) return { level: 'High', color: '#c53030', bg: '#fff5f5' };
+    if (riskPts >= 18) return { level: 'Moderate', color: '#b7791f', bg: '#fffff0' };
+    return { level: 'Low', color: '#276749', bg: '#f0fff4' };
+}
+
+function generateCardMetricsHTML(useId, inp, effects, result) {
+    const budget = generateBudget(useId, inp, effects);
+    const tl = TIMELINE_MONTHS[useId] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
+    const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
+
+    const irr = approxIRR(budget.devMargin, totalMo);
+    const ease = computeEaseOfExecution(useId, inp, effects, result.legal);
+    const risk = computeRiskLevel(useId, inp, result.legal, result.physical);
+
+    // Color helpers
+    const marginClass = budget.devMargin >= 0.20 ? 'positive' : budget.devMargin >= 0.08 ? 'caution' : 'negative';
+    const irrClass = irr >= 0.10 ? 'positive' : irr >= 0.06 ? 'caution' : 'negative';
+    const yocClass = budget.yieldOnCost >= 0.065 ? 'positive' : budget.yieldOnCost >= 0.045 ? 'caution' : 'negative';
+    const easeColor = ease >= 60 ? '#276749' : ease >= 35 ? '#b7791f' : '#c53030';
+    const easeLabel = ease >= 70 ? 'Easy' : ease >= 50 ? 'Moderate' : ease >= 30 ? 'Difficult' : 'Very Hard';
+
+    return `
+        <div class="key-metrics">
+            <div class="key-metrics-title">Key Metrics</div>
+            <div class="metrics-grid">
+                <div class="metric-item">
+                    <div class="metric-icon-label">💰 Budget</div>
+                    <div class="metric-value">${formatCompactDollars(budget.totalDev)}</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-icon-label">📅 Timeline</div>
+                    <div class="metric-value">${totalMo} mo</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-icon-label">📈 Dev Margin</div>
+                    <div class="metric-value ${marginClass}">${(budget.devMargin * 100).toFixed(0)}%</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-icon-label">🎯 Est. IRR</div>
+                    <div class="metric-value ${irrClass}">${(irr * 100).toFixed(1)}%</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-icon-label">🏗️ Yield on Cost</div>
+                    <div class="metric-value ${yocClass}">${(budget.yieldOnCost * 100).toFixed(1)}%</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-icon-label">⚡ Ease of Execution</div>
+                    <div class="metric-value" style="font-size:0.78rem;color:${easeColor}">${ease} — ${easeLabel}</div>
+                    <div class="ease-bar-bg"><div class="ease-bar-fill" style="width:${ease}%;background:${easeColor}"></div></div>
+                </div>
+                <div class="metric-item" style="grid-column:span 2">
+                    <div class="metric-icon-label">⚠️ Risk Level</div>
+                    <span class="risk-badge" style="color:${risk.color};background:${risk.bg}">
+                        <span class="risk-dot" style="background:${risk.color}"></span>
+                        ${risk.level}
+                    </span>
+                </div>
+            </div>
+        </div>`;
+}
+
 function generateRisksHTML(useId, inp) {
     const risks = [];
     if (inp.constFlood) risks.push({ t: 'Flood Zone', d: 'Site is in a flood zone. Flood insurance required, ground-floor design constraints, potential FEMA elevation requirements.' });
@@ -2860,16 +3800,18 @@ function getDefaultAssumptions(useId, inp, effects) {
         buildCostPSF = Math.round(buildCostPSF * (1 - effects.parkingReduction * 0.18));
     }
 
+    const rentMult = NEIGHBORHOOD_RENT_MULT[inp.neighborhood] || 1.0;
+
     return {
         far: parseFloat(far.toFixed(2)),
         unitsOrNSF,
         parkingSpaces,
         buildCostPSF: Math.round(buildCostPSF),
         landValuePSF: LAND_VALUE_PSF[inp.neighborhood] || 150,
-        revenuePSF: REVENUE_PSF[useId] || 30,
+        revenuePSF: Math.round((REVENUE_PSF[useId] || 30) * rentMult),
         opexPct: Math.round(params.opex * 100),
         capRatePct: parseFloat((params.cap * 100).toFixed(1)),
-        parkingCostPerSpace: 45000,
+        parkingCostPerSpace: PARKING_COST_MAP[useId] || 35000,
     };
 }
 
@@ -2902,12 +3844,12 @@ function computeFromAssumptions(useId, inp, assumptions, effects) {
     const totalHard = siteWork + demolition + construction + parkingCost + landscaping + hardContingency;
 
     // Soft costs
-    const archEng = Math.round(totalHard * 0.10);
-    const permits = Math.round(totalHard * 0.06);
-    const legal = Math.round(totalHard * 0.025);
-    const financing = Math.round((landCost + totalHard) * 0.05);
+    const archEng = Math.round(totalHard * 0.08);
+    const permits = Math.round(totalHard * 0.05);
+    const legal = Math.round(totalHard * 0.02);
+    const financing = Math.round((landCost + totalHard) * 0.045);
     const revenuePSF = assumptions.revenuePSF;
-    const marketing = Math.round(revenueNSF * revenuePSF * 0.025);
+    const marketing = Math.round(revenueNSF * revenuePSF * 0.02);
     const devFee = Math.round((totalHard + archEng + permits) * 0.04);
     const softCostMult = effects && effects.softCostReduction > 0 ? (1 - effects.softCostReduction * 0.20) : 1;
     const totalSoft = Math.round((archEng + permits + legal + financing + marketing + devFee) * softCostMult);
@@ -2990,44 +3932,169 @@ function renderAssumptions(assumptions, hasUnits) {
 }
 
 function renderBudgetTable(computed, inp) {
+    const gsf = computed.gsf || 1;
+    const units = computed.units;
+    const hasUnits = units && units > 0;
+    const perGSF = (v) => `$${Math.round(v / gsf).toLocaleString()}`;
+    const perUnit = (v) => hasUnits ? `$${Math.round(v / units).toLocaleString()}` : '—';
+    const pct = (v) => computed.totalDev > 0 ? `${(v / computed.totalDev * 100).toFixed(1)}%` : '';
+
     return `<table class="budget-table">
-        <tr class="section-header"><td colspan="2">LAND ACQUISITION</td></tr>
-        <tr><td>Land Cost (${inp.parcelSize.toLocaleString()} SF &times; $${computed.landValuePSF.toLocaleString()}/SF)</td><td>${fmt(computed.landCost)}</td></tr>
+        <thead><tr>
+            <th>Line Item</th>
+            <th>Total</th>
+            <th>$/GSF</th>
+            <th>${hasUnits ? '$/Unit' : '$/NSF'}</th>
+            <th>% of Total</th>
+        </tr></thead>
+        <tbody>
+        <tr class="section-header"><td colspan="5">LAND ACQUISITION</td></tr>
+        <tr>
+            <td>Land Cost (${inp.parcelSize.toLocaleString()} SF &times; $${computed.landValuePSF.toLocaleString()}/SF)</td>
+            <td>${fmt(computed.landCost)}</td>
+            <td class="dim">${perGSF(computed.landCost)}</td>
+            <td class="dim">${hasUnits ? perUnit(computed.landCost) : '$' + Math.round(computed.landCost / (computed.nsf || 1)).toLocaleString()}</td>
+            <td class="pct-col">${pct(computed.landCost)}</td>
+        </tr>
 
-        <tr class="section-header"><td colspan="2">HARD COSTS</td></tr>
-        <tr><td>Site Work &amp; Preparation ($18/SF land)</td><td>${fmt(computed.siteWork)}</td></tr>
-        ${computed.demolition > 0 ? `<tr><td>Demolition ($12/SF land)</td><td>${fmt(computed.demolition)}</td></tr>` : ''}
-        <tr><td>Building Construction (${computed.gsf.toLocaleString()} GSF &times; $${Math.round(computed.buildCostPSF).toLocaleString()}/SF)</td><td>${fmt(computed.construction)}</td></tr>
-        <tr><td>Parking Construction (${computed.parkingSpaces} spaces &times; $${computed.parkingCostPerSpace.toLocaleString()})</td><td>${fmt(computed.parkingCost)}</td></tr>
-        <tr><td>Landscaping &amp; Hardscape (4%)</td><td>${fmt(computed.landscaping)}</td></tr>
-        <tr><td>Hard Cost Contingency (7%)</td><td>${fmt(computed.hardContingency)}</td></tr>
-        <tr class="subtotal"><td>Subtotal Hard Costs</td><td>${fmt(computed.totalHard)}</td></tr>
+        <tr class="section-header"><td colspan="5">HARD COSTS</td></tr>
+        <tr>
+            <td>Site Work &amp; Preparation</td>
+            <td>${fmt(computed.siteWork)}</td>
+            <td class="dim">${perGSF(computed.siteWork)}</td>
+            <td class="dim">${hasUnits ? perUnit(computed.siteWork) : '$' + Math.round(computed.siteWork / (computed.nsf || 1)).toLocaleString()}</td>
+            <td class="pct-col">${pct(computed.siteWork)}</td>
+        </tr>
+        ${computed.demolition > 0 ? `<tr>
+            <td>Demolition</td>
+            <td>${fmt(computed.demolition)}</td>
+            <td class="dim">${perGSF(computed.demolition)}</td>
+            <td class="dim">${hasUnits ? perUnit(computed.demolition) : '$' + Math.round(computed.demolition / (computed.nsf || 1)).toLocaleString()}</td>
+            <td class="pct-col">${pct(computed.demolition)}</td>
+        </tr>` : ''}
+        <tr>
+            <td>Building Construction (${computed.gsf.toLocaleString()} GSF &times; $${Math.round(computed.buildCostPSF).toLocaleString()}/SF)</td>
+            <td>${fmt(computed.construction)}</td>
+            <td class="dim">$${Math.round(computed.buildCostPSF).toLocaleString()}</td>
+            <td class="dim">${hasUnits ? perUnit(computed.construction) : '$' + Math.round(computed.construction / (computed.nsf || 1)).toLocaleString()}</td>
+            <td class="pct-col">${pct(computed.construction)}</td>
+        </tr>
+        <tr>
+            <td>Parking (${computed.parkingSpaces} spaces &times; $${(computed.parkingCostPerSpace || 0).toLocaleString()})</td>
+            <td>${fmt(computed.parkingCost)}</td>
+            <td class="dim">${perGSF(computed.parkingCost)}</td>
+            <td class="dim">${hasUnits ? perUnit(computed.parkingCost) : '$' + Math.round(computed.parkingCost / (computed.nsf || 1)).toLocaleString()}</td>
+            <td class="pct-col">${pct(computed.parkingCost)}</td>
+        </tr>
+        <tr>
+            <td>Landscaping &amp; Hardscape (4%)</td>
+            <td>${fmt(computed.landscaping)}</td>
+            <td class="dim">${perGSF(computed.landscaping)}</td>
+            <td class="dim">${hasUnits ? perUnit(computed.landscaping) : '$' + Math.round(computed.landscaping / (computed.nsf || 1)).toLocaleString()}</td>
+            <td class="pct-col">${pct(computed.landscaping)}</td>
+        </tr>
+        <tr>
+            <td>Hard Cost Contingency (7%)</td>
+            <td>${fmt(computed.hardContingency)}</td>
+            <td class="dim">${perGSF(computed.hardContingency)}</td>
+            <td class="dim">${hasUnits ? perUnit(computed.hardContingency) : '$' + Math.round(computed.hardContingency / (computed.nsf || 1)).toLocaleString()}</td>
+            <td class="pct-col">${pct(computed.hardContingency)}</td>
+        </tr>
+        <tr class="subtotal">
+            <td>Subtotal Hard Costs</td>
+            <td>${fmt(computed.totalHard)}</td>
+            <td>${perGSF(computed.totalHard)}</td>
+            <td>${hasUnits ? perUnit(computed.totalHard) : '$' + Math.round(computed.totalHard / (computed.nsf || 1)).toLocaleString()}</td>
+            <td class="pct-col">${pct(computed.totalHard)}</td>
+        </tr>
 
-        <tr class="section-header"><td colspan="2">SOFT COSTS</td></tr>
-        <tr><td>Architecture &amp; Engineering (10%)</td><td>${fmt(computed.archEng)}</td></tr>
-        <tr><td>Permits &amp; Impact Fees (6%)</td><td>${fmt(computed.permits)}</td></tr>
-        <tr><td>Legal &amp; Accounting (2.5%)</td><td>${fmt(computed.legal)}</td></tr>
-        <tr><td>Financing &amp; Interest Carry (5%)</td><td>${fmt(computed.financing)}</td></tr>
-        <tr><td>Marketing &amp; Leasing</td><td>${fmt(computed.marketing)}</td></tr>
-        <tr><td>Developer Fee (4%)</td><td>${fmt(computed.devFee)}</td></tr>
-        <tr class="subtotal"><td>Subtotal Soft Costs</td><td>${fmt(computed.totalSoft)}</td></tr>
+        <tr class="section-header"><td colspan="5">SOFT COSTS</td></tr>
+        <tr>
+            <td>Architecture &amp; Engineering (8%)</td>
+            <td>${fmt(computed.archEng)}</td>
+            <td class="dim">${perGSF(computed.archEng)}</td>
+            <td class="dim">${hasUnits ? perUnit(computed.archEng) : '$' + Math.round(computed.archEng / (computed.nsf || 1)).toLocaleString()}</td>
+            <td class="pct-col">${pct(computed.archEng)}</td>
+        </tr>
+        <tr>
+            <td>Permits &amp; Impact Fees (5%)</td>
+            <td>${fmt(computed.permits)}</td>
+            <td class="dim">${perGSF(computed.permits)}</td>
+            <td class="dim">${hasUnits ? perUnit(computed.permits) : '$' + Math.round(computed.permits / (computed.nsf || 1)).toLocaleString()}</td>
+            <td class="pct-col">${pct(computed.permits)}</td>
+        </tr>
+        <tr>
+            <td>Legal &amp; Accounting (2%)</td>
+            <td>${fmt(computed.legal)}</td>
+            <td class="dim">${perGSF(computed.legal)}</td>
+            <td class="dim">${hasUnits ? perUnit(computed.legal) : '$' + Math.round(computed.legal / (computed.nsf || 1)).toLocaleString()}</td>
+            <td class="pct-col">${pct(computed.legal)}</td>
+        </tr>
+        <tr>
+            <td>Financing &amp; Interest Carry (4.5%)</td>
+            <td>${fmt(computed.financing)}</td>
+            <td class="dim">${perGSF(computed.financing)}</td>
+            <td class="dim">${hasUnits ? perUnit(computed.financing) : '$' + Math.round(computed.financing / (computed.nsf || 1)).toLocaleString()}</td>
+            <td class="pct-col">${pct(computed.financing)}</td>
+        </tr>
+        <tr>
+            <td>Marketing &amp; Leasing (2%)</td>
+            <td>${fmt(computed.marketing)}</td>
+            <td class="dim">${perGSF(computed.marketing)}</td>
+            <td class="dim">${hasUnits ? perUnit(computed.marketing) : '$' + Math.round(computed.marketing / (computed.nsf || 1)).toLocaleString()}</td>
+            <td class="pct-col">${pct(computed.marketing)}</td>
+        </tr>
+        <tr>
+            <td>Developer Fee (4%)</td>
+            <td>${fmt(computed.devFee)}</td>
+            <td class="dim">${perGSF(computed.devFee)}</td>
+            <td class="dim">${hasUnits ? perUnit(computed.devFee) : '$' + Math.round(computed.devFee / (computed.nsf || 1)).toLocaleString()}</td>
+            <td class="pct-col">${pct(computed.devFee)}</td>
+        </tr>
+        <tr class="subtotal">
+            <td>Subtotal Soft Costs</td>
+            <td>${fmt(computed.totalSoft)}</td>
+            <td>${perGSF(computed.totalSoft)}</td>
+            <td>${hasUnits ? perUnit(computed.totalSoft) : '$' + Math.round(computed.totalSoft / (computed.nsf || 1)).toLocaleString()}</td>
+            <td class="pct-col">${pct(computed.totalSoft)}</td>
+        </tr>
 
-        <tr class="grand-total"><td>TOTAL DEVELOPMENT COST</td><td>${fmt(computed.totalDev)}</td></tr>
+        <tr class="grand-total">
+            <td>TOTAL DEVELOPMENT COST</td>
+            <td>${fmt(computed.totalDev)}</td>
+            <td>${perGSF(computed.totalDev)}</td>
+            <td>${hasUnits ? perUnit(computed.totalDev) : '$' + Math.round(computed.totalDev / (computed.nsf || 1)).toLocaleString()}</td>
+            <td>100%</td>
+        </tr>
+        </tbody>
     </table>`;
 }
 
 function renderReturnsSection(computed) {
+    const spread = ((computed.yieldOnCost - computed.capRate) * 100).toFixed(0);
+    const spreadLabel = spread >= 0 ? `+${spread} bps` : `${spread} bps`;
+    const spreadColor = spread >= 150 ? '#276749' : spread >= 0 ? '#b7791f' : '#c53030';
+    const marginColor = computed.devMargin >= 0.15 ? '#276749' : computed.devMargin >= 0 ? '#b7791f' : '#c53030';
+    const hasUnits = computed.units && computed.units > 0;
+    const perUnit = (v) => hasUnits ? `$${Math.round(v / computed.units).toLocaleString()}/unit` : '';
+    const perNSF = (v) => `$${(v / (computed.revenueNSF || computed.nsf || 1)).toFixed(2)}/SF`;
+
     return `<div class="returns-grid">
         <div class="return-card"><div class="return-value">${(computed.yieldOnCost * 100).toFixed(1)}%</div><div class="return-label">Yield on Cost</div></div>
         <div class="return-card"><div class="return-value">${(computed.capRate * 100).toFixed(1)}%</div><div class="return-label">Market Cap Rate</div></div>
-        <div class="return-card"><div class="return-value">${(computed.devMargin * 100).toFixed(0)}%</div><div class="return-label">Development Margin</div></div>
+        <div class="return-card"><div class="return-value" style="color:${spreadColor}">${spreadLabel}</div><div class="return-label">Dev Spread (YoC − Cap)</div></div>
+        <div class="return-card"><div class="return-value" style="color:${marginColor}">${(computed.devMargin * 100).toFixed(0)}%</div><div class="return-label">Development Margin</div></div>
     </div>
     <table class="budget-table">
-        <tr><td>Annual Gross Revenue (${computed.revenueNSF.toLocaleString()} NSF &times; $${computed.revenuePSF}/SF)</td><td>${fmt(computed.grossRevenue)}</td></tr>
-        <tr><td>Less: Operating Expenses (${computed.grossRevenue > 0 ? Math.round(computed.opex / computed.grossRevenue * 100) : 0}%)</td><td>(${fmt(computed.opex)})</td></tr>
-        <tr class="subtotal"><td>Net Operating Income (NOI)</td><td>${fmt(computed.noi)}</td></tr>
-        <tr><td>Estimated Stabilized Value (NOI &divide; ${(computed.capRate * 100).toFixed(1)}% cap)</td><td>${fmt(computed.stabilizedValue)}</td></tr>
-        <tr class="subtotal"><td>Development Profit / (Loss)</td><td><strong>${fmt(computed.stabilizedValue - computed.totalDev)}</strong></td></tr>
+        <thead><tr><th>Revenue &amp; Returns</th><th>Annual</th><th>${hasUnits ? '$/Unit' : '$/NSF'}</th></tr></thead>
+        <tbody>
+        <tr><td>Gross Revenue (${(computed.revenueNSF || computed.nsf || 0).toLocaleString()} NSF &times; $${computed.revenuePSF}/SF)</td><td>${fmt(computed.grossRevenue)}</td><td class="dim">${hasUnits ? perUnit(computed.grossRevenue) : perNSF(computed.grossRevenue)}</td></tr>
+        <tr><td>Less: Operating Expenses (${computed.grossRevenue > 0 ? Math.round(computed.opex / computed.grossRevenue * 100) : 0}%)</td><td>(${fmt(computed.opex)})</td><td class="dim">${hasUnits ? '(' + perUnit(computed.opex).replace('$','$') + ')' : '(' + perNSF(computed.opex) + ')'}</td></tr>
+        <tr class="subtotal"><td>Net Operating Income (NOI)</td><td>${fmt(computed.noi)}</td><td>${hasUnits ? perUnit(computed.noi) : perNSF(computed.noi)}</td></tr>
+        <tr><td>Stabilized Value (NOI &divide; ${(computed.capRate * 100).toFixed(1)}% cap)</td><td>${fmt(computed.stabilizedValue)}</td><td class="dim">${hasUnits ? '$' + Math.round(computed.stabilizedValue / computed.units).toLocaleString() + '/unit' : '$' + Math.round(computed.stabilizedValue / (computed.gsf || 1)).toLocaleString() + '/GSF'}</td></tr>
+        <tr><td>Total Development Cost</td><td>${fmt(computed.totalDev)}</td><td class="dim">${hasUnits ? '$' + Math.round(computed.totalDev / computed.units).toLocaleString() + '/unit' : '$' + Math.round(computed.totalDev / (computed.gsf || 1)).toLocaleString() + '/GSF'}</td></tr>
+        <tr class="subtotal"><td>Development Profit / (Loss)</td><td><strong style="color:${marginColor}">${fmt(computed.stabilizedValue - computed.totalDev)}</strong></td><td><strong style="color:${marginColor}">${(computed.devMargin * 100).toFixed(0)}%</strong></td></tr>
+        </tbody>
     </table>`;
 }
 
@@ -3185,6 +4252,656 @@ function closeLegislationDetail() {
     document.getElementById('legDetailModal').style.display = 'none';
 }
 
+
+// ============================================================
+//  SB 79 TRANSIT MAP
+// ============================================================
+
+let sb79Map = null;
+let sb79Layers = { tier1: null, tier2: null, zones: null, property: null };
+let sb79LayerState = { tier1: true, tier2: true, zones: true, property: true };
+let sb79StationRadii = {};
+
+function initSB79Map(lat, lon) {
+    const mapEl = document.getElementById('sb79Map');
+    if (!mapEl) return;
+
+    // Destroy existing map
+    if (sb79Map) { sb79Map.remove(); sb79Map = null; }
+    sb79StationRadii = {};
+
+    sb79Map = L.map('sb79Map').setView([lat, lon], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 18,
+    }).addTo(sb79Map);
+
+    // Layer groups
+    sb79Layers.tier1 = L.layerGroup().addTo(sb79Map);
+    sb79Layers.tier2 = L.layerGroup().addTo(sb79Map);
+    sb79Layers.zones = L.layerGroup().addTo(sb79Map);
+    sb79Layers.property = L.layerGroup().addTo(sb79Map);
+
+    // Property marker
+    const propIcon = L.divIcon({
+        html: '<div style="background:#e53e3e;width:16px;height:16px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);"></div>',
+        iconSize: [16, 16], iconAnchor: [8, 8], className: '',
+    });
+    L.marker([lat, lon], { icon: propIcon })
+        .bindPopup('<strong>Your Property</strong>')
+        .addTo(sb79Layers.property);
+
+    // Station markers
+    const seenCoords = new Set();
+    METRO_STATIONS.forEach((s, idx) => {
+        const key = `${s.lat.toFixed(4)},${s.lon.toFixed(4)},${s.line}`;
+        if (seenCoords.has(key)) return;
+        seenCoords.add(key);
+
+        const color = LINE_COLORS[s.line] || '#718096';
+        const icon = L.divIcon({
+            html: `<div style="background:${color};width:10px;height:10px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>`,
+            iconSize: [10, 10], iconAnchor: [5, 5], className: '',
+        });
+        const tierData = SB79_TIERS[s.tier];
+        const lineName = LINE_LABELS[s.line] || s.line;
+        const popupHtml = `<div class="station-popup">
+            <div class="popup-title">${s.name}</div>
+            <div class="popup-line">${lineName} &mdash; ${tierData.label}</div>
+            <div class="popup-allowances">
+                <span><strong>SB 79 Allowances:</strong></span>
+                <span>Height: ${tierData.height} ft | Density: ${tierData.density} du/ac</span>
+                <span>FAR: ${tierData.far} | Parking: 0 (inner), 0.5/unit (outer)</span>
+            </div>
+        </div>`;
+        const marker = L.marker([s.lat, s.lon], { icon })
+            .bindPopup(popupHtml)
+            .on('click', () => { showStationRadii(idx); selectFinderStation(idx); });
+
+        const layerGroup = s.tier === 1 ? sb79Layers.tier1 : sb79Layers.tier2;
+        marker.addTo(layerGroup);
+    });
+
+    // Draw radii for nearest qualifying station
+    const eligibility = detectSB79Eligibility(lat, lon);
+    if (eligibility.eligible && eligibility.nearestIdx >= 0) {
+        drawSB79Radii(METRO_STATIONS[eligibility.nearestIdx]);
+    }
+
+    // Render legend
+    renderMapLegend();
+
+    // Sync layer toggle button states
+    document.querySelectorAll('.layer-btn').forEach(btn => btn.classList.add('active'));
+    sb79LayerState = { tier1: true, tier2: true, zones: true, property: true };
+
+    // Force map to re-render tiles after display
+    setTimeout(() => { if (sb79Map) sb79Map.invalidateSize(); }, 200);
+
+    // Pre-populate finder station dropdown
+    populateFinderStations();
+}
+
+function drawSB79Radii(station) {
+    if (!sb79Layers.zones) return;
+    const tierColor = station.tier === 1 ? '#805ad5' : '#3182ce';
+
+    // 200ft = ~61m
+    L.circle([station.lat, station.lon], {
+        radius: 61, color: tierColor, weight: 2, opacity: 0.8,
+        fillColor: tierColor, fillOpacity: 0.15, dashArray: null,
+    }).bindPopup(`<strong>${station.name}</strong><br>200ft Adjacent Zone`).addTo(sb79Layers.zones);
+
+    // 1/4 mile = ~402m
+    L.circle([station.lat, station.lon], {
+        radius: 402, color: tierColor, weight: 1.5, opacity: 0.6,
+        fillColor: tierColor, fillOpacity: 0.07, dashArray: '8,6',
+    }).bindPopup(`<strong>${station.name}</strong><br>1/4 Mile Inner Zone`).addTo(sb79Layers.zones);
+
+    // 1/2 mile = ~805m
+    L.circle([station.lat, station.lon], {
+        radius: 805, color: tierColor, weight: 1, opacity: 0.4,
+        fillColor: tierColor, fillOpacity: 0.03, dashArray: '4,8',
+    }).bindPopup(`<strong>${station.name}</strong><br>1/2 Mile Outer Zone`).addTo(sb79Layers.zones);
+}
+
+function showStationRadii(stationIdx) {
+    const station = METRO_STATIONS[stationIdx];
+    if (!station || !sb79Layers.zones) return;
+    const key = `${station.lat},${station.lon}`;
+    if (sb79StationRadii[key]) return; // already drawn
+    sb79StationRadii[key] = true;
+    drawSB79Radii(station);
+}
+
+function toggleMapLayer(layerName) {
+    if (!sb79Map || !sb79Layers[layerName]) return;
+    sb79LayerState[layerName] = !sb79LayerState[layerName];
+    if (sb79LayerState[layerName]) {
+        sb79Map.addLayer(sb79Layers[layerName]);
+    } else {
+        sb79Map.removeLayer(sb79Layers[layerName]);
+    }
+    // Update button state
+    const btns = document.querySelectorAll('.layer-btn');
+    const labels = { tier1: 'Tier 1', tier2: 'Tier 2', zones: 'SB 79 Zones', property: 'Your Property' };
+    btns.forEach(btn => {
+        for (const [k, v] of Object.entries(labels)) {
+            if (btn.textContent.includes(v)) {
+                btn.classList.toggle('active', sb79LayerState[k]);
+            }
+        }
+    });
+}
+
+function renderMapLegend() {
+    const el = document.getElementById('mapLegend');
+    if (!el) return;
+    el.innerHTML = `
+        <div class="legend-item"><span class="legend-dot" style="background:#e53e3e;"></span> Red/B Line</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#805ad5;"></span> Purple/D Line</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#3182ce;"></span> Blue/A Line</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#d69e2e;"></span> Expo/E Line</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#b7791f;"></span> Gold/L Line</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#38a169;"></span> Green/C Line</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#00bcd4;"></span> K Line</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#ed64a6;"></span> Regional Connector</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#e53e3e;border:2px solid #999;width:8px;height:8px;"></span> Metrolink</div>
+        <div class="legend-item"><span class="legend-line" style="background:#805ad5;"></span> Tier 1 Zone</div>
+        <div class="legend-item"><span class="legend-line" style="background:#3182ce;"></span> Tier 2 Zone</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#e53e3e;width:12px;height:12px;border:2px solid #fff;box-shadow:0 0 3px rgba(0,0,0,0.3);"></span> Your Property</div>
+    `;
+}
+
+function renderSB79Eligibility(eligibility) {
+    const el = document.getElementById('sb79Eligibility');
+    if (!el) return;
+    if (!eligibility || !eligibility.eligible) {
+        el.style.display = 'none';
+        return;
+    }
+    const a = eligibility.allowances;
+    const tierClass = eligibility.tier === 1 ? 'tier1' : 'tier2';
+    const zoneClass = eligibility.zone;
+    el.style.display = 'block';
+    el.innerHTML = `
+        <h3>SB 79 Eligibility — Your Property</h3>
+        <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.75rem;">
+            <span class="tier-badge ${tierClass}">${eligibility.tierLabel}</span>
+            <span class="zone-badge ${zoneClass}">${eligibility.zoneLabel}</span>
+            &mdash; ${eligibility.distMiles.toFixed(2)} mi from <strong>${eligibility.station.name}</strong>
+            (${LINE_LABELS[eligibility.station.line] || eligibility.station.line})
+        </p>
+        <div class="sb79-grid">
+            <div class="sb79-stat"><div class="stat-label">Max Height</div><div class="stat-value">${a.height} ft</div></div>
+            <div class="sb79-stat"><div class="stat-label">Max Density</div><div class="stat-value">${a.density} du/ac</div></div>
+            <div class="sb79-stat"><div class="stat-label">Max FAR</div><div class="stat-value">${a.far}</div></div>
+            <div class="sb79-stat"><div class="stat-label">Parking Req</div><div class="stat-value">${a.parking === 0 ? 'None' : a.parking + '/unit'}</div></div>
+            <div class="sb79-stat"><div class="stat-label">Affordable Req</div><div class="stat-value">15%</div></div>
+            <div class="sb79-stat"><div class="stat-label">Effective Date</div><div class="stat-value">Jul 2026</div></div>
+        </div>
+    `;
+}
+
+// ============================================================
+//  SB 79 OPPORTUNITY FINDER
+// ============================================================
+
+let finderResults = [];
+let finderParcelLayer = null;
+let finderSortCol = 'impRatio';
+let finderSortAsc = true;
+
+function toggleFinder() {
+    const body = document.getElementById('finderBody');
+    const arrow = document.getElementById('finderArrow');
+    const isOpen = body.classList.toggle('open');
+    arrow.classList.toggle('open', isOpen);
+    if (isOpen && document.getElementById('finderStation').options.length === 0) {
+        populateFinderStations();
+    }
+}
+
+function populateFinderStations() {
+    const sel = document.getElementById('finderStation');
+    sel.innerHTML = '';
+    const grouped = {};
+    METRO_STATIONS.forEach((s, idx) => {
+        const lineKey = s.line;
+        if (!grouped[lineKey]) grouped[lineKey] = [];
+        grouped[lineKey].push({ ...s, idx });
+    });
+    // Sort lines in display order
+    const lineOrder = ['red', 'purple', 'blue_a', 'expo_e', 'gold_l', 'green_c', 'k_line', 'connector', 'metrolink'];
+    for (const lineKey of lineOrder) {
+        if (!grouped[lineKey]) continue;
+        const grp = document.createElement('optgroup');
+        grp.label = LINE_LABELS[lineKey] || lineKey;
+        for (const s of grouped[lineKey]) {
+            const opt = document.createElement('option');
+            opt.value = s.idx;
+            opt.textContent = s.name;
+            grp.appendChild(opt);
+        }
+        sel.appendChild(grp);
+    }
+    // Pre-select nearest station if we have geocoded coords
+    if (window.lastGeocode) {
+        let bestIdx = 0, bestDist = Infinity;
+        METRO_STATIONS.forEach((s, i) => {
+            const d = haversine(window.lastGeocode.lat, window.lastGeocode.lon, s.lat, s.lon);
+            if (d < bestDist) { bestDist = d; bestIdx = i; }
+        });
+        sel.value = bestIdx;
+    }
+}
+
+function selectFinderStation(idx) {
+    const sel = document.getElementById('finderStation');
+    if (sel && sel.querySelector(`option[value="${idx}"]`)) {
+        sel.value = idx;
+    }
+    // Open the finder if closed
+    const body = document.getElementById('finderBody');
+    if (body && !body.classList.contains('open')) {
+        toggleFinder();
+    }
+}
+
+function getFinderRadius() {
+    const checked = document.querySelector('input[name="finderRadius"]:checked');
+    const ft = checked ? parseInt(checked.value) : 2640;
+    let zone = 'outer';
+    if (ft <= 200) zone = 'adjacent';
+    else if (ft <= 1320) zone = 'inner';
+    return { zone, radiusFt: ft };
+}
+
+async function queryParcelsNearStation(lat, lon, radiusFt, onProgress) {
+    const baseUrl = 'https://public.gis.lacounty.gov/public/rest/services/LACounty_Cache/LACounty_Parcel/MapServer/0/query';
+    const outFields = 'APN,SitusFullAddress,UseType,UseDescription,UseCode,Roll_LandValue,Roll_ImpValue,YearBuilt1,SQFTmain1,Units1,CENTER_LAT,CENTER_LON,Shape.STArea()';
+    const allFeatures = [];
+    let offset = 0;
+    const pageSize = 1000;
+    let total = null;
+
+    while (true) {
+        const params = new URLSearchParams({
+            geometry: `${lon},${lat}`,
+            geometryType: 'esriGeometryPoint',
+            inSR: '4326',
+            spatialRel: 'esriSpatialRelIntersects',
+            distance: radiusFt,
+            units: 'esriSRUnit_Foot',
+            outFields: outFields,
+            returnGeometry: false,
+            returnCountOnly: false,
+            resultOffset: offset,
+            resultRecordCount: pageSize,
+            f: 'json',
+        });
+        if (total === null) {
+            params.set('returnCountOnly', 'false');
+        }
+
+        const resp = await fetch(`${baseUrl}?${params}`);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+
+        if (data.error) throw new Error(data.error.message || 'GIS API error');
+
+        const features = data.features || [];
+        allFeatures.push(...features);
+
+        if (onProgress) {
+            onProgress(allFeatures.length, total || allFeatures.length + (features.length === pageSize ? pageSize : 0));
+        }
+
+        if (features.length < pageSize) break;
+        offset += pageSize;
+        if (offset > 5000) break; // Safety cap
+    }
+    return allFeatures;
+}
+
+function classifyParcelUseType(useType, useDesc, useCode) {
+    const ut = (useType || '').toLowerCase();
+    const ud = (useDesc || '').toLowerCase();
+    const uc = (useCode || '').toString();
+
+    if (ut.includes('vacant') || ud.includes('vacant') || uc === '0000' || uc === '0100') return 'Vacant';
+    if (ut.includes('resident') || ud.includes('resident') || ud.includes('single') || ud.includes('duplex') || ud.includes('apartment') || ud.includes('condo') || uc.startsWith('01') || uc.startsWith('02') || uc.startsWith('03') || uc.startsWith('04')) return 'Residential';
+    if (ut.includes('commerc') || ud.includes('commerc') || ud.includes('office') || ud.includes('retail') || ud.includes('store') || ud.includes('shop') || uc.startsWith('1') || uc.startsWith('2')) return 'Commercial';
+    if (ut.includes('industr') || ud.includes('industr') || ud.includes('manufact') || ud.includes('warehouse') || uc.startsWith('3') || uc.startsWith('4')) return 'Industrial';
+    return 'Commercial'; // default
+}
+
+function classifySB79Zone(parcelLat, parcelLon, stationLat, stationLon) {
+    const dist = haversine(parcelLat, parcelLon, stationLat, stationLon);
+    if (dist <= SB79_ZONES.adjacent.maxDist) return { key: 'adjacent', dist };
+    if (dist <= SB79_ZONES.inner.maxDist) return { key: 'inner', dist };
+    if (dist <= SB79_ZONES.outer.maxDist) return { key: 'outer', dist };
+    return { key: 'outside', dist };
+}
+
+function getSB79Allowances(tier, zoneKey) {
+    const tierData = SB79_TIERS[tier];
+    const zone = SB79_ZONES[zoneKey];
+    if (!tierData || !zone) return null;
+    return {
+        height: Math.round(tierData.height * zone.heightMult),
+        density: Math.round(tierData.density * zone.heightMult),
+        far: parseFloat((tierData.far * zone.heightMult).toFixed(2)),
+        parking: zone.parking,
+    };
+}
+
+function filterAndScoreResults(features, station, filters) {
+    const results = [];
+    for (const f of features) {
+        const a = f.attributes;
+        const lat = parseFloat(a.CENTER_LAT);
+        const lon = parseFloat(a.CENTER_LON);
+        if (!lat || !lon) continue;
+
+        const lotSize = a['Shape.STArea()'] || a['Shape__Area'] || a['ShapeSTArea'] || 0;
+        const lotSizeSqFt = Math.round(lotSize);
+        const landVal = parseFloat(a.Roll_LandValue) || 0;
+        const impVal = parseFloat(a.Roll_ImpValue) || 0;
+        const impRatio = landVal > 0 ? impVal / landVal : (impVal === 0 ? 0 : 999);
+        const yearBuilt = parseInt(a.YearBuilt1) || 0;
+        const useType = classifyParcelUseType(a.UseType, a.UseDescription, a.UseCode);
+        const sqft = parseInt(a.SQFTmain1) || 0;
+        const units = parseInt(a.Units1) || 0;
+        const address = a.SitusFullAddress || 'No address';
+        const apn = a.APN || '';
+
+        // Classify SB 79 zone
+        const zoneInfo = classifySB79Zone(lat, lon, station.lat, station.lon);
+        if (zoneInfo.key === 'outside') continue;
+
+        // Apply filters
+        if (filters.minLot && lotSizeSqFt < filters.minLot) continue;
+        if (filters.maxLot && lotSizeSqFt > filters.maxLot) continue;
+        if (filters.useTypes.length > 0 && !filters.useTypes.includes(useType)) continue;
+        if (filters.maxRatio !== null && impRatio > filters.maxRatio) continue;
+        if (filters.yearBefore && yearBuilt > 0 && yearBuilt >= filters.yearBefore) continue;
+
+        const allowances = getSB79Allowances(station.tier, zoneInfo.key);
+
+        results.push({
+            address, apn, lotSizeSqFt, useType, yearBuilt, landVal, impVal,
+            impRatio, sqft, units, lat, lon,
+            zone: zoneInfo.key, zoneDist: zoneInfo.dist,
+            allowances, tier: station.tier,
+        });
+    }
+    return results;
+}
+
+async function runOpportunitySearch() {
+    const sel = document.getElementById('finderStation');
+    const stationIdx = parseInt(sel.value);
+    const station = METRO_STATIONS[stationIdx];
+    if (!station) return;
+
+    const { radiusFt } = getFinderRadius();
+    const useChecks = document.querySelectorAll('.finderUseType:checked');
+    const useTypes = Array.from(useChecks).map(c => c.value);
+    const minLot = parseInt(document.getElementById('finderMinLot').value) || 0;
+    const maxLot = parseInt(document.getElementById('finderMaxLot').value) || 999999;
+    const maxRatio = parseFloat(document.getElementById('finderMaxRatio').value);
+    const yearBefore = parseInt(document.getElementById('finderYearBefore').value) || 0;
+
+    const filters = { useTypes, minLot, maxLot, maxRatio, yearBefore };
+
+    // Show progress
+    const progressEl = document.getElementById('finderProgress');
+    const fillEl = document.getElementById('finderProgressFill');
+    const textEl = document.getElementById('finderProgressText');
+    const btn = document.getElementById('finderSearchBtn');
+    const resultsArea = document.getElementById('finderResultsArea');
+
+    progressEl.classList.add('active');
+    fillEl.style.width = '0%';
+    textEl.textContent = 'Querying parcels near ' + station.name + '...';
+    btn.disabled = true;
+    resultsArea.innerHTML = '';
+
+    try {
+        const features = await queryParcelsNearStation(
+            station.lat, station.lon, radiusFt,
+            (loaded, est) => {
+                const pct = Math.min(90, Math.round((loaded / Math.max(est, 1)) * 90));
+                fillEl.style.width = pct + '%';
+                textEl.textContent = `Loading... ${loaded} parcels fetched`;
+            }
+        );
+
+        fillEl.style.width = '95%';
+        textEl.textContent = `Filtering ${features.length} parcels...`;
+
+        finderResults = filterAndScoreResults(features, station, filters);
+
+        // Default sort: lowest imp ratio first
+        finderSortCol = 'impRatio';
+        finderSortAsc = true;
+        finderResults.sort((a, b) => a.impRatio - b.impRatio);
+
+        fillEl.style.width = '100%';
+        textEl.textContent = `Found ${finderResults.length} opportunities from ${features.length} parcels`;
+
+        renderFinderResults(station);
+        addFinderParcelsToMap(station);
+
+    } catch (e) {
+        console.error('Opportunity search failed:', e);
+        resultsArea.innerHTML = `<div class="finder-error">
+            <strong>Search failed:</strong> ${e.message || 'Unknown error'}
+            ${e.message && e.message.includes('Failed to fetch') ? '<br>This may be a CORS restriction. Try opening the page directly or using a local server.' : ''}
+        </div>`;
+    }
+
+    btn.disabled = false;
+    setTimeout(() => progressEl.classList.remove('active'), 2000);
+}
+
+function renderFinderResults(station) {
+    const area = document.getElementById('finderResultsArea');
+    if (finderResults.length === 0) {
+        area.innerHTML = '<div class="finder-no-results">No parcels matched your filters. Try expanding the search radius or adjusting filters.</div>';
+        return;
+    }
+
+    const zoneBadge = (z) => `<span class="zone-badge ${z}">${z.charAt(0).toUpperCase() + z.slice(1)}</span>`;
+    const ratioClass = (r) => r < 0.5 ? 'imp-ratio-hot' : r < 1.0 ? 'imp-ratio-warm' : 'imp-ratio-cool';
+    const fmt = (v) => v ? '$' + v.toLocaleString() : '-';
+
+    let html = `<div class="finder-summary">${finderResults.length} opportunities near <strong>${station.name}</strong> sorted by development potential</div>`;
+    html += `<div class="finder-table-wrapper"><table class="finder-table">
+        <thead><tr>
+            <th onclick="sortFinderTable('address')">Address</th>
+            <th onclick="sortFinderTable('apn')">APN</th>
+            <th onclick="sortFinderTable('lotSizeSqFt')">Lot Size</th>
+            <th onclick="sortFinderTable('useType')">Use</th>
+            <th onclick="sortFinderTable('yearBuilt')">Year Built</th>
+            <th onclick="sortFinderTable('landVal')">Land Value</th>
+            <th onclick="sortFinderTable('impVal')">Imp Value</th>
+            <th onclick="sortFinderTable('impRatio')" class="${finderSortCol === 'impRatio' ? (finderSortAsc ? 'sort-asc' : 'sort-desc') : ''}">Imp/Land</th>
+            <th onclick="sortFinderTable('zone')">SB 79 Zone</th>
+            <th>Allowances</th>
+        </tr></thead><tbody>`;
+
+    finderResults.forEach((r, i) => {
+        const allow = r.allowances;
+        const allowStr = allow ? `${allow.height}ft / ${allow.density}du / ${allow.far}FAR` : '-';
+        html += `<tr onclick="highlightFinderParcel(${i})" id="finderRow${i}">
+            <td>${r.address}</td>
+            <td>${r.apn}</td>
+            <td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString() + ' sf' : '-'}</td>
+            <td>${r.useType}</td>
+            <td>${r.yearBuilt > 0 ? r.yearBuilt : '-'}</td>
+            <td>${fmt(r.landVal)}</td>
+            <td>${fmt(r.impVal)}</td>
+            <td class="${ratioClass(r.impRatio)}">${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'}</td>
+            <td>${zoneBadge(r.zone)}</td>
+            <td style="font-size:0.75rem;">${allowStr}</td>
+        </tr>`;
+    });
+
+    html += '</tbody></table></div>';
+    html += `<button type="button" class="finder-btn-export" onclick="exportFinderCSV()">Export CSV (${finderResults.length} rows)</button>`;
+    area.innerHTML = html;
+
+    // Update sort indicators
+    document.querySelectorAll('.finder-table th').forEach(th => {
+        th.classList.remove('sort-asc', 'sort-desc');
+    });
+}
+
+function sortFinderTable(col) {
+    if (finderSortCol === col) {
+        finderSortAsc = !finderSortAsc;
+    } else {
+        finderSortCol = col;
+        finderSortAsc = true;
+    }
+
+    finderResults.sort((a, b) => {
+        let va = a[col], vb = b[col];
+        if (typeof va === 'string') {
+            va = va.toLowerCase(); vb = (vb || '').toLowerCase();
+            return finderSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+        }
+        va = va || 0; vb = vb || 0;
+        return finderSortAsc ? va - vb : vb - va;
+    });
+
+    // Re-render with current station
+    const sel = document.getElementById('finderStation');
+    const station = METRO_STATIONS[parseInt(sel.value)];
+    renderFinderResults(station);
+
+    // Re-apply sort indicator
+    const headers = document.querySelectorAll('.finder-table th');
+    const colMap = ['address', 'apn', 'lotSizeSqFt', 'useType', 'yearBuilt', 'landVal', 'impVal', 'impRatio', 'zone'];
+    headers.forEach((th, i) => {
+        if (colMap[i] === col) {
+            th.classList.add(finderSortAsc ? 'sort-asc' : 'sort-desc');
+        }
+    });
+}
+
+function addFinderParcelsToMap(station) {
+    if (!sb79Map) return;
+    // Remove previous finder layer
+    if (finderParcelLayer) {
+        sb79Map.removeLayer(finderParcelLayer);
+    }
+    finderParcelLayer = L.layerGroup().addTo(sb79Map);
+
+    finderResults.forEach((r, i) => {
+        if (!r.lat || !r.lon) return;
+        // Color by imp ratio: red=underbuilt, orange=moderate, green=built-out
+        let color = '#38a169'; // green
+        if (r.impRatio < 0.5) color = '#e53e3e'; // hot
+        else if (r.impRatio < 1.0) color = '#dd6b20'; // warm
+
+        const marker = L.circleMarker([r.lat, r.lon], {
+            radius: 5, fillColor: color, color: '#fff',
+            weight: 1, opacity: 0.9, fillOpacity: 0.8,
+        });
+
+        const allow = r.allowances;
+        const allowStr = allow ? `Height: ${allow.height}ft | Density: ${allow.density}du/ac | FAR: ${allow.far}` : '';
+        marker.bindPopup(`<div style="font-size:0.82rem;">
+            <strong>${r.address}</strong><br>
+            APN: ${r.apn}<br>
+            Use: ${r.useType} | Lot: ${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString() + ' sf' : '-'}<br>
+            Imp/Land Ratio: <strong>${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'}</strong><br>
+            Land: $${(r.landVal || 0).toLocaleString()} | Imp: $${(r.impVal || 0).toLocaleString()}<br>
+            <em>SB 79 Zone: ${r.zone} ${allowStr ? '| ' + allowStr : ''}</em>
+        </div>`);
+
+        marker.on('click', () => {
+            // Highlight corresponding table row
+            document.querySelectorAll('.finder-table tr.highlighted').forEach(tr => tr.classList.remove('highlighted'));
+            const row = document.getElementById('finderRow' + i);
+            if (row) {
+                row.classList.add('highlighted');
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+
+        marker.addTo(finderParcelLayer);
+    });
+
+    // Add legend items for finder
+    const legend = document.getElementById('mapLegend');
+    if (legend && finderResults.length > 0) {
+        const finderLegend = document.createElement('div');
+        finderLegend.className = 'legend-item';
+        finderLegend.id = 'finderLegendItems';
+        finderLegend.innerHTML = `
+            <span class="legend-dot" style="background:#e53e3e;"></span> Hot Opp (&lt;0.5)
+            &nbsp;<span class="legend-dot" style="background:#dd6b20;"></span> Warm (&lt;1.0)
+            &nbsp;<span class="legend-dot" style="background:#38a169;"></span> Built-out
+        `;
+        // Remove old finder legend if present
+        const old = document.getElementById('finderLegendItems');
+        if (old) old.remove();
+        legend.appendChild(finderLegend);
+    }
+}
+
+function highlightFinderParcel(idx) {
+    const r = finderResults[idx];
+    if (!r || !sb79Map) return;
+
+    // Highlight table row
+    document.querySelectorAll('.finder-table tr.highlighted').forEach(tr => tr.classList.remove('highlighted'));
+    const row = document.getElementById('finderRow' + idx);
+    if (row) row.classList.add('highlighted');
+
+    // Pan map to parcel
+    sb79Map.setView([r.lat, r.lon], 17);
+
+    // Open popup on the matching marker
+    if (finderParcelLayer) {
+        let i = 0;
+        finderParcelLayer.eachLayer(layer => {
+            if (i === idx && layer.openPopup) {
+                layer.openPopup();
+            }
+            i++;
+        });
+    }
+}
+
+function exportFinderCSV() {
+    if (finderResults.length === 0) return;
+    const headers = ['Address', 'APN', 'Lot Size (sf)', 'Use Type', 'Year Built', 'Land Value', 'Imp Value', 'Imp/Land Ratio', 'SB79 Zone', 'Max Height (ft)', 'Max Density (du/ac)', 'Max FAR', 'Parking Req', 'Latitude', 'Longitude'];
+    const rows = finderResults.map(r => {
+        const a = r.allowances || {};
+        return [
+            `"${(r.address || '').replace(/"/g, '""')}"`,
+            r.apn, r.lotSizeSqFt, r.useType, r.yearBuilt || '',
+            r.landVal, r.impVal, r.impRatio < 100 ? r.impRatio.toFixed(3) : '',
+            r.zone, a.height || '', a.density || '', a.far || '', a.parking ?? '',
+            r.lat, r.lon,
+        ].join(',');
+    });
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sb79-opportunities-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
 
 // Close modals on Escape key
 document.addEventListener('keydown', (e) => {
