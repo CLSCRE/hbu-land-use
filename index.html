@@ -1362,6 +1362,29 @@
         .finder-no-results { text-align: center; padding: 2rem 1rem; color: var(--text-light); font-size: 0.92rem; }
         .finder-error { background: #fff5f5; border: 1px solid #fc8181; border-radius: 8px; padding: 1rem; color: #c53030; font-size: 0.88rem; margin-top: 1rem; }
         .finder-summary { font-size: 0.85rem; color: var(--text-light); margin-top: 0.5rem; }
+        .prop-links a { font-weight: 700; font-size: 0.78rem; color: var(--primary); text-decoration: none; }
+        .prop-links a:hover { text-decoration: underline; }
+        .selection-bar {
+            position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 0.75rem;
+            background: #ebf8ff; border: 1.5px solid #bee3f8; border-radius: 8px;
+            padding: 0.5rem 1rem; margin-bottom: 0.75rem; font-size: 0.88rem; font-weight: 600; color: var(--primary);
+        }
+        .saved-list-panel {
+            background: var(--card); border-radius: 12px; padding: 1.75rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 2rem;
+            border-left: 4px solid #38a169;
+        }
+        .saved-list-panel h2 { font-size: 1.1rem; color: #276749; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1rem; }
+        .saved-list-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
+        .saved-list-header span { font-size: 0.88rem; color: var(--text-light); font-weight: 600; }
+        .saved-list-actions { display: flex; gap: 0.5rem; }
+        .saved-btn { padding: 0.4rem 1rem; font-size: 0.82rem; font-weight: 600; border-radius: 6px; cursor: pointer; border: 1.5px solid; transition: background 0.15s; }
+        .saved-btn-export { color: #276749; background: #f0fff4; border-color: #9ae6b4; }
+        .saved-btn-export:hover { background: #c6f6d5; }
+        .saved-btn-clear { color: #c53030; background: #fff5f5; border-color: #fc8181; }
+        .saved-btn-clear:hover { background: #fed7d7; }
+        .saved-btn-remove { background: none; border: none; color: #c53030; cursor: pointer; font-size: 0.85rem; padding: 0.2rem 0.4rem; }
+        .saved-btn-remove:hover { text-decoration: underline; }
         @media print { .finder-section { display: none !important; } }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -1687,17 +1710,6 @@
                 <label>Max Lot Size (sq ft)</label>
                 <input type="number" id="finderMaxLot2" value="100000" min="0" step="500">
             </div>
-            <div class="finder-field">
-                <label>Max Improvement Ratio (lower = more underbuilt)</label>
-                <div class="finder-range-wrap">
-                    <input type="range" id="finderMaxRatio2" min="0" max="5" step="0.1" value="2.0" oninput="document.getElementById('finderRatioVal2').textContent=this.value">
-                    <span class="range-val" id="finderRatioVal2">2.0</span>
-                </div>
-            </div>
-            <div class="finder-field">
-                <label>Year Built Before</label>
-                <input type="number" id="finderYearBefore2" value="2000" min="1900" max="2026">
-            </div>
         </div>
         <button type="button" class="finder-btn-search" id="finderSearchBtn2" onclick="runStandaloneSearch()">Find Opportunities</button>
         <div class="finder-progress" id="finderProgress2">
@@ -1705,6 +1717,30 @@
             <div class="finder-progress-text" id="finderProgressText2">Querying parcels...</div>
         </div>
         <div id="finderResultsArea2"></div>
+    </div>
+
+    <div id="savedListPanel" class="saved-list-panel" style="display:none;">
+        <h2>Saved Properties</h2>
+        <div class="saved-list-header">
+            <span id="savedListCount">0 properties</span>
+            <div class="saved-list-actions">
+                <button type="button" class="saved-btn saved-btn-export" onclick="exportSavedCSV()">Export to Excel</button>
+                <button type="button" class="saved-btn saved-btn-clear" onclick="clearSavedList()">Clear All</button>
+            </div>
+        </div>
+        <div class="finder-table-wrapper">
+            <table class="finder-table" id="savedListTable">
+                <thead><tr>
+                    <th style="cursor:default;">Address</th>
+                    <th style="cursor:default;">APN</th>
+                    <th style="cursor:default;">Lot Size</th>
+                    <th style="cursor:default;">Zone</th>
+                    <th style="cursor:default;">Links</th>
+                    <th style="cursor:default;"></th>
+                </tr></thead>
+                <tbody id="savedListBody"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 </div><!-- /tabFinder -->
@@ -1736,7 +1772,7 @@
 // ============================================================
 //  AUTH GATE
 // ============================================================
-const AUTH_HASH = '74a763fdc61ca8d18e1810035075eb910db56488993cbcdffe6715d466690658';
+const AUTH_HASH = '08c5d8c40ac5bd96091f704d10989da4e7b65c5ee36be18b618848c4e91a22af';
 async function sha256(str) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
@@ -4966,6 +5002,7 @@ let finderParcelLayer2 = null;
 let finderResults2 = [];
 let finderSortCol2 = 'impRatio';
 let finderSortAsc2 = true;
+let finderSelectedSet = new Set();
 
 function switchTab(tab) {
     activeTab = tab;
@@ -5138,10 +5175,10 @@ async function runStandaloneSearch() {
     const useTypes = Array.from(useChecks).map(c => c.value);
     const minLot = parseInt(document.getElementById('finderMinLot2').value) || 0;
     const maxLot = parseInt(document.getElementById('finderMaxLot2').value) || 999999;
-    const maxRatio = parseFloat(document.getElementById('finderMaxRatio2').value);
-    const yearBefore = parseInt(document.getElementById('finderYearBefore2').value) || 0;
 
-    const filters = { useTypes, minLot, maxLot, maxRatio, yearBefore };
+    const filters = { useTypes, minLot, maxLot, maxRatio: null, yearBefore: null };
+
+    finderSelectedSet.clear();
 
     const progressEl = document.getElementById('finderProgress2');
     const fillEl = document.getElementById('finderProgressFill2');
@@ -5205,10 +5242,21 @@ function renderFinderResults2(station) {
     const zoneBadge = (z) => `<span class="zone-badge ${z}">${z.charAt(0).toUpperCase() + z.slice(1)}</span>`;
     const ratioClass = (r) => r < 0.5 ? 'imp-ratio-hot' : r < 1.0 ? 'imp-ratio-warm' : 'imp-ratio-cool';
     const fmt = (v) => v ? '$' + v.toLocaleString() : '-';
+    const propLinks = (addr, apn) => {
+        const enc = encodeURIComponent(addr);
+        const apnClean = (apn || '').replace(/[^0-9]/g, '');
+        return `<span class="prop-links" onclick="event.stopPropagation()"><a href="https://www.zillow.com/homes/${enc}_rb/" target="_blank" title="Zillow">Z</a> | <a href="https://www.redfin.com/search?q=${enc}" target="_blank" title="Redfin">R</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" title="LA County Assessor">LA</a></span>`;
+    };
 
-    let html = `<div class="finder-summary">${finderResults2.length} opportunities near <strong>${station.name}</strong> sorted by development potential</div>`;
+    let html = `<div id="finderSelectionBar" class="selection-bar" style="display:none;">
+        <span id="finderSelCount">0 selected</span>
+        <button type="button" class="finder-btn-export" onclick="addSelectionToSaved()" style="margin:0 0.5rem;">Add to Saved List</button>
+        <button type="button" class="finder-btn-export" onclick="clearFinderSelection()" style="margin:0;">Clear Selection</button>
+    </div>`;
+    html += `<div class="finder-summary">${finderResults2.length} opportunities near <strong>${station.name}</strong> sorted by development potential</div>`;
     html += `<div class="finder-table-wrapper"><table class="finder-table" id="finderTable2">
         <thead><tr>
+            <th style="cursor:default;" onclick="event.stopPropagation();toggleSelectAll()"><input type="checkbox" id="finderSelectAll" onclick="event.stopPropagation();toggleSelectAll()"></th>
             <th onclick="sortFinderTable2('address')">Address</th>
             <th onclick="sortFinderTable2('apn')">APN</th>
             <th onclick="sortFinderTable2('lotSizeSqFt')">Lot Size</th>
@@ -5219,12 +5267,15 @@ function renderFinderResults2(station) {
             <th onclick="sortFinderTable2('impRatio')" class="${finderSortCol2 === 'impRatio' ? (finderSortAsc2 ? 'sort-asc' : 'sort-desc') : ''}">Imp/Land</th>
             <th onclick="sortFinderTable2('zone')">SB 79 Zone</th>
             <th>Allowances</th>
+            <th style="cursor:default;">Links</th>
         </tr></thead><tbody>`;
 
     finderResults2.forEach((r, i) => {
         const allow = r.allowances;
         const allowStr = allow ? `${allow.height}ft / ${allow.density}du / ${allow.far}FAR` : '-';
+        const checked = finderSelectedSet.has(i) ? 'checked' : '';
         html += `<tr onclick="highlightFinderParcel2(${i})" id="finderRow2_${i}">
+            <td onclick="event.stopPropagation()"><input type="checkbox" class="finder-row-check" data-idx="${i}" ${checked} onchange="onFinderCheckChange()"></td>
             <td>${r.address}</td>
             <td>${r.apn}</td>
             <td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString() + ' sf' : '-'}</td>
@@ -5235,12 +5286,14 @@ function renderFinderResults2(station) {
             <td class="${ratioClass(r.impRatio)}">${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'}</td>
             <td>${zoneBadge(r.zone)}</td>
             <td style="font-size:0.75rem;">${allowStr}</td>
+            <td>${propLinks(r.address, r.apn)}</td>
         </tr>`;
     });
 
     html += '</tbody></table></div>';
     html += `<button type="button" class="finder-btn-export" onclick="exportFinderCSV2()">Export CSV (${finderResults2.length} rows)</button>`;
     area.innerHTML = html;
+    updateSelectionBar();
 }
 
 function sortFinderTable2(col) {
@@ -5266,9 +5319,9 @@ function sortFinderTable2(col) {
     renderFinderResults2(station);
 
     const headers = document.querySelectorAll('#finderTable2 th');
-    const colMap = ['address', 'apn', 'lotSizeSqFt', 'useType', 'yearBuilt', 'landVal', 'impVal', 'impRatio', 'zone'];
+    const colMap = [null, 'address', 'apn', 'lotSizeSqFt', 'useType', 'yearBuilt', 'landVal', 'impVal', 'impRatio', 'zone', null, null];
     headers.forEach((th, i) => {
-        if (colMap[i] === col) {
+        if (colMap[i] && colMap[i] === col) {
             th.classList.add(finderSortAsc2 ? 'sort-asc' : 'sort-desc');
         }
     });
@@ -5294,13 +5347,16 @@ function addFinderParcelsToMap2(station) {
 
         const allow = r.allowances;
         const allowStr = allow ? `Height: ${allow.height}ft | Density: ${allow.density}du/ac | FAR: ${allow.far}` : '';
+        const encAddr = encodeURIComponent(r.address);
+        const apnClean = (r.apn || '').replace(/[^0-9]/g, '');
         marker.bindPopup(`<div style="font-size:0.82rem;">
             <strong>${r.address}</strong><br>
             APN: ${r.apn}<br>
             Use: ${r.useType} | Lot: ${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString() + ' sf' : '-'}<br>
             Imp/Land Ratio: <strong>${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'}</strong><br>
             Land: $${(r.landVal || 0).toLocaleString()} | Imp: $${(r.impVal || 0).toLocaleString()}<br>
-            <em>SB 79 Zone: ${r.zone} ${allowStr ? '| ' + allowStr : ''}</em>
+            <em>SB 79 Zone: ${r.zone} ${allowStr ? '| ' + allowStr : ''}</em><br>
+            <span style="font-size:0.78rem;"><a href="https://www.zillow.com/homes/${encAddr}_rb/" target="_blank">Zillow</a> | <a href="https://www.redfin.com/search?q=${encAddr}" target="_blank">Redfin</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank">LA Assessor</a></span>
         </div>`);
 
         marker.on('click', () => {
@@ -5355,14 +5411,18 @@ function highlightFinderParcel2(idx) {
 
 function exportFinderCSV2() {
     if (finderResults2.length === 0) return;
-    const headers = ['Address', 'APN', 'Lot Size (sf)', 'Use Type', 'Year Built', 'Land Value', 'Imp Value', 'Imp/Land Ratio', 'SB79 Zone', 'Max Height (ft)', 'Max Density (du/ac)', 'Max FAR', 'Parking Req', 'Latitude', 'Longitude'];
+    const headers = ['Address', 'APN', 'Lot Size (sf)', 'Use Type', 'Year Built', 'Land Value', 'Imp Value', 'Imp/Land Ratio', 'SB79 Zone', 'Max Height (ft)', 'Max Density (du/ac)', 'Max FAR', 'Parking Req', 'Zillow URL', 'Assessor URL', 'Latitude', 'Longitude'];
     const rows = finderResults2.map(r => {
         const a = r.allowances || {};
+        const enc = encodeURIComponent(r.address || '');
+        const apnClean = (r.apn || '').replace(/[^0-9]/g, '');
         return [
             `"${(r.address || '').replace(/"/g, '""')}"`,
             r.apn, r.lotSizeSqFt, r.useType, r.yearBuilt || '',
             r.landVal, r.impVal, r.impRatio < 100 ? r.impRatio.toFixed(3) : '',
             r.zone, a.height || '', a.density || '', a.far || '', a.parking ?? '',
+            `https://www.zillow.com/homes/${enc}_rb/`,
+            `https://portal.assessor.lacounty.gov/parceldetail/${apnClean}`,
             r.lat, r.lon,
         ].join(',');
     });
@@ -5377,6 +5437,163 @@ function exportFinderCSV2() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 }
+
+// === Selection & Saved List ===
+
+function onFinderCheckChange() {
+    finderSelectedSet.clear();
+    document.querySelectorAll('.finder-row-check:checked').forEach(cb => {
+        finderSelectedSet.add(parseInt(cb.dataset.idx));
+    });
+    const allCb = document.getElementById('finderSelectAll');
+    if (allCb) {
+        const total = document.querySelectorAll('.finder-row-check').length;
+        allCb.checked = finderSelectedSet.size === total && total > 0;
+    }
+    updateSelectionBar();
+}
+
+function toggleSelectAll() {
+    const allCb = document.getElementById('finderSelectAll');
+    const checks = document.querySelectorAll('.finder-row-check');
+    const shouldCheck = allCb ? allCb.checked : false;
+    finderSelectedSet.clear();
+    checks.forEach(cb => {
+        cb.checked = shouldCheck;
+        if (shouldCheck) finderSelectedSet.add(parseInt(cb.dataset.idx));
+    });
+    updateSelectionBar();
+}
+
+function updateSelectionBar() {
+    const bar = document.getElementById('finderSelectionBar');
+    if (!bar) return;
+    const count = finderSelectedSet.size;
+    if (count > 0) {
+        bar.style.display = 'flex';
+        document.getElementById('finderSelCount').textContent = count + ' selected';
+    } else {
+        bar.style.display = 'none';
+    }
+}
+
+function clearFinderSelection() {
+    finderSelectedSet.clear();
+    document.querySelectorAll('.finder-row-check').forEach(cb => cb.checked = false);
+    const allCb = document.getElementById('finderSelectAll');
+    if (allCb) allCb.checked = false;
+    updateSelectionBar();
+}
+
+function addSelectionToSaved() {
+    if (finderSelectedSet.size === 0) return;
+    const saved = getSavedList();
+    const existingApns = new Set(saved.map(s => s.apn));
+    let added = 0;
+    finderSelectedSet.forEach(idx => {
+        const r = finderResults2[idx];
+        if (r && !existingApns.has(r.apn)) {
+            saved.push({
+                address: r.address, apn: r.apn, lotSizeSqFt: r.lotSizeSqFt,
+                useType: r.useType, yearBuilt: r.yearBuilt, landVal: r.landVal,
+                impVal: r.impVal, impRatio: r.impRatio, zone: r.zone,
+                allowances: r.allowances, lat: r.lat, lon: r.lon, tier: r.tier,
+            });
+            added++;
+        }
+    });
+    setSavedList(saved);
+    clearFinderSelection();
+    renderSavedList();
+    if (added > 0) {
+        const panel = document.getElementById('savedListPanel');
+        if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function getSavedList() {
+    try { return JSON.parse(localStorage.getItem('sb79_saved_list')) || []; }
+    catch { return []; }
+}
+
+function setSavedList(list) {
+    localStorage.setItem('sb79_saved_list', JSON.stringify(list));
+}
+
+function renderSavedList() {
+    const saved = getSavedList();
+    const panel = document.getElementById('savedListPanel');
+    const body = document.getElementById('savedListBody');
+    const countEl = document.getElementById('savedListCount');
+    if (!panel || !body) return;
+
+    if (saved.length === 0) {
+        panel.style.display = 'none';
+        return;
+    }
+    panel.style.display = 'block';
+    countEl.textContent = saved.length + ' propert' + (saved.length === 1 ? 'y' : 'ies');
+
+    body.innerHTML = saved.map((r, i) => {
+        const enc = encodeURIComponent(r.address || '');
+        const apnClean = (r.apn || '').replace(/[^0-9]/g, '');
+        const links = `<span class="prop-links"><a href="https://www.zillow.com/homes/${enc}_rb/" target="_blank" title="Zillow">Z</a> | <a href="https://www.redfin.com/search?q=${enc}" target="_blank" title="Redfin">R</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" title="LA County Assessor">LA</a></span>`;
+        return `<tr>
+            <td>${r.address}</td>
+            <td>${r.apn}</td>
+            <td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString() + ' sf' : '-'}</td>
+            <td>${r.zone || '-'}</td>
+            <td>${links}</td>
+            <td><button type="button" class="saved-btn-remove" onclick="removeSavedItem(${i})">Remove</button></td>
+        </tr>`;
+    }).join('');
+}
+
+function removeSavedItem(idx) {
+    const saved = getSavedList();
+    saved.splice(idx, 1);
+    setSavedList(saved);
+    renderSavedList();
+}
+
+function clearSavedList() {
+    if (!confirm('Remove all saved properties?')) return;
+    setSavedList([]);
+    renderSavedList();
+}
+
+function exportSavedCSV() {
+    const saved = getSavedList();
+    if (saved.length === 0) return;
+    const headers = ['Address', 'APN', 'Lot Size (sf)', 'Use Type', 'Year Built', 'Land Value', 'Imp Value', 'Imp/Land Ratio', 'SB79 Zone', 'Max Height (ft)', 'Max Density (du/ac)', 'Max FAR', 'Zillow URL', 'Assessor URL', 'Latitude', 'Longitude'];
+    const rows = saved.map(r => {
+        const a = r.allowances || {};
+        const enc = encodeURIComponent(r.address || '');
+        const apnClean = (r.apn || '').replace(/[^0-9]/g, '');
+        return [
+            `"${(r.address || '').replace(/"/g, '""')}"`,
+            r.apn, r.lotSizeSqFt, r.useType, r.yearBuilt || '',
+            r.landVal, r.impVal, r.impRatio < 100 ? r.impRatio.toFixed(3) : '',
+            r.zone, a.height || '', a.density || '', a.far || '',
+            `https://www.zillow.com/homes/${enc}_rb/`,
+            `https://portal.assessor.lacounty.gov/parceldetail/${apnClean}`,
+            r.lat, r.lon,
+        ].join(',');
+    });
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sb79-saved-list-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// Load saved list on page init
+document.addEventListener('DOMContentLoaded', () => { renderSavedList(); });
 
 
 // Close modals on Escape key
