@@ -1203,7 +1203,46 @@
         .station-popup .popup-allowances { margin-top: 0.4rem; font-size: 0.78rem; }
         .station-popup .popup-allowances span { display: block; }
         @media print { .map-section { display: none !important; } }
-        @media (max-width: 768px) { #sb79Map { height: 350px; } }
+        @media (max-width: 768px) { #sb79Map, #finderMap { height: 350px; } }
+
+        /* Tab Bar */
+        .tab-bar {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            background: #fff;
+            border-bottom: 2px solid var(--border);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+        .tab-btn {
+            flex: 1;
+            max-width: 320px;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-light);
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s, background 0.2s;
+        }
+        .tab-btn:hover {
+            color: var(--primary);
+            background: #f7fafc;
+        }
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--accent);
+            background: #fff;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        @media print {
+            .tab-bar { display: none !important; }
+            #tabFinder { display: none !important; }
+            #tabCalculator { display: block !important; }
+        }
 
         /* Auth Overlay */
         #authOverlay {
@@ -1346,6 +1385,12 @@
     <span class="badge">HBU Analysis Tool</span>
 </header>
 
+<div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('calculator')">HBU Calculator</button>
+    <button class="tab-btn" onclick="switchTab('finder')">SB 79 Opportunity Finder</button>
+</div>
+
+<div id="tabCalculator" class="tab-content active">
 <div class="container">
     <div class="intro-box">
         <h3>How It Works</h3>
@@ -1589,70 +1634,80 @@
             <div id="sb79Map" style="height:500px;"></div>
             <div class="map-legend" id="mapLegend"></div>
             <div class="sb79-eligibility" id="sb79Eligibility" style="display:none;"></div>
-
-            <!-- SB 79 Opportunity Finder -->
-            <div class="finder-section" id="finderSection">
-                <div class="finder-toggle" onclick="toggleFinder()">
-                    <h3>SB 79 Opportunity Finder</h3>
-                    <span class="finder-arrow" id="finderArrow">&#9654;</span>
-                </div>
-                <div class="finder-body" id="finderBody">
-                    <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:1rem;">
-                        Select a transit station and set filters to find underbuilt parcels that SB 79 unlocks for higher-density development.
-                    </p>
-                    <div class="finder-controls">
-                        <div class="finder-field" style="grid-column: span 2;">
-                            <label>Transit Station</label>
-                            <select id="finderStation"></select>
-                        </div>
-                        <div class="finder-field">
-                            <label>Search Radius</label>
-                            <div class="finder-radios">
-                                <label><input type="radio" name="finderRadius" value="200"> Adjacent (200ft)</label>
-                                <label><input type="radio" name="finderRadius" value="1320"> Inner (1/4 mi)</label>
-                                <label><input type="radio" name="finderRadius" value="2640" checked> Outer (1/2 mi)</label>
-                            </div>
-                        </div>
-                        <div class="finder-field">
-                            <label>Use Type</label>
-                            <div class="finder-checks">
-                                <label><input type="checkbox" class="finderUseType" value="Residential" checked> Residential</label>
-                                <label><input type="checkbox" class="finderUseType" value="Commercial" checked> Commercial</label>
-                                <label><input type="checkbox" class="finderUseType" value="Industrial"> Industrial</label>
-                                <label><input type="checkbox" class="finderUseType" value="Vacant" checked> Vacant</label>
-                            </div>
-                        </div>
-                        <div class="finder-field">
-                            <label>Min Lot Size (sq ft)</label>
-                            <input type="number" id="finderMinLot" value="2500" min="0" step="500">
-                        </div>
-                        <div class="finder-field">
-                            <label>Max Lot Size (sq ft)</label>
-                            <input type="number" id="finderMaxLot" value="100000" min="0" step="500">
-                        </div>
-                        <div class="finder-field">
-                            <label>Max Improvement Ratio (lower = more underbuilt)</label>
-                            <div class="finder-range-wrap">
-                                <input type="range" id="finderMaxRatio" min="0" max="5" step="0.1" value="2.0" oninput="document.getElementById('finderRatioVal').textContent=this.value">
-                                <span class="range-val" id="finderRatioVal">2.0</span>
-                            </div>
-                        </div>
-                        <div class="finder-field">
-                            <label>Year Built Before</label>
-                            <input type="number" id="finderYearBefore" value="2000" min="1900" max="2026">
-                        </div>
-                    </div>
-                    <button type="button" class="finder-btn-search" id="finderSearchBtn" onclick="runOpportunitySearch()">Find Opportunities</button>
-                    <div class="finder-progress" id="finderProgress">
-                        <div class="finder-progress-bar"><div class="finder-progress-fill" id="finderProgressFill"></div></div>
-                        <div class="finder-progress-text" id="finderProgressText">Querying parcels...</div>
-                    </div>
-                    <div id="finderResultsArea"></div>
-                </div>
-            </div>
         </div>
     </div>
 </div>
+</div><!-- /tabCalculator -->
+
+<div id="tabFinder" class="tab-content">
+<div class="container">
+    <div class="intro-box" style="border-left-color:#805ad5;">
+        <h3>SB 79 Opportunity Finder</h3>
+        <p><strong>SB 79</strong> (effective July 1, 2026) overrides local zoning near qualifying transit stations, allowing up to <strong>95ft height, 160 du/acre, and 4.5 FAR</strong> for Tier 1 heavy rail and <strong>85ft, 140 du/acre, 4.0 FAR</strong> for Tier 2 light rail/Metrolink. Select a transit station below (or click one on the map) and set filters to find underbuilt parcels that SB 79 unlocks for higher-density development.</p>
+    </div>
+
+    <div id="finderMapContainer" style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
+        <div style="text-align:center;margin-bottom:1rem;">
+            <h2 style="font-size:1.3rem;color:var(--primary);margin-bottom:0.25rem;">LA Metro Transit Stations</h2>
+            <p style="font-size:0.88rem;color:var(--text-light);">Click any station to select it, then configure filters and search for opportunities</p>
+        </div>
+        <div id="finderMap" style="width:100%;height:500px;border-radius:10px;border:1.5px solid var(--border);z-index:1;"></div>
+        <div class="map-legend" id="finderMapLegend"></div>
+    </div>
+
+    <div style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
+        <h2 style="font-size:1.1rem;color:var(--primary);border-bottom:2px solid var(--border);padding-bottom:0.5rem;margin-bottom:1.25rem;">Search Filters</h2>
+        <div class="finder-controls">
+            <div class="finder-field" style="grid-column: span 2;">
+                <label>Transit Station</label>
+                <select id="finderStation2"></select>
+            </div>
+            <div class="finder-field">
+                <label>Search Radius</label>
+                <div class="finder-radios">
+                    <label><input type="radio" name="finderRadius2" value="200"> Adjacent (200ft)</label>
+                    <label><input type="radio" name="finderRadius2" value="1320"> Inner (1/4 mi)</label>
+                    <label><input type="radio" name="finderRadius2" value="2640" checked> Outer (1/2 mi)</label>
+                </div>
+            </div>
+            <div class="finder-field">
+                <label>Use Type</label>
+                <div class="finder-checks">
+                    <label><input type="checkbox" class="finderUseType2" value="Residential" checked> Residential</label>
+                    <label><input type="checkbox" class="finderUseType2" value="Commercial" checked> Commercial</label>
+                    <label><input type="checkbox" class="finderUseType2" value="Industrial"> Industrial</label>
+                    <label><input type="checkbox" class="finderUseType2" value="Vacant" checked> Vacant</label>
+                </div>
+            </div>
+            <div class="finder-field">
+                <label>Min Lot Size (sq ft)</label>
+                <input type="number" id="finderMinLot2" value="2500" min="0" step="500">
+            </div>
+            <div class="finder-field">
+                <label>Max Lot Size (sq ft)</label>
+                <input type="number" id="finderMaxLot2" value="100000" min="0" step="500">
+            </div>
+            <div class="finder-field">
+                <label>Max Improvement Ratio (lower = more underbuilt)</label>
+                <div class="finder-range-wrap">
+                    <input type="range" id="finderMaxRatio2" min="0" max="5" step="0.1" value="2.0" oninput="document.getElementById('finderRatioVal2').textContent=this.value">
+                    <span class="range-val" id="finderRatioVal2">2.0</span>
+                </div>
+            </div>
+            <div class="finder-field">
+                <label>Year Built Before</label>
+                <input type="number" id="finderYearBefore2" value="2000" min="1900" max="2026">
+            </div>
+        </div>
+        <button type="button" class="finder-btn-search" id="finderSearchBtn2" onclick="runStandaloneSearch()">Find Opportunities</button>
+        <div class="finder-progress" id="finderProgress2">
+            <div class="finder-progress-bar"><div class="finder-progress-fill" id="finderProgressFill2"></div></div>
+            <div class="finder-progress-text" id="finderProgressText2">Querying parcels...</div>
+        </div>
+        <div id="finderResultsArea2"></div>
+    </div>
+</div>
+</div><!-- /tabFinder -->
 
 <!-- Analysis Detail Modal -->
 <div class="modal-overlay" id="analysisModal" style="display:none;" onclick="if(event.target===this)closeAnalysis();">
@@ -4316,7 +4371,7 @@ function initSB79Map(lat, lon) {
         </div>`;
         const marker = L.marker([s.lat, s.lon], { icon })
             .bindPopup(popupHtml)
-            .on('click', () => { showStationRadii(idx); selectFinderStation(idx); });
+            .on('click', () => { showStationRadii(idx); });
 
         const layerGroup = s.tier === 1 ? sb79Layers.tier1 : sb79Layers.tier2;
         marker.addTo(layerGroup);
@@ -4332,14 +4387,11 @@ function initSB79Map(lat, lon) {
     renderMapLegend();
 
     // Sync layer toggle button states
-    document.querySelectorAll('.layer-btn').forEach(btn => btn.classList.add('active'));
+    document.querySelectorAll('#mapControls .layer-btn').forEach(btn => btn.classList.add('active'));
     sb79LayerState = { tier1: true, tier2: true, zones: true, property: true };
 
     // Force map to re-render tiles after display
     setTimeout(() => { if (sb79Map) sb79Map.invalidateSize(); }, 200);
-
-    // Pre-populate finder station dropdown
-    populateFinderStations();
 }
 
 function drawSB79Radii(station) {
@@ -4383,7 +4435,7 @@ function toggleMapLayer(layerName) {
         sb79Map.removeLayer(sb79Layers[layerName]);
     }
     // Update button state
-    const btns = document.querySelectorAll('.layer-btn');
+    const btns = document.querySelectorAll('#mapControls .layer-btn');
     const labels = { tier1: 'Tier 1', tier2: 'Tier 2', zones: 'SB 79 Zones', property: 'Your Property' };
     btns.forEach(btn => {
         for (const [k, v] of Object.entries(labels)) {
@@ -4902,6 +4954,430 @@ function exportFinderCSV() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 }
+
+// ============================================================
+//  TAB NAVIGATION & STANDALONE FINDER
+// ============================================================
+
+let activeTab = 'calculator';
+let finderMapInstance = null;
+let finderMapInitialized = false;
+let finderParcelLayer2 = null;
+let finderResults2 = [];
+let finderSortCol2 = 'impRatio';
+let finderSortAsc2 = true;
+
+function switchTab(tab) {
+    activeTab = tab;
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.toLowerCase().includes(
+            tab === 'calculator' ? 'hbu' : 'opportunity'
+        ));
+    });
+    document.getElementById('tabCalculator').classList.toggle('active', tab === 'calculator');
+    document.getElementById('tabFinder').classList.toggle('active', tab === 'finder');
+
+    if (tab === 'finder' && !finderMapInitialized) {
+        setTimeout(() => initFinderMap(), 100);
+    } else if (tab === 'finder' && finderMapInstance) {
+        setTimeout(() => finderMapInstance.invalidateSize(), 100);
+    }
+}
+
+function initFinderMap() {
+    const mapEl = document.getElementById('finderMap');
+    if (!mapEl) return;
+
+    if (finderMapInstance) { finderMapInstance.remove(); finderMapInstance = null; }
+
+    finderMapInstance = L.map('finderMap').setView([34.05, -118.25], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 18,
+    }).addTo(finderMapInstance);
+
+    // Add all station markers
+    const seenCoords = new Set();
+    METRO_STATIONS.forEach((s, idx) => {
+        const key = `${s.lat.toFixed(4)},${s.lon.toFixed(4)},${s.line}`;
+        if (seenCoords.has(key)) return;
+        seenCoords.add(key);
+
+        const color = LINE_COLORS[s.line] || '#718096';
+        const icon = L.divIcon({
+            html: `<div style="background:${color};width:10px;height:10px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>`,
+            iconSize: [10, 10], iconAnchor: [5, 5], className: '',
+        });
+        const tierData = SB79_TIERS[s.tier];
+        const lineName = LINE_LABELS[s.line] || s.line;
+        const popupHtml = `<div class="station-popup">
+            <div class="popup-title">${s.name}</div>
+            <div class="popup-line">${lineName} &mdash; ${tierData.label}</div>
+            <div class="popup-allowances">
+                <span><strong>SB 79 Allowances:</strong></span>
+                <span>Height: ${tierData.height} ft | Density: ${tierData.density} du/ac</span>
+                <span>FAR: ${tierData.far} | Parking: 0 (inner), 0.5/unit (outer)</span>
+            </div>
+        </div>`;
+        const marker = L.marker([s.lat, s.lon], { icon })
+            .bindPopup(popupHtml)
+            .on('click', () => {
+                selectFinderStation2(idx);
+                drawFinderStationRadii(s);
+            });
+        marker.addTo(finderMapInstance);
+    });
+
+    // Render legend
+    renderFinderMapLegend();
+
+    // Populate station dropdown
+    populateFinderStations2();
+
+    finderMapInitialized = true;
+    setTimeout(() => { if (finderMapInstance) finderMapInstance.invalidateSize(); }, 200);
+}
+
+function drawFinderStationRadii(station) {
+    // Remove old radii if any
+    if (finderMapInstance._finderRadii) {
+        finderMapInstance._finderRadii.forEach(c => finderMapInstance.removeLayer(c));
+    }
+    const tierColor = station.tier === 1 ? '#805ad5' : '#3182ce';
+    const circles = [];
+
+    circles.push(L.circle([station.lat, station.lon], {
+        radius: 61, color: tierColor, weight: 2, opacity: 0.8,
+        fillColor: tierColor, fillOpacity: 0.15,
+    }).bindPopup(`<strong>${station.name}</strong><br>200ft Adjacent Zone`).addTo(finderMapInstance));
+
+    circles.push(L.circle([station.lat, station.lon], {
+        radius: 402, color: tierColor, weight: 1.5, opacity: 0.6,
+        fillColor: tierColor, fillOpacity: 0.07, dashArray: '8,6',
+    }).bindPopup(`<strong>${station.name}</strong><br>1/4 Mile Inner Zone`).addTo(finderMapInstance));
+
+    circles.push(L.circle([station.lat, station.lon], {
+        radius: 805, color: tierColor, weight: 1, opacity: 0.4,
+        fillColor: tierColor, fillOpacity: 0.03, dashArray: '4,8',
+    }).bindPopup(`<strong>${station.name}</strong><br>1/2 Mile Outer Zone`).addTo(finderMapInstance));
+
+    finderMapInstance._finderRadii = circles;
+    finderMapInstance.setView([station.lat, station.lon], 14);
+}
+
+function renderFinderMapLegend() {
+    const el = document.getElementById('finderMapLegend');
+    if (!el) return;
+    el.innerHTML = `
+        <div class="legend-item"><span class="legend-dot" style="background:#e53e3e;"></span> Red/B Line</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#805ad5;"></span> Purple/D Line</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#3182ce;"></span> Blue/A Line</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#d69e2e;"></span> Expo/E Line</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#b7791f;"></span> Gold/L Line</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#38a169;"></span> Green/C Line</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#00bcd4;"></span> K Line</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#ed64a6;"></span> Regional Connector</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#e53e3e;border:2px solid #999;width:8px;height:8px;"></span> Metrolink</div>
+        <div class="legend-item"><span class="legend-line" style="background:#805ad5;"></span> Tier 1 Zone</div>
+        <div class="legend-item"><span class="legend-line" style="background:#3182ce;"></span> Tier 2 Zone</div>
+    `;
+}
+
+function populateFinderStations2() {
+    const sel = document.getElementById('finderStation2');
+    if (!sel) return;
+    sel.innerHTML = '';
+    const grouped = {};
+    METRO_STATIONS.forEach((s, idx) => {
+        const lineKey = s.line;
+        if (!grouped[lineKey]) grouped[lineKey] = [];
+        grouped[lineKey].push({ ...s, idx });
+    });
+    const lineOrder = ['red', 'purple', 'blue_a', 'expo_e', 'gold_l', 'green_c', 'k_line', 'connector', 'metrolink'];
+    for (const lineKey of lineOrder) {
+        if (!grouped[lineKey]) continue;
+        const grp = document.createElement('optgroup');
+        grp.label = LINE_LABELS[lineKey] || lineKey;
+        for (const s of grouped[lineKey]) {
+            const opt = document.createElement('option');
+            opt.value = s.idx;
+            opt.textContent = s.name;
+            grp.appendChild(opt);
+        }
+        sel.appendChild(grp);
+    }
+}
+
+function selectFinderStation2(idx) {
+    const sel = document.getElementById('finderStation2');
+    if (sel && sel.querySelector(`option[value="${idx}"]`)) {
+        sel.value = idx;
+    }
+}
+
+// Wire station dropdown change to zoom map
+document.addEventListener('change', (e) => {
+    if (e.target.id === 'finderStation2' && finderMapInstance) {
+        const idx = parseInt(e.target.value);
+        const station = METRO_STATIONS[idx];
+        if (station) {
+            drawFinderStationRadii(station);
+        }
+    }
+});
+
+async function runStandaloneSearch() {
+    const sel = document.getElementById('finderStation2');
+    const stationIdx = parseInt(sel.value);
+    const station = METRO_STATIONS[stationIdx];
+    if (!station) return;
+
+    const checked = document.querySelector('input[name="finderRadius2"]:checked');
+    const radiusFt = checked ? parseInt(checked.value) : 2640;
+    const useChecks = document.querySelectorAll('.finderUseType2:checked');
+    const useTypes = Array.from(useChecks).map(c => c.value);
+    const minLot = parseInt(document.getElementById('finderMinLot2').value) || 0;
+    const maxLot = parseInt(document.getElementById('finderMaxLot2').value) || 999999;
+    const maxRatio = parseFloat(document.getElementById('finderMaxRatio2').value);
+    const yearBefore = parseInt(document.getElementById('finderYearBefore2').value) || 0;
+
+    const filters = { useTypes, minLot, maxLot, maxRatio, yearBefore };
+
+    const progressEl = document.getElementById('finderProgress2');
+    const fillEl = document.getElementById('finderProgressFill2');
+    const textEl = document.getElementById('finderProgressText2');
+    const btn = document.getElementById('finderSearchBtn2');
+    const resultsArea = document.getElementById('finderResultsArea2');
+
+    progressEl.classList.add('active');
+    fillEl.style.width = '0%';
+    textEl.textContent = 'Querying parcels near ' + station.name + '...';
+    btn.disabled = true;
+    resultsArea.innerHTML = '';
+
+    // Draw station radii on map
+    drawFinderStationRadii(station);
+
+    try {
+        const features = await queryParcelsNearStation(
+            station.lat, station.lon, radiusFt,
+            (loaded, est) => {
+                const pct = Math.min(90, Math.round((loaded / Math.max(est, 1)) * 90));
+                fillEl.style.width = pct + '%';
+                textEl.textContent = `Loading... ${loaded} parcels fetched`;
+            }
+        );
+
+        fillEl.style.width = '95%';
+        textEl.textContent = `Filtering ${features.length} parcels...`;
+
+        finderResults2 = filterAndScoreResults(features, station, filters);
+
+        finderSortCol2 = 'impRatio';
+        finderSortAsc2 = true;
+        finderResults2.sort((a, b) => a.impRatio - b.impRatio);
+
+        fillEl.style.width = '100%';
+        textEl.textContent = `Found ${finderResults2.length} opportunities from ${features.length} parcels`;
+
+        renderFinderResults2(station);
+        addFinderParcelsToMap2(station);
+
+    } catch (e) {
+        console.error('Standalone opportunity search failed:', e);
+        resultsArea.innerHTML = `<div class="finder-error">
+            <strong>Search failed:</strong> ${e.message || 'Unknown error'}
+            ${e.message && e.message.includes('Failed to fetch') ? '<br>This may be a CORS restriction. Try opening the page directly or using a local server.' : ''}
+        </div>`;
+    }
+
+    btn.disabled = false;
+    setTimeout(() => progressEl.classList.remove('active'), 2000);
+}
+
+function renderFinderResults2(station) {
+    const area = document.getElementById('finderResultsArea2');
+    if (finderResults2.length === 0) {
+        area.innerHTML = '<div class="finder-no-results">No parcels matched your filters. Try expanding the search radius or adjusting filters.</div>';
+        return;
+    }
+
+    const zoneBadge = (z) => `<span class="zone-badge ${z}">${z.charAt(0).toUpperCase() + z.slice(1)}</span>`;
+    const ratioClass = (r) => r < 0.5 ? 'imp-ratio-hot' : r < 1.0 ? 'imp-ratio-warm' : 'imp-ratio-cool';
+    const fmt = (v) => v ? '$' + v.toLocaleString() : '-';
+
+    let html = `<div class="finder-summary">${finderResults2.length} opportunities near <strong>${station.name}</strong> sorted by development potential</div>`;
+    html += `<div class="finder-table-wrapper"><table class="finder-table" id="finderTable2">
+        <thead><tr>
+            <th onclick="sortFinderTable2('address')">Address</th>
+            <th onclick="sortFinderTable2('apn')">APN</th>
+            <th onclick="sortFinderTable2('lotSizeSqFt')">Lot Size</th>
+            <th onclick="sortFinderTable2('useType')">Use</th>
+            <th onclick="sortFinderTable2('yearBuilt')">Year Built</th>
+            <th onclick="sortFinderTable2('landVal')">Land Value</th>
+            <th onclick="sortFinderTable2('impVal')">Imp Value</th>
+            <th onclick="sortFinderTable2('impRatio')" class="${finderSortCol2 === 'impRatio' ? (finderSortAsc2 ? 'sort-asc' : 'sort-desc') : ''}">Imp/Land</th>
+            <th onclick="sortFinderTable2('zone')">SB 79 Zone</th>
+            <th>Allowances</th>
+        </tr></thead><tbody>`;
+
+    finderResults2.forEach((r, i) => {
+        const allow = r.allowances;
+        const allowStr = allow ? `${allow.height}ft / ${allow.density}du / ${allow.far}FAR` : '-';
+        html += `<tr onclick="highlightFinderParcel2(${i})" id="finderRow2_${i}">
+            <td>${r.address}</td>
+            <td>${r.apn}</td>
+            <td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString() + ' sf' : '-'}</td>
+            <td>${r.useType}</td>
+            <td>${r.yearBuilt > 0 ? r.yearBuilt : '-'}</td>
+            <td>${fmt(r.landVal)}</td>
+            <td>${fmt(r.impVal)}</td>
+            <td class="${ratioClass(r.impRatio)}">${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'}</td>
+            <td>${zoneBadge(r.zone)}</td>
+            <td style="font-size:0.75rem;">${allowStr}</td>
+        </tr>`;
+    });
+
+    html += '</tbody></table></div>';
+    html += `<button type="button" class="finder-btn-export" onclick="exportFinderCSV2()">Export CSV (${finderResults2.length} rows)</button>`;
+    area.innerHTML = html;
+}
+
+function sortFinderTable2(col) {
+    if (finderSortCol2 === col) {
+        finderSortAsc2 = !finderSortAsc2;
+    } else {
+        finderSortCol2 = col;
+        finderSortAsc2 = true;
+    }
+
+    finderResults2.sort((a, b) => {
+        let va = a[col], vb = b[col];
+        if (typeof va === 'string') {
+            va = va.toLowerCase(); vb = (vb || '').toLowerCase();
+            return finderSortAsc2 ? va.localeCompare(vb) : vb.localeCompare(va);
+        }
+        va = va || 0; vb = vb || 0;
+        return finderSortAsc2 ? va - vb : vb - va;
+    });
+
+    const sel = document.getElementById('finderStation2');
+    const station = METRO_STATIONS[parseInt(sel.value)];
+    renderFinderResults2(station);
+
+    const headers = document.querySelectorAll('#finderTable2 th');
+    const colMap = ['address', 'apn', 'lotSizeSqFt', 'useType', 'yearBuilt', 'landVal', 'impVal', 'impRatio', 'zone'];
+    headers.forEach((th, i) => {
+        if (colMap[i] === col) {
+            th.classList.add(finderSortAsc2 ? 'sort-asc' : 'sort-desc');
+        }
+    });
+}
+
+function addFinderParcelsToMap2(station) {
+    if (!finderMapInstance) return;
+    if (finderParcelLayer2) {
+        finderMapInstance.removeLayer(finderParcelLayer2);
+    }
+    finderParcelLayer2 = L.layerGroup().addTo(finderMapInstance);
+
+    finderResults2.forEach((r, i) => {
+        if (!r.lat || !r.lon) return;
+        let color = '#38a169';
+        if (r.impRatio < 0.5) color = '#e53e3e';
+        else if (r.impRatio < 1.0) color = '#dd6b20';
+
+        const marker = L.circleMarker([r.lat, r.lon], {
+            radius: 5, fillColor: color, color: '#fff',
+            weight: 1, opacity: 0.9, fillOpacity: 0.8,
+        });
+
+        const allow = r.allowances;
+        const allowStr = allow ? `Height: ${allow.height}ft | Density: ${allow.density}du/ac | FAR: ${allow.far}` : '';
+        marker.bindPopup(`<div style="font-size:0.82rem;">
+            <strong>${r.address}</strong><br>
+            APN: ${r.apn}<br>
+            Use: ${r.useType} | Lot: ${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString() + ' sf' : '-'}<br>
+            Imp/Land Ratio: <strong>${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'}</strong><br>
+            Land: $${(r.landVal || 0).toLocaleString()} | Imp: $${(r.impVal || 0).toLocaleString()}<br>
+            <em>SB 79 Zone: ${r.zone} ${allowStr ? '| ' + allowStr : ''}</em>
+        </div>`);
+
+        marker.on('click', () => {
+            document.querySelectorAll('#finderTable2 tr.highlighted').forEach(tr => tr.classList.remove('highlighted'));
+            const row = document.getElementById('finderRow2_' + i);
+            if (row) {
+                row.classList.add('highlighted');
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+
+        marker.addTo(finderParcelLayer2);
+    });
+
+    // Add opportunity legend to finder map
+    const legend = document.getElementById('finderMapLegend');
+    if (legend && finderResults2.length > 0) {
+        const oldLeg = document.getElementById('finderOppLegendItems');
+        if (oldLeg) oldLeg.remove();
+        const finderLegend = document.createElement('div');
+        finderLegend.className = 'legend-item';
+        finderLegend.id = 'finderOppLegendItems';
+        finderLegend.innerHTML = `
+            <span class="legend-dot" style="background:#e53e3e;"></span> Hot Opp (&lt;0.5)
+            &nbsp;<span class="legend-dot" style="background:#dd6b20;"></span> Warm (&lt;1.0)
+            &nbsp;<span class="legend-dot" style="background:#38a169;"></span> Built-out
+        `;
+        legend.appendChild(finderLegend);
+    }
+}
+
+function highlightFinderParcel2(idx) {
+    const r = finderResults2[idx];
+    if (!r || !finderMapInstance) return;
+
+    document.querySelectorAll('#finderTable2 tr.highlighted').forEach(tr => tr.classList.remove('highlighted'));
+    const row = document.getElementById('finderRow2_' + idx);
+    if (row) row.classList.add('highlighted');
+
+    finderMapInstance.setView([r.lat, r.lon], 17);
+
+    if (finderParcelLayer2) {
+        let i = 0;
+        finderParcelLayer2.eachLayer(layer => {
+            if (i === idx && layer.openPopup) {
+                layer.openPopup();
+            }
+            i++;
+        });
+    }
+}
+
+function exportFinderCSV2() {
+    if (finderResults2.length === 0) return;
+    const headers = ['Address', 'APN', 'Lot Size (sf)', 'Use Type', 'Year Built', 'Land Value', 'Imp Value', 'Imp/Land Ratio', 'SB79 Zone', 'Max Height (ft)', 'Max Density (du/ac)', 'Max FAR', 'Parking Req', 'Latitude', 'Longitude'];
+    const rows = finderResults2.map(r => {
+        const a = r.allowances || {};
+        return [
+            `"${(r.address || '').replace(/"/g, '""')}"`,
+            r.apn, r.lotSizeSqFt, r.useType, r.yearBuilt || '',
+            r.landVal, r.impVal, r.impRatio < 100 ? r.impRatio.toFixed(3) : '',
+            r.zone, a.height || '', a.density || '', a.far || '', a.parking ?? '',
+            r.lat, r.lon,
+        ].join(',');
+    });
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sb79-opportunities-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
 
 // Close modals on Escape key
 document.addEventListener('keydown', (e) => {
