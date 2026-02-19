@@ -2158,7 +2158,7 @@
         <input type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter')checkAuth();">
         <button type="button" class="auth-btn" onclick="checkAuth()">Enter</button>
         <div class="auth-error" id="authError"></div>
-        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v3.8</div>
+        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v3.9</div>
     </div>
 </div>
 
@@ -2166,7 +2166,7 @@
     <h1>Highest &amp; Best Use Calculator</h1>
     <p>Land Use Analysis for Los Angeles, CA</p>
     <span class="badge">HBU Analysis Tool</span>
-    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v3.8</span>
+    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v3.9</span>
 </header>
 
 <div class="tab-bar">
@@ -2593,10 +2593,15 @@
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
                 <h2 style="font-size:1.1rem;color:var(--primary);margin:0;" id="pipelineResultsTitle">Results</h2>
                 <span style="font-size:0.82rem;color:var(--text-light);" id="pipelineResultsSummary"></span>
+                <div style="display:flex;gap:0.5rem;">
+                    <button type="button" class="btn-lookup" onclick="savePipelineSelected()" id="pipelineSaveBtn" style="display:none;font-size:0.78rem;padding:6px 14px;">Save Selected</button>
+                    <button type="button" class="btn-lookup" onclick="deepAnalyzePipeline()" id="pipelineDeepBtn" style="display:none;font-size:0.78rem;padding:6px 14px;background:#805ad5;">Deep Analysis</button>
+                </div>
             </div>
             <div class="finder-table-wrapper">
                 <table class="finder-table" id="pipelineTable">
                     <thead><tr>
+                        <th style="width:30px;cursor:default;"><input type="checkbox" id="pipelineSelectAll" onclick="togglePipelineSelectAll()" title="Select all"></th>
                         <th data-col="address" onclick="setPipelineSort('address')">Address</th>
                         <th data-col="permit_nbr" onclick="setPipelineSort('permit_nbr')">Permit #</th>
                         <th data-col="permit_type" onclick="setPipelineSort('permit_type')">Type</th>
@@ -2609,6 +2614,26 @@
                     <tbody id="pipelineTableBody"></tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <div id="pipelineSavedPanel" style="display:none;background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-top:2rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+            <h2 style="font-size:1.1rem;color:#805ad5;margin:0;">Saved Pipeline Sites</h2>
+            <span style="font-size:0.82rem;color:var(--text-light);" id="pipelineSavedCount">0 sites</span>
+            <div style="display:flex;gap:0.5rem;">
+                <button type="button" class="btn-lookup" onclick="deepAnalyzePipelineSaved()" style="font-size:0.78rem;padding:6px 14px;background:#805ad5;">Deep Analysis on Saved</button>
+                <button type="button" class="btn-lookup" onclick="exportPipelineSavedCSV()" style="font-size:0.78rem;padding:6px 14px;">Export CSV</button>
+                <button type="button" class="btn-lookup" onclick="clearPipelineSaved()" style="font-size:0.78rem;padding:6px 14px;background:#e53e3e;">Clear</button>
+            </div>
+        </div>
+        <div class="finder-table-wrapper">
+            <table class="finder-table">
+                <thead><tr>
+                    <th>Address</th><th>Permit #</th><th>Type</th><th>Stage</th><th>Valuation</th><th>Description</th><th>Action</th>
+                </tr></thead>
+                <tbody id="pipelineSavedBody"></tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -6775,6 +6800,7 @@ function renderPipelineResults() {
         const dateStr = r.date ? r.date.substring(0, 10) : '—';
         const stageLabel = PIPELINE_STAGE_LABELS[r.stage] || r.status_raw || r.stage;
         return `<tr onclick="highlightPipelineMarker(${i})" style="cursor:pointer;">
+            <td onclick="event.stopPropagation()"><input type="checkbox" class="pipeline-select" data-idx="${i}" onchange="updatePipelineSelectUI()"></td>
             <td>${r.address || '—'}</td>
             <td style="font-family:monospace;font-size:0.78rem;">${r.permit_nbr || '—'}</td>
             <td>${r.permit_type_label}</td>
@@ -6785,6 +6811,8 @@ function renderPipelineResults() {
             <td style="max-width:200px;font-size:0.75rem;color:var(--text-light);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(r.description || '').replace(/"/g, '&quot;')}">${r.description || '—'}</td>
         </tr>`;
     }).join('');
+    // Show saved panel if has saved
+    renderPipelineSavedList();
 }
 
 function renderPipelineMarkers() {
@@ -6881,6 +6909,206 @@ function exportPipelineCSV() {
     a.download = `pipeline_permits_${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+}
+
+/* --- Pipeline Selection, Saved List & Deep Analysis --- */
+
+function togglePipelineSelectAll() {
+    var allCB = document.getElementById('pipelineSelectAll');
+    var checks = document.querySelectorAll('.pipeline-select');
+    checks.forEach(function(cb) { cb.checked = allCB.checked; });
+    updatePipelineSelectUI();
+}
+
+function updatePipelineSelectUI() {
+    var checks = document.querySelectorAll('.pipeline-select:checked');
+    var saveBtn = document.getElementById('pipelineSaveBtn');
+    var deepBtn = document.getElementById('pipelineDeepBtn');
+    if (saveBtn) saveBtn.style.display = checks.length > 0 ? 'inline-block' : 'none';
+    if (deepBtn) deepBtn.style.display = checks.length > 0 ? 'inline-block' : 'none';
+}
+
+function getPipelineSaved() {
+    try { return JSON.parse(localStorage.getItem('pipeline_saved_list')) || []; }
+    catch(e) { return []; }
+}
+function setPipelineSaved(list) {
+    localStorage.setItem('pipeline_saved_list', JSON.stringify(list));
+}
+
+function savePipelineSelected() {
+    var checks = document.querySelectorAll('.pipeline-select:checked');
+    if (checks.length === 0) return;
+    var saved = getPipelineSaved();
+    var existingPermits = new Set(saved.map(function(s) { return s.permit_nbr; }));
+    var added = 0;
+    checks.forEach(function(cb) {
+        var idx = parseInt(cb.getAttribute('data-idx'));
+        var r = pipelineResults[idx];
+        if (r && !existingPermits.has(r.permit_nbr)) {
+            saved.push({
+                address: r.address || '',
+                permit_nbr: r.permit_nbr || '',
+                permit_type: r.permit_type_label || '',
+                stage: r.stage || '',
+                stageLabel: PIPELINE_STAGE_LABELS[r.stage] || r.stage || '',
+                valuation: r.valuation || 0,
+                date: r.date ? r.date.substring(0, 10) : '',
+                zone: r.zone || '',
+                description: r.description || '',
+                lat: r.lat,
+                lon: r.lon,
+                // Build synthetic property data for deep analysis
+                apn: '',
+                lotSizeSqFt: estimateLotFromPermit(r),
+                useType: r.permit_type_label || 'Commercial',
+                yearBuilt: 0,
+                landVal: 0,
+                impVal: r.valuation || 0,
+                impRatio: 0,
+                allowances: estimateAllowancesFromZone(r.zone),
+            });
+            added++;
+        }
+        cb.checked = false;
+    });
+    setPipelineSaved(saved);
+    updatePipelineSelectUI();
+    renderPipelineSavedList();
+    if (added > 0) alert(added + ' site(s) added to saved pipeline list.');
+}
+
+function estimateLotFromPermit(r) {
+    // Rough estimate based on valuation (higher valuation = larger project)
+    if (r.valuation >= 10000000) return 25000;
+    if (r.valuation >= 5000000) return 15000;
+    if (r.valuation >= 1000000) return 10000;
+    if (r.valuation >= 500000) return 7500;
+    return 5000;
+}
+
+function estimateAllowancesFromZone(zone) {
+    // Default TOD-style allowances for pipeline sites near transit
+    return { height: 55, density: 70, far: 3.0, parking: '0.5/unit' };
+}
+
+function renderPipelineSavedList() {
+    var saved = getPipelineSaved();
+    var panel = document.getElementById('pipelineSavedPanel');
+    var body = document.getElementById('pipelineSavedBody');
+    var countEl = document.getElementById('pipelineSavedCount');
+    if (!panel || !body) return;
+
+    if (saved.length === 0) {
+        panel.style.display = 'none';
+        return;
+    }
+    panel.style.display = 'block';
+    countEl.textContent = saved.length + ' site' + (saved.length === 1 ? '' : 's');
+
+    body.innerHTML = saved.map(function(r, i) {
+        var valStr = r.valuation ? '$' + r.valuation.toLocaleString() : '—';
+        return '<tr>' +
+            '<td>' + (r.address || '—') + '</td>' +
+            '<td style="font-family:monospace;font-size:0.78rem;">' + (r.permit_nbr || '—') + '</td>' +
+            '<td>' + (r.permit_type || '—') + '</td>' +
+            '<td>' + (r.stageLabel || '—') + '</td>' +
+            '<td>' + valStr + '</td>' +
+            '<td style="max-width:150px;font-size:0.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (r.description || '—') + '</td>' +
+            '<td><button type="button" class="saved-btn-remove" onclick="removePipelineSaved(' + i + ')">Remove</button></td>' +
+            '</tr>';
+    }).join('');
+}
+
+function removePipelineSaved(idx) {
+    var saved = getPipelineSaved();
+    saved.splice(idx, 1);
+    setPipelineSaved(saved);
+    renderPipelineSavedList();
+}
+
+function clearPipelineSaved() {
+    if (!confirm('Remove all saved pipeline sites?')) return;
+    setPipelineSaved([]);
+    renderPipelineSavedList();
+}
+
+function exportPipelineSavedCSV() {
+    var saved = getPipelineSaved();
+    if (saved.length === 0) return;
+    var headers = ['Address', 'Permit #', 'Type', 'Stage', 'Valuation', 'Date', 'Zone', 'Description', 'Lat', 'Lon'];
+    var csv = headers.join(',') + '\n';
+    saved.forEach(function(r) {
+        csv += [r.address, r.permit_nbr, r.permit_type, r.stageLabel, r.valuation, r.date, r.zone, '"' + (r.description || '').replace(/"/g, '""') + '"', r.lat, r.lon].join(',') + '\n';
+    });
+    var blob = new Blob([csv], { type: 'text/csv' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'pipeline_saved_' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function deepAnalyzePipeline() {
+    // Convert selected pipeline results to saved format and open deep analysis
+    var checks = document.querySelectorAll('.pipeline-select:checked');
+    if (checks.length === 0) { alert('Select at least one permit site.'); return; }
+    var sites = [];
+    checks.forEach(function(cb) {
+        var idx = parseInt(cb.getAttribute('data-idx'));
+        var r = pipelineResults[idx];
+        if (r) {
+            sites.push({
+                address: r.address || 'Permit ' + r.permit_nbr,
+                apn: r.permit_nbr || '',
+                lotSizeSqFt: estimateLotFromPermit(r),
+                useType: r.permit_type_label || 'Commercial',
+                yearBuilt: 0,
+                landVal: 0,
+                impVal: r.valuation || 0,
+                impRatio: 0,
+                lat: r.lat,
+                lon: r.lon,
+                zone: 'inner',
+                allowances: estimateAllowancesFromZone(r.zone),
+            });
+        }
+    });
+    // Temporarily set these as the saved list and open deep analysis
+    var origSaved = localStorage.getItem('sb79_saved_list');
+    localStorage.setItem('sb79_saved_list', JSON.stringify(sites));
+    openDeepAnalysis();
+    // Restore original saved list
+    if (origSaved) localStorage.setItem('sb79_saved_list', origSaved);
+    else localStorage.removeItem('sb79_saved_list');
+}
+
+function deepAnalyzePipelineSaved() {
+    var saved = getPipelineSaved();
+    if (saved.length === 0) { alert('No saved pipeline sites.'); return; }
+    // Convert to compatible format for deep analysis
+    var sites = saved.map(function(r) {
+        return {
+            address: r.address || 'Permit ' + r.permit_nbr,
+            apn: r.permit_nbr || '',
+            lotSizeSqFt: r.lotSizeSqFt || 10000,
+            useType: r.useType || 'Commercial',
+            yearBuilt: r.yearBuilt || 0,
+            landVal: r.landVal || 0,
+            impVal: r.impVal || r.valuation || 0,
+            impRatio: r.impRatio || 0,
+            lat: r.lat,
+            lon: r.lon,
+            zone: 'inner',
+            allowances: r.allowances || estimateAllowancesFromZone(r.zone),
+        };
+    });
+    var origSaved = localStorage.getItem('sb79_saved_list');
+    localStorage.setItem('sb79_saved_list', JSON.stringify(sites));
+    openDeepAnalysis();
+    if (origSaved) localStorage.setItem('sb79_saved_list', origSaved);
+    else localStorage.removeItem('sb79_saved_list');
 }
 
 /* --- Finder Tab Overlay Integration --- */
@@ -8114,14 +8342,12 @@ function renderDeepTabPanels(skipTab0) {
     if (!st) return;
 
     if (skipTab0) {
-        // Re-render only tabs 1–16, preserving tab 0 (comparison dashboard)
+        // Re-render only tabs 1+, preserving tab 0 (comparison dashboard)
         const container = document.getElementById('deepTabPanels');
         const panels = container.querySelectorAll('.deep-tab-panel');
-        // Remove tabs 1–16 (keep tab 0)
         for (let i = panels.length - 1; i >= 1; i--) {
             panels[i].remove();
         }
-        // Build tabs 1–16 HTML
         let html = '';
         html += renderEntitlementTab(st);
         html += renderSensitivityTab(st);
@@ -8139,6 +8365,14 @@ function renderDeepTabPanels(skipTab0) {
         html += renderGenerativeDesignTab(st);
         html += renderKPIDashboard(st);
         html += renderExportTab(st);
+        html += renderPublicFinanceTab(st);
+        html += renderFiscalImpactTab(st);
+        html += renderRHNATab(st);
+        html += renderP3StructuringTab(st);
+        html += renderIncentiveMatrixTab(st);
+        html += renderDevAgreementTab(st);
+        html += renderAssetStrategyTab(st);
+        html += renderCashFlowModelTab(st);
         container.insertAdjacentHTML('beforeend', html);
         return;
     }
