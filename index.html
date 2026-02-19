@@ -2158,7 +2158,7 @@
         <input type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter')checkAuth();">
         <button type="button" class="auth-btn" onclick="checkAuth()">Enter</button>
         <div class="auth-error" id="authError"></div>
-        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v3.6</div>
+        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v3.7</div>
     </div>
 </div>
 
@@ -2166,7 +2166,7 @@
     <h1>Highest &amp; Best Use Calculator</h1>
     <p>Land Use Analysis for Los Angeles, CA</p>
     <span class="badge">HBU Analysis Tool</span>
-    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v3.6</span>
+    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v3.7</span>
 </header>
 
 <div class="tab-bar">
@@ -2663,6 +2663,7 @@
             <button class="deep-tab-btn" onclick="switchDeepTab(21)">Incentive Matrix</button>
             <button class="deep-tab-btn" onclick="switchDeepTab(22)">Dev Agreement</button>
             <button class="deep-tab-btn" onclick="switchDeepTab(23)">Asset Strategy</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(24)">10-Yr Cash Flow</button>
         </div>
         <div id="deepTabPanels"></div>
     </div>
@@ -8054,6 +8055,9 @@ function renderDeepTabPanels(skipTab0) {
     // Tab 23: Asset Strategy (Hold/Sell/Refi)
     html += renderAssetStrategyTab(st);
 
+    // Tab 24: 10-Year Cash Flow Model
+    html += renderCashFlowModelTab(st);
+
     document.getElementById('deepTabPanels').innerHTML = html;
 }
 
@@ -12240,12 +12244,20 @@ function renderGenerativeDesignTab(st) {
     let html = `<div class="deep-tab-panel">`;
     html += `<div class="analysis-section"><h3>Generative Design Engine</h3>
         <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:1rem;">Auto-generated ${scenarios.length} development scenarios based on zoning, site constraints, and market conditions. Select an optimization goal to re-rank.</p>
-        <div class="opt-goal-btns" id="genGoalBtns">
-            <button class="opt-goal-btn active" onclick="reRankScenarios('margin')">Max Margin</button>
-            <button class="opt-goal-btn" onclick="reRankScenarios('irr')">Max IRR</button>
-            <button class="opt-goal-btn" onclick="reRankScenarios('units')">Max Units</button>
-            <button class="opt-goal-btn" onclick="reRankScenarios('risk')">Min Risk</button>
-            <button class="opt-goal-btn" onclick="reRankScenarios('speed')">Fastest</button>
+        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:0.75rem;">
+            <div class="opt-goal-btns" id="genGoalBtns" style="margin-bottom:0;">
+                <button class="opt-goal-btn active" onclick="reRankScenarios('margin')">Max Margin</button>
+                <button class="opt-goal-btn" onclick="reRankScenarios('irr')">Max IRR</button>
+                <button class="opt-goal-btn" onclick="reRankScenarios('units')">Max Units</button>
+                <button class="opt-goal-btn" onclick="reRankScenarios('risk')">Min Risk</button>
+                <button class="opt-goal-btn" onclick="reRankScenarios('speed')">Fastest</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.4rem;font-size:0.75rem;color:var(--text-light);margin-left:auto;">
+                <label>Min Return:</label>
+                <input type="number" id="genMinIRR" style="width:55px;padding:3px 6px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.75rem;" value="0" step="1" min="0" max="50" oninput="filterScenariosByReturn()"> % IRR
+                <label style="margin-left:0.5rem;">Min Margin:</label>
+                <input type="number" id="genMinMargin" style="width:55px;padding:3px 6px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.75rem;" value="0" step="1" min="-50" max="100" oninput="filterScenariosByReturn()"> %
+            </div>
         </div>
         <div class="scenario-grid" id="scenarioGrid">`;
 
@@ -12279,10 +12291,13 @@ function renderGenerativeDesignTab(st) {
                 <span class="risk-badge" style="color:${sc.riskColor};font-size:0.75rem;">${sc.riskLevel} Risk</span>
                 <span style="font-size:0.72rem;color:var(--text-light);margin-left:0.5rem;">Ease: ${sc.ease}/100</span>
             </div>
+            <button onclick="expandScenarioDetail(${sc.id})" style="margin-top:0.6rem;width:100%;padding:6px;background:#4299e1;color:#fff;border:none;border-radius:4px;font-size:0.72rem;cursor:pointer;font-weight:600;">View Full Details</button>
         </div>`;
     });
 
     html += `</div></div>`;
+    // Expanded detail panel placeholder
+    html += `<div id="scenarioDetailPanel" style="display:none;"></div>`;
 
     // Trade-off summary
     if (scenarios.length >= 3) {
@@ -12338,11 +12353,348 @@ function reRankScenarios(goal) {
                 <span class="risk-badge" style="color:${sc.riskColor};font-size:0.75rem;">${sc.riskLevel} Risk</span>
                 <span style="font-size:0.72rem;color:var(--text-light);margin-left:0.5rem;">Ease: ${sc.ease}/100</span>
             </div>
+            <button onclick="expandScenarioDetail(${sc.id})" style="margin-top:0.6rem;width:100%;padding:6px;background:#4299e1;color:#fff;border:none;border-radius:4px;font-size:0.72rem;cursor:pointer;font-weight:600;">View Full Details</button>
         </div>`;
     });
     grid.innerHTML = cardHtml;
 }
 
+
+// ============================================================
+//  SCENARIO DETAIL EXPANSION + RETURN FILTER
+// ============================================================
+
+function expandScenarioDetail(scenarioId) {
+    var st = deepAnalysisState;
+    if (!st) return;
+    var scenarios = generateDesignScenarios(st.inp, st.effects);
+    var sc = scenarios.find(function(s) { return s.id === scenarioId; });
+    if (!sc) return;
+
+    var panel = document.getElementById('scenarioDetailPanel');
+    if (!panel) return;
+
+    var fmt = function(v) { return '$' + Math.round(v).toLocaleString(); };
+    var fmtM = function(v) { return v >= 1e6 ? '$' + (v / 1e6).toFixed(1) + 'M' : fmt(v); };
+    var params = BUILDING_PARAMS[sc.useId] || {};
+    var hasUnits = !!params.unitSF;
+
+    // Compute full pro forma for this scenario
+    var legislation = getApplicableLegislation(sc.useId, st.inp);
+    var eff = stackLegislationEffects(legislation);
+    var assumptions = getDefaultAssumptions(sc.useId, st.inp, eff);
+    var computed = computeFromAssumptions(sc.useId, st.inp, assumptions, eff);
+    var tl = TIMELINE_MONTHS[sc.useId] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
+    var totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
+
+    var html = '<div class="analysis-section" style="margin-top:1rem;border:2px solid #4299e1;border-radius:10px;padding:1.25rem;">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">';
+    html += '<h3 style="margin:0;">' + sc.useIcon + ' ' + sc.useName + ' — Full Detail</h3>';
+    html += '<button onclick="document.getElementById(\'scenarioDetailPanel\').style.display=\'none\'" style="background:#e53e3e;color:#fff;border:none;border-radius:4px;padding:4px 12px;cursor:pointer;font-size:0.75rem;">Close</button>';
+    html += '</div>';
+
+    // Building program
+    html += '<h4 style="font-size:0.85rem;margin:1rem 0 0.5rem;">Building Program</h4>';
+    html += '<div class="exec-summary-grid">';
+    html += '<div class="exec-summary-card"><h4>Gross SF</h4><div class="exec-metric-lg">' + computed.gsf.toLocaleString() + '</div><div class="exec-metric-sub">' + computed.stories + ' stories / ' + computed.buildingHeight + ' ft</div></div>';
+    if (hasUnits) {
+        html += '<div class="exec-summary-card"><h4>Units</h4><div class="exec-metric-lg">' + computed.units + '</div><div class="exec-metric-sub">' + params.unitSF + ' SF avg unit</div></div>';
+    } else {
+        html += '<div class="exec-summary-card"><h4>Net Leasable</h4><div class="exec-metric-lg">' + computed.nsf.toLocaleString() + '</div><div class="exec-metric-sub">' + (params.eff * 100).toFixed(0) + '% efficiency</div></div>';
+    }
+    html += '<div class="exec-summary-card"><h4>Parking</h4><div class="exec-metric-lg">' + computed.parkingSpaces + '</div><div class="exec-metric-sub">spaces</div></div>';
+    html += '<div class="exec-summary-card"><h4>FAR</h4><div class="exec-metric-lg">' + computed.far.toFixed(2) + '</div><div class="exec-metric-sub">Floor Area Ratio</div></div>';
+    html += '</div>';
+
+    // Pro Forma summary
+    html += '<h4 style="font-size:0.85rem;margin:1rem 0 0.5rem;">Development Pro Forma</h4>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">';
+
+    // Cost side
+    html += '<div style="background:#fff5f5;border-radius:8px;padding:0.75rem;">';
+    html += '<h5 style="font-size:0.8rem;margin:0 0 0.5rem;color:#c53030;">Costs</h5>';
+    html += '<table style="width:100%;font-size:0.72rem;border-collapse:collapse;">';
+    html += '<tr><td>Land Acquisition</td><td style="text-align:right;font-weight:600;">' + fmt(computed.landCost) + '</td></tr>';
+    html += '<tr><td>Site Work</td><td style="text-align:right;">' + fmt(computed.siteWork) + '</td></tr>';
+    if (computed.demolition > 0) html += '<tr><td>Demolition</td><td style="text-align:right;">' + fmt(computed.demolition) + '</td></tr>';
+    html += '<tr><td>Construction (' + fmt(computed.buildCostPSF) + '/SF)</td><td style="text-align:right;">' + fmt(computed.construction) + '</td></tr>';
+    html += '<tr><td>Parking</td><td style="text-align:right;">' + fmt(computed.parkingCost) + '</td></tr>';
+    html += '<tr><td>Landscaping</td><td style="text-align:right;">' + fmt(computed.landscaping) + '</td></tr>';
+    html += '<tr><td>Hard Contingency (7%)</td><td style="text-align:right;">' + fmt(computed.hardContingency) + '</td></tr>';
+    html += '<tr style="border-top:2px solid #c53030;font-weight:700;"><td>Total Hard Costs</td><td style="text-align:right;">' + fmt(computed.totalHard) + '</td></tr>';
+    html += '<tr><td colspan="2" style="height:6px;"></td></tr>';
+    html += '<tr><td>Architecture & Engineering</td><td style="text-align:right;">' + fmt(computed.archEng) + '</td></tr>';
+    html += '<tr><td>Permits & Fees</td><td style="text-align:right;">' + fmt(computed.permits) + '</td></tr>';
+    html += '<tr><td>Legal</td><td style="text-align:right;">' + fmt(computed.legal) + '</td></tr>';
+    html += '<tr><td>Financing</td><td style="text-align:right;">' + fmt(computed.financing) + '</td></tr>';
+    html += '<tr><td>Marketing</td><td style="text-align:right;">' + fmt(computed.marketing) + '</td></tr>';
+    html += '<tr><td>Developer Fee</td><td style="text-align:right;">' + fmt(computed.devFee) + '</td></tr>';
+    html += '<tr style="border-top:2px solid #c53030;font-weight:700;"><td>Total Soft Costs</td><td style="text-align:right;">' + fmt(computed.totalSoft) + '</td></tr>';
+    html += '<tr style="border-top:3px double #c53030;font-weight:700;font-size:0.82rem;"><td>TOTAL DEVELOPMENT COST</td><td style="text-align:right;">' + fmtM(computed.totalDev) + '</td></tr>';
+    html += '</table></div>';
+
+    // Revenue side
+    html += '<div style="background:#f0fff4;border-radius:8px;padding:0.75rem;">';
+    html += '<h5 style="font-size:0.8rem;margin:0 0 0.5rem;color:#276749;">Revenue & Returns</h5>';
+    html += '<table style="width:100%;font-size:0.72rem;border-collapse:collapse;">';
+    html += '<tr><td>Gross Revenue</td><td style="text-align:right;font-weight:600;">' + fmt(computed.grossRevenue) + '/yr</td></tr>';
+    html += '<tr><td>Operating Expenses (' + (assumptions.opexPct || 35) + '%)</td><td style="text-align:right;color:#c53030;">(' + fmt(computed.opex) + ')</td></tr>';
+    html += '<tr style="border-top:2px solid #276749;font-weight:700;"><td>Net Operating Income</td><td style="text-align:right;">' + fmt(computed.noi) + '/yr</td></tr>';
+    html += '<tr><td colspan="2" style="height:8px;"></td></tr>';
+    html += '<tr><td>Cap Rate</td><td style="text-align:right;">' + (computed.capRate * 100).toFixed(2) + '%</td></tr>';
+    html += '<tr style="font-weight:700;font-size:0.82rem;"><td>Stabilized Value</td><td style="text-align:right;color:#276749;">' + fmtM(computed.stabilizedValue) + '</td></tr>';
+    html += '<tr><td colspan="2" style="height:8px;"></td></tr>';
+    html += '<tr><td>Development Margin</td><td style="text-align:right;color:' + (computed.devMargin >= 0.15 ? '#276749' : computed.devMargin >= 0.05 ? '#b7791f' : '#c53030') + ';font-weight:700;">' + (computed.devMargin * 100).toFixed(1) + '%</td></tr>';
+    html += '<tr><td>Yield on Cost</td><td style="text-align:right;">' + (computed.yieldOnCost * 100).toFixed(2) + '%</td></tr>';
+    html += '<tr><td>Estimated IRR</td><td style="text-align:right;color:' + (sc.irr >= 0.10 ? '#276749' : '#b7791f') + ';font-weight:700;">' + (sc.irr * 100).toFixed(1) + '%</td></tr>';
+    html += '<tr><td>Timeline</td><td style="text-align:right;">' + totalMo + ' months</td></tr>';
+    if (hasUnits) {
+        html += '<tr><td>Cost per Unit</td><td style="text-align:right;">' + fmt(Math.round(computed.totalDev / Math.max(computed.units, 1))) + '</td></tr>';
+    }
+    html += '<tr><td>Cost per SF</td><td style="text-align:right;">' + fmt(Math.round(computed.totalDev / Math.max(computed.gsf, 1))) + '</td></tr>';
+    html += '</table></div>';
+    html += '</div>';
+
+    // Applicable legislation
+    html += '<h4 style="font-size:0.85rem;margin:1rem 0 0.5rem;">Applicable Legislation</h4>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:0.5rem;">';
+    legislation.forEach(function(leg) {
+        html += '<span style="background:#ebf8ff;border:1px solid #90cdf4;border-radius:4px;padding:3px 8px;font-size:0.72rem;color:#2b6cb0;">' + leg.name + '</span>';
+    });
+    if (legislation.length === 0) html += '<span style="font-size:0.72rem;color:#a0aec0;">No special legislation applies</span>';
+    html += '</div>';
+
+    // Timeline
+    html += '<h4 style="font-size:0.85rem;margin:1rem 0 0.5rem;">Development Timeline</h4>';
+    var phases = [
+        { name: 'Entitlement', months: tl.entitlement, color: '#e53e3e' },
+        { name: 'Design', months: tl.design, color: '#dd6b20' },
+        { name: 'Permits', months: tl.permits, color: '#d69e2e' },
+        { name: 'Construction', months: tl.construction, color: '#38a169' },
+        { name: 'Lease-Up', months: tl.leaseup, color: '#3182ce' },
+    ];
+    html += '<div style="display:flex;height:32px;border-radius:6px;overflow:hidden;margin-bottom:0.5rem;">';
+    phases.forEach(function(p) {
+        var pct = p.months / totalMo * 100;
+        html += '<div style="width:' + pct + '%;background:' + p.color + ';display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.65rem;font-weight:600;min-width:30px;" title="' + p.name + ': ' + p.months + ' months">' + (pct > 12 ? p.name + ' ' + p.months + 'mo' : p.months) + '</div>';
+    });
+    html += '</div>';
+    html += '<div style="font-size:0.7rem;color:#718096;">Total: ' + totalMo + ' months (' + (totalMo / 12).toFixed(1) + ' years)</div>';
+
+    html += '</div>';
+    panel.innerHTML = html;
+    panel.style.display = 'block';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function filterScenariosByReturn() {
+    var minIRR = parseFloat(document.getElementById('genMinIRR').value) / 100 || 0;
+    var minMargin = parseFloat(document.getElementById('genMinMargin').value) / 100 || -999;
+    var cards = document.querySelectorAll('#scenarioGrid .scenario-card');
+    var st = deepAnalysisState;
+    if (!st) return;
+    var scenarios = generateDesignScenarios(st.inp, st.effects);
+    var sorted = sortScenarios(scenarios, currentGenGoal);
+
+    cards.forEach(function(card, i) {
+        if (i < sorted.length) {
+            var sc = sorted[i];
+            var show = sc.irr >= minIRR && sc.devMargin >= minMargin;
+            card.style.display = show ? '' : 'none';
+            card.style.opacity = show ? '1' : '0.3';
+        }
+    });
+}
+
+// ============================================================
+//  10-YEAR STABILIZED CASH FLOW MODEL
+// ============================================================
+
+function renderCashFlowModelTab(st) {
+    var c = st.computed, a = st.assumptions;
+    var fmt = function(v) { return '$' + Math.round(v).toLocaleString(); };
+    var fmtM = function(v) { return v >= 1e6 ? '$' + (v / 1e6).toFixed(1) + 'M' : fmt(v); };
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="analysis-section"><h3>10-Year Stabilized Cash Flow Model</h3>';
+    html += '<p style="font-size:0.78rem;color:#718096;margin-bottom:1rem;">Year-by-year operating cash flow projection from stabilization through year 10. Editable growth assumptions allow scenario modeling for hold period analysis.</p>';
+
+    // Editable assumptions
+    html += '<div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;margin-bottom:1.25rem;">';
+    html += '<h4 style="font-size:0.82rem;margin:0 0 0.75rem;">Cash Flow Assumptions (editable)</h4>';
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0.75rem;">';
+    html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">Revenue Growth</label><input type="number" id="cf-revGrowth" value="3.0" step="0.5" min="0" max="10" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcCashFlow()"> <span style="font-size:0.65rem;color:#a0aec0;">% / year</span></div>';
+    html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">Expense Growth</label><input type="number" id="cf-expGrowth" value="2.5" step="0.5" min="0" max="10" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcCashFlow()"> <span style="font-size:0.65rem;color:#a0aec0;">% / year</span></div>';
+    html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">Vacancy Rate</label><input type="number" id="cf-vacancy" value="5.0" step="0.5" min="0" max="25" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcCashFlow()"> <span style="font-size:0.65rem;color:#a0aec0;">%</span></div>';
+    html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">Cap Ex Reserve</label><input type="number" id="cf-capex" value="3.0" step="0.5" min="0" max="15" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcCashFlow()"> <span style="font-size:0.65rem;color:#a0aec0;">% of revenue</span></div>';
+    html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">Debt Rate</label><input type="number" id="cf-debtRate" value="6.5" step="0.25" min="3" max="12" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcCashFlow()"> <span style="font-size:0.65rem;color:#a0aec0;">%</span></div>';
+    html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">LTV</label><input type="number" id="cf-ltv" value="65" step="5" min="0" max="85" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcCashFlow()"> <span style="font-size:0.65rem;color:#a0aec0;">%</span></div>';
+    html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">Exit Cap Rate</label><input type="number" id="cf-exitCap" value="' + ((c.capRate || 0.05) * 100 + 0.25).toFixed(2) + '" step="0.25" min="2" max="12" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcCashFlow()"> <span style="font-size:0.65rem;color:#a0aec0;">%</span></div>';
+    html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">Mgmt Fee</label><input type="number" id="cf-mgmt" value="4.0" step="0.5" min="0" max="10" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcCashFlow()"> <span style="font-size:0.65rem;color:#a0aec0;">% of EGI</span></div>';
+    html += '</div></div>';
+
+    // Build cash flow table
+    html += '<div id="cfTableContainer">';
+    html += buildCashFlowTable(c);
+    html += '</div>';
+
+    html += '</div></div>';
+    return html;
+}
+
+function buildCashFlowTable(c) {
+    var fmt = function(v) { return '$' + Math.round(v).toLocaleString(); };
+    var fmtM = function(v) { return v >= 1e6 ? '$' + (v / 1e6).toFixed(1) + 'M' : fmt(v); };
+
+    var revGrowth = parseFloat((document.getElementById('cf-revGrowth') || {}).value) / 100 || 0.03;
+    var expGrowth = parseFloat((document.getElementById('cf-expGrowth') || {}).value) / 100 || 0.025;
+    var vacancyRate = parseFloat((document.getElementById('cf-vacancy') || {}).value) / 100 || 0.05;
+    var capexRate = parseFloat((document.getElementById('cf-capex') || {}).value) / 100 || 0.03;
+    var debtRate = parseFloat((document.getElementById('cf-debtRate') || {}).value) / 100 || 0.065;
+    var ltv = parseFloat((document.getElementById('cf-ltv') || {}).value) / 100 || 0.65;
+    var exitCap = parseFloat((document.getElementById('cf-exitCap') || {}).value) / 100 || ((c.capRate || 0.05) + 0.0025);
+    var mgmtRate = parseFloat((document.getElementById('cf-mgmt') || {}).value) / 100 || 0.04;
+
+    var totalDev = c.totalDev;
+    var equity = Math.round(totalDev * (1 - ltv));
+    var loanAmount = Math.round(totalDev * ltv);
+    var annualDS = Math.round(loanAmount * debtRate);
+    var baseRevenue = c.grossRevenue;
+    var baseOpex = c.opex;
+
+    var years = [];
+    var cumCF = 0;
+
+    for (var yr = 1; yr <= 10; yr++) {
+        var gpRevenue = Math.round(baseRevenue * Math.pow(1 + revGrowth, yr));
+        var vacancy = Math.round(gpRevenue * vacancyRate);
+        var egi = gpRevenue - vacancy;
+        var mgmtFee = Math.round(egi * mgmtRate);
+        var opex = Math.round(baseOpex * Math.pow(1 + expGrowth, yr));
+        var capex = Math.round(gpRevenue * capexRate);
+        var totalExpenses = opex + mgmtFee + capex;
+        var noi = egi - totalExpenses;
+        var cashFlowBDS = noi;
+        var cashFlowADS = noi - annualDS;
+        cumCF += cashFlowADS;
+        var dscr = annualDS > 0 ? noi / annualDS : 999;
+        var cocReturn = equity > 0 ? cashFlowADS / equity : 0;
+        var exitValue = Math.round(noi / exitCap);
+        var netSale = Math.round(exitValue * 0.975 - loanAmount);
+        var totalReturn = cumCF + netSale;
+        var eqMult = equity > 0 ? totalReturn / equity : 0;
+        var annIRR = equity > 0 ? Math.pow(Math.max(totalReturn, 0) / equity, 1 / yr) - 1 : 0;
+
+        years.push({
+            year: yr, gpRevenue: gpRevenue, vacancy: vacancy, egi: egi, mgmtFee: mgmtFee,
+            opex: opex, capex: capex, totalExpenses: totalExpenses, noi: noi,
+            debtService: annualDS, cashFlowBDS: cashFlowBDS, cashFlowADS: cashFlowADS,
+            cumCF: cumCF, dscr: dscr, cocReturn: cocReturn,
+            exitValue: exitValue, netSale: netSale, totalReturn: totalReturn,
+            eqMult: eqMult, irr: annIRR,
+        });
+    }
+
+    // Summary cards
+    var y1 = years[0], y5 = years[4], y10 = years[9];
+    var html = '<div class="exec-summary-grid" style="margin-bottom:1rem;">';
+    html += '<div class="exec-summary-card"><h4>Year 1 NOI</h4><div class="exec-metric-lg">' + fmtM(y1.noi) + '</div><div class="exec-metric-sub">DSCR: ' + y1.dscr.toFixed(2) + 'x</div></div>';
+    html += '<div class="exec-summary-card"><h4>Year 1 Cash-on-Cash</h4><div class="exec-metric-lg" style="color:' + (y1.cocReturn > 0.08 ? '#276749' : '#b7791f') + ';">' + (y1.cocReturn * 100).toFixed(1) + '%</div><div class="exec-metric-sub">' + fmtM(y1.cashFlowADS) + ' after debt</div></div>';
+    html += '<div class="exec-summary-card"><h4>Year 5 Exit</h4><div class="exec-metric-lg">' + y5.eqMult.toFixed(2) + 'x</div><div class="exec-metric-sub">' + (y5.irr * 100).toFixed(1) + '% IRR | ' + fmtM(y5.exitValue) + ' value</div></div>';
+    html += '<div class="exec-summary-card"><h4>Year 10 Exit</h4><div class="exec-metric-lg">' + y10.eqMult.toFixed(2) + 'x</div><div class="exec-metric-sub">' + (y10.irr * 100).toFixed(1) + '% IRR | ' + fmtM(y10.exitValue) + ' value</div></div>';
+    html += '</div>';
+
+    // Capital structure
+    html += '<div style="display:flex;gap:1rem;margin-bottom:1rem;font-size:0.75rem;">';
+    html += '<div style="background:#ebf8ff;border-radius:6px;padding:0.5rem 1rem;"><strong>Equity:</strong> ' + fmtM(equity) + ' (' + Math.round((1 - ltv) * 100) + '%)</div>';
+    html += '<div style="background:#fefcbf;border-radius:6px;padding:0.5rem 1rem;"><strong>Debt:</strong> ' + fmtM(loanAmount) + ' (' + Math.round(ltv * 100) + '% LTV @ ' + (debtRate * 100).toFixed(1) + '%)</div>';
+    html += '<div style="background:#fed7d7;border-radius:6px;padding:0.5rem 1rem;"><strong>Annual Debt Service:</strong> ' + fmtM(annualDS) + '</div>';
+    html += '</div>';
+
+    // Full cash flow table
+    html += '<h4 style="font-size:0.85rem;margin:1rem 0 0.5rem;">Annual Cash Flow Schedule</h4>';
+    html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.68rem;white-space:nowrap;">';
+    html += '<thead><tr style="background:#edf2f7;">';
+    html += '<th style="padding:5px 6px;text-align:center;">Year</th>';
+    html += '<th style="padding:5px 6px;text-align:right;">Gross Revenue</th>';
+    html += '<th style="padding:5px 6px;text-align:right;">Vacancy</th>';
+    html += '<th style="padding:5px 6px;text-align:right;">EGI</th>';
+    html += '<th style="padding:5px 6px;text-align:right;">OpEx</th>';
+    html += '<th style="padding:5px 6px;text-align:right;">Mgmt</th>';
+    html += '<th style="padding:5px 6px;text-align:right;">CapEx Rsv</th>';
+    html += '<th style="padding:5px 6px;text-align:right;font-weight:700;">NOI</th>';
+    html += '<th style="padding:5px 6px;text-align:right;">Debt Svc</th>';
+    html += '<th style="padding:5px 6px;text-align:right;font-weight:700;">Cash Flow</th>';
+    html += '<th style="padding:5px 6px;text-align:right;">DSCR</th>';
+    html += '<th style="padding:5px 6px;text-align:right;">CoC</th>';
+    html += '</tr></thead><tbody>';
+
+    years.forEach(function(y) {
+        var bg = y.year % 2 === 0 ? '#f7fafc' : '#fff';
+        var dscrColor = y.dscr >= 1.25 ? '#276749' : y.dscr >= 1.0 ? '#d69e2e' : '#c53030';
+        html += '<tr style="background:' + bg + ';border-bottom:1px solid #e2e8f0;">';
+        html += '<td style="padding:5px 6px;text-align:center;font-weight:600;">' + y.year + '</td>';
+        html += '<td style="padding:5px 6px;text-align:right;">' + fmt(y.gpRevenue) + '</td>';
+        html += '<td style="padding:5px 6px;text-align:right;color:#c53030;">(' + fmt(y.vacancy) + ')</td>';
+        html += '<td style="padding:5px 6px;text-align:right;">' + fmt(y.egi) + '</td>';
+        html += '<td style="padding:5px 6px;text-align:right;">(' + fmt(y.opex) + ')</td>';
+        html += '<td style="padding:5px 6px;text-align:right;">(' + fmt(y.mgmtFee) + ')</td>';
+        html += '<td style="padding:5px 6px;text-align:right;">(' + fmt(y.capex) + ')</td>';
+        html += '<td style="padding:5px 6px;text-align:right;font-weight:700;">' + fmt(y.noi) + '</td>';
+        html += '<td style="padding:5px 6px;text-align:right;">(' + fmt(y.debtService) + ')</td>';
+        html += '<td style="padding:5px 6px;text-align:right;font-weight:700;color:' + (y.cashFlowADS > 0 ? '#276749' : '#c53030') + ';">' + fmt(y.cashFlowADS) + '</td>';
+        html += '<td style="padding:5px 6px;text-align:right;color:' + dscrColor + ';">' + y.dscr.toFixed(2) + 'x</td>';
+        html += '<td style="padding:5px 6px;text-align:right;">' + (y.cocReturn * 100).toFixed(1) + '%</td>';
+        html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+
+    // Exit analysis table
+    html += '<h4 style="font-size:0.85rem;margin:1.25rem 0 0.5rem;">Exit Scenario Analysis</h4>';
+    html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.72rem;">';
+    html += '<thead><tr style="background:#edf2f7;"><th style="padding:6px;text-align:center;">Exit Year</th><th style="padding:6px;text-align:right;">Terminal NOI</th><th style="padding:6px;text-align:right;">Exit Value</th><th style="padding:6px;text-align:right;">Cum. Cash Flow</th><th style="padding:6px;text-align:right;">Net Sale Proceeds</th><th style="padding:6px;text-align:right;">Total Return</th><th style="padding:6px;text-align:right;">Equity Multiple</th><th style="padding:6px;text-align:right;">IRR</th></tr></thead><tbody>';
+
+    var bestIRR = years.reduce(function(b, y) { return y.irr > b.irr ? y : b; }, years[0]);
+    years.forEach(function(y) {
+        var isBest = y.year === bestIRR.year;
+        var bg = isBest ? '#f0fff4' : '';
+        html += '<tr style="background:' + bg + ';border-bottom:1px solid #e2e8f0;' + (isBest ? 'font-weight:600;' : '') + '">';
+        html += '<td style="padding:6px;text-align:center;">' + y.year + (isBest ? ' ★' : '') + '</td>';
+        html += '<td style="padding:6px;text-align:right;">' + fmtM(y.noi) + '</td>';
+        html += '<td style="padding:6px;text-align:right;">' + fmtM(y.exitValue) + '</td>';
+        html += '<td style="padding:6px;text-align:right;">' + fmtM(y.cumCF) + '</td>';
+        html += '<td style="padding:6px;text-align:right;">' + fmtM(y.netSale) + '</td>';
+        html += '<td style="padding:6px;text-align:right;">' + fmtM(y.totalReturn) + '</td>';
+        html += '<td style="padding:6px;text-align:right;">' + y.eqMult.toFixed(2) + 'x</td>';
+        html += '<td style="padding:6px;text-align:right;color:' + (y.irr > 0.12 ? '#276749' : y.irr > 0.08 ? '#d69e2e' : '#c53030') + ';">' + (y.irr * 100).toFixed(1) + '%</td>';
+        html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+    html += '<div style="font-size:0.68rem;color:#718096;margin-top:0.3rem;">★ = Optimal exit year by IRR. Exit cap: ' + (exitCap * 100).toFixed(2) + '%. Disposition cost: 2.5%.</div>';
+
+    // NOI growth chart (text-based bar)
+    html += '<h4 style="font-size:0.85rem;margin:1.25rem 0 0.5rem;">NOI Growth Trajectory</h4>';
+    var maxNOI = years[9].noi;
+    html += '<div style="display:flex;flex-direction:column;gap:3px;">';
+    years.forEach(function(y) {
+        var pct = maxNOI > 0 ? y.noi / maxNOI * 100 : 0;
+        html += '<div style="display:flex;align-items:center;gap:0.5rem;">';
+        html += '<div style="width:30px;font-size:0.7rem;text-align:right;color:#718096;">Yr ' + y.year + '</div>';
+        html += '<div style="flex:1;background:#edf2f7;border-radius:3px;height:18px;overflow:hidden;"><div style="width:' + pct + '%;background:linear-gradient(90deg,#48bb78,#38a169);height:100%;border-radius:3px;display:flex;align-items:center;padding-left:6px;"><span style="font-size:0.65rem;color:#fff;font-weight:600;">' + fmtM(y.noi) + '</span></div></div>';
+        html += '</div>';
+    });
+    html += '</div>';
+
+    html += '<div style="font-size:0.72rem;color:#718096;margin-top:1.25rem;">Source: Proprietary cash flow model | Assumptions: ' + (revGrowth * 100).toFixed(1) + '% revenue growth, ' + (expGrowth * 100).toFixed(1) + '% expense growth, ' + (vacancyRate * 100).toFixed(0) + '% vacancy, ' + (mgmtRate * 100).toFixed(0) + '% mgmt fee, ' + (capexRate * 100).toFixed(0) + '% CapEx reserve</div>';
+    return html;
+}
+
+function recalcCashFlow() {
+    var st = deepAnalysisState;
+    if (!st) return;
+    var container = document.getElementById('cfTableContainer');
+    if (!container) return;
+    container.innerHTML = buildCashFlowTable(st.computed);
+}
 
 // ============================================================
 //  SKILL 39: CUSTOM KPI DASHBOARD
