@@ -2158,7 +2158,7 @@
         <input type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter')checkAuth();">
         <button type="button" class="auth-btn" onclick="checkAuth()">Enter</button>
         <div class="auth-error" id="authError"></div>
-        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v4.1</div>
+        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v4.2</div>
     </div>
 </div>
 
@@ -2166,7 +2166,7 @@
     <h1>Highest &amp; Best Use Calculator</h1>
     <p>Land Use Analysis for Los Angeles, CA</p>
     <span class="badge">HBU Analysis Tool</span>
-    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v4.1</span>
+    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v4.2</span>
 </header>
 
 <div class="tab-bar">
@@ -2721,6 +2721,7 @@
             <button class="deep-tab-btn" onclick="switchDeepTab(22)">Dev Agreement</button>
             <button class="deep-tab-btn" onclick="switchDeepTab(23)">Asset Strategy</button>
             <button class="deep-tab-btn" onclick="switchDeepTab(24)">10-Yr Cash Flow</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(25)">Dev Timeline</button>
         </div>
         <div id="deepTabPanels"></div>
     </div>
@@ -5936,6 +5937,133 @@ function getSB79Allowances(tier, zoneKey) {
     };
 }
 
+// ============================================================
+//  TRANSIT PROXIMITY + ALL LEGISLATION FOR FINDER RESULTS
+// ============================================================
+
+/**
+ * Find ALL transit stops within maxMiles of a lat/lon, with TOD tier/zone/bonuses.
+ * Returns sorted by distance (closest first).
+ */
+function getAllNearbyTransit(lat, lon, maxMiles) {
+    if (!maxMiles) maxMiles = 0.75;
+    var nearby = [];
+    for (var i = 0; i < METRO_STATIONS.length; i++) {
+        var s = METRO_STATIONS[i];
+        var d = haversine(lat, lon, s.lat, s.lon);
+        if (d <= maxMiles) {
+            var tierData = SB79_TIERS[s.tier] || {};
+            var zoneKey = 'outside', zoneLabel = 'Outside', parking = 1.0, heightMult = 0;
+            if (d <= SB79_ZONES.adjacent.maxDist) { zoneKey = 'adjacent'; zoneLabel = 'Adjacent (≤200ft)'; parking = 0; heightMult = 1.0; }
+            else if (d <= SB79_ZONES.inner.maxDist) { zoneKey = 'inner'; zoneLabel = 'Inner (≤¼ mi)'; parking = 0; heightMult = 1.0; }
+            else if (d <= SB79_ZONES.outer.maxDist) { zoneKey = 'outer'; zoneLabel = 'Outer (¼–½ mi)'; parking = 0.5; heightMult = 0.68; }
+            var allowances = null;
+            if (zoneKey !== 'outside') {
+                allowances = {
+                    height: Math.round((tierData.height || 0) * heightMult),
+                    density: Math.round((tierData.density || 0) * heightMult),
+                    far: parseFloat(((tierData.far || 0) * heightMult).toFixed(2)),
+                    parking: parking,
+                };
+            }
+            nearby.push({
+                station: s,
+                stationIdx: i,
+                distMiles: Math.round(d * 1000) / 1000,
+                distFt: Math.round(d * 5280),
+                tier: s.tier,
+                tierLabel: tierData.label || ('Tier ' + s.tier),
+                serviceType: s.serviceType || (s.tier === 1 ? 'Heavy Rail' : 'Light Rail'),
+                line: s.line,
+                lineLabel: LINE_LABELS[s.line] || s.line,
+                lineColor: LINE_COLORS[s.line] || '#718096',
+                zoneKey: zoneKey,
+                zoneLabel: zoneLabel,
+                allowances: allowances,
+            });
+        }
+    }
+    nearby.sort(function(a, b) { return a.distMiles - b.distMiles; });
+    return nearby;
+}
+
+/**
+ * Determine all applicable CA housing legislation for a Finder result parcel.
+ * Tests multiple use types to find the broadest set of applicable bills.
+ */
+function getLegislationForResult(result) {
+    var useTypes = ['multifamily_high', 'multifamily_mid', 'multifamily_low', 'mixeduse', 'senior', 'hotel', 'duplex', 'adu'];
+    var allBills = {};
+    var bestUseType = 'multifamily_mid';
+    var bestCount = 0;
+
+    // Build inp from the result data
+    var lotSf = result.lotSizeSqFt || 10000;
+    var transit = 'moderate';
+    if (result.zone === 'adjacent') transit = 'adjacent';
+    else if (result.zone === 'inner') transit = 'near';
+    else if (result.zone === 'outer') transit = 'near';
+
+    var zoning = 'C2';
+    if (result.allowances && result.allowances.far >= 4.0) zoning = 'TOD';
+    else if (result.zone === 'adjacent' || result.zone === 'inner') zoning = 'TOD';
+
+    // Set window.lastGeocode for SB 79 applies() check
+    var prevGeocode = window.lastGeocode;
+    if (result.lat && result.lon) {
+        window.lastGeocode = { lat: result.lat, lon: result.lon };
+    }
+
+    var inp = {
+        parcelSize: lotSf,
+        frontage: Math.round(Math.sqrt(lotSf) * 0.8),
+        zoning: zoning,
+        neighborhood: 'dtla',
+        siteCondition: result.useType === 'Vacant' ? 'vacant' : 'demolition',
+        topography: 'flat',
+        cornerLot: false,
+        transit: transit,
+        arterial: 'major',
+        utilities: 'full',
+        constFlood: false,
+        constHillside: false,
+        constHistoric: false,
+        constFault: false,
+        constCoastal: false,
+        constParking: false,
+    };
+
+    // Test each use type
+    for (var u = 0; u < useTypes.length; u++) {
+        var useId = useTypes[u];
+        try {
+            var bills = getApplicableLegislation(useId, inp);
+            for (var b = 0; b < bills.length; b++) {
+                allBills[bills[b].id] = bills[b];
+            }
+            if (bills.length > bestCount) {
+                bestCount = bills.length;
+                bestUseType = useId;
+            }
+        } catch(e) { /* skip */ }
+    }
+
+    // Restore original geocode
+    window.lastGeocode = prevGeocode;
+
+    var billList = [];
+    for (var key in allBills) {
+        if (allBills.hasOwnProperty(key)) billList.push(allBills[key]);
+    }
+    var effects = stackLegislationEffects(billList);
+    return {
+        bills: billList,
+        effects: effects,
+        bestUseType: bestUseType,
+        inp: inp,
+    };
+}
+
 function filterAndScoreResults(features, station, filters) {
     const results = [];
     for (const f of features) {
@@ -5971,12 +6099,24 @@ function filterAndScoreResults(features, station, filters) {
 
         const allowances = getSB79Allowances(station.tier, zoneInfo.key);
 
-        results.push({
-            address, apn, lotSizeSqFt, useType, yearBuilt, landVal, impVal,
-            impRatio, sqft, units, lat, lon,
+        // Get all nearby transit stops + TOD bonuses
+        var nearbyTransit = getAllNearbyTransit(lat, lon, 0.75);
+
+        // Get all applicable CA housing legislation
+        var resultObj = {
+            address: address, apn: apn, lotSizeSqFt: lotSizeSqFt, useType: useType,
+            yearBuilt: yearBuilt, landVal: landVal, impVal: impVal,
+            impRatio: impRatio, sqft: sqft, units: units, lat: lat, lon: lon,
             zone: zoneInfo.key, zoneDist: zoneInfo.dist,
-            allowances, tier: station.tier,
-        });
+            allowances: allowances, tier: station.tier,
+            nearbyTransit: nearbyTransit,
+        };
+        var legInfo = getLegislationForResult(resultObj);
+        resultObj.legislation = legInfo.bills;
+        resultObj.legislationEffects = legInfo.effects;
+        resultObj.legislationCount = legInfo.bills.length;
+
+        results.push(resultObj);
     }
     return results;
 }
@@ -6059,7 +6199,7 @@ function renderFinderResults(station) {
     const ratioClass = (r) => r < 0.5 ? 'imp-ratio-hot' : r < 1.0 ? 'imp-ratio-warm' : 'imp-ratio-cool';
     const fmt = (v) => v ? '$' + v.toLocaleString() : '-';
 
-    let html = `<div class="finder-summary">${finderResults.length} opportunities near <strong>${station.name}</strong> sorted by development potential</div>`;
+    let html = `<div class="finder-summary">${finderResults.length} opportunities near <strong>${station.name}</strong> sorted by development potential &mdash; click any row to expand transit &amp; legislation details</div>`;
     html += `<div class="finder-table-wrapper"><table class="finder-table">
         <thead><tr>
             <th onclick="sortFinderTable('address')">Address</th>
@@ -6068,27 +6208,40 @@ function renderFinderResults(station) {
             <th onclick="sortFinderTable('useType')">Use</th>
             <th onclick="sortFinderTable('yearBuilt')">Year Built</th>
             <th onclick="sortFinderTable('landVal')">Land Value</th>
-            <th onclick="sortFinderTable('impVal')">Imp Value</th>
             <th onclick="sortFinderTable('impRatio')" class="${finderSortCol === 'impRatio' ? (finderSortAsc ? 'sort-asc' : 'sort-desc') : ''}">Imp/Land</th>
             <th onclick="sortFinderTable('zone')">SB 79 Zone</th>
             <th>Allowances</th>
+            <th onclick="sortFinderTable('legislationCount')">Legislation</th>
+            <th>Transit Stops</th>
         </tr></thead><tbody>`;
 
     finderResults.forEach((r, i) => {
         const allow = r.allowances;
         const allowStr = allow ? `${allow.height}ft / ${allow.density}du / ${allow.far}FAR` : '-';
-        html += `<tr onclick="highlightFinderParcel(${i})" id="finderRow${i}">
+        const legCount = r.legislationCount || 0;
+        const transitCount = r.nearbyTransit ? r.nearbyTransit.length : 0;
+        const legBadge = legCount > 0 ? `<span style="background:#48bb78;color:#fff;padding:1px 6px;border-radius:10px;font-size:0.7rem;font-weight:600;">${legCount} bills</span>` : '<span style="color:#a0aec0;font-size:0.7rem;">None</span>';
+        const transitBadge = transitCount > 0 ? `<span style="background:#4299e1;color:#fff;padding:1px 6px;border-radius:10px;font-size:0.7rem;font-weight:600;">${transitCount} stops</span>` : '-';
+
+        html += `<tr onclick="toggleFinderDetail(${i}); highlightFinderParcel(${i})" id="finderRow${i}" style="cursor:pointer;">
             <td>${r.address}</td>
             <td>${r.apn}</td>
             <td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString() + ' sf' : '-'}</td>
             <td>${r.useType}</td>
             <td>${r.yearBuilt > 0 ? r.yearBuilt : '-'}</td>
             <td>${fmt(r.landVal)}</td>
-            <td>${fmt(r.impVal)}</td>
             <td class="${ratioClass(r.impRatio)}">${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'}</td>
             <td>${zoneBadge(r.zone)}</td>
             <td style="font-size:0.75rem;">${allowStr}</td>
+            <td>${legBadge}</td>
+            <td>${transitBadge}</td>
         </tr>`;
+
+        // Expandable detail row for transit + legislation
+        html += `<tr id="finderDetail${i}" style="display:none;" class="finder-detail-row">
+            <td colspan="11" style="padding:0.75rem 1rem;background:#f7fafc;border-left:3px solid #4299e1;">`;
+        html += renderFinderDetailPanel(r, i);
+        html += `</td></tr>`;
     });
 
     html += '</tbody></table></div>';
@@ -6126,7 +6279,7 @@ function sortFinderTable(col) {
 
     // Re-apply sort indicator
     const headers = document.querySelectorAll('.finder-table th');
-    const colMap = ['address', 'apn', 'lotSizeSqFt', 'useType', 'yearBuilt', 'landVal', 'impVal', 'impRatio', 'zone'];
+    const colMap = ['address', 'apn', 'lotSizeSqFt', 'useType', 'yearBuilt', 'landVal', 'impRatio', 'zone', '', 'legislationCount', ''];
     headers.forEach((th, i) => {
         if (colMap[i] === col) {
             th.classList.add(finderSortAsc ? 'sort-asc' : 'sort-desc');
@@ -6156,13 +6309,23 @@ function addFinderParcelsToMap(station) {
 
         const allow = r.allowances;
         const allowStr = allow ? `Height: ${allow.height}ft | Density: ${allow.density}du/ac | FAR: ${allow.far}` : '';
-        marker.bindPopup(`<div style="font-size:0.82rem;">
+        let popupLeg = '';
+        if (r.legislation && r.legislation.length > 0) {
+            popupLeg = '<br><strong style="color:#276749;">Legislation (' + r.legislation.length + '):</strong> ' + r.legislation.map(function(b) { return b.name; }).join(', ');
+        }
+        let popupTransit = '';
+        if (r.nearbyTransit && r.nearbyTransit.length > 0) {
+            var closest3 = r.nearbyTransit.slice(0, 3);
+            popupTransit = '<br><strong style="color:#2b6cb0;">Nearest Transit:</strong> ' + closest3.map(function(t) { return t.station.name + ' (' + t.distFt.toLocaleString() + 'ft)'; }).join(', ');
+        }
+        marker.bindPopup(`<div style="font-size:0.82rem;max-width:320px;">
             <strong>${r.address}</strong><br>
             APN: ${r.apn}<br>
             Use: ${r.useType} | Lot: ${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString() + ' sf' : '-'}<br>
             Imp/Land Ratio: <strong>${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'}</strong><br>
             Land: $${(r.landVal || 0).toLocaleString()} | Imp: $${(r.impVal || 0).toLocaleString()}<br>
             <em>SB 79 Zone: ${r.zone} ${allowStr ? '| ' + allowStr : ''}</em>
+            ${popupLeg}${popupTransit}
         </div>`);
 
         marker.on('click', () => {
@@ -6232,9 +6395,95 @@ function highlightFinderParcel(idx) {
     }
 }
 
+function toggleFinderDetail(idx) {
+    var row = document.getElementById('finderDetail' + idx);
+    if (!row) return;
+    row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+}
+
+function renderFinderDetailPanel(r, idx) {
+    var html = '<div style="display:flex;gap:1.5rem;flex-wrap:wrap;">';
+
+    // --- TRANSIT PROXIMITY SECTION ---
+    html += '<div style="flex:1;min-width:280px;">';
+    html += '<h4 style="margin:0 0 0.5rem;font-size:0.85rem;color:#2b6cb0;">Nearby Transit Stops &amp; TOD Bonuses</h4>';
+    if (r.nearbyTransit && r.nearbyTransit.length > 0) {
+        html += '<table style="width:100%;font-size:0.72rem;border-collapse:collapse;">';
+        html += '<thead><tr style="background:#ebf8ff;"><th style="padding:3px 6px;text-align:left;">Station</th><th style="padding:3px 6px;">Line</th><th style="padding:3px 6px;">Distance</th><th style="padding:3px 6px;">Tier</th><th style="padding:3px 6px;">Zone</th><th style="padding:3px 6px;">Height</th><th style="padding:3px 6px;">Density</th><th style="padding:3px 6px;">FAR</th><th style="padding:3px 6px;">Parking</th></tr></thead><tbody>';
+        for (var t = 0; t < Math.min(r.nearbyTransit.length, 8); t++) {
+            var tr = r.nearbyTransit[t];
+            var a = tr.allowances;
+            var rowBg = t % 2 === 0 ? '#fff' : '#f7fafc';
+            html += '<tr style="background:' + rowBg + ';">';
+            html += '<td style="padding:3px 6px;font-weight:600;">' + tr.station.name + '</td>';
+            html += '<td style="padding:3px 6px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + tr.lineColor + ';margin-right:3px;"></span>' + tr.lineLabel + '</td>';
+            html += '<td style="padding:3px 6px;text-align:center;">' + tr.distFt.toLocaleString() + ' ft<br><span style="color:#718096;">(' + tr.distMiles.toFixed(2) + ' mi)</span></td>';
+            html += '<td style="padding:3px 6px;text-align:center;"><span style="background:' + (tr.tier === 1 ? '#e53e3e' : '#4299e1') + ';color:#fff;padding:1px 5px;border-radius:8px;font-size:0.65rem;">' + (tr.tier === 1 ? 'Tier 1' : 'Tier 2') + '</span><br><span style="font-size:0.65rem;color:#718096;">' + tr.serviceType + '</span></td>';
+            if (a) {
+                html += '<td style="padding:3px 6px;text-align:center;font-weight:600;">' + tr.zoneLabel + '</td>';
+                html += '<td style="padding:3px 6px;text-align:center;">' + a.height + ' ft</td>';
+                html += '<td style="padding:3px 6px;text-align:center;">' + a.density + ' du/ac</td>';
+                html += '<td style="padding:3px 6px;text-align:center;">' + a.far + '</td>';
+                html += '<td style="padding:3px 6px;text-align:center;">' + (a.parking === 0 ? '<span style="color:#38a169;font-weight:700;">None req.</span>' : a.parking + '/unit') + '</td>';
+            } else {
+                html += '<td style="padding:3px 6px;text-align:center;color:#a0aec0;">Outside</td>';
+                html += '<td colspan="4" style="padding:3px 6px;text-align:center;color:#a0aec0;">No SB 79 bonuses (>½ mi)</td>';
+            }
+            html += '</tr>';
+        }
+        if (r.nearbyTransit.length > 8) {
+            html += '<tr><td colspan="9" style="padding:3px 6px;color:#718096;font-style:italic;">+ ' + (r.nearbyTransit.length - 8) + ' more stops within ¾ mile</td></tr>';
+        }
+        html += '</tbody></table>';
+    } else {
+        html += '<p style="color:#a0aec0;font-size:0.8rem;margin:0;">No transit stops within ¾ mile</p>';
+    }
+    html += '</div>';
+
+    // --- LEGISLATION SECTION ---
+    html += '<div style="flex:1;min-width:280px;">';
+    html += '<h4 style="margin:0 0 0.5rem;font-size:0.85rem;color:#276749;">Applicable CA Housing Legislation</h4>';
+    if (r.legislation && r.legislation.length > 0) {
+        for (var b = 0; b < r.legislation.length; b++) {
+            var bill = r.legislation[b];
+            var bonuses = [];
+            if (bill.densityBonus > 0) bonuses.push('+' + Math.round((typeof bill.densityBonus === 'number' ? bill.densityBonus : 0) * 100) + '% density');
+            if (bill.parkingReduction > 0) bonuses.push('-' + Math.round((typeof bill.parkingReduction === 'number' ? bill.parkingReduction : 0) * 100) + '% parking');
+            if (bill.softCostReduction > 0) bonuses.push('-' + Math.round((typeof bill.softCostReduction === 'number' ? bill.softCostReduction : 0) * 100) + '% soft costs');
+            if (bill.legalOverride) bonuses.push('By-Right Override');
+            if (bill.minFAR > 0) bonuses.push('Min FAR ' + (typeof bill.minFAR === 'number' ? bill.minFAR : 0));
+            var bonusStr = bonuses.length > 0 ? bonuses.join(' | ') : 'Streamlined approvals';
+            html += '<div style="margin-bottom:0.4rem;padding:0.4rem 0.5rem;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px;">';
+            html += '<div style="font-weight:600;font-size:0.78rem;color:#276749;">' + bill.name + '</div>';
+            html += '<div style="font-size:0.7rem;color:#4a5568;">' + bill.description + '</div>';
+            html += '<div style="font-size:0.68rem;color:#38a169;margin-top:2px;font-weight:500;">' + bonusStr + '</div>';
+            html += '</div>';
+        }
+        // Stacked effects summary
+        var eff = r.legislationEffects;
+        if (eff) {
+            html += '<div style="margin-top:0.4rem;padding:0.4rem 0.6rem;background:#ebf8ff;border:1px solid #bee3f8;border-radius:6px;">';
+            html += '<div style="font-weight:700;font-size:0.78rem;color:#2b6cb0;margin-bottom:2px;">Cumulative Stacked Effects</div>';
+            html += '<div style="font-size:0.72rem;display:flex;gap:0.75rem;flex-wrap:wrap;">';
+            if (eff.densityBonus > 0) html += '<span>Density: <strong>+' + Math.round(eff.densityBonus * 100) + '%</strong></span>';
+            if (eff.parkingReduction > 0) html += '<span>Parking: <strong>-' + Math.round(eff.parkingReduction * 100) + '%</strong></span>';
+            if (eff.softCostReduction > 0) html += '<span>Soft Cost: <strong>-' + Math.round(eff.softCostReduction * 100) + '%</strong></span>';
+            if (eff.minFAR > 0) html += '<span>Min FAR: <strong>' + eff.minFAR + '</strong></span>';
+            if (eff.legalOverride) html += '<span style="color:#e53e3e;font-weight:600;">By-Right Override</span>';
+            html += '</div></div>';
+        }
+    } else {
+        html += '<p style="color:#a0aec0;font-size:0.8rem;margin:0;">No specific legislation applies to this parcel.</p>';
+    }
+    html += '</div>';
+
+    html += '</div>'; // close flex container
+    return html;
+}
+
 function exportFinderCSV() {
     if (finderResults.length === 0) return;
-    const headers = ['Address', 'APN', 'Lot Size (sf)', 'Use Type', 'Year Built', 'Land Value', 'Imp Value', 'Imp/Land Ratio', 'SB79 Zone', 'Max Height (ft)', 'Max Density (du/ac)', 'Max FAR', 'Parking Req', 'Latitude', 'Longitude'];
+    const headers = ['Address', 'APN', 'Lot Size (sf)', 'Use Type', 'Year Built', 'Land Value', 'Imp Value', 'Imp/Land Ratio', 'SB79 Zone', 'Max Height (ft)', 'Max Density (du/ac)', 'Max FAR', 'Parking Req', 'Legislation Count', 'Transit Stops', 'Latitude', 'Longitude'];
     const rows = finderResults.map(r => {
         const a = r.allowances || {};
         return [
@@ -8431,7 +8680,7 @@ function renderDeepTabPanels(skipTab0) {
         html += renderKPIDashboard(st);
         html += renderExportTab(st);
         [renderPublicFinanceTab, renderFiscalImpactTab, renderRHNATab, renderP3StructuringTab,
-         renderIncentiveMatrixTab, renderDevAgreementTab, renderAssetStrategyTab, renderCashFlowModelTab
+         renderIncentiveMatrixTab, renderDevAgreementTab, renderAssetStrategyTab, renderCashFlowModelTab, renderDevTimelineTab
         ].forEach(function(fn) {
             try { html += fn(st); } catch(e) {
                 console.error('Error in tab render:', e);
@@ -8509,6 +8758,7 @@ function renderDeepTabPanels(skipTab0) {
         { name: 'Dev Agreement', fn: renderDevAgreementTab },
         { name: 'Asset Strategy', fn: renderAssetStrategyTab },
         { name: '10-Yr Cash Flow', fn: renderCashFlowModelTab },
+        { name: 'Dev Timeline', fn: renderDevTimelineTab },
     ];
     newTabRenderers.forEach(function(t) {
         try {
@@ -13532,6 +13782,201 @@ const EIFD_PARAMS = {
         scag: { label: 'SCAG EIFD/CRIA Screening Tool', url: 'https://scag.ca.gov/post/eifd-cria-screening-tool' },
     },
 };
+
+// ============================================================
+//  TAB 25: DEVELOPMENT TIMELINE — FULL PROCESS WITH EDITABLE PHASES
+// ============================================================
+
+function getDefaultDevTimeline(st) {
+    var c = st.computed || {};
+    var inp = st.inp || {};
+    var bestUse = st.bestUse || 'multifamily_mid';
+    var legislation = st.legislation || [];
+    var hasLegalOverride = legislation.some(function(b) { return b.legalOverride; });
+    var isAffordable = ['senior'].includes(bestUse);
+    var nearTransit = inp.transit === 'adjacent' || inp.transit === 'near';
+
+    // Total GBA for construction duration scaling
+    var gba = c.gba || 50000;
+    var stories = c.stories || 4;
+    var units = c.totalUnits || 50;
+
+    // Phase durations (months) — realistic LA County estimates
+    var phases = [
+        { id: 'predevelopment', name: 'Pre-Development / Due Diligence', months: 3, color: '#718096',
+          description: 'Site acquisition, title/survey, Phase I ESA, geotech, feasibility study, architect/engineer selection.',
+          milestones: ['LOI / PSA executed', 'Phase I ESA complete', 'Geotech report', 'Architect engaged', 'Feasibility study'] },
+        { id: 'entitlement', name: 'Entitlement & Land Use Approvals', months: hasLegalOverride ? 4 : 12, color: '#805ad5',
+          description: hasLegalOverride
+            ? 'By-right/ministerial approval pathway under applicable legislation. Reduced timeline due to legislative override of discretionary review.'
+            : 'Discretionary approvals: zone change, CUP, site plan review, CEQA compliance. Community hearings and council approvals.',
+          milestones: hasLegalOverride
+            ? ['File ministerial application', 'Staff review complete', 'Approvals issued']
+            : ['CEQA determination', 'Planning application filed', 'Community hearing(s)', 'Planning Commission hearing', 'City Council approval', 'Entitlements recorded'] },
+        { id: 'design', name: 'Design Development & CDs', months: stories > 7 ? 8 : 6, color: '#3182ce',
+          description: 'Schematic design, design development, construction documents, structural/MEP engineering, landscape design.',
+          milestones: ['Schematic design (SD) complete', 'Design development (DD) complete', 'Construction documents (CDs) 50%', 'CDs 100% complete', 'Value engineering review'] },
+        { id: 'financing', name: 'Financing & Closing', months: isAffordable ? 6 : 3, color: '#d69e2e',
+          description: isAffordable
+            ? 'LIHTC application, tax credit allocation, construction loan underwriting, equity syndication, closing.'
+            : 'Construction loan application, appraisal, underwriting, equity raise, loan closing.',
+          milestones: isAffordable
+            ? ['LIHTC application submitted', 'Tax credit reservation', 'Construction lender selected', 'Equity syndication', 'Financial closing']
+            : ['Construction lender selected', 'Appraisal complete', 'Loan commitment', 'Equity committed', 'Financial closing'] },
+        { id: 'permits', name: 'Building Permits & Plan Check', months: stories > 7 ? 6 : 4, color: '#38a169',
+          description: 'Plan check submittal, corrections, fire/life safety review, LADBS grading/building/mechanical/electrical/plumbing permits.',
+          milestones: ['Plan check submitted', 'First corrections received', 'Corrections resubmitted', 'All permits issued', 'Contractor mobilization'] },
+        { id: 'sitework', name: 'Site Work & Foundations', months: stories > 7 ? 4 : 3, color: '#ed8936',
+          description: 'Demolition (if applicable), grading, shoring/export, utilities rough-in, foundation pour, waterproofing.',
+          milestones: ['Demolition complete', 'Grading & shoring', 'Foundation pour', 'Waterproofing', 'Utility connections roughed'] },
+        { id: 'vertical', name: 'Vertical Construction', months: Math.max(8, Math.round(stories * 2.5)), color: '#dd6b20',
+          description: 'Structural framing (wood/steel/concrete), exterior envelope, MEP rough-in, elevators, fire suppression.',
+          milestones: ['Podium/garage complete', 'Framing 50%', 'Framing 100% / topped out', 'Roof complete', 'MEP rough-in complete', 'Exterior envelope sealed'] },
+        { id: 'finishes', name: 'Interior Finishes & MEP Trim', months: Math.max(4, Math.round(stories * 1.2)), color: '#e53e3e',
+          description: 'Drywall, paint, flooring, cabinetry, fixtures, MEP trim, elevator finish, common area buildout.',
+          milestones: ['Drywall complete', 'Paint & flooring', 'Cabinets & counters installed', 'Fixtures & appliances', 'Common areas complete'] },
+        { id: 'landscaping', name: 'Landscaping & Hardscape', months: 2, color: '#48bb78',
+          description: 'Landscape installation, hardscape, amenity areas, pool/spa (if applicable), irrigation.',
+          milestones: ['Hardscape complete', 'Planting & irrigation', 'Amenities operational'] },
+        { id: 'inspections', name: 'Final Inspections & TCO', months: 2, color: '#667eea',
+          description: 'Fire Dept. sign-off, LADBS final inspections, utility connections energized, Temporary Certificate of Occupancy.',
+          milestones: ['Fire Dept. inspection', 'LADBS final inspection', 'Utilities energized', 'TCO issued'] },
+        { id: 'leaseup', name: 'Lease-Up / Absorption', months: nearTransit ? Math.max(4, Math.round(units / 15)) : Math.max(6, Math.round(units / 10)), color: '#f56565',
+          description: 'Marketing launch (typically 3-6 months pre-completion), unit showings, lease execution, move-ins. Stabilization at 93%+ occupancy.',
+          milestones: ['Marketing/pre-leasing launch', 'First move-ins', '50% leased', '75% leased', 'Stabilization (93%+ occupied)'] },
+        { id: 'stabilization', name: 'Stabilization & Perm Financing', months: 3, color: '#9f7aea',
+          description: 'Achieve stabilized NOI, construction loan payoff, permanent financing conversion or takeout.',
+          milestones: ['Stabilized NOI achieved', 'Perm loan application', 'Perm loan closing / construction loan payoff'] },
+    ];
+    return phases;
+}
+
+function renderDevTimelineTab(st) {
+    var phases = getDefaultDevTimeline(st);
+    var totalMonths = phases.reduce(function(s, p) { return s + p.months; }, 0);
+
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="analysis-section"><h3>Development Timeline — Start to Stabilization</h3>';
+    html += '<p style="font-size:0.78rem;color:#718096;margin-bottom:1rem;">Comprehensive phase-by-phase timeline covering the entire development process. Auto-generated based on project characteristics — edit any phase duration to override with your own estimate.</p>';
+
+    // Summary bar
+    html += '<div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;margin-bottom:1.25rem;">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">';
+    html += '<div><span style="font-size:1.4rem;font-weight:700;color:var(--primary);" id="dtTotalMonths">' + totalMonths + '</span><span style="font-size:0.8rem;color:#718096;"> months total</span>';
+    html += '&nbsp;&nbsp;<span style="font-size:1rem;font-weight:600;color:#4a5568;" id="dtTotalYears">(' + (totalMonths / 12).toFixed(1) + ' years)</span></div>';
+    html += '<button type="button" onclick="resetDevTimeline()" style="padding:4px 12px;font-size:0.72rem;border:1px solid #cbd5e0;border-radius:4px;background:#fff;cursor:pointer;">Reset to Defaults</button>';
+    html += '</div>';
+
+    // Gantt-style bar
+    html += '<div style="margin-top:0.75rem;display:flex;height:32px;border-radius:6px;overflow:hidden;" id="dtGanttBar">';
+    for (var i = 0; i < phases.length; i++) {
+        var p = phases[i];
+        var pct = (p.months / totalMonths * 100).toFixed(1);
+        html += '<div style="flex:' + p.months + ';background:' + p.color + ';display:flex;align-items:center;justify-content:center;font-size:0.55rem;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;min-width:0;" title="' + p.name + ': ' + p.months + ' months">';
+        html += p.months >= 3 ? p.months + 'mo' : '';
+        html += '</div>';
+    }
+    html += '</div>';
+
+    // Legend
+    html += '<div style="margin-top:0.4rem;display:flex;flex-wrap:wrap;gap:0.4rem;">';
+    for (var i = 0; i < phases.length; i++) {
+        html += '<span style="font-size:0.6rem;color:#4a5568;"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:' + phases[i].color + ';margin-right:2px;"></span>' + phases[i].name.split(' /')[0].split(' &')[0] + '</span>';
+    }
+    html += '</div></div>';
+
+    // Phase detail cards with editable durations
+    html += '<div id="dtPhaseCards">';
+    var cumulativeStart = 0;
+    for (var i = 0; i < phases.length; i++) {
+        var p = phases[i];
+        var startMonth = cumulativeStart;
+        var endMonth = cumulativeStart + p.months;
+        cumulativeStart = endMonth;
+
+        html += '<div style="border:1px solid #e2e8f0;border-left:4px solid ' + p.color + ';border-radius:6px;padding:0.75rem 1rem;margin-bottom:0.75rem;">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.5rem;">';
+        html += '<div style="flex:1;min-width:200px;">';
+        html += '<div style="font-weight:700;font-size:0.85rem;color:#2d3748;"><span style="display:inline-block;width:22px;height:22px;border-radius:50%;background:' + p.color + ';color:#fff;text-align:center;line-height:22px;font-size:0.65rem;margin-right:6px;">' + (i + 1) + '</span>' + p.name + '</div>';
+        html += '<div style="font-size:0.72rem;color:#718096;margin:0.3rem 0;">' + p.description + '</div>';
+        html += '</div>';
+        html += '<div style="text-align:right;min-width:160px;">';
+        html += '<div style="font-size:0.68rem;color:#a0aec0;">Month ' + startMonth + '–' + endMonth + '</div>';
+        html += '<div style="display:flex;align-items:center;gap:6px;justify-content:flex-end;margin-top:4px;">';
+        html += '<label style="font-size:0.7rem;color:#718096;">Duration:</label>';
+        html += '<input type="number" id="dt-' + p.id + '" value="' + p.months + '" min="0" max="60" step="1" style="width:55px;padding:3px 6px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.8rem;font-weight:600;text-align:center;" oninput="recalcDevTimeline()">';
+        html += '<span style="font-size:0.7rem;color:#718096;">months</span>';
+        html += '</div></div></div>';
+
+        // Milestones
+        if (p.milestones && p.milestones.length > 0) {
+            html += '<div style="margin-top:0.4rem;padding-top:0.4rem;border-top:1px solid #edf2f7;">';
+            html += '<div style="font-size:0.68rem;font-weight:600;color:#4a5568;margin-bottom:3px;">Key Milestones:</div>';
+            html += '<div style="display:flex;flex-wrap:wrap;gap:4px;">';
+            for (var m = 0; m < p.milestones.length; m++) {
+                html += '<span style="font-size:0.65rem;padding:2px 8px;background:#edf2f7;border-radius:10px;color:#4a5568;">' + p.milestones[m] + '</span>';
+            }
+            html += '</div></div>';
+        }
+        html += '</div>';
+    }
+    html += '</div>';
+
+    // Critical path note
+    html += '<div style="background:#fffaf0;border:1px solid #fbd38d;border-radius:8px;padding:0.75rem 1rem;margin-top:0.5rem;">';
+    html += '<div style="font-weight:600;font-size:0.8rem;color:#c05621;margin-bottom:0.3rem;">Critical Path Considerations</div>';
+    html += '<ul style="font-size:0.72rem;color:#744210;margin:0;padding-left:1.2rem;">';
+    html += '<li><strong>Entitlements</strong> are the highest-risk phase — community opposition and CEQA can add 6-18+ months.</li>';
+    html += '<li><strong>Design & Permits</strong> can overlap by 2-3 months (phased plan check / early grading permits).</li>';
+    html += '<li><strong>Pre-leasing</strong> typically starts 3-6 months before construction completion.</li>';
+    html += '<li><strong>Weather delays</strong> in LA are minimal but fire season smoke/heat days can slow exterior work.</li>';
+    html += '<li><strong>LADBS plan check</strong> currently running 8-16 weeks for initial review; budget for 2-3 correction cycles.</li>';
+    html += '</ul></div>';
+
+    html += '</div></div>';
+    return html;
+}
+
+function recalcDevTimeline() {
+    var phaseIds = ['predevelopment', 'entitlement', 'design', 'financing', 'permits', 'sitework', 'vertical', 'finishes', 'landscaping', 'inspections', 'leaseup', 'stabilization'];
+    var total = 0;
+    for (var i = 0; i < phaseIds.length; i++) {
+        var el = document.getElementById('dt-' + phaseIds[i]);
+        if (el) total += parseInt(el.value) || 0;
+    }
+    var totalEl = document.getElementById('dtTotalMonths');
+    var yearsEl = document.getElementById('dtTotalYears');
+    if (totalEl) totalEl.textContent = total;
+    if (yearsEl) yearsEl.textContent = '(' + (total / 12).toFixed(1) + ' years)';
+
+    // Update Gantt bar
+    var bar = document.getElementById('dtGanttBar');
+    if (bar) {
+        var colors = ['#718096','#805ad5','#3182ce','#d69e2e','#38a169','#ed8936','#dd6b20','#e53e3e','#48bb78','#667eea','#f56565','#9f7aea'];
+        var segments = '';
+        for (var i = 0; i < phaseIds.length; i++) {
+            var el = document.getElementById('dt-' + phaseIds[i]);
+            var mo = el ? (parseInt(el.value) || 0) : 0;
+            if (mo > 0) {
+                segments += '<div style="flex:' + mo + ';background:' + colors[i] + ';display:flex;align-items:center;justify-content:center;font-size:0.55rem;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;min-width:0;" title="' + mo + ' months">';
+                segments += mo >= 3 ? mo + 'mo' : '';
+                segments += '</div>';
+            }
+        }
+        bar.innerHTML = segments;
+    }
+}
+
+function resetDevTimeline() {
+    var st = deepAnalysisState;
+    if (!st) return;
+    var phases = getDefaultDevTimeline(st);
+    for (var i = 0; i < phases.length; i++) {
+        var el = document.getElementById('dt-' + phases[i].id);
+        if (el) el.value = phases[i].months;
+    }
+    recalcDevTimeline();
+}
 
 function renderPublicFinanceTab(st) {
     var computed = st.computed, inp = st.inp, prop = st.prop;
