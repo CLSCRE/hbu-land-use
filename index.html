@@ -2659,6 +2659,10 @@
             <button class="deep-tab-btn" onclick="switchDeepTab(17)">Public Finance</button>
             <button class="deep-tab-btn" onclick="switchDeepTab(18)">Fiscal Impact</button>
             <button class="deep-tab-btn" onclick="switchDeepTab(19)">RHNA Compliance</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(20)">P3 Structuring</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(21)">Incentive Matrix</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(22)">Dev Agreement</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(23)">Asset Strategy</button>
         </div>
         <div id="deepTabPanels"></div>
     </div>
@@ -8038,6 +8042,18 @@ function renderDeepTabPanels(skipTab0) {
     // Tab 19: RHNA Compliance
     html += renderRHNATab(st);
 
+    // Tab 20: P3/Deal Structuring
+    html += renderP3StructuringTab(st);
+
+    // Tab 21: Incentive Comparison Matrix
+    html += renderIncentiveMatrixTab(st);
+
+    // Tab 22: Development Agreement
+    html += renderDevAgreementTab(st);
+
+    // Tab 23: Asset Strategy (Hold/Sell/Refi)
+    html += renderAssetStrategyTab(st);
+
     document.getElementById('deepTabPanels').innerHTML = html;
 }
 
@@ -12956,6 +12972,647 @@ function renderRHNATab(st) {
 
     html += '<div style="font-size:0.72rem;color:#718096;margin-top:0.75rem;">Source: <a href="https://scag.ca.gov/rhna" target="_blank" style="color:#3182ce;">SCAG 6th Cycle RHNA Allocation Plan</a> | <a href="https://www.hcd.ca.gov/planning-and-community-development/regional-housing-needs-allocation" target="_blank" style="color:#3182ce;">HCD RHNA Overview</a></div>';
 
+    html += '</div></div>';
+    return html;
+}
+
+// ===================================================================
+//  TAB 20: PUBLIC-PRIVATE PARTNERSHIP (P3) STRUCTURING
+// ===================================================================
+function renderP3StructuringTab(st) {
+    var c = st.computed, a = st.assumptions;
+    var fmt = function(v) { return '$' + Math.round(v).toLocaleString(); };
+    var fmtM = function(v) { return v >= 1e6 ? '$' + (v / 1e6).toFixed(1) + 'M' : fmt(v); };
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="analysis-section"><h3>Public/Private Partnership Structuring</h3>';
+    html += '<p style="font-size:0.78rem;color:#718096;margin-bottom:1rem;">Evaluate deal structures for public-private transactions. Compare ground lease, joint venture, fee simple disposition, and master developer frameworks to identify optimal risk-adjusted returns.</p>';
+
+    var totalDev = c.totalDev;
+    var noi = c.noi;
+    var stabilized = c.stabilizedValue;
+    var devMargin = c.devMargin;
+    var landCost = c.landCost;
+    var landPct = totalDev > 0 ? landCost / totalDev : 0;
+
+    // P3 Structure Definitions
+    var structures = [
+        {
+            name: 'Ground Lease (Public Land)',
+            desc: 'Public agency retains land ownership; developer leases for 55-99 years. Eliminates land acquisition cost.',
+            devEquity: Math.round(totalDev * 0.30 - landCost),
+            publicContrib: landCost,
+            debtAmount: Math.round((totalDev - landCost) * 0.70),
+            devReturn: 0,
+            publicReturn: 0,
+            riskLevel: 'Medium',
+            riskColor: '#d69e2e',
+            timeline: '18-36 months (negotiation) + construction',
+            pros: ['No land acquisition cost', 'Lower equity requirement', 'Long-term control', 'Public agency retains asset'],
+            cons: ['Lease reversion risk', 'Lender restrictions on leasehold', 'Rent escalation exposure', 'Complex subordination terms'],
+        },
+        {
+            name: 'Joint Venture (Public/Private)',
+            desc: 'Public entity contributes land or incentives; private developer contributes capital and expertise. Profit sharing.',
+            devEquity: Math.round(totalDev * 0.25),
+            publicContrib: Math.round(landCost + totalDev * 0.05),
+            debtAmount: Math.round(totalDev * 0.65),
+            devReturn: 0,
+            publicReturn: 0,
+            riskLevel: 'Medium-High',
+            riskColor: '#e53e3e',
+            timeline: '12-24 months (structuring) + construction',
+            pros: ['Shared risk', 'Public incentive alignment', 'Community benefit integration', 'Flexible structures'],
+            cons: ['Complex governance', 'Slower decision-making', 'Political risk', 'Profit sharing reduces returns'],
+        },
+        {
+            name: 'Fee Simple Disposition',
+            desc: 'Public agency sells land to developer at market or below-market price with development conditions.',
+            devEquity: Math.round(totalDev * 0.30),
+            publicContrib: Math.round(landCost * 0.20),
+            debtAmount: Math.round(totalDev * 0.65),
+            devReturn: 0,
+            publicReturn: 0,
+            riskLevel: 'Low-Medium',
+            riskColor: '#38a169',
+            timeline: '6-18 months (RFP/selection) + construction',
+            pros: ['Full ownership', 'Simpler financing', 'Clear exit strategy', 'No ongoing public involvement'],
+            cons: ['Higher capital requirement', 'Surplus land requirements', 'Community opposition risk', 'DA conditions'],
+        },
+        {
+            name: 'Master Developer Agreement',
+            desc: 'Developer controls phased development of larger site with public infrastructure obligations and community benefits.',
+            devEquity: Math.round(totalDev * 0.20),
+            publicContrib: Math.round(totalDev * 0.15),
+            debtAmount: Math.round(totalDev * 0.60),
+            devReturn: 0,
+            publicReturn: 0,
+            riskLevel: 'High',
+            riskColor: '#e53e3e',
+            timeline: '24-48 months (entitlements) + phased construction',
+            pros: ['Large-scale control', 'Phased risk', 'Value creation across phases', 'Infrastructure cost sharing'],
+            cons: ['Long timeline', 'High upfront costs', 'Entitlement risk', 'Market cycle exposure'],
+        }
+    ];
+
+    // Calculate returns for each structure
+    structures.forEach(function(s) {
+        var devCost = totalDev - s.publicContrib;
+        var debtService = Math.round(s.debtAmount * 0.065);
+        var devNOI = noi - debtService;
+        s.devReturn = s.devEquity > 0 ? devNOI / s.devEquity : 0;
+        s.publicReturn = s.publicContrib > 0 ? (s.publicContrib * 0.04 + noi * 0.10) / s.publicContrib : 0;
+        s.devIRR = s.devEquity > 0 ? (stabilized - s.debtAmount - s.publicContrib) / s.devEquity / 5 : 0;
+        s.equityMultiple = s.devEquity > 0 ? (stabilized - s.debtAmount) / s.devEquity : 0;
+    });
+
+    // Summary cards
+    html += '<div class="exec-summary-grid">';
+    html += '<div class="exec-summary-card"><h4>Project Value</h4><div class="exec-metric-lg">' + fmtM(stabilized) + '</div><div class="exec-metric-sub">Stabilized value at ' + (c.capRate * 100).toFixed(1) + '% cap</div></div>';
+    html += '<div class="exec-summary-card"><h4>Total Dev Cost</h4><div class="exec-metric-lg">' + fmtM(totalDev) + '</div><div class="exec-metric-sub">Land + Hard + Soft costs</div></div>';
+    html += '<div class="exec-summary-card"><h4>Land Component</h4><div class="exec-metric-lg">' + (landPct * 100).toFixed(0) + '%</div><div class="exec-metric-sub">' + fmtM(landCost) + ' land cost</div></div>';
+    html += '<div class="exec-summary-card"><h4>Annual NOI</h4><div class="exec-metric-lg">' + fmtM(noi) + '</div><div class="exec-metric-sub">' + (c.yieldOnCost * 100).toFixed(1) + '% yield on cost</div></div>';
+    html += '</div>';
+
+    // Structure comparison table
+    html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">Deal Structure Comparison</h4>';
+    html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.75rem;">';
+    html += '<thead><tr style="background:#edf2f7;"><th style="padding:8px;text-align:left;">Structure</th><th style="padding:8px;text-align:right;">Dev Equity</th><th style="padding:8px;text-align:right;">Public Contrib</th><th style="padding:8px;text-align:right;">Debt</th><th style="padding:8px;text-align:right;">Cash-on-Cash</th><th style="padding:8px;text-align:right;">Equity Multiple</th><th style="padding:8px;text-align:center;">Risk</th></tr></thead><tbody>';
+    structures.forEach(function(s) {
+        html += '<tr style="border-bottom:1px solid #e2e8f0;">';
+        html += '<td style="padding:8px;font-weight:600;">' + s.name + '</td>';
+        html += '<td style="padding:8px;text-align:right;">' + fmtM(s.devEquity) + '</td>';
+        html += '<td style="padding:8px;text-align:right;">' + fmtM(s.publicContrib) + '</td>';
+        html += '<td style="padding:8px;text-align:right;">' + fmtM(s.debtAmount) + '</td>';
+        html += '<td style="padding:8px;text-align:right;color:' + (s.devReturn > 0.10 ? '#276749' : '#c53030') + ';">' + (s.devReturn * 100).toFixed(1) + '%</td>';
+        html += '<td style="padding:8px;text-align:right;">' + s.equityMultiple.toFixed(2) + 'x</td>';
+        html += '<td style="padding:8px;text-align:center;"><span style="color:' + s.riskColor + ';font-weight:600;">' + s.riskLevel + '</span></td>';
+        html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+
+    // Detailed structure cards
+    html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">Structure Details</h4>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">';
+    structures.forEach(function(s) {
+        html += '<div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;">';
+        html += '<h5 style="font-size:0.82rem;margin:0 0 0.5rem;color:#2d3748;">' + s.name + '</h5>';
+        html += '<p style="font-size:0.72rem;color:#718096;margin-bottom:0.75rem;">' + s.desc + '</p>';
+        html += '<div style="font-size:0.72rem;margin-bottom:0.5rem;"><strong>Timeline:</strong> ' + s.timeline + '</div>';
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;font-size:0.72rem;">';
+        html += '<div><strong style="color:#276749;">Advantages</strong><ul style="margin:0.25rem 0 0;padding-left:1rem;">';
+        s.pros.forEach(function(p) { html += '<li>' + p + '</li>'; });
+        html += '</ul></div>';
+        html += '<div><strong style="color:#c53030;">Challenges</strong><ul style="margin:0.25rem 0 0;padding-left:1rem;">';
+        s.cons.forEach(function(p) { html += '<li>' + p + '</li>'; });
+        html += '</ul></div></div></div>';
+    });
+    html += '</div>';
+
+    // Capital stack visualization
+    html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">Capital Stack by Structure</h4>';
+    html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;">';
+    structures.forEach(function(s) {
+        var total = s.devEquity + s.publicContrib + s.debtAmount;
+        var debtPct = total > 0 ? s.debtAmount / total * 100 : 0;
+        var pubPct = total > 0 ? s.publicContrib / total * 100 : 0;
+        var eqPct = total > 0 ? s.devEquity / total * 100 : 0;
+        html += '<div style="text-align:center;">';
+        html += '<div style="font-size:0.72rem;font-weight:600;margin-bottom:0.5rem;">' + s.name.split('(')[0].trim() + '</div>';
+        html += '<div style="height:150px;display:flex;flex-direction:column;border:1px solid #e2e8f0;border-radius:4px;overflow:hidden;">';
+        html += '<div style="height:' + debtPct + '%;background:#63b3ed;display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:#fff;font-weight:600;">' + (debtPct > 10 ? debtPct.toFixed(0) + '% Debt' : '') + '</div>';
+        html += '<div style="height:' + pubPct + '%;background:#68d391;display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:#fff;font-weight:600;">' + (pubPct > 10 ? pubPct.toFixed(0) + '% Public' : '') + '</div>';
+        html += '<div style="height:' + eqPct + '%;background:#805ad5;display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:#fff;font-weight:600;">' + (eqPct > 10 ? eqPct.toFixed(0) + '% Equity' : '') + '</div>';
+        html += '</div></div>';
+    });
+    html += '</div>';
+
+    // Sources
+    html += '<div style="font-size:0.72rem;color:#718096;margin-top:1.25rem;">Source: <a href="https://www.kosmont.com/services/public-private-partnerships" target="_blank" style="color:#3182ce;">Kosmont P3 Advisory</a> | <a href="https://www.cacities.org/Resources-Documents/Member-Engagement/Professional-Departments/City-Attorneys/Library/2018/Spring-2018/5-2018-Spring-Public-Private-Partnerships.aspx" target="_blank" style="color:#3182ce;">CA League of Cities P3 Guide</a> | <a href="https://www.hcd.ca.gov/grants-and-funding" target="_blank" style="color:#3182ce;">HCD Funding Programs</a></div>';
+    html += '</div></div>';
+    return html;
+}
+
+// ===================================================================
+//  TAB 21: INCENTIVE COMPARISON MATRIX
+// ===================================================================
+function renderIncentiveMatrixTab(st) {
+    var c = st.computed, a = st.assumptions;
+    var fmt = function(v) { return '$' + Math.round(v).toLocaleString(); };
+    var fmtM = function(v) { return v >= 1e6 ? '$' + (v / 1e6).toFixed(1) + 'M' : fmt(v); };
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="analysis-section"><h3>Development Incentive Matrix</h3>';
+    html += '<p style="font-size:0.78rem;color:#718096;margin-bottom:1rem;">Comprehensive comparison of all applicable development incentives, tax credits, and financing tools. Identifies eligible programs based on project characteristics and quantifies potential financial impact.</p>';
+
+    var totalDev = c.totalDev;
+    var noi = c.noi;
+    var units = c.units || 0;
+    var isResidential = !!c.units;
+    var affordableUnits = units > 0 ? Math.round(units * 0.15) : 0;
+    var totalHard = c.totalHard;
+
+    // Incentive definitions
+    var incentives = [
+        {
+            name: 'Transit-Oriented Communities (TOC)',
+            category: 'Zoning',
+            eligible: isResidential,
+            description: 'Density bonus, reduced parking, height increases near transit per LAMC 12.22 A.31',
+            financialImpact: Math.round(totalDev * 0.08),
+            impactType: 'Cost Reduction',
+            requirements: 'Within 1/2 mile of major transit, 8-25% affordable units',
+            timeline: '6-12 months',
+            source: 'https://planning.lacity.gov/plans-policies/transit-oriented-communities-affordable-housing',
+            complexity: 'Medium',
+        },
+        {
+            name: 'Density Bonus (Gov Code §65915)',
+            category: 'Zoning',
+            eligible: isResidential,
+            description: 'Up to 50% density bonus + incentives/concessions for affordable housing',
+            financialImpact: Math.round(noi * 0.35 / (c.capRate || 0.05)),
+            impactType: 'Value Creation',
+            requirements: '5-15% affordable units depending on income level',
+            timeline: '3-6 months',
+            source: 'https://www.hcd.ca.gov/policy-and-research/housing-policy-development/density-bonus',
+            complexity: 'Low',
+        },
+        {
+            name: 'LIHTC (4% / 9%)',
+            category: 'Tax Credit',
+            eligible: isResidential && affordableUnits >= 5,
+            description: '4% credits (as-of-right with bonds) or competitive 9% credits for affordable housing',
+            financialImpact: Math.round(totalHard * affordableUnits / Math.max(units, 1) * 0.30 * 10),
+            impactType: 'Equity Subsidy',
+            requirements: '20% at 50% AMI or 40% at 60% AMI for 30+ years',
+            timeline: '12-24 months (4%) / 18-36 months (9%)',
+            source: 'https://www.treasurer.ca.gov/ctcac/tax.asp',
+            complexity: 'High',
+        },
+        {
+            name: 'Welfare Exemption (RTC §214)',
+            category: 'Tax Exemption',
+            eligible: isResidential && affordableUnits > 0,
+            description: 'Property tax exemption proportional to units ≤80% AMI with nonprofit GP',
+            financialImpact: Math.round(c.stabilizedValue * 0.0125 * (affordableUnits / Math.max(units, 1))),
+            impactType: 'Annual Savings',
+            requirements: 'Nonprofit general partner, units at ≤80% AMI, BOE-267-L filing',
+            timeline: 'Annual (file by Feb 15)',
+            source: 'https://www.boe.ca.gov/proptaxes/welfarevets.htm',
+            complexity: 'Medium',
+        },
+        {
+            name: 'EIFD Tax Increment',
+            category: 'Public Finance',
+            eligible: true,
+            description: 'Enhanced Infrastructure Financing District captures property tax increment for 45 years',
+            financialImpact: Math.round((c.stabilizedValue - c.landCost) * 0.01 * 0.75 * 30),
+            impactType: '30-Yr Revenue',
+            requirements: 'Public infrastructure nexus, participating taxing entities, voter approval if bonds',
+            timeline: '18-36 months (formation)',
+            source: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=201320140SB628',
+            complexity: 'High',
+        },
+        {
+            name: 'Opportunity Zone (IRC §1400Z)',
+            category: 'Tax Deferral',
+            eligible: true,
+            description: 'Capital gains tax deferral and potential exclusion for investments in designated census tracts',
+            financialImpact: Math.round((c.stabilizedValue - totalDev) * 0.20),
+            impactType: 'Tax Savings',
+            requirements: 'Investment in designated OZ census tract, hold 10+ years for full exclusion',
+            timeline: '10-year hold required',
+            source: 'https://www.irs.gov/credits-deductions/businesses/opportunity-zones',
+            complexity: 'Medium',
+        },
+        {
+            name: 'New Markets Tax Credit',
+            category: 'Tax Credit',
+            eligible: !isResidential,
+            description: '39% tax credit over 7 years for investments in low-income communities',
+            financialImpact: Math.round(totalDev * 0.25 * 0.39),
+            impactType: 'Tax Credit',
+            requirements: 'Located in qualifying census tract, CDFI allocation',
+            timeline: '6-18 months',
+            source: 'https://www.cdfifund.gov/programs-training/programs/new-markets-tax-credit',
+            complexity: 'High',
+        },
+        {
+            name: 'Historic Tax Credit (HTC)',
+            category: 'Tax Credit',
+            eligible: (st.inp && st.inp.yearBuilt && st.inp.yearBuilt < 1977),
+            description: '20% federal credit for certified rehabilitation of historic structures',
+            financialImpact: Math.round(totalHard * 0.20),
+            impactType: 'Tax Credit',
+            requirements: 'National Register listing, certified rehabilitation, NPS Parts 1-3',
+            timeline: '12-24 months',
+            source: 'https://www.nps.gov/subjects/taxincentives/index.htm',
+            complexity: 'High',
+        },
+        {
+            name: 'SB 35 Streamlining',
+            category: 'Entitlement',
+            eligible: isResidential,
+            description: 'Ministerial approval (no CEQA) for qualifying projects in non-compliant jurisdictions',
+            financialImpact: Math.round(totalDev * 0.03),
+            impactType: 'Time/Cost Savings',
+            requirements: '10-50% affordable, prevailing wage, objective standards compliance',
+            timeline: '60-90 day approval',
+            source: 'https://www.hcd.ca.gov/planning-and-community-development/housing-open-data-tools/sb-35-determination-summary',
+            complexity: 'Medium',
+        },
+        {
+            name: 'Mills Act (Historic)',
+            category: 'Tax Reduction',
+            eligible: (st.inp && st.inp.yearBuilt && st.inp.yearBuilt < 1977),
+            description: 'Property tax reduction to capitalized income value for designated historic properties',
+            financialImpact: Math.round(c.stabilizedValue * 0.005),
+            impactType: 'Annual Savings',
+            requirements: 'Local historic designation, 10-year maintenance contract',
+            timeline: '3-6 months',
+            source: 'https://ohp.parks.ca.gov/?page_id=21412',
+            complexity: 'Low',
+        },
+    ];
+
+    // Count eligible incentives and total impact
+    var eligible = incentives.filter(function(i) { return i.eligible; });
+    var totalImpact = eligible.reduce(function(sum, i) { return sum + i.financialImpact; }, 0);
+
+    // Summary
+    html += '<div class="exec-summary-grid">';
+    html += '<div class="exec-summary-card"><h4>Eligible Programs</h4><div class="exec-metric-lg">' + eligible.length + ' of ' + incentives.length + '</div><div class="exec-metric-sub">Based on project type and location</div></div>';
+    html += '<div class="exec-summary-card"><h4>Est. Combined Impact</h4><div class="exec-metric-lg" style="color:#276749;">' + fmtM(totalImpact) + '</div><div class="exec-metric-sub">Total potential financial benefit</div></div>';
+    html += '<div class="exec-summary-card"><h4>Impact as % of Dev Cost</h4><div class="exec-metric-lg">' + (totalDev > 0 ? (totalImpact / totalDev * 100).toFixed(1) : '0') + '%</div><div class="exec-metric-sub">Incentives / total development cost</div></div>';
+    html += '<div class="exec-summary-card"><h4>Top Incentive</h4><div class="exec-metric-lg" style="font-size:1rem;">' + (eligible.length > 0 ? eligible.sort(function(a, b) { return b.financialImpact - a.financialImpact; })[0].name.split('(')[0].trim() : 'None') + '</div><div class="exec-metric-sub">' + (eligible.length > 0 ? fmtM(eligible[0].financialImpact) + ' est. impact' : '') + '</div></div>';
+    html += '</div>';
+
+    // Full comparison matrix
+    html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">Incentive Comparison Matrix</h4>';
+    html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.72rem;">';
+    html += '<thead><tr style="background:#edf2f7;">';
+    html += '<th style="padding:6px 8px;text-align:left;">Program</th>';
+    html += '<th style="padding:6px 8px;text-align:center;">Category</th>';
+    html += '<th style="padding:6px 8px;text-align:center;">Eligible?</th>';
+    html += '<th style="padding:6px 8px;text-align:right;">Est. Impact</th>';
+    html += '<th style="padding:6px 8px;text-align:center;">Type</th>';
+    html += '<th style="padding:6px 8px;text-align:center;">Complexity</th>';
+    html += '<th style="padding:6px 8px;text-align:left;">Key Requirements</th>';
+    html += '<th style="padding:6px 8px;text-align:center;">Timeline</th>';
+    html += '</tr></thead><tbody>';
+
+    incentives.forEach(function(inc) {
+        var bg = inc.eligible ? '#f0fff4' : '#fff5f5';
+        var complexColor = inc.complexity === 'Low' ? '#38a169' : inc.complexity === 'Medium' ? '#d69e2e' : '#e53e3e';
+        html += '<tr style="background:' + bg + ';border-bottom:1px solid #e2e8f0;">';
+        html += '<td style="padding:6px 8px;font-weight:600;"><a href="' + inc.source + '" target="_blank" style="color:#3182ce;text-decoration:none;">' + inc.name + '</a></td>';
+        html += '<td style="padding:6px 8px;text-align:center;"><span style="background:#edf2f7;padding:2px 6px;border-radius:4px;font-size:0.68rem;">' + inc.category + '</span></td>';
+        html += '<td style="padding:6px 8px;text-align:center;">' + (inc.eligible ? '<span style="color:#38a169;font-weight:700;">✓ Yes</span>' : '<span style="color:#a0aec0;">✗ No</span>') + '</td>';
+        html += '<td style="padding:6px 8px;text-align:right;font-weight:600;color:' + (inc.eligible ? '#276749' : '#a0aec0') + ';">' + (inc.eligible ? fmtM(inc.financialImpact) : '—') + '</td>';
+        html += '<td style="padding:6px 8px;text-align:center;font-size:0.68rem;">' + inc.impactType + '</td>';
+        html += '<td style="padding:6px 8px;text-align:center;color:' + complexColor + ';font-weight:600;">' + inc.complexity + '</td>';
+        html += '<td style="padding:6px 8px;font-size:0.68rem;">' + inc.requirements + '</td>';
+        html += '<td style="padding:6px 8px;text-align:center;font-size:0.68rem;">' + inc.timeline + '</td>';
+        html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+
+    // Stacking analysis
+    html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">Incentive Stacking Analysis</h4>';
+    html += '<p style="font-size:0.75rem;color:#718096;margin-bottom:0.75rem;">Many incentives can be combined ("stacked") to maximize total financial benefit. Common stacking combinations for LA transit-oriented projects:</p>';
+
+    var stacks = [
+        { name: 'Affordable TOD Stack', combo: 'TOC + Density Bonus + SB 35 + Welfare Exemption', suited: 'Multifamily affordable near transit', impact: 'Highest density + tax savings + fast entitlement' },
+        { name: 'LIHTC Full Stack', combo: '4% LIHTC + Tax-Exempt Bonds + Welfare Exemption + EIFD', suited: '100% affordable projects', impact: 'Maximum subsidy + ongoing tax relief' },
+        { name: 'Mixed-Use Stack', combo: 'TOC + Density Bonus + Opportunity Zone + NMTC', suited: 'Mixed-use in low-income areas', impact: 'Tax deferral + credits + density' },
+        { name: 'Adaptive Reuse Stack', combo: 'Historic Tax Credit + Mills Act + Opportunity Zone', suited: 'Pre-1977 buildings in OZ tracts', impact: '20% rehab credit + reduced taxes + gains exclusion' },
+    ];
+
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">';
+    stacks.forEach(function(s) {
+        html += '<div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.75rem;">';
+        html += '<h5 style="font-size:0.78rem;margin:0 0 0.3rem;color:#2d3748;">' + s.name + '</h5>';
+        html += '<div style="font-size:0.7rem;color:#4a5568;margin-bottom:0.3rem;"><strong>Programs:</strong> ' + s.combo + '</div>';
+        html += '<div style="font-size:0.7rem;color:#4a5568;margin-bottom:0.3rem;"><strong>Best for:</strong> ' + s.suited + '</div>';
+        html += '<div style="font-size:0.7rem;color:#276749;"><strong>Impact:</strong> ' + s.impact + '</div>';
+        html += '</div>';
+    });
+    html += '</div>';
+
+    html += '<div style="font-size:0.72rem;color:#718096;margin-top:1.25rem;">Sources: <a href="https://www.treasurer.ca.gov/ctcac/" target="_blank" style="color:#3182ce;">CTCAC</a> | <a href="https://www.hcd.ca.gov/grants-and-funding" target="_blank" style="color:#3182ce;">HCD Funding</a> | <a href="https://www.irs.gov/credits-deductions/businesses/opportunity-zones" target="_blank" style="color:#3182ce;">IRS Opportunity Zones</a> | <a href="https://www.cdfifund.gov/programs-training/programs/new-markets-tax-credit" target="_blank" style="color:#3182ce;">CDFI NMTC</a></div>';
+    html += '</div></div>';
+    return html;
+}
+
+// ===================================================================
+//  TAB 22: DEVELOPMENT AGREEMENT TERM SHEET
+// ===================================================================
+function renderDevAgreementTab(st) {
+    var c = st.computed, a = st.assumptions;
+    var fmt = function(v) { return '$' + Math.round(v).toLocaleString(); };
+    var fmtM = function(v) { return v >= 1e6 ? '$' + (v / 1e6).toFixed(1) + 'M' : fmt(v); };
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="analysis-section"><h3>Development Agreement Key Terms</h3>';
+    html += '<p style="font-size:0.78rem;color:#718096;margin-bottom:1rem;">Framework for negotiating a Development Agreement (DA) with the local jurisdiction. DAs vest development rights and provide certainty on fees, standards, and community benefits in exchange for public commitments.</p>';
+
+    var totalDev = c.totalDev;
+    var units = c.units || 0;
+    var isResidential = !!c.units;
+    var affordUnits = Math.round(units * 0.15);
+    var parkDedication = Math.round((st.inp ? st.inp.parcelSize : 10000) * 0.05);
+    var impactFees = Math.round(totalDev * 0.035);
+    var communityBenefitBudget = Math.round(totalDev * 0.02);
+
+    // Key terms
+    var terms = [
+        { term: 'Vesting Period', value: '15 years', desc: 'Term during which project is vested against changes in law. Standard range: 10-20 years. Longer terms for phased projects.' },
+        { term: 'Permitted Uses', value: st.bestUse ? (LAND_USES.find(function(u) { return u.id === st.bestUse; }) || {}).name || 'Mixed-Use' : 'Mixed-Use', desc: 'All uses permitted under the DA, including primary and ancillary uses as defined in project approvals.' },
+        { term: 'Maximum Density', value: units > 0 ? units + ' units' : c.nsf.toLocaleString() + ' NSF', desc: 'Maximum development intensity vested by the DA. May include phase-specific caps.' },
+        { term: 'Maximum Height', value: c.buildingHeight + ' ft / ' + c.stories + ' stories', desc: 'Building height as approved in project entitlements. Height may vary by phase or building.' },
+        { term: 'FAR', value: c.far.toFixed(2), desc: 'Floor Area Ratio as entitled. DA vests this FAR against future downzoning.' },
+        { term: 'Parking Requirement', value: c.parkingSpaces + ' spaces', desc: 'Parking count as negotiated. May include in-lieu fee options or shared parking arrangements.' },
+        { term: 'Affordable Housing', value: affordUnits + ' units (' + (units > 0 ? Math.round(affordUnits / units * 100) : 0) + '%)', desc: 'Affordable units or in-lieu fee per inclusionary housing ordinance. Income targeting as specified.' },
+        { term: 'Impact Fees', value: fmt(impactFees), desc: 'Total development impact fees (park, school, traffic, art, linkage). May be frozen at DA execution date.' },
+        { term: 'Community Benefits', value: fmt(communityBenefitBudget), desc: 'Developer-funded community benefits package: local hire, public improvements, community space, etc.' },
+        { term: 'Annual Review Fee', value: fmt(Math.round(totalDev * 0.0005)), desc: 'Annual fee to city for DA compliance monitoring and review. Typically 0.025-0.10% of project value.' },
+        { term: 'Construction Commencement', value: '24 months from DA effective date', desc: 'Deadline to commence substantial construction. Extensions available for force majeure.' },
+        { term: 'Phasing', value: c.gsf > 200000 ? '2-3 phases over 5-7 years' : 'Single phase', desc: 'Construction phasing plan with milestones and deadlines per phase.' },
+    ];
+
+    // Summary
+    html += '<div class="exec-summary-grid">';
+    html += '<div class="exec-summary-card"><h4>Project Value</h4><div class="exec-metric-lg">' + fmtM(c.stabilizedValue) + '</div><div class="exec-metric-sub">Vested at stabilization</div></div>';
+    html += '<div class="exec-summary-card"><h4>Community Benefits</h4><div class="exec-metric-lg">' + fmtM(communityBenefitBudget) + '</div><div class="exec-metric-sub">~2% of total dev cost</div></div>';
+    html += '<div class="exec-summary-card"><h4>Impact Fees</h4><div class="exec-metric-lg">' + fmtM(impactFees) + '</div><div class="exec-metric-sub">Frozen at DA execution</div></div>';
+    html += '<div class="exec-summary-card"><h4>Vesting Period</h4><div class="exec-metric-lg">15 Years</div><div class="exec-metric-sub">Protection against law changes</div></div>';
+    html += '</div>';
+
+    // Term sheet table
+    html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">DA Term Sheet</h4>';
+    html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.75rem;">';
+    html += '<thead><tr style="background:#edf2f7;"><th style="padding:8px;text-align:left;width:25%;">Term</th><th style="padding:8px;text-align:left;width:20%;">Value</th><th style="padding:8px;text-align:left;">Description</th></tr></thead><tbody>';
+    terms.forEach(function(t) {
+        html += '<tr style="border-bottom:1px solid #e2e8f0;">';
+        html += '<td style="padding:8px;font-weight:600;">' + t.term + '</td>';
+        html += '<td style="padding:8px;color:#2d3748;">' + t.value + '</td>';
+        html += '<td style="padding:8px;color:#718096;font-size:0.72rem;">' + t.desc + '</td>';
+        html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+
+    // Community benefits breakdown
+    html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">Community Benefits Package</h4>';
+    var benefits = [
+        { item: 'Local Hire Program', pct: 30, value: Math.round(communityBenefitBudget * 0.30), desc: '30% local hire requirement for construction and permanent jobs' },
+        { item: 'Public Open Space / Park', pct: 20, value: Math.round(communityBenefitBudget * 0.20), desc: parkDedication.toLocaleString() + ' SF park dedication or in-lieu fee' },
+        { item: 'Community Meeting Space', pct: 15, value: Math.round(communityBenefitBudget * 0.15), desc: 'Dedicated community room available for public use' },
+        { item: 'Street/Sidewalk Improvements', pct: 20, value: Math.round(communityBenefitBudget * 0.20), desc: 'Frontage improvements, street trees, bike lanes, lighting' },
+        { item: 'Public Art', pct: 10, value: Math.round(communityBenefitBudget * 0.10), desc: 'Per Cultural Affairs Dept. requirement (1% of building permit valuation)' },
+        { item: 'Sustainability Measures', pct: 5, value: Math.round(communityBenefitBudget * 0.05), desc: 'EV charging, solar, green building certifications beyond code minimum' },
+    ];
+
+    html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.75rem;">';
+    html += '<thead><tr style="background:#f0fff4;"><th style="padding:6px 8px;text-align:left;">Benefit</th><th style="padding:6px 8px;text-align:right;">Est. Value</th><th style="padding:6px 8px;text-align:center;">% of Package</th><th style="padding:6px 8px;text-align:left;">Description</th></tr></thead><tbody>';
+    benefits.forEach(function(b) {
+        html += '<tr style="border-bottom:1px solid #e2e8f0;">';
+        html += '<td style="padding:6px 8px;font-weight:600;">' + b.item + '</td>';
+        html += '<td style="padding:6px 8px;text-align:right;">' + fmt(b.value) + '</td>';
+        html += '<td style="padding:6px 8px;text-align:center;">' + b.pct + '%</td>';
+        html += '<td style="padding:6px 8px;color:#718096;font-size:0.72rem;">' + b.desc + '</td>';
+        html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+
+    // DA process timeline
+    html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">DA Approval Process</h4>';
+    var steps = [
+        { step: 1, name: 'Pre-Application Conference', duration: '1-2 months', desc: 'Meet with Planning Dept to discuss DA scope, community benefits, and key terms' },
+        { step: 2, name: 'DA Application Filing', duration: '1 month', desc: 'File formal DA application with term sheet, community benefits plan, and environmental review' },
+        { step: 3, name: 'Environmental Review (CEQA)', duration: '6-18 months', desc: 'EIR or Mitigated Negative Declaration as applicable. SB 35 may exempt CEQA.' },
+        { step: 4, name: 'Negotiation Period', duration: '3-6 months', desc: 'Negotiate terms with City Attorney, Planning, and Council District office' },
+        { step: 5, name: 'Planning Commission Hearing', duration: '1-2 months', desc: 'Public hearing and recommendation to City Council' },
+        { step: 6, name: 'City Council Approval', duration: '1-3 months', desc: 'Final legislative action. DA becomes effective 30 days after publication.' },
+        { step: 7, name: 'DA Recordation', duration: '1 month', desc: 'Record DA against property. Vesting rights commence upon recordation.' },
+    ];
+
+    html += '<div style="display:flex;flex-direction:column;gap:0.5rem;">';
+    steps.forEach(function(s) {
+        html += '<div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem;background:#f7fafc;border-radius:6px;">';
+        html += '<div style="min-width:28px;height:28px;background:#4299e1;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;">' + s.step + '</div>';
+        html += '<div style="flex:1;"><div style="font-size:0.78rem;font-weight:600;color:#2d3748;">' + s.name + '</div><div style="font-size:0.7rem;color:#718096;">' + s.desc + '</div></div>';
+        html += '<div style="font-size:0.72rem;color:#4a5568;font-weight:600;white-space:nowrap;">' + s.duration + '</div>';
+        html += '</div>';
+    });
+    html += '</div>';
+
+    html += '<div style="font-size:0.72rem;color:#718096;margin-top:1.25rem;">Source: <a href="https://planning.lacity.gov/development-services/development-agreements" target="_blank" style="color:#3182ce;">LA City Planning — Development Agreements</a> | <a href="https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=65864.&lawCode=GOV" target="_blank" style="color:#3182ce;">Gov. Code §65864-65869.5</a> | <a href="https://www.kosmont.com/services/development-agreements" target="_blank" style="color:#3182ce;">Kosmont DA Advisory</a></div>';
+    html += '</div></div>';
+    return html;
+}
+
+// ===================================================================
+//  TAB 23: ASSET STRATEGY (HOLD / SELL / REFI)
+// ===================================================================
+function renderAssetStrategyTab(st) {
+    var c = st.computed, a = st.assumptions;
+    var fmt = function(v) { return '$' + Math.round(v).toLocaleString(); };
+    var fmtM = function(v) { return v >= 1e6 ? '$' + (v / 1e6).toFixed(1) + 'M' : fmt(v); };
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="analysis-section"><h3>Asset Management Strategy</h3>';
+    html += '<p style="font-size:0.78rem;color:#718096;margin-bottom:1rem;">Post-stabilization strategy analysis comparing hold, sell, and refinance scenarios. Evaluates optimal exit timing based on IRR, equity multiple, and cash flow objectives.</p>';
+
+    var totalDev = c.totalDev;
+    var noi = c.noi;
+    var capRate = c.capRate || 0.05;
+    var stabilized = c.stabilizedValue;
+    var equity = Math.round(totalDev * 0.35);
+    var debt = totalDev - equity;
+    var debtRate = 0.065;
+    var debtService = Math.round(debt * debtRate);
+    var noiGrowth = 0.03;
+    var capRateCompression = 0.0015;
+    var dispositionCost = 0.025;
+    var refiLTV = 0.75;
+
+    // 10-year projection
+    var years = [];
+    var cumCashFlow = 0;
+    for (var yr = 1; yr <= 10; yr++) {
+        var projNOI = Math.round(noi * Math.pow(1 + noiGrowth, yr));
+        var exitCap = Math.max(capRate - capRateCompression * yr, 0.035);
+        var exitValue = Math.round(projNOI / exitCap);
+        var netSaleProceeds = Math.round(exitValue * (1 - dispositionCost) - debt);
+        var annualCF = projNOI - debtService;
+        cumCashFlow += annualCF;
+        var totalReturn = netSaleProceeds + cumCashFlow;
+        var equityMultiple = equity > 0 ? totalReturn / equity : 0;
+        var annualizedIRR = equity > 0 ? Math.pow(totalReturn / equity, 1 / yr) - 1 : 0;
+        var refiValue = Math.round(exitValue * refiLTV);
+        var refiProceeds = refiValue - debt;
+
+        years.push({
+            year: yr,
+            noi: projNOI,
+            cashFlow: annualCF,
+            cumCashFlow: cumCashFlow,
+            exitCap: exitCap,
+            exitValue: exitValue,
+            netSaleProceeds: netSaleProceeds,
+            totalReturn: totalReturn,
+            equityMultiple: equityMultiple,
+            irr: annualizedIRR,
+            refiValue: refiValue,
+            refiProceeds: refiProceeds,
+            cashOnCash: equity > 0 ? annualCF / equity : 0,
+        });
+    }
+
+    // Find optimal exit year
+    var bestIRRYear = years.reduce(function(best, y) { return y.irr > best.irr ? y : best; }, years[0]);
+    var bestMultYear = years[years.length - 1];
+
+    // Summary
+    html += '<div class="exec-summary-grid">';
+    html += '<div class="exec-summary-card"><h4>Initial Equity</h4><div class="exec-metric-lg">' + fmtM(equity) + '</div><div class="exec-metric-sub">' + Math.round(equity / totalDev * 100) + '% of total dev cost</div></div>';
+    html += '<div class="exec-summary-card"><h4>Optimal Exit (IRR)</h4><div class="exec-metric-lg">Year ' + bestIRRYear.year + '</div><div class="exec-metric-sub">' + (bestIRRYear.irr * 100).toFixed(1) + '% annualized IRR</div></div>';
+    html += '<div class="exec-summary-card"><h4>10-Yr Equity Multiple</h4><div class="exec-metric-lg">' + bestMultYear.equityMultiple.toFixed(2) + 'x</div><div class="exec-metric-sub">' + fmtM(bestMultYear.totalReturn) + ' total return</div></div>';
+    html += '<div class="exec-summary-card"><h4>Year 1 Cash-on-Cash</h4><div class="exec-metric-lg">' + (years[0].cashOnCash * 100).toFixed(1) + '%</div><div class="exec-metric-sub">' + fmtM(years[0].cashFlow) + ' annual cash flow</div></div>';
+    html += '</div>';
+
+    // Hold analysis table
+    html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">10-Year Hold Analysis</h4>';
+    html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.72rem;">';
+    html += '<thead><tr style="background:#edf2f7;">';
+    html += '<th style="padding:6px;text-align:center;">Year</th>';
+    html += '<th style="padding:6px;text-align:right;">NOI</th>';
+    html += '<th style="padding:6px;text-align:right;">Cash Flow</th>';
+    html += '<th style="padding:6px;text-align:right;">Cash-on-Cash</th>';
+    html += '<th style="padding:6px;text-align:right;">Exit Cap</th>';
+    html += '<th style="padding:6px;text-align:right;">Exit Value</th>';
+    html += '<th style="padding:6px;text-align:right;">Net Proceeds</th>';
+    html += '<th style="padding:6px;text-align:right;">Equity Multiple</th>';
+    html += '<th style="padding:6px;text-align:right;">IRR</th>';
+    html += '</tr></thead><tbody>';
+    years.forEach(function(y) {
+        var isBest = y.year === bestIRRYear.year;
+        var bg = isBest ? '#f0fff4' : (y.year % 2 === 0 ? '#f7fafc' : '#fff');
+        html += '<tr style="background:' + bg + ';border-bottom:1px solid #e2e8f0;' + (isBest ? 'font-weight:600;' : '') + '">';
+        html += '<td style="padding:6px;text-align:center;">' + y.year + (isBest ? ' ★' : '') + '</td>';
+        html += '<td style="padding:6px;text-align:right;">' + fmtM(y.noi) + '</td>';
+        html += '<td style="padding:6px;text-align:right;">' + fmtM(y.cashFlow) + '</td>';
+        html += '<td style="padding:6px;text-align:right;">' + (y.cashOnCash * 100).toFixed(1) + '%</td>';
+        html += '<td style="padding:6px;text-align:right;">' + (y.exitCap * 100).toFixed(2) + '%</td>';
+        html += '<td style="padding:6px;text-align:right;">' + fmtM(y.exitValue) + '</td>';
+        html += '<td style="padding:6px;text-align:right;color:' + (y.netSaleProceeds > 0 ? '#276749' : '#c53030') + ';">' + fmtM(y.netSaleProceeds) + '</td>';
+        html += '<td style="padding:6px;text-align:right;">' + y.equityMultiple.toFixed(2) + 'x</td>';
+        html += '<td style="padding:6px;text-align:right;color:' + (y.irr > 0.12 ? '#276749' : y.irr > 0.08 ? '#d69e2e' : '#c53030') + ';">' + (y.irr * 100).toFixed(1) + '%</td>';
+        html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+    html += '<div style="font-size:0.68rem;color:#718096;margin-top:0.3rem;">★ = Optimal exit year based on IRR. Assumptions: ' + (noiGrowth * 100).toFixed(0) + '% annual NOI growth, ' + (capRateCompression * 100).toFixed(1) + '% annual cap rate compression, ' + (debtRate * 100).toFixed(1) + '% debt rate, ' + (dispositionCost * 100).toFixed(1) + '% disposition cost.</div>';
+
+    // Strategy comparison
+    html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">Strategy Comparison at Year 5</h4>';
+    var y5 = years[4];
+    var strategies = [
+        {
+            name: 'Hold & Operate',
+            desc: 'Continue operations, collect cash flow, build equity through NOI growth and debt paydown.',
+            metric1Label: 'Cumulative Cash Flow',
+            metric1Value: fmtM(y5.cumCashFlow),
+            metric2Label: 'Avg Cash-on-Cash',
+            metric2Value: (years.slice(0, 5).reduce(function(s, y) { return s + y.cashOnCash; }, 0) / 5 * 100).toFixed(1) + '%',
+            recommendation: noi > debtService * 1.25 ? 'Recommended — Strong DSCR' : 'Caution — Tight DSCR',
+            recColor: noi > debtService * 1.25 ? '#276749' : '#d69e2e',
+        },
+        {
+            name: 'Sell / Dispose',
+            desc: 'Sell asset at market cap rate. Realize gains, return equity to investors, 1031 exchange option.',
+            metric1Label: 'Net Sale Proceeds',
+            metric1Value: fmtM(y5.netSaleProceeds),
+            metric2Label: 'Total Return (incl CF)',
+            metric2Value: y5.equityMultiple.toFixed(2) + 'x equity',
+            recommendation: y5.irr > 0.15 ? 'Attractive exit — Strong IRR' : 'Consider holding for value growth',
+            recColor: y5.irr > 0.15 ? '#276749' : '#d69e2e',
+        },
+        {
+            name: 'Refinance & Hold',
+            desc: 'Cash-out refinance at higher stabilized value. Return equity while retaining ownership.',
+            metric1Label: 'Refi Proceeds',
+            metric1Value: fmtM(y5.refiProceeds),
+            metric2Label: 'Equity Returned',
+            metric2Value: (equity > 0 ? (y5.refiProceeds / equity * 100).toFixed(0) : '0') + '% of equity',
+            recommendation: y5.refiProceeds > equity ? 'Full equity return possible' : 'Partial equity return — hold for appreciation',
+            recColor: y5.refiProceeds > equity ? '#276749' : '#d69e2e',
+        },
+    ];
+
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">';
+    strategies.forEach(function(s) {
+        html += '<div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;">';
+        html += '<h5 style="font-size:0.82rem;margin:0 0 0.5rem;color:#2d3748;">' + s.name + '</h5>';
+        html += '<p style="font-size:0.7rem;color:#718096;margin-bottom:0.75rem;">' + s.desc + '</p>';
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.5rem;">';
+        html += '<div><div style="font-size:0.65rem;color:#a0aec0;">' + s.metric1Label + '</div><div style="font-size:1rem;font-weight:700;color:#2d3748;">' + s.metric1Value + '</div></div>';
+        html += '<div><div style="font-size:0.65rem;color:#a0aec0;">' + s.metric2Label + '</div><div style="font-size:1rem;font-weight:700;color:#2d3748;">' + s.metric2Value + '</div></div>';
+        html += '</div>';
+        html += '<div style="font-size:0.72rem;color:' + s.recColor + ';font-weight:600;border-top:1px solid #e2e8f0;padding-top:0.5rem;">' + s.recommendation + '</div>';
+        html += '</div>';
+    });
+    html += '</div>';
+
+    // 1031 Exchange section
+    html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">1031 Exchange Considerations</h4>';
+    html += '<div style="background:#fffff0;border:1px solid #ecc94b;border-radius:8px;padding:1rem;font-size:0.75rem;">';
+    html += '<div style="font-weight:600;margin-bottom:0.5rem;color:#744210;">Tax-Deferred Exchange (IRC §1031)</div>';
+    html += '<ul style="margin:0;padding-left:1.25rem;color:#744210;">';
+    html += '<li><strong>45-Day Identification:</strong> Must identify replacement property within 45 days of closing</li>';
+    html += '<li><strong>180-Day Closing:</strong> Must close on replacement property within 180 days</li>';
+    html += '<li><strong>Like-Kind:</strong> Real property for real property (held for investment or business use)</li>';
+    html += '<li><strong>Qualified Intermediary:</strong> Required to hold proceeds — cannot take constructive receipt</li>';
+    html += '<li><strong>Estimated Tax Deferred:</strong> <strong style="color:#276749;">' + fmtM(Math.round((y5.netSaleProceeds) * 0.25)) + '</strong> (combined federal + state at ~25% effective rate)</li>';
+    html += '</ul></div>';
+
+    html += '<div style="font-size:0.72rem;color:#718096;margin-top:1.25rem;">Source: <a href="https://www.irs.gov/newsroom/like-kind-exchanges-real-estate-tax-tips" target="_blank" style="color:#3182ce;">IRS §1031 Guide</a> | <a href="https://www.ftb.ca.gov/forms/misc/1100.html" target="_blank" style="color:#3182ce;">CA FTB 1031 Reporting</a> | <a href="https://www.kosmont.com/services/asset-management" target="_blank" style="color:#3182ce;">Kosmont Asset Management</a></div>';
     html += '</div></div>';
     return html;
 }
