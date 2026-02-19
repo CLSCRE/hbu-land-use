@@ -2158,7 +2158,7 @@
         <input type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter')checkAuth();">
         <button type="button" class="auth-btn" onclick="checkAuth()">Enter</button>
         <div class="auth-error" id="authError"></div>
-        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v3.4</div>
+        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v3.5</div>
     </div>
 </div>
 
@@ -2166,7 +2166,7 @@
     <h1>Highest &amp; Best Use Calculator</h1>
     <p>Land Use Analysis for Los Angeles, CA</p>
     <span class="badge">HBU Analysis Tool</span>
-    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v3.4</span>
+    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v3.5</span>
 </header>
 
 <div class="tab-bar">
@@ -9420,8 +9420,10 @@ function renderUnitMixTab(st) {
     const nh = inp.neighborhood;
     const nhLabel = nh.charAt(0).toUpperCase() + nh.slice(1);
 
-    // Recommended Mix
-    html += `<div class="analysis-section"><h3>Recommended Unit Mix — ${nhLabel} (${mix.neighborhoodType})</h3>`;
+    // Recommended Mix — Editable
+    html += `<div class="analysis-section"><h3>Recommended Unit Mix — ${nhLabel} (${mix.neighborhoodType})
+        <span style="font-size:0.7rem;color:#718096;font-weight:400;margin-left:0.5rem;">Edit unit counts to see impact on revenue</span>
+    </h3>`;
     html += `<div class="unit-mix-grid">`;
     const maxPct = Math.max(...mix.units.map(u => u.pctMix));
     for (const u of mix.units) {
@@ -9429,7 +9431,11 @@ function renderUnitMixTab(st) {
         html += `<div class="unit-mix-card ${highlighted}">
             <div class="unit-pct">${(u.pctMix * 100).toFixed(0)}%</div>
             <div class="unit-type">${u.type}</div>
-            <div class="unit-count">${u.count} units | ~${u.sf} SF</div>
+            <div class="unit-count">
+                <input type="number" class="umix-count" id="umix-${u.key}" value="${u.count}" min="0" step="1"
+                    style="width:50px;text-align:center;border:1px dashed #cbd5e0;border-radius:4px;padding:2px 4px;font-size:0.82rem;font-weight:600;"
+                    oninput="recalcUnitMix()"> units | ~${u.sf} SF
+            </div>
             <div class="unit-rent">${fmt(u.rent)}/mo</div>
             <div class="unit-psf">$${u.psfRent}/SF/yr</div>
         </div>`;
@@ -9617,6 +9623,62 @@ function renderUnitMixTab(st) {
     return html;
 }
 
+
+function recalcUnitMix() {
+    if (!deepAnalysisState) return;
+    var st = deepAnalysisState;
+    // Read edited unit counts
+    var studioEl = document.getElementById('umix-studio');
+    var br1El = document.getElementById('umix-br1');
+    var br2El = document.getElementById('umix-br2');
+    var br3El = document.getElementById('umix-br3');
+    if (!studioEl) return;
+
+    var s = parseInt(studioEl.value) || 0;
+    var b1 = parseInt(br1El.value) || 0;
+    var b2 = parseInt(br2El.value) || 0;
+    var b3 = parseInt(br3El.value) || 0;
+    var total = s + b1 + b2 + b3;
+    if (total <= 0) return;
+
+    // Create a mix override with proportions based on edited counts
+    var mixOverride = {
+        studio: s / total,
+        br1: b1 / total,
+        br2: b2 / total,
+        br3: b3 / total,
+    };
+
+    // Override total units in computed
+    var modComputed = Object.assign({}, st.computed, { units: total });
+
+    // Recalculate unit mix with override
+    var mix = calculateUnitMix(st.bestUse, st.inp, modComputed, mixOverride);
+    if (!mix) return;
+
+    // Update the rent roll table
+    var rollTable = document.querySelector('.rent-roll-table tbody');
+    if (rollTable) {
+        var rhtml = '';
+        for (var i = 0; i < mix.units.length; i++) {
+            var u = mix.units[i];
+            if (u.count === 0) continue;
+            var annRev = u.count * u.rent * 12;
+            var pctTotal = mix.totalAnnualRev > 0 ? annRev / mix.totalAnnualRev : 0;
+            rhtml += '<tr><td>' + u.type + '</td><td>' + u.count + '</td><td>' + u.sf.toLocaleString() + '</td><td>$' + u.rent.toLocaleString() + '</td><td>$' + annRev.toLocaleString() + '</td><td>' + (pctTotal * 100).toFixed(1) + '%</td></tr>';
+        }
+        rhtml += '<tr class="total-row"><td>Total / Weighted Avg</td><td>' + mix.totalUnits + '</td><td>' + (mix.totalSF > 0 ? Math.round(mix.totalSF / mix.totalUnits).toLocaleString() : '—') + '</td><td>$' + Math.round(mix.weightedAvgRent).toLocaleString() + '</td><td>$' + mix.totalAnnualRev.toLocaleString() + '</td><td>100%</td></tr>';
+        rollTable.innerHTML = rhtml;
+    }
+
+    // Update revenue summary cards
+    var summCards = document.querySelectorAll('.deep-tab-panel .exec-summary-card .exec-metric-lg');
+    // These are in the Revenue Optimization Summary section — tricky to target precisely.
+    // Instead, store the custom mix for when user navigates away and back
+    if (!st.customUnitMix) st.customUnitMix = {};
+    st.customUnitMix = mixOverride;
+    st.customUnitMixTotal = total;
+}
 
 // ============================================================
 //  SKILL 26: Construction Type & Code Compliance
