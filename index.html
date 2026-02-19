@@ -2158,7 +2158,7 @@
         <input type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter')checkAuth();">
         <button type="button" class="auth-btn" onclick="checkAuth()">Enter</button>
         <div class="auth-error" id="authError"></div>
-        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v3.5</div>
+        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v3.6</div>
     </div>
 </div>
 
@@ -2166,7 +2166,7 @@
     <h1>Highest &amp; Best Use Calculator</h1>
     <p>Land Use Analysis for Los Angeles, CA</p>
     <span class="badge">HBU Analysis Tool</span>
-    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v3.5</span>
+    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v3.6</span>
 </header>
 
 <div class="tab-bar">
@@ -2656,6 +2656,9 @@
             <button class="deep-tab-btn" onclick="switchDeepTab(14)">Generative Design</button>
             <button class="deep-tab-btn" onclick="switchDeepTab(15)">KPI Dashboard</button>
             <button class="deep-tab-btn" onclick="switchDeepTab(16)">Export &amp; Reports</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(17)">Public Finance</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(18)">Fiscal Impact</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(19)">RHNA Compliance</button>
         </div>
         <div id="deepTabPanels"></div>
     </div>
@@ -8026,6 +8029,15 @@ function renderDeepTabPanels(skipTab0) {
     // Tab 16: Export & Reports
     html += renderExportTab(st);
 
+    // Tab 17: Public Finance (EIFD/CRIA/CRD)
+    html += renderPublicFinanceTab(st);
+
+    // Tab 18: Fiscal Impact Analysis
+    html += renderFiscalImpactTab(st);
+
+    // Tab 19: RHNA Compliance
+    html += renderRHNATab(st);
+
     document.getElementById('deepTabPanels').innerHTML = html;
 }
 
@@ -12597,6 +12609,356 @@ function exportExecutiveSummary() {
     }, 1000);
 }
 
+
+// ============================================================
+//  PUBLIC FINANCE TAB (EIFD / CRIA / CRD)
+// ============================================================
+
+const EIFD_PARAMS = {
+    propertyTaxRate: 0.01,       // 1% Prop 13 base levy
+    cityShare: 0.16,             // ~16% of 1% goes to city general fund
+    countyShare: 0.26,           // ~26% to county
+    schoolShare: 0.45,           // ~45% to schools (NOT capturable by EIFD)
+    specialDistShare: 0.13,      // ~13% to special districts
+    eifCaptureRate: 0.75,        // typical EIFD captures ~75% of participating entities' increment
+    criaAffordableMin: 0.25,     // CRIAs must allocate 25% to affordable housing
+    bondCoverage: 1.25,          // debt service coverage ratio for bond sizing
+    bondTerm: 30,                // years
+    bondRate: 0.045,             // ~4.5% tax-exempt rate
+    formationCost: 250000,       // typical EIFD formation cost
+    annualAdmin: 50000,          // annual administration
+    sources: {
+        sb628: { label: 'SB 628 — EIFD Enabling Statute', url: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=201320140SB628' },
+        sb852: { label: 'SB 852 — Climate Resilience Districts', url: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220SB852' },
+        ab2: { label: 'AB 2 — Community Revitalization (CRIA)', url: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=201520160AB2' },
+        scag: { label: 'SCAG EIFD/CRIA Screening Tool', url: 'https://scag.ca.gov/post/eifd-cria-screening-tool' },
+    },
+};
+
+function renderPublicFinanceTab(st) {
+    var computed = st.computed, inp = st.inp, prop = st.prop;
+    var assessedValue = computed.totalDev;
+    var baseYearAV = (prop.landVal || 0) + (prop.impVal || 0);
+    var newAV = assessedValue;
+    var increment = Math.max(0, newAV - baseYearAV);
+    var annualTaxIncrement = increment * EIFD_PARAMS.propertyTaxRate;
+
+    // Participating shares (schools cannot participate in EIFD)
+    var cityIncrement = annualTaxIncrement * EIFD_PARAMS.cityShare;
+    var countyIncrement = annualTaxIncrement * EIFD_PARAMS.countyShare;
+    var specialIncrement = annualTaxIncrement * EIFD_PARAMS.specialDistShare;
+    var capturableIncrement = (cityIncrement + countyIncrement + specialIncrement) * EIFD_PARAMS.eifCaptureRate;
+    var schoolIncrement = annualTaxIncrement * EIFD_PARAMS.schoolShare;
+
+    // 30-year projections (2% annual AV growth)
+    var projections = [];
+    var cumulative = 0;
+    for (var yr = 1; yr <= 30; yr++) {
+        var yrAV = increment * Math.pow(1.02, yr);
+        var yrTax = yrAV * EIFD_PARAMS.propertyTaxRate;
+        var yrCapture = (yrTax * (EIFD_PARAMS.cityShare + EIFD_PARAMS.countyShare + EIFD_PARAMS.specialDistShare)) * EIFD_PARAMS.eifCaptureRate;
+        cumulative += yrCapture;
+        if (yr === 1 || yr === 5 || yr === 10 || yr === 15 || yr === 20 || yr === 30) {
+            projections.push({ year: yr, annualCapture: Math.round(yrCapture), cumulative: Math.round(cumulative) });
+        }
+    }
+
+    // Bond capacity
+    var avgAnnualCapture = cumulative / 30;
+    var bondCapacity = Math.round(avgAnnualCapture / EIFD_PARAMS.bondCoverage / (EIFD_PARAMS.bondRate + (1 / EIFD_PARAMS.bondTerm)));
+
+    var html = '<div class="deep-tab-panel">';
+
+    html += '<div class="analysis-section"><h3>Public Finance — Tax Increment Districts</h3>';
+    html += '<p style="font-size:0.82rem;color:var(--text-light);margin-bottom:1rem;">Analysis of Enhanced Infrastructure Financing Districts (EIFDs), Community Revitalization & Investment Authorities (CRIAs), and Climate Resilience Districts (CRDs) for this development.</p>';
+
+    // Key metrics
+    html += '<div class="exec-summary-grid">';
+    html += '<div class="exec-summary-card"><h4>Assessed Value Increment</h4><div class="exec-metric-lg">' + formatCompactDollars(increment) + '</div><div class="exec-metric-sub">New AV: ' + formatCompactDollars(newAV) + ' — Base: ' + formatCompactDollars(baseYearAV) + '</div></div>';
+    html += '<div class="exec-summary-card"><h4>Annual Tax Increment (Yr 1)</h4><div class="exec-metric-lg">' + fmt(Math.round(annualTaxIncrement)) + '</div><div class="exec-metric-sub">1.0% base levy on ' + formatCompactDollars(increment) + ' increment</div></div>';
+    html += '<div class="exec-summary-card"><h4>Capturable by EIFD (Yr 1)</h4><div class="exec-metric-lg" style="color:#276749;">' + fmt(Math.round(capturableIncrement)) + '</div><div class="exec-metric-sub">75% of city + county + special dist shares</div></div>';
+    html += '<div class="exec-summary-card"><h4>Est. Bond Capacity</h4><div class="exec-metric-lg" style="color:var(--primary);">' + formatCompactDollars(bondCapacity) + '</div><div class="exec-metric-sub">' + EIFD_PARAMS.bondTerm + '-yr term at ' + (EIFD_PARAMS.bondRate * 100).toFixed(1) + '%, ' + EIFD_PARAMS.bondCoverage + 'x DSCR</div></div>';
+    html += '</div>';
+
+    // Tax increment allocation breakdown
+    html += '<h4 style="font-size:0.85rem;color:var(--text);margin:1.25rem 0 0.5rem;">Tax Increment Allocation (Year 1)</h4>';
+    html += '<table class="afford-comparison-table"><thead><tr><th>Entity</th><th>Share</th><th>Annual Amount</th><th>EIFD Eligible?</th></tr></thead><tbody>';
+    html += '<tr><td>City General Fund</td><td>' + (EIFD_PARAMS.cityShare * 100).toFixed(0) + '%</td><td>' + fmt(Math.round(cityIncrement)) + '</td><td style="color:#276749;">Yes</td></tr>';
+    html += '<tr><td>County</td><td>' + (EIFD_PARAMS.countyShare * 100).toFixed(0) + '%</td><td>' + fmt(Math.round(countyIncrement)) + '</td><td style="color:#276749;">Yes (with consent)</td></tr>';
+    html += '<tr><td>Schools (ERAF)</td><td>' + (EIFD_PARAMS.schoolShare * 100).toFixed(0) + '%</td><td>' + fmt(Math.round(schoolIncrement)) + '</td><td style="color:#c53030;">No — protected</td></tr>';
+    html += '<tr><td>Special Districts</td><td>' + (EIFD_PARAMS.specialDistShare * 100).toFixed(0) + '%</td><td>' + fmt(Math.round(specialIncrement)) + '</td><td style="color:#276749;">Yes (with consent)</td></tr>';
+    html += '<tr class="total-row"><td>Total Capturable</td><td></td><td>' + fmt(Math.round(capturableIncrement)) + '</td><td></td></tr>';
+    html += '</tbody></table>';
+
+    // 30-year projection
+    html += '<h4 style="font-size:0.85rem;color:var(--text);margin:1.25rem 0 0.5rem;">30-Year Tax Increment Projection (2% annual AV growth)</h4>';
+    html += '<table class="afford-comparison-table"><thead><tr><th>Year</th><th>Annual Capture</th><th>Cumulative</th></tr></thead><tbody>';
+    for (var p = 0; p < projections.length; p++) {
+        html += '<tr><td>Year ' + projections[p].year + '</td><td>' + fmt(projections[p].annualCapture) + '</td><td>' + formatCompactDollars(projections[p].cumulative) + '</td></tr>';
+    }
+    html += '</tbody></table>';
+
+    // District Types Comparison
+    html += '<h4 style="font-size:0.85rem;color:var(--text);margin:1.25rem 0 0.5rem;">District Type Comparison</h4>';
+    html += '<table class="afford-comparison-table"><thead><tr><th>Feature</th><th>EIFD (SB 628)</th><th>CRIA (AB 2)</th><th>CRD (SB 852)</th></tr></thead><tbody>';
+    html += '<tr><td>Formation</td><td>City/County resolution</td><td>City/County resolution</td><td>City/County/Special Dist</td></tr>';
+    html += '<tr><td>Voter Approval</td><td>55% for bonds</td><td>No (protest hearing)</td><td>No (protest hearing)</td></tr>';
+    html += '<tr><td>Affordable Housing</td><td>No minimum</td><td style="font-weight:600;color:#276749;">25% minimum</td><td>No minimum</td></tr>';
+    html += '<tr><td>Duration</td><td>Up to 45 years</td><td>Up to 45 years</td><td>Up to 45 years</td></tr>';
+    html += '<tr><td>School Tax</td><td>Cannot capture</td><td>Cannot capture</td><td>Cannot capture</td></tr>';
+    html += '<tr><td>Best For</td><td>Infrastructure, transit</td><td>Blight/affordable housing</td><td>Climate resilience projects</td></tr>';
+    html += '</tbody></table>';
+
+    // Formation cost/benefit
+    html += '<div style="background:#f0fff4;border:1px solid #c6f6d5;border-radius:8px;padding:0.75rem 1rem;margin-top:1rem;">';
+    html += '<h5 style="font-size:0.82rem;color:#276749;margin-bottom:0.4rem;">Formation Cost vs. Benefit</h5>';
+    html += '<div style="font-size:0.78rem;color:var(--text);line-height:1.6;">';
+    html += '<strong>Formation cost:</strong> ~' + formatCompactDollars(EIFD_PARAMS.formationCost) + ' (legal, economic analysis, public hearings) | ';
+    html += '<strong>Annual admin:</strong> ~' + fmt(EIFD_PARAMS.annualAdmin) + '/yr<br>';
+    html += '<strong>Payback:</strong> ' + (capturableIncrement > EIFD_PARAMS.annualAdmin ? 'Year 1 net positive (' + fmt(Math.round(capturableIncrement - EIFD_PARAMS.annualAdmin)) + '/yr after admin)' : 'Formation may not be cost-effective for this project size') + '<br>';
+    html += '<strong>30-year total capture:</strong> ' + formatCompactDollars(Math.round(cumulative));
+    html += '</div></div>';
+
+    // Sources
+    html += '<div style="font-size:0.72rem;color:#718096;margin-top:0.75rem;"><strong>Sources:</strong> ';
+    var srcLinks = Object.values(EIFD_PARAMS.sources).map(function(s) { return '<a href="' + s.url + '" target="_blank" style="color:#3182ce;">' + s.label + '</a>'; }).join(' | ');
+    html += srcLinks + '</div>';
+
+    html += '</div></div>';
+    return html;
+}
+
+// ============================================================
+//  FISCAL IMPACT ANALYSIS TAB
+// ============================================================
+
+var FISCAL_IMPACT_RATES = {
+    // LA City fiscal parameters
+    propertyTaxCityShare: 0.16,      // city gets ~16% of 1% levy
+    salesTaxLocal: 0.01,             // 1% local sales tax (city share)
+    utilityTaxRate: 0.09,            // 9% on electric/gas/telecom
+    avgUtilityPerUnit: 2400,         // avg annual utility cost per residential unit
+    avgUtilityPerSF: 3.20,          // avg annual utility cost per commercial SF
+    businessLicenseFee: 0.00153,     // $1.53 per $1,000 gross receipts (LA City rate)
+    transitOccupancyTax: 0.14,       // 14% hotel TOT (if applicable)
+    parkFee: 1500,                   // Quimby/park fee per unit
+    schoolFee: 4.79,                 // school impact fee per SF (residential)
+    trafficFee: 3200,                // transportation impact fee per unit
+    // Service costs per capita
+    policePerCapita: 680,
+    firePerCapita: 420,
+    publicWorksPerCapita: 290,
+    parksPerCapita: 180,
+    adminPerCapita: 150,
+    personsPerUnit: 2.3,             // avg household size
+    personsPerCommSF: 0.004,         // 1 person per 250 SF commercial
+};
+
+function renderFiscalImpactTab(st) {
+    var computed = st.computed, inp = st.inp, prop = st.prop, bestUse = st.bestUse;
+    var fr = FISCAL_IMPACT_RATES;
+    var isResidential = ['sfr','duplex','multifamily_low','multifamily_mid','multifamily_high','mixeduse','senior','adu'].includes(bestUse);
+    var units = computed.units || 0;
+    var gsf = computed.gsf || 0;
+
+    // REVENUE TO CITY
+    var assessedValue = computed.totalDev;
+    var annualPropTax = assessedValue * 0.01 * fr.propertyTaxCityShare;
+
+    // Sales tax (estimate for retail/mixed-use ground floor)
+    var retailSF = bestUse === 'retail' ? gsf : (bestUse === 'mixeduse' ? Math.round(gsf * 0.15) : 0);
+    var estRetailSalesPerSF = 350; // conservative
+    var annualSalesTax = retailSF * estRetailSalesPerSF * fr.salesTaxLocal;
+
+    // Utility tax
+    var annualUtilityTax = isResidential
+        ? units * fr.avgUtilityPerUnit * fr.utilityTaxRate
+        : gsf * fr.avgUtilityPerSF * fr.utilityTaxRate;
+
+    // Business license (commercial only)
+    var annualBizLicense = !isResidential ? computed.grossRevenue * fr.businessLicenseFee : 0;
+
+    // One-time fees
+    var parkFees = units * fr.parkFee;
+    var schoolFees = gsf * fr.schoolFee;
+    var trafficFees = units * fr.trafficFee;
+    var totalOneTimeFees = parkFees + schoolFees + trafficFees;
+
+    var totalAnnualRevenue = annualPropTax + annualSalesTax + annualUtilityTax + annualBizLicense;
+
+    // SERVICE COSTS TO CITY
+    var newPopulation = isResidential ? units * fr.personsPerUnit : Math.round(gsf * fr.personsPerCommSF);
+    var policeCost = newPopulation * fr.policePerCapita;
+    var fireCost = newPopulation * fr.firePerCapita;
+    var publicWorksCost = newPopulation * fr.publicWorksPerCapita;
+    var parksCost = newPopulation * fr.parksPerCapita;
+    var adminCost = newPopulation * fr.adminPerCapita;
+    var totalAnnualCost = policeCost + fireCost + publicWorksCost + parksCost + adminCost;
+
+    var netFiscalImpact = totalAnnualRevenue - totalAnnualCost;
+    var isPositive = netFiscalImpact >= 0;
+
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="analysis-section"><h3>Fiscal Impact Analysis</h3>';
+    html += '<p style="font-size:0.82rem;color:var(--text-light);margin-bottom:1rem;">Estimated annual impact on city general fund: recurring tax revenue generated vs. municipal service costs incurred by this development.</p>';
+
+    // Net impact headline
+    html += '<div class="exec-summary-grid">';
+    html += '<div class="exec-summary-card"><h4>Annual Revenue to City</h4><div class="exec-metric-lg" style="color:#276749;">' + fmt(Math.round(totalAnnualRevenue)) + '</div><div class="exec-metric-sub">Property tax + utility tax + sales tax + fees</div></div>';
+    html += '<div class="exec-summary-card"><h4>Annual Service Cost</h4><div class="exec-metric-lg" style="color:#c53030;">' + fmt(Math.round(totalAnnualCost)) + '</div><div class="exec-metric-sub">Police, fire, public works, parks, admin for ' + newPopulation + ' new residents</div></div>';
+    html += '<div class="exec-summary-card"><h4>Net Fiscal Impact</h4><div class="exec-metric-lg" style="color:' + (isPositive ? '#276749' : '#c53030') + ';">' + (isPositive ? '+' : '') + fmt(Math.round(netFiscalImpact)) + '/yr</div><div class="exec-metric-sub">' + (isPositive ? 'Net positive — project generates surplus revenue for city' : 'Net negative — project costs city more than it generates') + '</div></div>';
+    html += '<div class="exec-summary-card"><h4>One-Time Impact Fees</h4><div class="exec-metric-lg">' + formatCompactDollars(totalOneTimeFees) + '</div><div class="exec-metric-sub">Park: ' + fmt(parkFees) + ' | School: ' + fmt(schoolFees) + ' | Traffic: ' + fmt(trafficFees) + '</div></div>';
+    html += '</div>';
+
+    // Revenue breakdown
+    html += '<h4 style="font-size:0.85rem;color:var(--text);margin:1.25rem 0 0.5rem;">Recurring Annual Revenue to City</h4>';
+    html += '<table class="afford-comparison-table"><thead><tr><th>Source</th><th>Rate/Basis</th><th>Annual Revenue</th></tr></thead><tbody>';
+    html += '<tr><td>Property Tax (City Share)</td><td>' + (fr.propertyTaxCityShare * 100).toFixed(0) + '% of 1% levy on ' + formatCompactDollars(assessedValue) + '</td><td>' + fmt(Math.round(annualPropTax)) + '</td></tr>';
+    if (annualSalesTax > 0) html += '<tr><td>Sales Tax (Local)</td><td>1% on est. ' + formatCompactDollars(retailSF * estRetailSalesPerSF) + ' retail sales</td><td>' + fmt(Math.round(annualSalesTax)) + '</td></tr>';
+    html += '<tr><td>Utility Users Tax</td><td>' + (fr.utilityTaxRate * 100).toFixed(0) + '% on ' + (isResidential ? units + ' units' : gsf.toLocaleString() + ' SF') + '</td><td>' + fmt(Math.round(annualUtilityTax)) + '</td></tr>';
+    if (annualBizLicense > 0) html += '<tr><td>Business License Fee</td><td>$1.53 per $1,000 gross receipts</td><td>' + fmt(Math.round(annualBizLicense)) + '</td></tr>';
+    html += '<tr class="total-row"><td>Total Annual Revenue</td><td></td><td>' + fmt(Math.round(totalAnnualRevenue)) + '</td></tr>';
+    html += '</tbody></table>';
+
+    // Cost breakdown
+    html += '<h4 style="font-size:0.85rem;color:var(--text);margin:1.25rem 0 0.5rem;">Annual Municipal Service Costs (' + newPopulation + ' new residents/workers)</h4>';
+    html += '<table class="afford-comparison-table"><thead><tr><th>Department</th><th>Cost/Capita</th><th>Annual Cost</th></tr></thead><tbody>';
+    html += '<tr><td>Police</td><td>' + fmt(fr.policePerCapita) + '</td><td>' + fmt(Math.round(policeCost)) + '</td></tr>';
+    html += '<tr><td>Fire & EMS</td><td>' + fmt(fr.firePerCapita) + '</td><td>' + fmt(Math.round(fireCost)) + '</td></tr>';
+    html += '<tr><td>Public Works</td><td>' + fmt(fr.publicWorksPerCapita) + '</td><td>' + fmt(Math.round(publicWorksCost)) + '</td></tr>';
+    html += '<tr><td>Parks & Recreation</td><td>' + fmt(fr.parksPerCapita) + '</td><td>' + fmt(Math.round(parksCost)) + '</td></tr>';
+    html += '<tr><td>General Admin</td><td>' + fmt(fr.adminPerCapita) + '</td><td>' + fmt(Math.round(adminCost)) + '</td></tr>';
+    html += '<tr class="total-row"><td>Total Annual Cost</td><td></td><td>' + fmt(Math.round(totalAnnualCost)) + '</td></tr>';
+    html += '</tbody></table>';
+
+    html += '<div style="font-size:0.72rem;color:#718096;margin-top:0.75rem;">Service cost estimates based on LA City budget per-capita allocations. Property tax shares based on typical LA County Tax Rate Area distributions. Actual rates vary by specific TRA — verify at <a href="https://auditor.lacounty.gov/tax-rate-area-lookup/" target="_blank" style="color:#3182ce;">LA County Auditor</a>.</div>';
+
+    html += '</div></div>';
+    return html;
+}
+
+// ============================================================
+//  RHNA COMPLIANCE TAB
+// ============================================================
+
+var RHNA_CYCLE_6 = {
+    // 6th Cycle RHNA Allocations for select LA County cities (2021-2029)
+    // Source: SCAG Final RHNA Allocation Plan (March 2021)
+    losangeles:    { vli: 115365, low: 57516, moderate: 72246, aboveMod: 211131, total: 456258, built: 48000, label: 'City of Los Angeles' },
+    santamonica:   { vli: 2738, low: 1672, moderate: 1765, aboveMod: 2793, total: 8968, built: 1200, label: 'City of Santa Monica' },
+    culvercity:    { vli: 918, low: 560, moderate: 527, aboveMod: 1288, total: 3341, built: 400, label: 'City of Culver City' },
+    beverlyhills:  { vli: 1008, low: 615, moderate: 649, aboveMod: 1586, total: 3104, built: 200, label: 'City of Beverly Hills' },
+    inglewood:     { vli: 1704, low: 1040, moderate: 1195, aboveMod: 2197, total: 7073, built: 300, label: 'City of Inglewood' },
+    pasadena:      { vli: 2560, low: 1563, moderate: 1800, aboveMod: 3360, total: 9429, built: 1100, label: 'City of Pasadena' },
+    glendale:      { vli: 3492, low: 2131, moderate: 2422, aboveMod: 4939, total: 12984, built: 900, label: 'City of Glendale' },
+    burbank:       { vli: 2536, low: 1548, moderate: 1586, aboveMod: 3341, total: 8775, built: 700, label: 'City of Burbank' },
+    longbeach:     { vli: 7948, low: 4854, moderate: 5372, aboveMod: 8450, total: 26502, built: 2500, label: 'City of Long Beach' },
+    torrance:      { vli: 1936, low: 1182, moderate: 1198, aboveMod: 2832, total: 4968, built: 300, label: 'City of Torrance' },
+    pomona:        { vli: 1088, low: 664, moderate: 777, aboveMod: 2207, total: 5562, built: 200, label: 'City of Pomona' },
+    // Catch-all for unincorporated / unknown
+    default:       { vli: 5000, low: 3000, moderate: 3500, aboveMod: 8000, total: 19500, built: 2000, label: 'LA County (est.)' },
+};
+
+function getCityFromNeighborhood(nh) {
+    var cityMap = {
+        dtla: 'losangeles', hollywood: 'losangeles', koreatown: 'losangeles',
+        midcity: 'losangeles', silverlake: 'losangeles', boyleheights: 'losangeles',
+        highland: 'losangeles', venice: 'losangeles', exposition: 'losangeles',
+        santamonica: 'santamonica', culver: 'culvercity', beverly: 'beverlyhills',
+        westside: 'losangeles', southla: 'losangeles', harbor: 'losangeles',
+        valleyeast: 'losangeles', valleywest: 'losangeles', southbay: 'torrance',
+    };
+    return cityMap[nh] || 'losangeles';
+}
+
+function renderRHNATab(st) {
+    var computed = st.computed, inp = st.inp, bestUse = st.bestUse;
+    var isResidential = ['sfr','duplex','multifamily_low','multifamily_mid','multifamily_high','mixeduse','senior','adu'].includes(bestUse);
+    var units = computed.units || 0;
+
+    var html = '<div class="deep-tab-panel">';
+
+    if (!isResidential || units === 0) {
+        html += '<div class="coming-soon-panel"><div class="icon">N/A</div><h3>Not Applicable</h3><p>RHNA compliance analysis is only available for residential projects with unit counts.</p></div></div>';
+        return html;
+    }
+
+    var cityKey = getCityFromNeighborhood(inp.neighborhood);
+    var rhna = RHNA_CYCLE_6[cityKey] || RHNA_CYCLE_6.default;
+    var remaining = {
+        vli: Math.max(0, rhna.vli - Math.round(rhna.built * 0.12)),
+        low: Math.max(0, rhna.low - Math.round(rhna.built * 0.10)),
+        moderate: Math.max(0, rhna.moderate - Math.round(rhna.built * 0.15)),
+        aboveMod: Math.max(0, rhna.aboveMod - Math.round(rhna.built * 0.63)),
+    };
+    remaining.total = remaining.vli + remaining.low + remaining.moderate + remaining.aboveMod;
+
+    // Estimate unit distribution for this project
+    var affordReq = INCLUSIONARY_REQS.base;
+    var vliUnits = Math.ceil(units * affordReq.vli);
+    var lowUnits = Math.ceil(units * affordReq.low) - vliUnits;
+    var modUnits = Math.ceil(units * affordReq.moderate) - vliUnits - lowUnits;
+    var aboveModUnits = units - vliUnits - lowUnits - modUnits;
+
+    var contributionPct = remaining.total > 0 ? (units / remaining.total * 100) : 0;
+
+    html += '<div class="analysis-section"><h3>RHNA Compliance — ' + rhna.label + '</h3>';
+    html += '<p style="font-size:0.82rem;color:var(--text-light);margin-bottom:1rem;">California\'s 6th Cycle Regional Housing Needs Allocation (2021-2029) requires cities to plan for housing at all income levels. This project contributes ' + units + ' units toward ' + rhna.label + '\'s allocation.</p>';
+
+    // Headline
+    html += '<div class="exec-summary-grid">';
+    html += '<div class="exec-summary-card"><h4>City RHNA Allocation</h4><div class="exec-metric-lg">' + rhna.total.toLocaleString() + '</div><div class="exec-metric-sub">Total units required (6th Cycle)</div></div>';
+    html += '<div class="exec-summary-card"><h4>Est. Remaining Need</h4><div class="exec-metric-lg" style="color:#c53030;">' + remaining.total.toLocaleString() + '</div><div class="exec-metric-sub">~' + rhna.built.toLocaleString() + ' permitted to date</div></div>';
+    html += '<div class="exec-summary-card"><h4>This Project Contributes</h4><div class="exec-metric-lg" style="color:#276749;">' + units + ' units</div><div class="exec-metric-sub">' + contributionPct.toFixed(2) + '% of remaining need</div></div>';
+    html += '<div class="exec-summary-card"><h4>Deadline</h4><div class="exec-metric-lg">Oct 2029</div><div class="exec-metric-sub">6th Cycle end date</div></div>';
+    html += '</div>';
+
+    // Breakdown by income category
+    html += '<h4 style="font-size:0.85rem;color:var(--text);margin:1.25rem 0 0.5rem;">Contribution by Income Category</h4>';
+    html += '<table class="afford-comparison-table"><thead><tr><th>Income Level</th><th>City Need</th><th>Remaining</th><th>This Project</th><th>% of Remaining</th></tr></thead><tbody>';
+    var categories = [
+        { label: 'Very Low Income (≤50% AMI)', need: rhna.vli, rem: remaining.vli, proj: vliUnits },
+        { label: 'Low Income (50-80% AMI)', need: rhna.low, rem: remaining.low, proj: lowUnits },
+        { label: 'Moderate (80-120% AMI)', need: rhna.moderate, rem: remaining.moderate, proj: modUnits },
+        { label: 'Above Moderate (>120% AMI)', need: rhna.aboveMod, rem: remaining.aboveMod, proj: aboveModUnits },
+    ];
+    for (var c = 0; c < categories.length; c++) {
+        var cat = categories[c];
+        var pct = cat.rem > 0 ? (cat.proj / cat.rem * 100).toFixed(2) : '0.00';
+        html += '<tr><td>' + cat.label + '</td><td>' + cat.need.toLocaleString() + '</td><td>' + cat.rem.toLocaleString() + '</td><td style="font-weight:600;color:#276749;">' + cat.proj + '</td><td>' + pct + '%</td></tr>';
+    }
+    html += '<tr class="total-row"><td>Total</td><td>' + rhna.total.toLocaleString() + '</td><td>' + remaining.total.toLocaleString() + '</td><td style="font-weight:700;">' + units + '</td><td>' + contributionPct.toFixed(2) + '%</td></tr>';
+    html += '</tbody></table>';
+
+    // Progress visualization
+    html += '<h4 style="font-size:0.85rem;color:var(--text);margin:1.25rem 0 0.5rem;">City RHNA Progress</h4>';
+    var builtPct = Math.min(100, Math.round(rhna.built / rhna.total * 100));
+    var projPct = Math.min(100 - builtPct, Math.round(units / rhna.total * 100));
+    html += '<div style="background:#edf2f7;border-radius:8px;height:32px;overflow:hidden;position:relative;">';
+    html += '<div style="position:absolute;left:0;top:0;height:100%;width:' + builtPct + '%;background:#38a169;"></div>';
+    html += '<div style="position:absolute;left:' + builtPct + '%;top:0;height:100%;width:' + Math.max(1, projPct) + '%;background:#3182ce;"></div>';
+    html += '<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:0.75rem;font-weight:600;color:white;text-shadow:0 1px 2px rgba(0,0,0,0.5);">' + builtPct + '% built + ' + projPct + '% this project</div>';
+    html += '</div>';
+    html += '<div style="display:flex;gap:1rem;margin-top:0.4rem;font-size:0.72rem;color:#718096;">';
+    html += '<span style="display:flex;align-items:center;gap:0.25rem;"><span style="width:10px;height:10px;background:#38a169;border-radius:2px;"></span> Permitted</span>';
+    html += '<span style="display:flex;align-items:center;gap:0.25rem;"><span style="width:10px;height:10px;background:#3182ce;border-radius:2px;"></span> This Project</span>';
+    html += '<span style="display:flex;align-items:center;gap:0.25rem;"><span style="width:10px;height:10px;background:#edf2f7;border:1px solid #cbd5e0;border-radius:2px;"></span> Remaining</span>';
+    html += '</div>';
+
+    // Policy context
+    html += '<div style="background:#f0fff4;border:1px solid #c6f6d5;border-radius:8px;padding:0.75rem 1rem;margin-top:1rem;">';
+    html += '<h5 style="font-size:0.82rem;color:#276749;margin-bottom:0.4rem;">Why RHNA Matters for Your Project</h5>';
+    html += '<div style="font-size:0.78rem;color:var(--text);line-height:1.6;">';
+    html += 'Cities that fail to meet RHNA targets face <strong>Builder\'s Remedy</strong> provisions, loss of permitting authority, and mandatory housing overlay zones. ';
+    html += 'Projects that help cities meet RHNA goals often receive <strong>expedited entitlements</strong> and political support. ';
+    html += 'SB 35 streamlining is available in jurisdictions behind on RHNA — check <a href="https://www.hcd.ca.gov/planning-and-community-development/housing-open-data-tools/housing-element-implementation-and-apr-dashboard" target="_blank" style="color:#3182ce;">HCD\'s dashboard</a> for current status.';
+    html += '</div></div>';
+
+    html += '<div style="font-size:0.72rem;color:#718096;margin-top:0.75rem;">Source: <a href="https://scag.ca.gov/rhna" target="_blank" style="color:#3182ce;">SCAG 6th Cycle RHNA Allocation Plan</a> | <a href="https://www.hcd.ca.gov/planning-and-community-development/regional-housing-needs-allocation" target="_blank" style="color:#3182ce;">HCD RHNA Overview</a></div>';
+
+    html += '</div></div>';
+    return html;
+}
 
 // Close modals on Escape key
 document.addEventListener('keydown', (e) => {
