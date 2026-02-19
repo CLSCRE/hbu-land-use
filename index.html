@@ -2158,7 +2158,7 @@
         <input type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter')checkAuth();">
         <button type="button" class="auth-btn" onclick="checkAuth()">Enter</button>
         <div class="auth-error" id="authError"></div>
-        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v3.9</div>
+        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v4.0</div>
     </div>
 </div>
 
@@ -2166,7 +2166,7 @@
     <h1>Highest &amp; Best Use Calculator</h1>
     <p>Land Use Analysis for Los Angeles, CA</p>
     <span class="badge">HBU Analysis Tool</span>
-    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v3.9</span>
+    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v4.0</span>
 </header>
 
 <div class="tab-bar">
@@ -8365,14 +8365,14 @@ function renderDeepTabPanels(skipTab0) {
         html += renderGenerativeDesignTab(st);
         html += renderKPIDashboard(st);
         html += renderExportTab(st);
-        html += renderPublicFinanceTab(st);
-        html += renderFiscalImpactTab(st);
-        html += renderRHNATab(st);
-        html += renderP3StructuringTab(st);
-        html += renderIncentiveMatrixTab(st);
-        html += renderDevAgreementTab(st);
-        html += renderAssetStrategyTab(st);
-        html += renderCashFlowModelTab(st);
+        [renderPublicFinanceTab, renderFiscalImpactTab, renderRHNATab, renderP3StructuringTab,
+         renderIncentiveMatrixTab, renderDevAgreementTab, renderAssetStrategyTab, renderCashFlowModelTab
+        ].forEach(function(fn) {
+            try { html += fn(st); } catch(e) {
+                console.error('Error in tab render:', e);
+                html += '<div class="deep-tab-panel"><div class="analysis-section"><p style="color:#c53030;">Error: ' + e.message + '</p></div></div>';
+            }
+        });
         container.insertAdjacentHTML('beforeend', html);
         return;
     }
@@ -8434,29 +8434,25 @@ function renderDeepTabPanels(skipTab0) {
     // Tab 16: Export & Reports
     html += renderExportTab(st);
 
-    // Tab 17: Public Finance (EIFD/CRIA/CRD)
-    html += renderPublicFinanceTab(st);
-
-    // Tab 18: Fiscal Impact Analysis
-    html += renderFiscalImpactTab(st);
-
-    // Tab 19: RHNA Compliance
-    html += renderRHNATab(st);
-
-    // Tab 20: P3/Deal Structuring
-    html += renderP3StructuringTab(st);
-
-    // Tab 21: Incentive Comparison Matrix
-    html += renderIncentiveMatrixTab(st);
-
-    // Tab 22: Development Agreement
-    html += renderDevAgreementTab(st);
-
-    // Tab 23: Asset Strategy (Hold/Sell/Refi)
-    html += renderAssetStrategyTab(st);
-
-    // Tab 24: 10-Year Cash Flow Model
-    html += renderCashFlowModelTab(st);
+    // Tabs 17-24: Wrap each in try-catch so one error doesn't kill all tabs
+    var newTabRenderers = [
+        { name: 'Public Finance', fn: renderPublicFinanceTab },
+        { name: 'Fiscal Impact', fn: renderFiscalImpactTab },
+        { name: 'RHNA Compliance', fn: renderRHNATab },
+        { name: 'P3 Structuring', fn: renderP3StructuringTab },
+        { name: 'Incentive Matrix', fn: renderIncentiveMatrixTab },
+        { name: 'Dev Agreement', fn: renderDevAgreementTab },
+        { name: 'Asset Strategy', fn: renderAssetStrategyTab },
+        { name: '10-Yr Cash Flow', fn: renderCashFlowModelTab },
+    ];
+    newTabRenderers.forEach(function(t) {
+        try {
+            html += t.fn(st);
+        } catch(e) {
+            console.error('Error rendering ' + t.name + ':', e);
+            html += '<div class="deep-tab-panel"><div class="analysis-section"><h3>' + t.name + '</h3><p style="color:#c53030;">Error rendering tab: ' + e.message + '</p></div></div>';
+        }
+    });
 
     document.getElementById('deepTabPanels').innerHTML = html;
 }
