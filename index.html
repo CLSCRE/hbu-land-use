@@ -5343,9 +5343,6 @@ function initSB79Map(lat, lon) {
         drawSB79Radii(METRO_STATIONS[eligibility.nearestIdx]);
     }
 
-    // Map-level click handler for accurate zone labels
-    sb79Map.on('click', function(e) { handleZoneMapClick(e, sb79Map); });
-
     // Render legend
     renderMapLegend();
 
@@ -5357,72 +5354,65 @@ function initSB79Map(lat, lon) {
     setTimeout(() => { if (sb79Map) sb79Map.invalidateSize(); }, 200);
 }
 
-function drawSB79Radii(station) {
-    if (!sb79Layers.zones) return;
-    const tierColor = station.tier === 1 ? '#805ad5' : '#3182ce';
+// Shared zone click handler — computes exact zone from haversine distance
+function makeZoneClickHandler(station, mapInstance) {
+    return function(e) {
+        // Stop this click from reaching other circles or the map
+        L.DomEvent.stop(e);
 
-    // All visual circles are non-interactive (zone labels handled by map click handler)
-    // 1/2 mile = ~805m
-    L.circle([station.lat, station.lon], {
-        radius: 805, color: '#000000', weight: 3.5, opacity: 0.9,
-        fillColor: '#1a202c', fillOpacity: 0.12, interactive: false,
-    }).addTo(sb79Layers.zones);
+        var dist = haversine(station.lat, station.lon, e.latlng.lat, e.latlng.lng);
+        var tierData = SB79_TIERS[station.tier];
+        var zoneName, zoneDetail;
+        if (dist <= 0.038) {
+            zoneName = '200ft Adjacent Zone';
+            zoneDetail = tierData.label + ' — Full tier benefits, zero parking';
+        } else if (dist <= 0.25) {
+            zoneName = '1/4 Mile Inner Zone';
+            zoneDetail = tierData.label + ' — Full tier benefits, zero parking';
+        } else {
+            zoneName = '1/2 Mile Outer Zone';
+            zoneDetail = tierData.label + ' — 65ft height, 3.25 FAR, 0.5 parking/unit';
+        }
 
-    // 1/4 mile = ~402m
-    L.circle([station.lat, station.lon], {
-        radius: 402, color: tierColor, weight: 1.5, opacity: 0.6,
-        fillColor: tierColor, fillOpacity: 0.07, dashArray: '8,6', interactive: false,
-    }).addTo(sb79Layers.zones);
-
-    // 200ft = ~61m
-    L.circle([station.lat, station.lon], {
-        radius: 61, color: tierColor, weight: 2, opacity: 0.8,
-        fillColor: tierColor, fillOpacity: 0.15, dashArray: null, interactive: false,
-    }).addTo(sb79Layers.zones);
+        var distFeet = Math.round(dist * 5280);
+        L.popup()
+            .setLatLng(e.latlng)
+            .setContent(
+                '<strong>' + station.name + '</strong><br>' +
+                '<strong style="font-size:1.05em;">' + zoneName + '</strong><br>' +
+                '<span style="font-size:0.85em;color:#666;">' + zoneDetail + '</span><br>' +
+                '<span style="font-size:0.8em;color:#999;">' + distFeet.toLocaleString() + ' ft from station (' + station.serviceType + ')</span>'
+            )
+            .openOn(mapInstance);
+    };
 }
 
-// Map-level click handler: finds nearest station, calculates exact zone from distance
-function handleZoneMapClick(e, mapInstance) {
-    var clickLat = e.latlng.lat;
-    var clickLon = e.latlng.lng;
-    var nearestStation = null;
-    var nearestDist = Infinity;
+function drawSB79Radii(station) {
+    if (!sb79Layers.zones) return;
+    var tierColor = station.tier === 1 ? '#805ad5' : '#3182ce';
+    var handler = makeZoneClickHandler(station, sb79Map);
 
-    for (var i = 0; i < METRO_STATIONS.length; i++) {
-        var s = METRO_STATIONS[i];
-        var d = haversine(clickLat, clickLon, s.lat, s.lon);
-        if (d < nearestDist) {
-            nearestDist = d;
-            nearestStation = s;
-        }
-    }
+    // Draw LARGEST first (bottom), SMALLEST last (top) — topmost wins clicks
+    // 1/2 mile = ~805m (outer)
+    L.circle([station.lat, station.lon], {
+        radius: 805, color: '#000000', weight: 3.5, opacity: 0.9,
+        fillColor: '#1a202c', fillOpacity: 0.12,
+        interactive: true, bubblingMouseEvents: false,
+    }).on('click', handler).addTo(sb79Layers.zones);
 
-    // Only show zone popup if click is within 1/2 mile of a station
-    if (!nearestStation || nearestDist > 0.50) return;
+    // 1/4 mile = ~402m (inner)
+    L.circle([station.lat, station.lon], {
+        radius: 402, color: tierColor, weight: 1.5, opacity: 0.6,
+        fillColor: tierColor, fillOpacity: 0.08,
+        interactive: true, bubblingMouseEvents: false, dashArray: '8,6',
+    }).on('click', handler).addTo(sb79Layers.zones);
 
-    var tierData = SB79_TIERS[nearestStation.tier];
-    var zoneName, zoneDetail;
-    if (nearestDist <= 0.038) {
-        zoneName = '200ft Adjacent Zone';
-        zoneDetail = tierData.label + ' — Full tier benefits, zero parking';
-    } else if (nearestDist <= 0.25) {
-        zoneName = '1/4 Mile Inner Zone';
-        zoneDetail = tierData.label + ' — Full tier benefits, zero parking';
-    } else {
-        zoneName = '1/2 Mile Outer Zone';
-        zoneDetail = tierData.label + ' — 65ft height, 3.25 FAR, 0.5 parking/unit';
-    }
-
-    var distFeet = Math.round(nearestDist * 5280);
-    L.popup()
-        .setLatLng(e.latlng)
-        .setContent(
-            '<strong>' + nearestStation.name + '</strong><br>' +
-            '<strong>' + zoneName + '</strong><br>' +
-            '<span style="font-size:0.85em;color:#666;">' + zoneDetail + '</span><br>' +
-            '<span style="font-size:0.8em;color:#999;">' + distFeet.toLocaleString() + ' ft from station (' + nearestStation.serviceType + ')</span>'
-        )
-        .openOn(mapInstance);
+    // 200ft = ~61m (adjacent)
+    L.circle([station.lat, station.lon], {
+        radius: 61, color: tierColor, weight: 2, opacity: 0.8,
+        fillColor: tierColor, fillOpacity: 0.18,
+        interactive: true, bubblingMouseEvents: false,
+    }).on('click', handler).addTo(sb79Layers.zones);
 }
 
 function showStationRadii(stationIdx) {
@@ -6049,9 +6039,6 @@ function initFinderMap() {
         marker.addTo(finderMapInstance);
     });
 
-    // Map-level click handler for accurate zone labels
-    finderMapInstance.on('click', function(e) { handleZoneMapClick(e, finderMapInstance); });
-
     // Render legend
     renderFinderMapLegend();
 
@@ -6067,24 +6054,31 @@ function drawFinderStationRadii(station) {
     if (finderMapInstance._finderRadii) {
         finderMapInstance._finderRadii.forEach(c => finderMapInstance.removeLayer(c));
     }
-    const tierColor = station.tier === 1 ? '#805ad5' : '#3182ce';
-    const circles = [];
+    var tierColor = station.tier === 1 ? '#805ad5' : '#3182ce';
+    var handler = makeZoneClickHandler(station, finderMapInstance);
+    var circles = [];
 
-    // All visual circles are non-interactive (zone labels handled by map click handler)
+    // Draw LARGEST first (bottom), SMALLEST last (top) — topmost wins clicks
+    // 1/2 mile = ~805m (outer)
     circles.push(L.circle([station.lat, station.lon], {
         radius: 805, color: '#000000', weight: 3.5, opacity: 0.9,
-        fillColor: '#1a202c', fillOpacity: 0.12, interactive: false,
-    }).addTo(finderMapInstance));
+        fillColor: '#1a202c', fillOpacity: 0.12,
+        interactive: true, bubblingMouseEvents: false,
+    }).on('click', handler).addTo(finderMapInstance));
 
+    // 1/4 mile = ~402m (inner)
     circles.push(L.circle([station.lat, station.lon], {
         radius: 402, color: tierColor, weight: 1.5, opacity: 0.6,
-        fillColor: tierColor, fillOpacity: 0.07, dashArray: '8,6', interactive: false,
-    }).addTo(finderMapInstance));
+        fillColor: tierColor, fillOpacity: 0.08,
+        interactive: true, bubblingMouseEvents: false, dashArray: '8,6',
+    }).on('click', handler).addTo(finderMapInstance));
 
+    // 200ft = ~61m (adjacent)
     circles.push(L.circle([station.lat, station.lon], {
         radius: 61, color: tierColor, weight: 2, opacity: 0.8,
-        fillColor: tierColor, fillOpacity: 0.15, interactive: false,
-    }).addTo(finderMapInstance));
+        fillColor: tierColor, fillOpacity: 0.18,
+        interactive: true, bubblingMouseEvents: false,
+    }).on('click', handler).addTo(finderMapInstance));
 
     finderMapInstance._finderRadii = circles;
     finderMapInstance.setView([station.lat, station.lon], 14);
