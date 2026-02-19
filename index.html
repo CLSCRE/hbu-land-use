@@ -2158,7 +2158,7 @@
         <input type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter')checkAuth();">
         <button type="button" class="auth-btn" onclick="checkAuth()">Enter</button>
         <div class="auth-error" id="authError"></div>
-        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v3.3</div>
+        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v3.4</div>
     </div>
 </div>
 
@@ -2166,7 +2166,7 @@
     <h1>Highest &amp; Best Use Calculator</h1>
     <p>Land Use Analysis for Los Angeles, CA</p>
     <span class="badge">HBU Analysis Tool</span>
-    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v3.3</span>
+    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v3.4</span>
 </header>
 
 <div class="tab-bar">
@@ -8772,40 +8772,46 @@ function renderMarketCompsTab(st) {
         </div>
     </div>`;
 
-    // Current Market Rents
-    html += `<div class="analysis-section"><h3>Current Asking Rents — ${nhLabel}</h3>`;
+    // Current Market Rents — Editable
+    html += `<div class="analysis-section"><h3>Current Asking Rents — ${nhLabel}
+        <span style="font-size:0.7rem;color:#718096;font-weight:400;margin-left:0.5rem;">(click values to edit)</span>
+    </h3>`;
     html += `<h4 style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.75rem;">Residential (Monthly)</h4>`;
     html += `<div class="market-rent-grid">
         <div class="market-rent-card">
-            <div class="rent-value">${fmt(market.rents.studio)}</div>
+            <div class="rent-value">$<input type="number" class="market-comp-input" id="mc-studio" value="${market.rents.studio}" step="25" style="width:70px;font-size:inherit;font-weight:inherit;border:1px dashed #cbd5e0;border-radius:4px;text-align:center;padding:2px 4px;"></div>
             <div class="rent-label">Studio</div>
             <div class="rent-sub">~400-500 SF</div>
         </div>
         <div class="market-rent-card">
-            <div class="rent-value">${fmt(market.rents.br1)}</div>
+            <div class="rent-value">$<input type="number" class="market-comp-input" id="mc-1br" value="${market.rents.br1}" step="25" style="width:70px;font-size:inherit;font-weight:inherit;border:1px dashed #cbd5e0;border-radius:4px;text-align:center;padding:2px 4px;"></div>
             <div class="rent-label">1-Bedroom</div>
             <div class="rent-sub">~650-800 SF</div>
         </div>
         <div class="market-rent-card">
-            <div class="rent-value">${fmt(market.rents.br2)}</div>
+            <div class="rent-value">$<input type="number" class="market-comp-input" id="mc-2br" value="${market.rents.br2}" step="25" style="width:70px;font-size:inherit;font-weight:inherit;border:1px dashed #cbd5e0;border-radius:4px;text-align:center;padding:2px 4px;"></div>
             <div class="rent-label">2-Bedroom</div>
             <div class="rent-sub">~950-1,100 SF</div>
         </div>
         <div class="market-rent-card">
-            <div class="rent-value">${fmt(market.rents.br3)}</div>
+            <div class="rent-value">$<input type="number" class="market-comp-input" id="mc-3br" value="${market.rents.br3}" step="25" style="width:70px;font-size:inherit;font-weight:inherit;border:1px dashed #cbd5e0;border-radius:4px;text-align:center;padding:2px 4px;"></div>
             <div class="rent-label">3-Bedroom</div>
             <div class="rent-sub">~1,200-1,400 SF</div>
         </div>
     </div>`;
     html += `<div class="market-rent-grid" style="grid-template-columns: 1fr 1fr;">
         <div class="market-rent-card">
-            <div class="rent-value">$${market.rents.retail_psf}/SF/yr</div>
+            <div class="rent-value">$<input type="number" class="market-comp-input" id="mc-retail" value="${market.rents.retail_psf}" step="1" style="width:55px;font-size:inherit;font-weight:inherit;border:1px dashed #cbd5e0;border-radius:4px;text-align:center;padding:2px 4px;">/SF/yr</div>
             <div class="rent-label">Retail NNN</div>
         </div>
         <div class="market-rent-card">
-            <div class="rent-value">$${market.rents.office_psf}/SF/yr</div>
+            <div class="rent-value">$<input type="number" class="market-comp-input" id="mc-office" value="${market.rents.office_psf}" step="1" style="width:55px;font-size:inherit;font-weight:inherit;border:1px dashed #cbd5e0;border-radius:4px;text-align:center;padding:2px 4px;">/SF/yr</div>
             <div class="rent-label">Office Full Service</div>
         </div>
+    </div>`;
+    html += `<div style="font-size:0.72rem;color:#718096;margin-top:0.4rem;">
+        Default rents sourced from CoStar, Apartments.com, and Zillow Rental Index for ${nhLabel} submarket (2024-2025 avg).
+        Edit any value above to override with your own market data.
     </div>`;
 
     // Model vs Market comparison
@@ -8896,6 +8902,28 @@ function renderMarketCompsTab(st) {
         <p style="font-size:0.82rem;margin-top:0.75rem;color:var(--text-light);">Residual land value = Stabilized value minus all development costs (excluding land). If the residual exceeds the asking land price, the project is feasible. If not, you're "overpaying" for the land relative to achievable development returns.</p>
     </div>`;
 
+    // Custom Comparable Properties
+    html += `<div class="analysis-section"><h3>Your Market Comps</h3>`;
+    html += `<p style="font-size:0.82rem;color:var(--text-light);margin-bottom:0.75rem;">Add your own comparable properties to validate rent assumptions. These override the default market data.</p>`;
+    html += `<div id="customCompsContainer">`;
+
+    // Render existing custom comps (stored on deepAnalysisState)
+    var customComps = (deepAnalysisState && deepAnalysisState.customComps) || [];
+    for (var ci = 0; ci < customComps.length; ci++) {
+        var cc = customComps[ci];
+        html += renderCustomCompRow(ci, cc);
+    }
+    html += `</div>`;
+    html += `<button type="button" onclick="addCustomComp()" style="margin-top:0.5rem;padding:0.4rem 1rem;font-size:0.8rem;background:var(--primary);color:white;border:none;border-radius:6px;cursor:pointer;">+ Add Comp</button>`;
+    html += `<div style="font-size:0.72rem;color:#718096;margin-top:0.75rem;">
+        <strong>Data sources for default rents:</strong>
+        <a href="https://www.apartments.com" target="_blank" style="color:#3182ce;">Apartments.com</a> |
+        <a href="https://www.zillow.com/rental-manager/market-trends/" target="_blank" style="color:#3182ce;">Zillow Rental Index</a> |
+        <a href="https://www.costar.com" target="_blank" style="color:#3182ce;">CoStar</a> |
+        <a href="https://www.loopnet.com" target="_blank" style="color:#3182ce;">LoopNet</a>
+    </div>`;
+    html += `</div>`;
+
     html += `</div>`;
     return html;
 }
@@ -8904,6 +8932,65 @@ function renderMarketCompsTab(st) {
 // ============================================================
 //  SKILL 28: TAX IMPLICATIONS & INCENTIVES
 // ============================================================
+
+// Custom Comp helper functions
+function renderCustomCompRow(idx, comp) {
+    comp = comp || { name: '', type: 'Studio', rent: '', sf: '', source: '', url: '' };
+    return '<div class="custom-comp-row" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 2fr 30px;gap:0.4rem;align-items:center;margin-bottom:0.35rem;font-size:0.78rem;">' +
+        '<input type="text" placeholder="Property name" value="' + (comp.name || '') + '" class="cc-field" data-cc="' + idx + '" data-key="name" style="padding:4px 6px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;">' +
+        '<select class="cc-field" data-cc="' + idx + '" data-key="type" style="padding:4px 2px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;">' +
+            '<option' + (comp.type === 'Studio' ? ' selected' : '') + '>Studio</option>' +
+            '<option' + (comp.type === '1BR' ? ' selected' : '') + '>1BR</option>' +
+            '<option' + (comp.type === '2BR' ? ' selected' : '') + '>2BR</option>' +
+            '<option' + (comp.type === '3BR' ? ' selected' : '') + '>3BR</option>' +
+            '<option' + (comp.type === 'Retail' ? ' selected' : '') + '>Retail</option>' +
+            '<option' + (comp.type === 'Office' ? ' selected' : '') + '>Office</option>' +
+        '</select>' +
+        '<input type="number" placeholder="Rent/mo" value="' + (comp.rent || '') + '" class="cc-field" data-cc="' + idx + '" data-key="rent" step="25" style="padding:4px 6px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;">' +
+        '<input type="number" placeholder="SF" value="' + (comp.sf || '') + '" class="cc-field" data-cc="' + idx + '" data-key="sf" style="padding:4px 6px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;">' +
+        '<input type="text" placeholder="Source (e.g. Zillow, broker)" value="' + (comp.source || '') + '" class="cc-field" data-cc="' + idx + '" data-key="source" style="padding:4px 6px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;">' +
+        '<span onclick="removeCustomComp(' + idx + ')" style="cursor:pointer;color:#c53030;font-size:1.1rem;text-align:center;" title="Remove">&times;</span>' +
+    '</div>';
+}
+
+function addCustomComp() {
+    if (!deepAnalysisState) return;
+    if (!deepAnalysisState.customComps) deepAnalysisState.customComps = [];
+    // Save current field values before adding
+    saveCustomCompFields();
+    deepAnalysisState.customComps.push({ name: '', type: 'Studio', rent: '', sf: '', source: '' });
+    var container = document.getElementById('customCompsContainer');
+    if (container) {
+        container.insertAdjacentHTML('beforeend', renderCustomCompRow(deepAnalysisState.customComps.length - 1));
+    }
+}
+
+function removeCustomComp(idx) {
+    if (!deepAnalysisState || !deepAnalysisState.customComps) return;
+    saveCustomCompFields();
+    deepAnalysisState.customComps.splice(idx, 1);
+    // Re-render the comps container
+    var container = document.getElementById('customCompsContainer');
+    if (container) {
+        var html = '';
+        for (var i = 0; i < deepAnalysisState.customComps.length; i++) {
+            html += renderCustomCompRow(i, deepAnalysisState.customComps[i]);
+        }
+        container.innerHTML = html;
+    }
+}
+
+function saveCustomCompFields() {
+    if (!deepAnalysisState || !deepAnalysisState.customComps) return;
+    var fields = document.querySelectorAll('.cc-field');
+    fields.forEach(function(f) {
+        var idx = parseInt(f.getAttribute('data-cc'));
+        var key = f.getAttribute('data-key');
+        if (deepAnalysisState.customComps[idx]) {
+            deepAnalysisState.customComps[idx][key] = f.value;
+        }
+    });
+}
 
 const OPPORTUNITY_ZONES_LA = {
     // Census tracts in LA County designated as Opportunity Zones
