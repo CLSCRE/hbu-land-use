@@ -5262,12 +5262,17 @@ function renderBudgetTable(computed, inp) {
             <td class="dim">${hasUnits ? perUnit(computed.demolition) : '$' + Math.round(computed.demolition / (computed.nsf || 1)).toLocaleString()}</td>
             <td class="pct-col">${pct(computed.demolition)}</td>
         </tr>` : ''}
-        <tr>
-            <td>Building Construction (${computed.gsf.toLocaleString()} GSF &times; $${Math.round(computed.buildCostPSF).toLocaleString()}/SF)</td>
+        <tr style="cursor:pointer;" onclick="var el=document.getElementById('csiDetail');if(el)el.style.display=el.style.display==='none'?'table-row':'none';">
+            <td><strong>Building Construction</strong> (${computed.gsf.toLocaleString()} GSF &times; $${Math.round(computed.buildCostPSF).toLocaleString()}/SF) <span style="font-size:0.65rem;color:#4299e1;">&#9660; CSI trade breakdown</span></td>
             <td>${fmt(computed.construction)}</td>
             <td class="dim">$${Math.round(computed.buildCostPSF).toLocaleString()}</td>
             <td class="dim">${hasUnits ? perUnit(computed.construction) : '$' + Math.round(computed.construction / (computed.nsf || 1)).toLocaleString()}</td>
             <td class="pct-col">${pct(computed.construction)}</td>
+        </tr>
+        <tr id="csiDetail" style="display:none;">
+            <td colspan="5" style="padding:0.5rem 0.75rem;background:#f7fafc;border-left:3px solid #805ad5;">
+                ${renderCSIBreakdownInBudget(computed, inp)}
+            </td>
         </tr>
         <tr>
             <td>Parking (${computed.parkingSpaces} spaces &times; $${(computed.parkingCostPerSpace || 0).toLocaleString()})</td>
@@ -5386,6 +5391,46 @@ function renderSiteWorkBreakdownInline(computed, inp) {
     html += '<strong style="color:#c05621;">Assumptions:</strong> ' + (sw.assumptions || 'Standard urban infill conditions.');
     html += '<br><span style="color:#718096;">Rates are per SF of lot area. Override these in the editable assumptions panel above (Site Work $/SF) to set a custom total, or use Deep Analysis Tab 25 for phase-level editing.</span>';
     html += '</div></div>';
+    return html;
+}
+
+function renderCSIBreakdownInBudget(computed, inp) {
+    // Determine construction type from stories (simplified — full analysis is in Deep Analysis)
+    var stories = computed.stories || 1;
+    var constructionType = 'V-A';
+    if (stories >= 10) constructionType = 'I-A';
+    else if (stories >= 7) constructionType = 'I-B';
+    else if (stories >= 5) constructionType = 'III-A';
+    else if (stories >= 4) constructionType = 'II-A';
+    else if (stories >= 3) constructionType = 'V-A';
+
+    // Determine use type from analysis state (main HBU or Deep Analysis)
+    var useId = (typeof deepAnalysisState !== 'undefined' && deepAnalysisState && deepAnalysisState.bestUse) || (typeof analysisState !== 'undefined' && analysisState && analysisState.useId) || 'multifamily_mid';
+
+    var divisions = computeCSIBreakdown(useId, computed, constructionType, stories);
+    var fmt = function(v) { return '$' + Math.round(v).toLocaleString(); };
+    var gsf = computed.gsf || 1;
+
+    var html = '<div style="font-size:0.75rem;">';
+    html += '<div style="font-weight:600;color:#553c9a;margin-bottom:0.4rem;">CSI MasterFormat Division Breakdown — ' + constructionType + ' Construction</div>';
+    html += '<table style="width:100%;font-size:0.72rem;border-collapse:collapse;">';
+    html += '<thead><tr style="background:#f0e6ff;"><th style="padding:3px 6px;text-align:left;">Div</th><th style="padding:3px 6px;text-align:left;">Trade</th><th style="padding:3px 6px;text-align:right;">%</th><th style="padding:3px 6px;text-align:right;">$/SF</th><th style="padding:3px 6px;text-align:right;">Cost</th></tr></thead><tbody>';
+
+    for (var i = 0; i < divisions.length; i++) {
+        var d = divisions[i];
+        if (d.cost <= 0) continue;
+        var bg = i % 2 === 0 ? '#fff' : '#faf5ff';
+        html += '<tr style="background:' + bg + ';">';
+        html += '<td style="padding:2px 6px;color:#718096;">' + d.div + '</td>';
+        html += '<td style="padding:2px 6px;">' + d.name + '</td>';
+        html += '<td style="padding:2px 6px;text-align:right;">' + (d.pct * 100).toFixed(1) + '%</td>';
+        html += '<td style="padding:2px 6px;text-align:right;">$' + Math.round(d.costPSF) + '</td>';
+        html += '<td style="padding:2px 6px;text-align:right;">' + fmt(d.cost) + '</td>';
+        html += '</tr>';
+    }
+    html += '</tbody></table>';
+    html += '<div style="font-size:0.65rem;color:#a0aec0;margin-top:0.3rem;">Based on CSI MasterFormat 2020. See Construction &amp; Code tab in Deep Analysis for full scope descriptions and code compliance costs.</div>';
+    html += '</div>';
     return html;
 }
 
@@ -10743,6 +10788,184 @@ const STRUCTURAL_SYSTEMS = {
     'I-A': 'Reinforced concrete or steel moment frame (3-hr)',
 };
 
+// ============================================================
+//  CSI MASTERFORMAT DIVISION COST BREAKDOWN
+// ============================================================
+
+/**
+ * CSI MasterFormat 2020 Divisions mapped to typical % of hard construction cost.
+ * Percentages are base allocations for a mid-rise multifamily (Type III-A, 5-story).
+ * Adjusted dynamically for construction type, stories, and use type.
+ */
+const CSI_DIVISIONS = [
+    { div: '01', name: 'General Requirements', basePct: 0.08, desc: 'General conditions, insurance, permits, temp facilities, project management, supervision' },
+    { div: '02', name: 'Existing Conditions', basePct: 0.02, desc: 'Demolition, hazmat abatement, site remediation, utility relocation' },
+    { div: '03', name: 'Concrete', basePct: 0.10, desc: 'Foundations, slabs, podium deck, columns, retaining walls, reinforcement' },
+    { div: '04', name: 'Masonry', basePct: 0.02, desc: 'CMU walls, brick veneer, stone, mortar, reinforced masonry' },
+    { div: '05', name: 'Metals', basePct: 0.08, desc: 'Structural steel, metal deck, misc. metals, railings, stairs, lintels' },
+    { div: '06', name: 'Wood, Plastics & Composites', basePct: 0.10, desc: 'Framing lumber, engineered wood, sheathing, blocking, millwork, cabinets' },
+    { div: '07', name: 'Thermal & Moisture Protection', basePct: 0.06, desc: 'Insulation, waterproofing, roofing, sealants, vapor barriers, fireproofing' },
+    { div: '08', name: 'Openings', basePct: 0.06, desc: 'Windows, doors, storefronts, curtain wall, hardware, glazing, frames' },
+    { div: '09', name: 'Finishes', basePct: 0.12, desc: 'Drywall, paint, flooring, tile, ceilings, wall coverings, specialties' },
+    { div: '10', name: 'Specialties', basePct: 0.02, desc: 'Signage, fire extinguishers, toilet accessories, lockers, postal units' },
+    { div: '11', name: 'Equipment', basePct: 0.02, desc: 'Appliances, fitness equipment, laundry equipment, commercial kitchen' },
+    { div: '12', name: 'Furnishings', basePct: 0.01, desc: 'Window treatments, common area furniture, countertops, casework' },
+    { div: '13', name: 'Special Construction', basePct: 0.01, desc: 'Swimming pools, green roofs, modular units, clean rooms' },
+    { div: '14', name: 'Conveying Equipment', basePct: 0.03, desc: 'Elevators, escalators, dumbwaiters' },
+    { div: '21', name: 'Fire Suppression', basePct: 0.03, desc: 'Sprinkler systems (NFPA 13/13R), standpipes, fire pump' },
+    { div: '22', name: 'Plumbing', basePct: 0.06, desc: 'Domestic water, sanitary waste, gas piping, fixtures, water heaters' },
+    { div: '23', name: 'HVAC', basePct: 0.08, desc: 'Heating, ventilation, air conditioning, ductwork, controls, split systems' },
+    { div: '26', name: 'Electrical', basePct: 0.08, desc: 'Power distribution, panels, wiring, lighting, generators, solar PV' },
+    { div: '27', name: 'Communications', basePct: 0.01, desc: 'Low-voltage, data/telecom, AV, intercom, access control' },
+    { div: '28', name: 'Electronic Safety & Security', basePct: 0.01, desc: 'Fire alarm, security cameras, access control, emergency systems' },
+];
+
+/**
+ * Compute CSI division cost breakdown for a specific project.
+ * Adjusts base percentages based on construction type, stories, and use type.
+ */
+function computeCSIBreakdown(useId, computed, constructionType, stories) {
+    var totalConstruction = computed.construction || 0;
+    var gsf = computed.gsf || 1;
+    var divisions = [];
+
+    for (var i = 0; i < CSI_DIVISIONS.length; i++) {
+        var d = CSI_DIVISIONS[i];
+        var pct = d.basePct;
+
+        // --- Adjust by CONSTRUCTION TYPE ---
+        if (constructionType === 'I-A' || constructionType === 'I-B') {
+            // Steel/concrete high-rise: more concrete, steel, fireproofing; less wood
+            if (d.div === '03') pct = 0.18;    // heavy concrete
+            if (d.div === '05') pct = 0.14;    // more structural steel
+            if (d.div === '06') pct = 0.02;    // minimal wood
+            if (d.div === '07') pct = 0.07;    // more fireproofing
+            if (d.div === '14') pct = 0.05;    // more/faster elevators
+            if (d.div === '01') pct = 0.10;    // higher GCs for high-rise
+        } else if (constructionType === 'II-A' || constructionType === 'II-B') {
+            // Non-combustible mid-rise
+            if (d.div === '03') pct = 0.14;
+            if (d.div === '05') pct = 0.12;
+            if (d.div === '06') pct = 0.04;
+        } else if (constructionType === 'III-A') {
+            // Podium: concrete base + wood upper
+            if (d.div === '03') pct = 0.12;
+            if (d.div === '06') pct = 0.11;
+        } else if (constructionType === 'V-A' || constructionType === 'V-B') {
+            // Wood frame: heavy wood, minimal concrete/steel
+            if (d.div === '03') pct = 0.06;
+            if (d.div === '05') pct = 0.04;
+            if (d.div === '06') pct = 0.16;
+        }
+
+        // --- Adjust by STORIES ---
+        if (stories >= 8) {
+            if (d.div === '14') pct = Math.max(pct, 0.05);  // multiple elevators
+            if (d.div === '21') pct = Math.max(pct, 0.04);  // fire pump + standpipe
+            if (d.div === '23') pct = Math.max(pct, 0.09);  // central plant HVAC
+        }
+        if (stories <= 3 && d.div === '14') pct = 0;  // no elevators
+
+        // --- Adjust by USE TYPE ---
+        if (useId === 'hotel') {
+            if (d.div === '09') pct = 0.14;  // higher finish quality
+            if (d.div === '11') pct = 0.04;  // FF&E heavy
+            if (d.div === '12') pct = 0.03;  // more furnishings
+        }
+        if (useId === 'office') {
+            if (d.div === '23') pct = 0.10;  // more HVAC
+            if (d.div === '26') pct = 0.10;  // more electrical/data
+            if (d.div === '09') pct = 0.10;
+        }
+        if (useId === 'retail' || useId === 'mixeduse') {
+            if (d.div === '08') pct = 0.08;  // more storefronts/glazing
+        }
+        if (useId === 'industrial' || useId === 'warehouse') {
+            if (d.div === '09') pct = 0.04;  // minimal finishes
+            if (d.div === '03') pct = 0.15;  // heavy slab
+            if (d.div === '05') pct = 0.18;  // steel structure
+            if (d.div === '06') pct = 0.01;
+        }
+        if (useId === 'senior') {
+            if (d.div === '14') pct = Math.max(pct, 0.04);  // more elevators
+            if (d.div === '11') pct = 0.03;  // nurse call, medical
+        }
+
+        var cost = Math.round(totalConstruction * pct);
+        divisions.push({
+            div: d.div,
+            name: d.name,
+            desc: d.desc,
+            pct: pct,
+            cost: cost,
+            costPSF: cost / gsf,
+        });
+    }
+
+    // Normalize: ensure allocations sum to 100% of construction cost
+    var allocatedTotal = divisions.reduce(function(s, d) { return s + d.cost; }, 0);
+    if (allocatedTotal > 0 && Math.abs(allocatedTotal - totalConstruction) > 100) {
+        var scale = totalConstruction / allocatedTotal;
+        for (var j = 0; j < divisions.length; j++) {
+            divisions[j].cost = Math.round(divisions[j].cost * scale);
+            divisions[j].pct = divisions[j].pct * scale;
+            divisions[j].costPSF = divisions[j].cost / gsf;
+        }
+    }
+
+    return divisions;
+}
+
+/**
+ * Render CSI MasterFormat breakdown as an HTML table.
+ * @param {Array} divisions - from computeCSIBreakdown
+ * @param {number} totalConstruction - total construction cost for % calc
+ * @param {number} gsf - gross SF
+ * @param {string} constructionType - e.g. 'III-A'
+ */
+function renderCSIBreakdownTable(divisions, totalConstruction, gsf, constructionType) {
+    var fmt = function(v) { return '$' + Math.round(v).toLocaleString(); };
+    var html = '';
+    html += '<table style="width:100%;font-size:0.75rem;border-collapse:collapse;margin-top:0.5rem;">';
+    html += '<thead><tr style="background:#edf2f7;font-weight:600;">';
+    html += '<th style="padding:5px 8px;text-align:left;">Div</th>';
+    html += '<th style="padding:5px 8px;text-align:left;">Trade / Division</th>';
+    html += '<th style="padding:5px 8px;text-align:right;">% of Total</th>';
+    html += '<th style="padding:5px 8px;text-align:right;">$/GSF</th>';
+    html += '<th style="padding:5px 8px;text-align:right;">Cost</th>';
+    html += '<th style="padding:5px 8px;text-align:left;">Scope Description</th>';
+    html += '</tr></thead><tbody>';
+
+    var grandTotal = 0;
+    for (var i = 0; i < divisions.length; i++) {
+        var d = divisions[i];
+        if (d.cost <= 0) continue;
+        grandTotal += d.cost;
+        var bgColor = i % 2 === 0 ? '#fff' : '#f7fafc';
+        // Color-code the percentage bar
+        var barWidth = Math.min(100, Math.round(d.pct * 100 / 0.20 * 100));
+        var barColor = d.pct >= 0.12 ? '#e53e3e' : d.pct >= 0.08 ? '#dd6b20' : d.pct >= 0.05 ? '#ecc94b' : '#48bb78';
+        html += '<tr style="background:' + bgColor + ';">';
+        html += '<td style="padding:4px 8px;font-weight:600;color:#4a5568;">' + d.div + '</td>';
+        html += '<td style="padding:4px 8px;font-weight:500;">' + d.name + '</td>';
+        html += '<td style="padding:4px 8px;text-align:right;"><div style="display:flex;align-items:center;justify-content:flex-end;gap:4px;"><div style="width:40px;height:6px;background:#edf2f7;border-radius:3px;overflow:hidden;"><div style="width:' + barWidth + '%;height:100%;background:' + barColor + ';border-radius:3px;"></div></div><span>' + (d.pct * 100).toFixed(1) + '%</span></div></td>';
+        html += '<td style="padding:4px 8px;text-align:right;">$' + d.costPSF.toFixed(0) + '</td>';
+        html += '<td style="padding:4px 8px;text-align:right;font-weight:500;">' + fmt(d.cost) + '</td>';
+        html += '<td style="padding:4px 8px;font-size:0.68rem;color:#718096;">' + d.desc + '</td>';
+        html += '</tr>';
+    }
+    // Total row
+    html += '<tr style="font-weight:700;border-top:2px solid #cbd5e0;background:#edf2f7;">';
+    html += '<td style="padding:5px 8px;" colspan="2">Total Construction (' + constructionType + ')</td>';
+    html += '<td style="padding:5px 8px;text-align:right;">100%</td>';
+    html += '<td style="padding:5px 8px;text-align:right;">$' + Math.round(grandTotal / gsf) + '</td>';
+    html += '<td style="padding:5px 8px;text-align:right;">' + fmt(grandTotal) + '</td>';
+    html += '<td style="padding:5px 8px;font-size:0.68rem;color:#718096;">CSI MasterFormat 2020 Divisions</td>';
+    html += '</tr>';
+    html += '</tbody></table>';
+    return html;
+}
+
 function analyzeConstructionType(useId, inp, computed) {
     const params = BUILDING_PARAMS[useId];
     const stories = computed.stories || params.stories;
@@ -10778,7 +11001,24 @@ function analyzeConstructionType(useId, inp, computed) {
 
     // ADA compliance
     const isResidential = ['sfr', 'duplex', 'multifamily_low', 'multifamily_mid', 'multifamily_high', 'mixeduse', 'senior', 'adu'].includes(useId);
-    const adaptablePct = isResidential && (computed.units || 0) >= 4 ? (stories >= 4 || elevatorCount > 0 ? 100 : 20) : 0;
+    // ADA/FHA/CBC accessibility requirements:
+    // - FHA: all units on elevator-served floors must be "adaptable" (reinforced walls, accessible route, etc.)
+    //   But "adaptable" != "fully accessible" — it's a design standard, not a wheelchair requirement
+    // - CBC Chapter 11A: minimum 5% of units fully accessible (wheelchair), min 2% communication accessible (hearing/vision)
+    // - If no elevator: only ground-floor units need adaptable features (~20-25% of units)
+    var totalUnits = computed.units || 0;
+    var fullyAccessiblePct = 5; // CBC Chapter 11A minimum
+    var communicationAccessiblePct = 2; // CBC hearing/vision
+    var adaptablePct = 0;
+    if (isResidential && totalUnits >= 4) {
+        if (stories >= 4 || elevatorCount > 0) {
+            adaptablePct = 100;  // FHA: all units on elevator-served floors must be adaptable (design standard)
+        } else {
+            adaptablePct = Math.min(100, Math.round(100 / stories)); // ground floor only (~25-50%)
+        }
+    }
+    var fullyAccessibleUnits = Math.max(1, Math.ceil(totalUnits * fullyAccessiblePct / 100));
+    var commAccessibleUnits = Math.max(1, Math.ceil(totalUnits * communicationAccessiblePct / 100));
     const totalParking = computed.parkingSpaces || 0;
     const accessibleParking = totalParking <= 25 ? Math.min(totalParking, 1) : totalParking <= 50 ? 2 : totalParking <= 75 ? 3 : totalParking <= 100 ? 4 : Math.min(Math.ceil(totalParking * 0.04), 20);
     const pathOfTravelCost = Math.round(gsf * 1.25);
@@ -10816,7 +11056,7 @@ function analyzeConstructionType(useId, inp, computed) {
         sprinklerRequired,
         stairwellCount,
         elevatorCount,
-        adaCompliance: { adaptablePct, accessibleParking, pathOfTravelCost, total: adaTotal },
+        adaCompliance: { adaptablePct, fullyAccessiblePct, fullyAccessibleUnits, commAccessibleUnits, accessibleParking, pathOfTravelCost, total: adaTotal },
         title24Cost,
         title24Total,
         calgreenTier,
@@ -10939,25 +11179,31 @@ function renderConstructionTab(st) {
     html += `<div class="analysis-section"><h3>ADA / Accessibility Compliance</h3>
         <div class="exec-summary-grid">
             <div class="exec-summary-card">
-                <h4>Adaptable Units</h4>
+                <h4>Adaptable Units (FHA)</h4>
                 <div class="exec-metric-lg">${cc.adaCompliance.adaptablePct}%</div>
-                <div class="exec-metric-sub">${cc.adaCompliance.adaptablePct === 100 ? 'All units on elevator-served floors' : cc.adaCompliance.adaptablePct > 0 ? 'Ground-floor units only (no elevator)' : 'N/A for this use type'}</div>
+                <div class="exec-metric-sub">${cc.adaCompliance.adaptablePct === 100 ? 'All units on elevator-served floors — FHA adaptable design standard (reinforced walls, accessible route, usable kitchens/baths)' : cc.adaCompliance.adaptablePct > 0 ? 'Ground-floor units only (no elevator) — FHA adaptable design' : 'N/A for this use type'}</div>
+            </div>
+            <div class="exec-summary-card">
+                <h4>Fully Accessible (CBC)</h4>
+                <div class="exec-metric-lg">${cc.adaCompliance.fullyAccessiblePct}% <span style="font-size:0.55em;color:var(--text-light);">(${cc.adaCompliance.fullyAccessibleUnits} units)</span></div>
+                <div class="exec-metric-sub">CBC Ch. 11A: wheelchair-accessible units with roll-in showers, lowered counters, wider doors</div>
+            </div>
+            <div class="exec-summary-card">
+                <h4>Communication Accessible</h4>
+                <div class="exec-metric-lg">2% <span style="font-size:0.55em;color:var(--text-light);">(${cc.adaCompliance.commAccessibleUnits} units)</span></div>
+                <div class="exec-metric-sub">CBC: hearing/vision accessible — visual alarms, doorbell strobes</div>
             </div>
             <div class="exec-summary-card">
                 <h4>Accessible Parking</h4>
                 <div class="exec-metric-lg">${cc.adaCompliance.accessibleParking}</div>
-                <div class="exec-metric-sub">of ${computed.parkingSpaces || 0} total spaces</div>
+                <div class="exec-metric-sub">of ${computed.parkingSpaces || 0} total spaces (incl. van-accessible)</div>
             </div>
-            <div class="exec-summary-card">
-                <h4>Path of Travel Cost</h4>
-                <div class="exec-metric-lg">${formatCompactDollars(cc.adaCompliance.pathOfTravelCost)}</div>
-                <div class="exec-metric-sub">$1.25/SF for accessible route</div>
-            </div>
-            <div class="exec-summary-card">
-                <h4>Total ADA Cost</h4>
-                <div class="exec-metric-lg">${formatCompactDollars(cc.adaCompliance.total)}</div>
-                <div class="exec-metric-sub">Path of travel + accessible parking</div>
-            </div>
+        </div>
+        <div style="background:#ebf8ff;border:1px solid #bee3f8;border-radius:8px;padding:0.75rem 1rem;margin-top:0.75rem;font-size:0.82rem;">
+            <strong>Key Distinction:</strong> "Adaptable" (FHA) ≠ "Fully Accessible" (CBC/ADA).
+            <strong>Adaptable</strong> means built with features that <em>can</em> be converted to accessible (reinforced walls for grab bars, blocking for future modifications) — required in <strong>${cc.adaCompliance.adaptablePct}%</strong> of units per Fair Housing Act.
+            <strong>Fully Accessible</strong> means wheelchair-ready from Day 1 (roll-in shower, lowered counters, 36" doors) — required in <strong>${cc.adaCompliance.fullyAccessiblePct}%</strong> of units (${cc.adaCompliance.fullyAccessibleUnits} units) per California Building Code Chapter 11A.
+            Total ADA compliance cost: <strong>${formatCompactDollars(cc.adaCompliance.total)}</strong> (path of travel $1.25/SF + ${cc.adaCompliance.accessibleParking} accessible parking spaces at $2,500 each).
         </div>
     </div>`;
 
@@ -11024,6 +11270,16 @@ function renderConstructionTab(st) {
             </tr>
         </tbody></table>
     </div>`;
+
+    // CSI MasterFormat Division Breakdown
+    const csiDivisions = computeCSIBreakdown(bestUse, computed, cc.constructionType, cc.stories);
+    html += `<div class="analysis-section"><h3>Hard Cost Breakdown by Trade — CSI MasterFormat</h3>`;
+    html += `<p style="font-size:0.78rem;color:var(--text-light);margin-bottom:0.75rem;">Construction cost of <strong>${formatCompactDollars(computed.construction)}</strong> (${computed.gsf.toLocaleString()} GSF &times; $${Math.round(computed.buildCostPSF).toLocaleString()}/SF) allocated across CSI MasterFormat 2020 divisions. Percentages calibrated for <strong>${cc.constructionType}</strong> construction (${cc.constructionTypeDesc}), ${cc.stories}-story ${bestUse.replace(/_/g, ' ')}.</p>`;
+    html += renderCSIBreakdownTable(csiDivisions, computed.construction, computed.gsf, cc.constructionType);
+    html += `<div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:6px;padding:0.6rem 0.8rem;margin-top:0.75rem;font-size:0.72rem;color:#4a5568;">
+        <strong>Note:</strong> Division allocations are estimates based on RSMeans data and LA County market conditions for ${cc.constructionType} construction. Actual trade costs vary by contractor, market conditions, material specifications, and design complexity. This breakdown does not include site work (Div 31-33), which is shown separately in the pro forma. Divisions 31-33 (Earthwork, Exterior Improvements, Utilities) are accounted for in the Site Work & Preparation line item.
+    </div>`;
+    html += `</div>`;
 
     html += `</div>`;
     return html;
