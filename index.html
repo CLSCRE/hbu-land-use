@@ -2158,7 +2158,7 @@
         <input type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter')checkAuth();">
         <button type="button" class="auth-btn" onclick="checkAuth()">Enter</button>
         <div class="auth-error" id="authError"></div>
-        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v3.2</div>
+        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v3.3</div>
     </div>
 </div>
 
@@ -2166,7 +2166,7 @@
     <h1>Highest &amp; Best Use Calculator</h1>
     <p>Land Use Analysis for Los Angeles, CA</p>
     <span class="badge">HBU Analysis Tool</span>
-    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v3.2</span>
+    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v3.3</span>
 </header>
 
 <div class="tab-bar">
@@ -5213,7 +5213,35 @@ function recalcAnalysis() {
     if (svgEl) svgEl.innerHTML = renderSVGs(st.useId, st.inp, computed);
 }
 
-function renderDeepAssumptions(assumptions, hasUnits) {
+function renderDeepAssumptions(assumptions, hasUnits, useId, computed) {
+    var isResidential = ['sfr','duplex','multifamily_low','multifamily_mid','multifamily_high','mixeduse','senior','adu'].includes(useId || '');
+    var params = BUILDING_PARAMS[useId] || {};
+    // For residential: compute avg rent/unit/month from revenuePSF
+    var avgRentPerUnit = 0;
+    if (isResidential && hasUnits && params.unitSF) {
+        avgRentPerUnit = Math.round(assumptions.revenuePSF * params.unitSF / 12);
+    }
+    // Compute NOI for display
+    var displayNOI = computed ? computed.noi : 0;
+
+    var revenueLabel, revenueValue, revenueId, revenueStep;
+    if (isResidential && hasUnits) {
+        revenueLabel = 'Avg Rent/Unit/Mo';
+        revenueValue = avgRentPerUnit;
+        revenueId = 'da-rentPerUnit';
+        revenueStep = '25';
+    } else {
+        revenueLabel = 'Revenue $/SF/Yr';
+        revenueValue = assumptions.revenuePSF;
+        revenueId = 'da-revenuePSF';
+        revenueStep = '1';
+    }
+
+    var noiDisplay = displayNOI > 0 ? `<div class="assumption-field">
+                <label>Est. NOI</label>
+                <div class="assumption-input" style="background:#f0fff4;border-color:#c6f6d5;font-weight:600;color:#276749;text-align:center;">$${displayNOI.toLocaleString()}</div>
+            </div>` : '';
+
     return `<div class="assumptions-panel" style="margin-bottom:1rem;">
         <h4>Key Assumptions (editable)</h4>
         <div class="assumptions-grid">
@@ -5238,8 +5266,8 @@ function renderDeepAssumptions(assumptions, hasUnits) {
                 <input type="number" class="assumption-input" id="da-landValuePSF" step="5" min="1" value="${assumptions.landValuePSF}" oninput="recalcDeepAnalysis()">
             </div>
             <div class="assumption-field">
-                <label>Revenue $/SF</label>
-                <input type="number" class="assumption-input" id="da-revenuePSF" step="1" min="1" value="${assumptions.revenuePSF}" oninput="recalcDeepAnalysis()">
+                <label>${revenueLabel}</label>
+                <input type="number" class="assumption-input" id="${revenueId}" step="${revenueStep}" min="1" value="${revenueValue}" oninput="recalcDeepAnalysis()">
             </div>
             <div class="assumption-field">
                 <label>OpEx %</label>
@@ -5253,6 +5281,7 @@ function renderDeepAssumptions(assumptions, hasUnits) {
                 <label>Parking $/Space</label>
                 <input type="number" class="assumption-input" id="da-parkingCostPerSpace" step="1000" min="0" value="${assumptions.parkingCostPerSpace}" oninput="recalcDeepAnalysis()">
             </div>
+            ${noiDisplay}
         </div>
     </div>`;
 }
@@ -5261,13 +5290,29 @@ function recalcDeepAnalysis() {
     const st = deepAnalysisState;
     if (!st || !st.bestUse || !st.inp) return;
 
+    const params = BUILDING_PARAMS[st.bestUse] || {};
+    const hasUnits = !!params.unitSF;
+    const isResidential = ['sfr','duplex','multifamily_low','multifamily_mid','multifamily_high','mixeduse','senior','adu'].includes(st.bestUse);
+
+    // Determine revenuePSF — convert from rent/unit/mo if residential
+    var revenuePSF;
+    if (isResidential && hasUnits) {
+        var rentInput = document.getElementById('da-rentPerUnit');
+        var rentPerUnit = rentInput ? parseFloat(rentInput.value) : 0;
+        // Convert: rent/unit/mo → revenuePSF = (rent * 12) / unitSF
+        revenuePSF = rentPerUnit > 0 && params.unitSF > 0 ? Math.round(rentPerUnit * 12 / params.unitSF) : st.assumptions.revenuePSF;
+    } else {
+        var revInput = document.getElementById('da-revenuePSF');
+        revenuePSF = revInput ? parseFloat(revInput.value) : st.assumptions.revenuePSF;
+    }
+
     const assumptions = {
         far: parseFloat(document.getElementById('da-far').value) || st.assumptions.far,
         unitsOrNSF: parseInt(document.getElementById('da-unitsOrNSF').value) || st.assumptions.unitsOrNSF,
         parkingSpaces: parseInt(document.getElementById('da-parkingSpaces').value) || 0,
         buildCostPSF: parseFloat(document.getElementById('da-buildCostPSF').value) || st.assumptions.buildCostPSF,
         landValuePSF: parseFloat(document.getElementById('da-landValuePSF').value) || st.assumptions.landValuePSF,
-        revenuePSF: parseFloat(document.getElementById('da-revenuePSF').value) || st.assumptions.revenuePSF,
+        revenuePSF: revenuePSF || st.assumptions.revenuePSF,
         opexPct: parseFloat(document.getElementById('da-opexPct').value) || 0,
         capRatePct: parseFloat(document.getElementById('da-capRatePct').value) || st.assumptions.capRatePct,
         parkingCostPerSpace: parseFloat(document.getElementById('da-parkingCostPerSpace').value) || 0,
@@ -7624,6 +7669,26 @@ const LIHTC_PARAMS = {
     pct9: { creditRate: 0.09, equityFactor: 0.90, name: '9% LIHTC (Competitive)', minAffordable: 1.0 },
 };
 
+// Welfare Exemption — California RTC Section 214(g)
+// Nonprofit GP structure allows proportional property tax exemption for units at ≤80% AMI
+const WELFARE_EXEMPTION = {
+    maxAMIForExemption: 0.80,         // 80% AMI ceiling for qualifying units
+    overIncomeCeiling: 1.40,          // 140% AMI — above this, unit loses exemption (AB 1193)
+    defaultTaxRate: 0.0125,           // 1.25% blended LA County effective rate
+    baseLevyRate: 0.0100,             // 1.00% Prop 13 base
+    filingDeadline: 'February 15',
+    filingForm: 'BOE-267-L',
+    compliancePeriod: 55,             // years (CA LIHTC requirement)
+    nonprofitGPFee: 15000,            // typical annual asset management fee to nonprofit GP
+    sources: {
+        boe_welfare: { label: 'BOE Welfare Exemption (Low-Income Housing)', url: 'https://boe.ca.gov/proptaxes/welfarelowinc.htm' },
+        ctcac_limits: { label: 'CTCAC Rent & Income Limits', url: 'https://www.treasurer.ca.gov/ctcac/compliance/limits.asp' },
+        hcd_income: { label: 'HCD State Income Limits 2025', url: 'https://www.hcd.ca.gov/funding/income-limits' },
+        lahd_schedules: { label: 'LAHD Rent/Income Schedules (Sch. 6 & 9)', url: 'https://housing.lacity.gov/partners/land-use-rent-income-schedules' },
+        la_tra: { label: 'LA County Tax Rate Area Lookup', url: 'https://auditor.lacounty.gov/tax-rate-area-lookup/' },
+    },
+};
+
 function calculateAffordableCompliance(useId, inp, effects, computed) {
     if (!computed || !computed.units) return null;
     const totalUnits = computed.units;
@@ -7713,6 +7778,37 @@ function calculateAffordableCompliance(useId, inp, effects, computed) {
     const eligible4pct = totalUnits >= 10 && totalDevCost > 0;
     const credit4pct = eligible4pct ? Math.round(totalDevCost * 0.60 * LIHTC_PARAMS.pct4.creditRate * 10 * LIHTC_PARAMS.pct4.equityFactor) : 0;
 
+    // Welfare Exemption calculation — Nonprofit GP structure
+    // Qualifying units: all units restricted at ≤80% AMI
+    // Using low-income set-aside as baseline qualifying units
+    const welfareQualifyingUnits = buildLowUnits; // units at ≤80% AMI from inclusionary requirement
+    const assessedValue = totalDevCost; // conservative: use total dev cost as assessed value
+    const taxRate = WELFARE_EXEMPTION.defaultTaxRate;
+    const exemptionPct = totalUnits > 0 ? welfareQualifyingUnits / totalUnits : 0;
+    const grossAnnualTax = assessedValue * taxRate;
+    const annualTaxSavings = grossAnnualTax * exemptionPct;
+    const netAnnualTax = grossAnnualTax - annualTaxSavings;
+    const npvTaxSavings15yr = annualTaxSavings * 15; // simplified 15-year NPV
+    // Net benefit = tax savings minus nonprofit GP fee
+    const nonprofitGPCost = WELFARE_EXEMPTION.nonprofitGPFee;
+    const netAnnualBenefit = annualTaxSavings - nonprofitGPCost;
+
+    // Scenario analysis: what if developer maximizes affordable units for max exemption?
+    const welfareScenarios = [
+        { label: 'Base Inclusionary (11% Low)', qualUnits: buildLowUnits, pct: INCLUSIONARY_REQS.base.low },
+        { label: '15% VLI (Density Bonus)', qualUnits: Math.ceil(totalUnits * 0.15), pct: 0.15 },
+        { label: '20% Low (Density Bonus)', qualUnits: Math.ceil(totalUnits * 0.20), pct: 0.20 },
+        { label: '50% at 80% AMI', qualUnits: Math.ceil(totalUnits * 0.50), pct: 0.50 },
+        { label: '80% at 80% AMI', qualUnits: Math.ceil(totalUnits * 0.80), pct: 0.80 },
+        { label: '100% Affordable', qualUnits: totalUnits, pct: 1.00 },
+    ].map(s => {
+        const exemPct = s.qualUnits / totalUnits;
+        const savings = grossAnnualTax * exemPct;
+        const lostRent = (marketRent1BR - LA_AMI_LIMITS_2025.low.ami_1br) * s.qualUnits * 12;
+        const netBenefit = savings - nonprofitGPCost - lostRent;
+        return { ...s, exemPct, annualSavings: savings, lostRent, netBenefit };
+    });
+
     return {
         totalUnits,
         marketRent1BR, marketRentStudio, marketRent2BR,
@@ -7722,6 +7818,19 @@ function calculateAffordableCompliance(useId, inp, effects, computed) {
         inLieu: { total: inLieuTotal, perUnit: IN_LIEU_FEES.perUnit, threshold: IN_LIEU_FEES.threshold },
         buildVsBuy: { inLieuTotal, buildNPVLoss, recommendation: inLieuTotal < buildNPVLoss ? 'Pay in-lieu fee' : 'Build affordable units' },
         lihtc: { eligible4pct, credit4pct },
+        welfareExemption: {
+            qualifyingUnits: welfareQualifyingUnits,
+            assessedValue,
+            taxRate,
+            exemptionPct,
+            grossAnnualTax,
+            annualTaxSavings,
+            netAnnualTax,
+            npvTaxSavings15yr,
+            nonprofitGPCost,
+            netAnnualBenefit,
+            scenarios: welfareScenarios,
+        },
     };
 }
 
@@ -8196,7 +8305,7 @@ function renderSensitivityTab(st) {
 
     // Editable Assumptions Panel
     html += `<div class="analysis-section">`;
-    html += renderDeepAssumptions(assumptions, hasUnits);
+    html += renderDeepAssumptions(assumptions, hasUnits, bestUse, computed);
     html += `</div>`;
 
     // Pro Forma Summary (reuse existing budget)
@@ -8329,6 +8438,12 @@ function renderAffordableTab(st) {
     html += `<tr><td>1-Bedroom</td><td>${fmt(compliance.marketRent1BR)}</td><td>${fmt(LA_AMI_LIMITS_2025.veryLow.ami_1br)}</td><td>${fmt(LA_AMI_LIMITS_2025.low.ami_1br)}</td><td>${fmt(LA_AMI_LIMITS_2025.moderate.ami_1br)}</td></tr>`;
     html += `<tr><td>2-Bedroom</td><td>${fmt(compliance.marketRent2BR)}</td><td>${fmt(LA_AMI_LIMITS_2025.veryLow.ami_2br)}</td><td>${fmt(LA_AMI_LIMITS_2025.low.ami_2br)}</td><td>${fmt(LA_AMI_LIMITS_2025.moderate.ami_2br)}</td></tr>`;
     html += `</tbody></table>`;
+    html += `<div style="font-size:0.72rem;color:#718096;margin-top:0.4rem;">
+        AMI rents based on 2025 LA County AMI ($${LA_AMI_LIMITS_2025.ami.toLocaleString()}, 4-person HH) per HUD guidelines.
+        Sources: <a href="${WELFARE_EXEMPTION.sources.ctcac_limits.url}" target="_blank" style="color:#3182ce;">CTCAC Rent Limits</a> |
+        <a href="${WELFARE_EXEMPTION.sources.hcd_income.url}" target="_blank" style="color:#3182ce;">HCD Income Limits</a> |
+        <a href="${WELFARE_EXEMPTION.sources.lahd_schedules.url}" target="_blank" style="color:#3182ce;">LAHD Schedule 6 & 9</a>
+    </div>`;
 
     // Inclusionary Requirements
     html += `<h4 style="font-size:0.88rem;color:var(--primary);margin:1.5rem 0 0.75rem;">Mandatory Inclusionary Set-Asides (${compliance.totalUnits} total units)</h4>`;
@@ -8413,6 +8528,83 @@ function renderAffordableTab(st) {
             <div class="exec-metric-lg">${formatCompactDollars(compliance.lihtc.credit4pct)}</div>
             <div class="exec-metric-sub">Estimated tax credit equity (10-year)</div>
         </div>`;
+    }
+
+    // Welfare Exemption — Nonprofit GP Strategy
+    const we = compliance.welfareExemption;
+    if (we) {
+        html += `<h4 style="font-size:0.88rem;color:var(--primary);margin:1.5rem 0 0.75rem;">
+            Welfare Exemption — Nonprofit GP Strategy
+            <span style="font-size:0.7rem;color:#718096;font-weight:400;margin-left:0.5rem;">(RTC &sect;214(g))</span>
+        </h4>`;
+        html += `<p style="font-size:0.82rem;color:var(--text-light);margin-bottom:0.75rem;">
+            By incorporating a 501(c)(3) nonprofit as the managing general partner, the project qualifies for a proportional property tax exemption
+            on units restricted at &le;80% AMI. The exemption is filed annually (Form ${WELFARE_EXEMPTION.filingForm}, due ${WELFARE_EXEMPTION.filingDeadline}).
+        </p>`;
+
+        // Key metrics
+        html += `<div class="exec-summary-grid">
+            <div class="exec-summary-card">
+                <h4>Qualifying Units</h4>
+                <div class="exec-metric-lg">${we.qualifyingUnits} of ${we.qualifyingUnits > 0 ? compliance.totalUnits : 0}</div>
+                <div class="exec-metric-sub">${(we.exemptionPct * 100).toFixed(1)}% of units at &le;80% AMI</div>
+            </div>
+            <div class="exec-summary-card">
+                <h4>Gross Annual Tax</h4>
+                <div class="exec-metric-lg">${fmt(Math.round(we.grossAnnualTax))}</div>
+                <div class="exec-metric-sub">${(we.taxRate * 100).toFixed(2)}% effective rate on ${formatCompactDollars(we.assessedValue)} AV</div>
+            </div>
+            <div class="exec-summary-card">
+                <h4>Annual Tax Savings</h4>
+                <div class="exec-metric-lg" style="color:#276749;">${fmt(Math.round(we.annualTaxSavings))}</div>
+                <div class="exec-metric-sub">${(we.exemptionPct * 100).toFixed(1)}% exemption applied</div>
+            </div>
+            <div class="exec-summary-card">
+                <h4>Net Annual Benefit</h4>
+                <div class="exec-metric-lg" style="color:${we.netAnnualBenefit >= 0 ? '#276749' : '#c53030'};">${we.netAnnualBenefit >= 0 ? '+' : ''}${fmt(Math.round(we.netAnnualBenefit))}</div>
+                <div class="exec-metric-sub">After nonprofit GP fee (${fmt(we.nonprofitGPCost)}/yr)</div>
+            </div>
+        </div>`;
+
+        // Scenario comparison table
+        html += `<h4 style="font-size:0.85rem;color:var(--text);margin:1.25rem 0 0.5rem;">Welfare Exemption Scenario Analysis</h4>`;
+        html += `<p style="font-size:0.78rem;color:var(--text-light);margin-bottom:0.5rem;">
+            Compare tax savings vs. lost rent revenue at different affordable unit percentages. Net benefit = tax savings &minus; nonprofit GP fee &minus; lost rent vs. market.
+        </p>`;
+        html += `<table class="afford-comparison-table"><thead><tr>
+            <th>Scenario</th><th>Afford. Units</th><th>Exemption</th><th>Annual Tax Savings</th><th>Annual Lost Rent</th><th>Net Benefit</th>
+        </tr></thead><tbody>`;
+        for (const s of we.scenarios) {
+            const color = s.netBenefit >= 0 ? '#276749' : '#c53030';
+            html += `<tr>
+                <td>${s.label}</td>
+                <td>${s.qualUnits}</td>
+                <td>${(s.exemPct * 100).toFixed(0)}%</td>
+                <td style="color:#276749;">${fmt(Math.round(s.annualSavings))}</td>
+                <td style="color:#c53030;">${fmt(Math.round(s.lostRent))}</td>
+                <td style="color:${color};font-weight:600;">${s.netBenefit >= 0 ? '+' : ''}${fmt(Math.round(s.netBenefit))}</td>
+            </tr>`;
+        }
+        html += `</tbody></table>`;
+
+        // Nonprofit GP structure explainer
+        html += `<div style="background:#f0fff4;border:1px solid #c6f6d5;border-radius:8px;padding:0.75rem 1rem;margin-top:1rem;">
+            <h5 style="font-size:0.82rem;color:#276749;margin-bottom:0.4rem;">Nonprofit GP Structure</h5>
+            <div style="font-size:0.78rem;color:var(--text);line-height:1.6;">
+                <strong>Entity:</strong> 501(c)(3) nonprofit serves as managing GP (~0.01% interest) with LIHTC investor as LP (~99.99%).<br>
+                <strong>Requirement:</strong> Nonprofit must have genuine management authority (BOE Rule 140.1). Annual filing of Form BOE-267-L required.<br>
+                <strong>Compliance:</strong> Units must be restricted by recorded regulatory agreement. Tenants income-certified annually. Over-income ceiling: 140% AMI (AB 1193).<br>
+                <strong>Duration:</strong> Exemption available for full ${WELFARE_EXEMPTION.compliancePeriod}-year compliance period.
+            </div>
+        </div>`;
+
+        // Source links
+        html += `<div style="font-size:0.72rem;color:#718096;margin-top:0.75rem;">
+            <strong>Sources & verification:</strong> `;
+        const srcLinks = Object.values(WELFARE_EXEMPTION.sources).map(s =>
+            `<a href="${s.url}" target="_blank" style="color:#3182ce;">${s.label}</a>`
+        ).join(' | ');
+        html += srcLinks + `</div>`;
     }
 
     html += `</div></div>`;
@@ -11663,59 +11855,72 @@ function renderComparisonDashboard(saved) {
     html += '</td></tr>';
     html += '</table></div>';
 
-    // Radar/Spider charts
-    html += '</div><div class="analysis-section"><h3>Radar Analysis</h3>';
-    html += '<div class="rendering-container">';
+    // Horizontal Grouped Bar Chart — HBU Criteria Comparison
+    html += '</div><div class="analysis-section"><h3>HBU Criteria Comparison</h3>';
+    html += '<p style="font-size:0.78rem;color:var(--text-light);margin-bottom:1rem;">Each criterion scored 0-100. Bars show relative strength across properties.</p>';
+
     var axes = ['Legal', 'Physical', 'Financial', 'Risk', 'Market', 'Entitlement'];
     var axisKeys = ['legal', 'physical', 'financial', 'risk', 'market', 'entitlement'];
 
-    for (var r = 0; r < analyses.length; r++) {
-        var an = analyses[r];
-        var sw = 280, sh = 260;
-        var radarCx = sw / 2, radarCy = sh / 2 + 10;
-        var radarR = 90;
-        var propColor = USE_COLORS[an.bestUse] || '#3182ce';
-
-        var radarSvg = '<svg viewBox="0 0 ' + sw + ' ' + sh + '" xmlns="http://www.w3.org/2000/svg" style="background:#fafbfc;">';
-        radarSvg += '<text x="' + (sw / 2) + '" y="14" text-anchor="middle" font-size="9" fill="#1a365d" font-weight="700">' + (an.prop.address || 'Property ' + (r + 1)).substring(0, 30) + '</text>';
-
-        // Grid circles
-        for (var gc = 1; gc <= 4; gc++) {
-            var gr = radarR * gc / 4;
-            radarSvg += '<circle cx="' + radarCx + '" cy="' + radarCy + '" r="' + gr + '" fill="none" stroke="#e2e8f0" stroke-width="0.5"/>';
-        }
-
-        // Axes and labels
-        var points = [];
-        for (var ax = 0; ax < 6; ax++) {
-            var angle = (Math.PI * 2 * ax / 6) - Math.PI / 2;
-            var axX = radarCx + Math.cos(angle) * radarR;
-            var axY = radarCy + Math.sin(angle) * radarR;
-            radarSvg += '<line x1="' + radarCx + '" y1="' + radarCy + '" x2="' + axX + '" y2="' + axY + '" stroke="#e2e8f0" stroke-width="0.5"/>';
-
-            var lx = radarCx + Math.cos(angle) * (radarR + 16);
-            var ly = radarCy + Math.sin(angle) * (radarR + 16);
-            radarSvg += '<text x="' + lx + '" y="' + (ly + 3) + '" text-anchor="middle" font-size="7" fill="#718096" font-weight="600">' + axes[ax] + '</text>';
-
-            var val = an.scores[axisKeys[ax]] || 0;
-            var px = radarCx + Math.cos(angle) * radarR * val;
-            var py = radarCy + Math.sin(angle) * radarR * val;
-            points.push(px + ',' + py);
-        }
-
-        // Score polygon
-        radarSvg += '<polygon points="' + points.join(' ') + '" fill="' + propColor + '" opacity="0.2" stroke="' + propColor + '" stroke-width="2"/>';
-
-        // Score dots
-        for (var d = 0; d < points.length; d++) {
-            var pt = points[d].split(',');
-            radarSvg += '<circle cx="' + pt[0] + '" cy="' + pt[1] + '" r="3" fill="' + propColor + '"/>';
-        }
-
-        radarSvg += '</svg>';
-        html += '<div>' + radarSvg + '</div>';
+    // Legend
+    html += '<div style="display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1rem;">';
+    for (var lg = 0; lg < analyses.length; lg++) {
+        var lgColor = USE_COLORS[analyses[lg].bestUse] || '#3182ce';
+        var lgAddr = (analyses[lg].prop.address || 'Property ' + (lg + 1)).substring(0, 25);
+        html += '<div style="display:flex;align-items:center;gap:0.35rem;font-size:0.75rem;">';
+        html += '<span style="width:12px;height:12px;border-radius:2px;background:' + lgColor + ';display:inline-block;"></span>';
+        html += '<span>' + lgAddr + '</span></div>';
     }
     html += '</div>';
+
+    // Bar chart rows
+    for (var ax = 0; ax < axes.length; ax++) {
+        html += '<div style="margin-bottom:0.75rem;">';
+        html += '<div style="font-size:0.78rem;font-weight:600;color:var(--text);margin-bottom:0.3rem;">' + axes[ax] + '</div>';
+        for (var bp = 0; bp < analyses.length; bp++) {
+            var barVal = Math.round((analyses[bp].scores[axisKeys[ax]] || 0) * 100);
+            var barColor = USE_COLORS[analyses[bp].bestUse] || '#3182ce';
+            var barAddr = (analyses[bp].prop.address || 'Prop ' + (bp + 1)).substring(0, 20);
+            html += '<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:2px;">';
+            html += '<span style="font-size:0.68rem;color:#718096;width:120px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + barAddr + '</span>';
+            html += '<div style="flex:1;background:#edf2f7;border-radius:4px;height:18px;overflow:hidden;">';
+            html += '<div style="width:' + barVal + '%;height:100%;background:' + barColor + ';border-radius:4px;transition:width 0.3s;"></div>';
+            html += '</div>';
+            html += '<span style="font-size:0.72rem;font-weight:600;color:' + barColor + ';width:32px;">' + barVal + '</span>';
+            html += '</div>';
+        }
+        html += '</div>';
+    }
+
+    // Composite Score Breakdown (Weighted Scorecard)
+    html += '<h4 style="font-size:0.85rem;color:var(--text);margin:1.25rem 0 0.5rem;">Composite Score Breakdown</h4>';
+    html += '<p style="font-size:0.72rem;color:var(--text-light);margin-bottom:0.75rem;">Weighted: Financial 40% | IRR 30% | Legal 15% | Physical 15%</p>';
+    for (var cs = 0; cs < analyses.length; cs++) {
+        var csAn = analyses[cs];
+        var csColor = USE_COLORS[csAn.bestUse] || '#3182ce';
+        var csAddr = (csAn.prop.address || 'Property ' + (cs + 1)).substring(0, 30);
+        var compScore = Math.round((csAn.computed.devMargin * 0.4 + csAn.irr * 0.3 + csAn.scores.legal * 0.15 + csAn.scores.physical * 0.15) * 100);
+        // Stacked breakdown bar
+        var wFin = Math.round(csAn.computed.devMargin * 40);
+        var wIRR = Math.round(csAn.irr * 30);
+        var wLegal = Math.round(csAn.scores.legal * 15);
+        var wPhys = Math.round(csAn.scores.physical * 15);
+        html += '<div style="margin-bottom:0.6rem;">';
+        html += '<div style="display:flex;justify-content:space-between;font-size:0.78rem;margin-bottom:0.2rem;">';
+        html += '<span style="font-weight:600;color:' + csColor + ';">#' + (cs + 1) + ' ' + csAddr + '</span>';
+        html += '<span style="font-weight:700;color:' + csColor + ';">' + compScore + ' pts</span>';
+        html += '</div>';
+        html += '<div style="display:flex;height:20px;border-radius:4px;overflow:hidden;background:#edf2f7;">';
+        html += '<div style="width:' + wFin + '%;background:' + csColor + ';opacity:1;" title="Financial: ' + wFin + '"></div>';
+        html += '<div style="width:' + wIRR + '%;background:' + csColor + ';opacity:0.75;" title="IRR: ' + wIRR + '"></div>';
+        html += '<div style="width:' + wLegal + '%;background:' + csColor + ';opacity:0.5;" title="Legal: ' + wLegal + '"></div>';
+        html += '<div style="width:' + wPhys + '%;background:' + csColor + ';opacity:0.35;" title="Physical: ' + wPhys + '"></div>';
+        html += '</div>';
+        html += '<div style="display:flex;gap:0.75rem;font-size:0.65rem;color:#718096;margin-top:0.15rem;">';
+        html += '<span>Financial: ' + wFin + '</span><span>IRR: ' + wIRR + '</span><span>Legal: ' + wLegal + '</span><span>Physical: ' + wPhys + '</span>';
+        html += '</div></div>';
+    }
+    html += '';
 
     // Quick recommendation
     html += '</div><div class="analysis-section">';
