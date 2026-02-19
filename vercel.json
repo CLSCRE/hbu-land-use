@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "name": "hbu-land-use",
+  "builds": [
+    {
+      "src": "*.html",
+      "use": "@vercel/static"
+    }
+  ]
+}
