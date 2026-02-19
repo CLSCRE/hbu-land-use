@@ -5439,10 +5439,10 @@ function drawSB79Radii(station) {
     var tierColor = station.tier === 1 ? '#805ad5' : '#3182ce';
 
     // ALL circles are purely visual — no click handling, no interactive flag
-    // 1/2 mile = ~805m (outer) — bold dark boundary, highly visible
+    // 1/2 mile = ~805m (outer)
     L.circle([station.lat, station.lon], {
-        radius: 805, color: '#1a202c', weight: 5, opacity: 1.0,
-        fillColor: '#1a202c', fillOpacity: 0.22,
+        radius: 805, color: tierColor, weight: 2.5, opacity: 0.8,
+        fillColor: tierColor, fillOpacity: 0.08,
         interactive: false,
     }).addTo(sb79Layers.zones);
 
