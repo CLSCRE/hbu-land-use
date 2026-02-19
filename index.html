@@ -2137,7 +2137,7 @@
     <h1>Highest &amp; Best Use Calculator</h1>
     <p>Land Use Analysis for Los Angeles, CA</p>
     <span class="badge">HBU Analysis Tool</span>
-    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v2.5</span>
+    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v3.0</span>
 </header>
 
 <div class="tab-bar">
@@ -5344,6 +5344,9 @@ function initSB79Map(lat, lon) {
         drawSB79Radii(METRO_STATIONS[eligibility.nearestIdx]);
     }
 
+    // Native DOM click handler for zone identification (bypasses all Leaflet layers)
+    attachZoneClickHandler(sb79Map);
+
     // Render legend
     renderMapLegend();
 
@@ -5355,65 +5358,104 @@ function initSB79Map(lat, lon) {
     setTimeout(() => { if (sb79Map) sb79Map.invalidateSize(); }, 200);
 }
 
-// Shared zone click handler — computes exact zone from haversine distance
-function makeZoneClickHandler(station, mapInstance) {
-    return function(e) {
-        // Stop this click from reaching other circles or the map
-        L.DomEvent.stop(e);
+// ---- ZONE CLICK SYSTEM (rebuilt from scratch) ----
+// All zone circles are PURE VISUAL DECORATION (no Leaflet event handling).
+// Zone identification uses a native DOM click listener on the map container,
+// which cannot be blocked by SVG overlays or Leaflet layer event handling.
 
-        var dist = haversine(station.lat, station.lon, e.latlng.lat, e.latlng.lng);
-        var tierData = SB79_TIERS[station.tier];
-        var zoneName, zoneDetail;
-        if (dist <= 0.038) {
-            zoneName = '200ft Adjacent Zone';
-            zoneDetail = tierData.label + ' — Full tier benefits, zero parking';
-        } else if (dist <= 0.25) {
-            zoneName = '1/4 Mile Inner Zone';
-            zoneDetail = tierData.label + ' — Full tier benefits, zero parking';
-        } else {
-            zoneName = '1/2 Mile Outer Zone';
-            zoneDetail = tierData.label + ' — 65ft height, 3.25 FAR, 0.5 parking/unit';
-        }
+function showZonePopup(mapInstance, latlng, station, dist) {
+    var tierData = SB79_TIERS[station.tier];
+    var distFeet = Math.round(dist * 5280);
+    var zoneName, zoneColor, zoneDetail;
 
-        var distFeet = Math.round(dist * 5280);
-        L.popup()
-            .setLatLng(e.latlng)
-            .setContent(
-                '<strong>' + station.name + '</strong><br>' +
-                '<strong style="font-size:1.05em;">' + zoneName + '</strong><br>' +
-                '<span style="font-size:0.85em;color:#666;">' + zoneDetail + '</span><br>' +
-                '<span style="font-size:0.8em;color:#999;">' + distFeet.toLocaleString() + ' ft from station (' + station.serviceType + ')</span>'
-            )
-            .openOn(mapInstance);
-    };
+    if (dist <= 0.038) {
+        zoneName = '200ft Adjacent Zone';
+        zoneColor = '#553c9a';
+        zoneDetail = tierData.label + ' — Full tier benefits, zero parking';
+    } else if (dist <= 0.25) {
+        zoneName = '1/4 Mile Inner Zone';
+        zoneColor = '#2b6cb0';
+        zoneDetail = tierData.label + ' — Full tier benefits, zero parking';
+    } else {
+        zoneName = '1/2 Mile Outer Zone';
+        zoneColor = '#4a5568';
+        zoneDetail = tierData.label + ' — 65ft height, 3.25 FAR, 0.5 parking/unit';
+    }
+
+    L.popup()
+        .setLatLng(latlng)
+        .setContent(
+            '<strong>' + station.name + '</strong><br>' +
+            '<strong style="font-size:1.1em;color:' + zoneColor + ';">' + zoneName + '</strong><br>' +
+            '<span style="font-size:0.85em;color:#666;">' + zoneDetail + '</span><br>' +
+            '<span style="font-size:0.8em;color:#999;">' + distFeet.toLocaleString() + ' ft from station (' + station.serviceType + ')</span>'
+        )
+        .openOn(mapInstance);
+}
+
+function attachZoneClickHandler(mapInstance) {
+    // Native DOM click listener — bypasses Leaflet's event system entirely.
+    // Cannot be blocked by SVG overlays, circle layers, or bubblingMouseEvents.
+    mapInstance.getContainer().addEventListener('click', function(evt) {
+        // Small delay to let Leaflet process its own events first (marker popups etc.)
+        setTimeout(function() {
+            // If a Leaflet popup is already open from a marker click, don't override it
+            if (mapInstance._popup && mapInstance._popup.isOpen && mapInstance._popup.isOpen()) {
+                // Check if this popup was opened by a station marker (has station-popup class)
+                var content = mapInstance._popup.getContent ? mapInstance._popup.getContent() : '';
+                if (typeof content === 'string' && content.indexOf('station-popup') >= 0) return;
+                if (typeof content === 'string' && content.indexOf('Your Property') >= 0) return;
+            }
+
+            // Convert pixel click position to lat/lng
+            var rect = mapInstance.getContainer().getBoundingClientRect();
+            var x = evt.clientX - rect.left;
+            var y = evt.clientY - rect.top;
+            var latlng = mapInstance.containerPointToLatLng(L.point(x, y));
+
+            // Find nearest station
+            var nearestStation = null;
+            var nearestDist = Infinity;
+            for (var i = 0; i < METRO_STATIONS.length; i++) {
+                var s = METRO_STATIONS[i];
+                var d = haversine(latlng.lat, latlng.lng, s.lat, s.lon);
+                if (d < nearestDist) {
+                    nearestDist = d;
+                    nearestStation = s;
+                }
+            }
+
+            // Only show zone popup if click is within 1/2 mile of a station
+            if (nearestStation && nearestDist <= 0.50) {
+                showZonePopup(mapInstance, latlng, nearestStation, nearestDist);
+            }
+        }, 50);
+    });
 }
 
 function drawSB79Radii(station) {
     if (!sb79Layers.zones) return;
     var tierColor = station.tier === 1 ? '#805ad5' : '#3182ce';
 
-    // ONLY the outer circle is interactive — it captures ALL clicks in the zone area
-    // and uses haversine to calculate the exact correct zone label.
-    // Inner and adjacent circles are visual-only to prevent multiple handlers firing.
-
-    // 1/2 mile = ~805m (outer) — THE ONLY INTERACTIVE CIRCLE
+    // ALL circles are purely visual — no click handling, no interactive flag
+    // 1/2 mile = ~805m (outer) — bold dark boundary
     L.circle([station.lat, station.lon], {
-        radius: 805, color: '#000000', weight: 3.5, opacity: 0.9,
-        fillColor: '#1a202c', fillOpacity: 0.15,
-        interactive: true, bubblingMouseEvents: false,
-    }).on('click', makeZoneClickHandler(station, sb79Map)).addTo(sb79Layers.zones);
+        radius: 805, color: '#2d3748', weight: 4, opacity: 1.0,
+        fillColor: '#2d3748', fillOpacity: 0.18,
+        interactive: false,
+    }).addTo(sb79Layers.zones);
 
-    // 1/4 mile = ~402m (inner) — visual only
+    // 1/4 mile = ~402m (inner)
     L.circle([station.lat, station.lon], {
-        radius: 402, color: tierColor, weight: 2, opacity: 0.7,
-        fillColor: tierColor, fillOpacity: 0.10,
+        radius: 402, color: tierColor, weight: 2.5, opacity: 0.8,
+        fillColor: tierColor, fillOpacity: 0.12,
         interactive: false, dashArray: '8,6',
     }).addTo(sb79Layers.zones);
 
-    // 200ft = ~61m (adjacent) — visual only
+    // 200ft = ~61m (adjacent)
     L.circle([station.lat, station.lon], {
-        radius: 61, color: tierColor, weight: 2.5, opacity: 0.9,
-        fillColor: tierColor, fillOpacity: 0.22,
+        radius: 61, color: tierColor, weight: 3, opacity: 1.0,
+        fillColor: tierColor, fillOpacity: 0.25,
         interactive: false,
     }).addTo(sb79Layers.zones);
 }
@@ -6042,6 +6084,9 @@ function initFinderMap() {
         marker.addTo(finderMapInstance);
     });
 
+    // Native DOM click handler for zone identification (bypasses all Leaflet layers)
+    attachZoneClickHandler(finderMapInstance);
+
     // Render legend
     renderFinderMapLegend();
 
@@ -6060,27 +6105,25 @@ function drawFinderStationRadii(station) {
     var tierColor = station.tier === 1 ? '#805ad5' : '#3182ce';
     var circles = [];
 
-    // ONLY the outer circle is interactive — uses haversine for exact zone label.
-    // Inner and adjacent are visual-only to prevent multiple handlers overwriting popup.
-
-    // 1/2 mile = ~805m (outer) — THE ONLY INTERACTIVE CIRCLE
+    // ALL circles are purely visual — zone clicks handled by native DOM listener
+    // 1/2 mile = ~805m (outer) — bold dark boundary
     circles.push(L.circle([station.lat, station.lon], {
-        radius: 805, color: '#000000', weight: 3.5, opacity: 0.9,
-        fillColor: '#1a202c', fillOpacity: 0.15,
-        interactive: true, bubblingMouseEvents: false,
-    }).on('click', makeZoneClickHandler(station, finderMapInstance)).addTo(finderMapInstance));
+        radius: 805, color: '#2d3748', weight: 4, opacity: 1.0,
+        fillColor: '#2d3748', fillOpacity: 0.18,
+        interactive: false,
+    }).addTo(finderMapInstance));
 
-    // 1/4 mile = ~402m (inner) — visual only
+    // 1/4 mile = ~402m (inner)
     circles.push(L.circle([station.lat, station.lon], {
-        radius: 402, color: tierColor, weight: 2, opacity: 0.7,
-        fillColor: tierColor, fillOpacity: 0.10,
+        radius: 402, color: tierColor, weight: 2.5, opacity: 0.8,
+        fillColor: tierColor, fillOpacity: 0.12,
         interactive: false, dashArray: '8,6',
     }).addTo(finderMapInstance));
 
-    // 200ft = ~61m (adjacent) — visual only
+    // 200ft = ~61m (adjacent)
     circles.push(L.circle([station.lat, station.lon], {
-        radius: 61, color: tierColor, weight: 2.5, opacity: 0.9,
-        fillColor: tierColor, fillOpacity: 0.22,
+        radius: 61, color: tierColor, weight: 3, opacity: 1.0,
+        fillColor: tierColor, fillOpacity: 0.25,
         interactive: false,
     }).addTo(finderMapInstance));
 
