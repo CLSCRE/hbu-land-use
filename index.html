@@ -5343,6 +5343,9 @@ function initSB79Map(lat, lon) {
         drawSB79Radii(METRO_STATIONS[eligibility.nearestIdx]);
     }
 
+    // Map-level click handler for accurate zone labels
+    sb79Map.on('click', function(e) { handleZoneMapClick(e, sb79Map); });
+
     // Render legend
     renderMapLegend();
 
@@ -5358,7 +5361,7 @@ function drawSB79Radii(station) {
     if (!sb79Layers.zones) return;
     const tierColor = station.tier === 1 ? '#805ad5' : '#3182ce';
 
-    // All visual circles are non-interactive to prevent wrong popups on overlapping layers
+    // All visual circles are non-interactive (zone labels handled by map click handler)
     // 1/2 mile = ~805m
     L.circle([station.lat, station.lon], {
         radius: 805, color: '#000000', weight: 3.5, opacity: 0.9,
@@ -5376,28 +5379,50 @@ function drawSB79Radii(station) {
         radius: 61, color: tierColor, weight: 2, opacity: 0.8,
         fillColor: tierColor, fillOpacity: 0.15, dashArray: null, interactive: false,
     }).addTo(sb79Layers.zones);
+}
 
-    // Single interactive click target covering the full outer zone
-    L.circle([station.lat, station.lon], {
-        radius: 805, weight: 0, fillOpacity: 0, interactive: true,
-    }).on('click', function(e) {
-        var dist = haversine(station.lat, station.lon, e.latlng.lat, e.latlng.lng);
-        var zoneName, zoneDetail;
-        if (dist <= 0.038) {
-            zoneName = '200ft Adjacent Zone';
-            zoneDetail = 'Full tier benefits, zero parking requirement';
-        } else if (dist <= 0.25) {
-            zoneName = '1/4 Mile Inner Zone';
-            zoneDetail = 'Full tier benefits, zero parking requirement';
-        } else {
-            zoneName = '1/2 Mile Outer Zone';
-            zoneDetail = '65ft height, 3.25 FAR, 0.5 parking/unit';
+// Map-level click handler: finds nearest station, calculates exact zone from distance
+function handleZoneMapClick(e, mapInstance) {
+    var clickLat = e.latlng.lat;
+    var clickLon = e.latlng.lng;
+    var nearestStation = null;
+    var nearestDist = Infinity;
+
+    for (var i = 0; i < METRO_STATIONS.length; i++) {
+        var s = METRO_STATIONS[i];
+        var d = haversine(clickLat, clickLon, s.lat, s.lon);
+        if (d < nearestDist) {
+            nearestDist = d;
+            nearestStation = s;
         }
-        L.popup()
-            .setLatLng(e.latlng)
-            .setContent(`<strong>${station.name}</strong><br>${zoneName}<br><span style="font-size:0.85em;color:#666;">${zoneDetail}</span>`)
-            .openOn(e.target._map);
-    }).addTo(sb79Layers.zones);
+    }
+
+    // Only show zone popup if click is within 1/2 mile of a station
+    if (!nearestStation || nearestDist > 0.50) return;
+
+    var tierData = SB79_TIERS[nearestStation.tier];
+    var zoneName, zoneDetail;
+    if (nearestDist <= 0.038) {
+        zoneName = '200ft Adjacent Zone';
+        zoneDetail = tierData.label + ' — Full tier benefits, zero parking';
+    } else if (nearestDist <= 0.25) {
+        zoneName = '1/4 Mile Inner Zone';
+        zoneDetail = tierData.label + ' — Full tier benefits, zero parking';
+    } else {
+        zoneName = '1/2 Mile Outer Zone';
+        zoneDetail = tierData.label + ' — 65ft height, 3.25 FAR, 0.5 parking/unit';
+    }
+
+    var distFeet = Math.round(nearestDist * 5280);
+    L.popup()
+        .setLatLng(e.latlng)
+        .setContent(
+            '<strong>' + nearestStation.name + '</strong><br>' +
+            '<strong>' + zoneName + '</strong><br>' +
+            '<span style="font-size:0.85em;color:#666;">' + zoneDetail + '</span><br>' +
+            '<span style="font-size:0.8em;color:#999;">' + distFeet.toLocaleString() + ' ft from station (' + nearestStation.serviceType + ')</span>'
+        )
+        .openOn(mapInstance);
 }
 
 function showStationRadii(stationIdx) {
@@ -6024,6 +6049,9 @@ function initFinderMap() {
         marker.addTo(finderMapInstance);
     });
 
+    // Map-level click handler for accurate zone labels
+    finderMapInstance.on('click', function(e) { handleZoneMapClick(e, finderMapInstance); });
+
     // Render legend
     renderFinderMapLegend();
 
@@ -6042,7 +6070,7 @@ function drawFinderStationRadii(station) {
     const tierColor = station.tier === 1 ? '#805ad5' : '#3182ce';
     const circles = [];
 
-    // All visual circles are non-interactive to prevent wrong popups on overlapping layers
+    // All visual circles are non-interactive (zone labels handled by map click handler)
     circles.push(L.circle([station.lat, station.lon], {
         radius: 805, color: '#000000', weight: 3.5, opacity: 0.9,
         fillColor: '#1a202c', fillOpacity: 0.12, interactive: false,
@@ -6057,29 +6085,6 @@ function drawFinderStationRadii(station) {
         radius: 61, color: tierColor, weight: 2, opacity: 0.8,
         fillColor: tierColor, fillOpacity: 0.15, interactive: false,
     }).addTo(finderMapInstance));
-
-    // Single interactive click target that calculates correct zone from distance
-    var clickTarget = L.circle([station.lat, station.lon], {
-        radius: 805, weight: 0, fillOpacity: 0, interactive: true,
-    }).on('click', function(e) {
-        var dist = haversine(station.lat, station.lon, e.latlng.lat, e.latlng.lng);
-        var zoneName, zoneDetail;
-        if (dist <= 0.038) {
-            zoneName = '200ft Adjacent Zone';
-            zoneDetail = 'Full tier benefits, zero parking requirement';
-        } else if (dist <= 0.25) {
-            zoneName = '1/4 Mile Inner Zone';
-            zoneDetail = 'Full tier benefits, zero parking requirement';
-        } else {
-            zoneName = '1/2 Mile Outer Zone';
-            zoneDetail = '65ft height, 3.25 FAR, 0.5 parking/unit';
-        }
-        L.popup()
-            .setLatLng(e.latlng)
-            .setContent(`<strong>${station.name}</strong><br>${zoneName}<br><span style="font-size:0.85em;color:#666;">${zoneDetail}</span>`)
-            .openOn(finderMapInstance);
-    }).addTo(finderMapInstance);
-    circles.push(clickTarget);
 
     finderMapInstance._finderRadii = circles;
     finderMapInstance.setView([station.lat, station.lon], 14);
