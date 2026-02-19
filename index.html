@@ -2130,7 +2130,7 @@
         <input type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter')checkAuth();">
         <button type="button" class="auth-btn" onclick="checkAuth()">Enter</button>
         <div class="auth-error" id="authError"></div>
-        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v3.1</div>
+        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v3.2</div>
     </div>
 </div>
 
@@ -2138,7 +2138,7 @@
     <h1>Highest &amp; Best Use Calculator</h1>
     <p>Land Use Analysis for Los Angeles, CA</p>
     <span class="badge">HBU Analysis Tool</span>
-    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v3.1</span>
+    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v3.2</span>
 </header>
 
 <div class="tab-bar">
@@ -2419,11 +2419,11 @@
                 <select id="finderStation2"></select>
             </div>
             <div class="finder-field">
-                <label>Search Radius</label>
-                <div class="finder-radios">
-                    <label><input type="radio" name="finderRadius2" value="200"> Adjacent (200ft)</label>
-                    <label><input type="radio" name="finderRadius2" value="1320"> Inner (1/4 mi)</label>
-                    <label><input type="radio" name="finderRadius2" value="2640" checked> Outer (1/2 mi)</label>
+                <label>Search Radius (select one or more)</label>
+                <div class="finder-checks">
+                    <label><input type="checkbox" class="finderRadius2" value="200"> Adjacent (200ft)</label>
+                    <label><input type="checkbox" class="finderRadius2" value="1320"> Inner (1/4 mi)</label>
+                    <label><input type="checkbox" class="finderRadius2" value="2640" checked> Outer (1/2 mi)</label>
                 </div>
             </div>
             <div class="finder-field">
@@ -5443,7 +5443,7 @@ function drawSB79Radii(station) {
     L.circle([station.lat, station.lon], {
         radius: 805, color: tierColor, weight: 2.5, opacity: 0.8,
         fillColor: tierColor, fillOpacity: 0.08,
-        interactive: false,
+        interactive: false, dashArray: '12,8',
     }).addTo(sb79Layers.zones);
 
     // 1/4 mile = ~402m (inner)
@@ -5455,9 +5455,9 @@ function drawSB79Radii(station) {
 
     // 200ft = ~61m (adjacent)
     L.circle([station.lat, station.lon], {
-        radius: 61, color: tierColor, weight: 3, opacity: 1.0,
-        fillColor: tierColor, fillOpacity: 0.25,
-        interactive: false,
+        radius: 61, color: tierColor, weight: 2.5, opacity: 0.9,
+        fillColor: tierColor, fillOpacity: 0.20,
+        interactive: false, dashArray: '4,4',
     }).addTo(sb79Layers.zones);
 }
 
@@ -5715,6 +5715,8 @@ function filterAndScoreResults(features, station, filters) {
         // Classify SB 79 zone
         const zoneInfo = classifySB79Zone(lat, lon, station.lat, station.lon);
         if (zoneInfo.key === 'outside') continue;
+        // If specific zones are selected, filter to only those zones
+        if (filters.selectedZones && filters.selectedZones.length > 0 && !filters.selectedZones.includes(zoneInfo.key)) continue;
 
         // Apply filters
         if (filters.minLot && lotSizeSqFt < filters.minLot) continue;
@@ -6107,11 +6109,11 @@ function drawFinderStationRadii(station) {
     var circles = [];
 
     // ALL circles are purely visual — zone clicks handled by native DOM listener
-    // 1/2 mile = ~805m (outer) — bold dark boundary
+    // 1/2 mile = ~805m (outer)
     circles.push(L.circle([station.lat, station.lon], {
-        radius: 805, color: '#2d3748', weight: 4, opacity: 1.0,
-        fillColor: '#2d3748', fillOpacity: 0.18,
-        interactive: false,
+        radius: 805, color: tierColor, weight: 2.5, opacity: 0.8,
+        fillColor: tierColor, fillOpacity: 0.08,
+        interactive: false, dashArray: '12,8',
     }).addTo(finderMapInstance));
 
     // 1/4 mile = ~402m (inner)
@@ -6123,9 +6125,9 @@ function drawFinderStationRadii(station) {
 
     // 200ft = ~61m (adjacent)
     circles.push(L.circle([station.lat, station.lon], {
-        radius: 61, color: tierColor, weight: 3, opacity: 1.0,
-        fillColor: tierColor, fillOpacity: 0.25,
-        interactive: false,
+        radius: 61, color: tierColor, weight: 2.5, opacity: 0.9,
+        fillColor: tierColor, fillOpacity: 0.20,
+        interactive: false, dashArray: '4,4',
     }).addTo(finderMapInstance));
 
     finderMapInstance._finderRadii = circles;
@@ -6199,14 +6201,22 @@ async function runStandaloneSearch() {
     const station = METRO_STATIONS[stationIdx];
     if (!station) return;
 
-    const checked = document.querySelector('input[name="finderRadius2"]:checked');
-    const radiusFt = checked ? parseInt(checked.value) : 2640;
+    const radiusChecks = document.querySelectorAll('.finderRadius2:checked');
+    const selectedRadii = Array.from(radiusChecks).map(c => parseInt(c.value));
+    if (selectedRadii.length === 0) { alert('Please select at least one search radius.'); return; }
+    const radiusFt = Math.max(...selectedRadii);
     const useChecks = document.querySelectorAll('.finderUseType2:checked');
     const useTypes = Array.from(useChecks).map(c => c.value);
     const minLot = parseInt(document.getElementById('finderMinLot2').value) || 0;
     const maxLot = parseInt(document.getElementById('finderMaxLot2').value) || 999999;
 
-    const filters = { useTypes, minLot, maxLot, maxRatio: null, yearBefore: null };
+    // Map selected radii to zone keys for filtering
+    const selectedZones = [];
+    if (selectedRadii.includes(200)) selectedZones.push('adjacent');
+    if (selectedRadii.includes(1320)) selectedZones.push('inner');
+    if (selectedRadii.includes(2640)) selectedZones.push('outer');
+
+    const filters = { useTypes, minLot, maxLot, maxRatio: null, yearBefore: null, selectedZones };
 
     finderSelectedSet.clear();
 
