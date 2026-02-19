@@ -3883,6 +3883,126 @@ function stackLegislationEffects(legislationList) {
 
 
 // ============================================================
+//  SITE WORK COST BREAKDOWN
+// ============================================================
+
+/**
+ * Calculate site work cost broken into sub-components.
+ * Adjusts for topography, soil conditions, site condition, and use type.
+ *
+ * Sub-components (all $/SF of lot area unless noted):
+ *   1. Clearing & Grubbing  — remove vegetation, trees, debris ($1.50-$4.50/SF)
+ *   2. Rough Grading         — cut/fill, grade to design elevations ($2-$12/SF depending on slope)
+ *   3. Soil Prep / Compaction — scarify, moisture condition, compact subgrade ($1.50-$5/SF)
+ *   4. Utility Rough-In      — trench, stub water/sewer/storm/electric/gas to building pad ($3-$8/SF)
+ *   5. Erosion / SWPPP        — silt fence, BMP, SWPPP compliance during grading ($0.75-$2/SF)
+ *
+ * @param {string} useId — land use type
+ * @param {object} inp — site input (parcelSize, topography, siteCondition, etc.)
+ * @param {number} gsf — gross square footage of building
+ * @param {object} [rateOverrides] — optional user-overridden $/SF rates for each sub-component
+ * @returns {object} { clearing, grading, soilPrep, utilities, erosion, total, rates, assumptions }
+ */
+function calcSiteWorkBreakdown(useId, inp, gsf, rateOverrides) {
+    var lot = inp.parcelSize || 10000;
+
+    // ADU: minimal site work scoped to footprint
+    if (useId === 'adu') {
+        var aduArea = Math.min(lot * 0.3, gsf || 800);
+        return { clearing: 0, grading: Math.round(aduArea * 3), soilPrep: Math.round(aduArea * 2),
+                 utilities: Math.round(aduArea * 5), erosion: Math.round(aduArea * 1),
+                 total: Math.round(aduArea * 11), rates: { clearing: 0, grading: 3, soilPrep: 2, utilities: 5, erosion: 1 },
+                 assumptions: 'ADU — site work scoped to ADU footprint only (~' + Math.round(aduArea).toLocaleString() + ' SF). Minimal grading, shared utility laterals.' };
+    }
+
+    // Base rates ($/SF of lot) — typical flat urban infill in LA
+    var rates = {
+        clearing:  2.00,  // vegetation/debris removal
+        grading:   3.50,  // rough grading, cut/fill
+        soilPrep:  2.50,  // compaction, moisture conditioning
+        utilities: 5.00,  // trench & stub all utilities to pad
+        erosion:   1.25,  // SWPPP, silt fence, BMPs
+    };
+
+    // --- Adjust for TOPOGRAPHY ---
+    if (inp.topography === 'steep') {
+        rates.grading = 10.00;   // heavy cut/fill, retaining walls, export
+        rates.soilPrep = 4.50;   // deeper compaction, engineered fill
+        rates.erosion = 2.00;    // extended SWPPP, slope stabilization
+    } else if (inp.topography === 'moderate' || inp.topography === 'sloped') {
+        rates.grading = 6.00;    // moderate cut/fill
+        rates.soilPrep = 3.25;
+        rates.erosion = 1.50;
+    }
+    // flat = base rates
+
+    // --- Adjust for SITE CONDITION ---
+    if (inp.siteCondition === 'vacant') {
+        rates.clearing = 1.50;   // minimal — empty lot, weeds/fence
+    } else if (inp.siteCondition === 'brownfield') {
+        rates.clearing = 4.00;   // hazmat screening, debris, potential contaminated soil handling
+        rates.soilPrep = 4.00;   // over-excavation, clean fill import
+    } else if (inp.siteCondition === 'demolition') {
+        rates.clearing = 3.50;   // post-demo debris, asbestos survey area
+    }
+
+    // --- Adjust for UTILITIES ---
+    if (inp.utilities === 'partial') {
+        rates.utilities = 7.00;  // some laterals need extension
+    } else if (inp.utilities === 'none') {
+        rates.utilities = 12.00; // full utility extension from main to site
+    }
+
+    // --- Adjust for CONSTRAINTS ---
+    if (inp.constFlood) {
+        rates.grading += 2.00;   // flood mitigation grading, raised pad
+        rates.erosion += 0.75;   // extra drainage BMPs
+    }
+    if (inp.constHillside) {
+        rates.grading += 3.00;   // hillside grading ordinance compliance
+    }
+    if (inp.constFault) {
+        rates.soilPrep += 1.50;  // fault zone geotech compliance
+    }
+
+    // Apply user overrides if provided
+    if (rateOverrides) {
+        if (rateOverrides.clearing !== undefined) rates.clearing = rateOverrides.clearing;
+        if (rateOverrides.grading !== undefined) rates.grading = rateOverrides.grading;
+        if (rateOverrides.soilPrep !== undefined) rates.soilPrep = rateOverrides.soilPrep;
+        if (rateOverrides.utilities !== undefined) rates.utilities = rateOverrides.utilities;
+        if (rateOverrides.erosion !== undefined) rates.erosion = rateOverrides.erosion;
+    }
+
+    var clearing  = Math.round(lot * rates.clearing);
+    var grading   = Math.round(lot * rates.grading);
+    var soilPrep  = Math.round(lot * rates.soilPrep);
+    var utilities = Math.round(lot * rates.utilities);
+    var erosion   = Math.round(lot * rates.erosion);
+    var total     = clearing + grading + soilPrep + utilities + erosion;
+
+    // Build human-readable assumption string
+    var assumptionParts = [];
+    if (inp.topography === 'steep') assumptionParts.push('steep slope (+heavy grading, retaining, export)');
+    else if (inp.topography === 'moderate' || inp.topography === 'sloped') assumptionParts.push('moderate slope (+additional grading)');
+    else assumptionParts.push('flat/level grade (standard grading)');
+    if (inp.siteCondition === 'brownfield') assumptionParts.push('brownfield (+over-excavation, clean fill)');
+    else if (inp.siteCondition === 'demolition') assumptionParts.push('post-demo site (+debris handling)');
+    else if (inp.siteCondition === 'vacant') assumptionParts.push('vacant lot (minimal clearing)');
+    if (inp.utilities === 'none') assumptionParts.push('no utilities (+full lateral extension)');
+    else if (inp.utilities === 'partial') assumptionParts.push('partial utilities (+lateral extensions)');
+    if (inp.constFlood) assumptionParts.push('flood zone (+raised pad, drainage)');
+    if (inp.constHillside) assumptionParts.push('hillside (+ordinance compliance)');
+    if (inp.constFault) assumptionParts.push('fault zone (+geotech)');
+
+    return {
+        clearing: clearing, grading: grading, soilPrep: soilPrep, utilities: utilities, erosion: erosion,
+        total: total, rates: rates,
+        assumptions: assumptionParts.join('; '),
+    };
+}
+
+// ============================================================
 //  BUILDING PROGRAM & BUDGET DATA
 // ============================================================
 
@@ -4065,8 +4185,8 @@ function scoreFinancial(useId, inp, effects) {
     const parkingCost = parkSpaces * parkCostPerSpace;
 
     // Total cost including overhead (parking, contingency, soft costs)
-    // ADU site work scoped to ADU footprint only
-    const siteWorkCost = useId === 'adu' ? Math.round(buildableSF * 12) : inp.parcelSize * 18;
+    // Site work cost (uses breakdown function for consistency)
+    const siteWorkCost = calcSiteWorkBreakdown(useId, inp, buildableSF).total;
     const hardCostBase = buildCost + parkingCost + siteWorkCost;
     const totalHard = hardCostBase * 1.11; // ~4% landscaping + 7% contingency
     const totalSoft = totalHard * 0.235; // ~23.5% (A&E 8%, permits 5%, legal 2%, financing 4.5%, dev fee 4%)
@@ -4577,8 +4697,9 @@ function generateBudget(useId, inp, effects) {
     // ADU is an addition to an existing lot — no land acquisition needed
     const landCost = useId === 'adu' ? 0 : inp.parcelSize * landValuePSF;
 
-    // Hard costs — ADU site work scoped to ADU footprint only
-    const siteWork = useId === 'adu' ? Math.round(gsf * 12) : inp.parcelSize * 18;
+    // Hard costs — Site work broken into sub-components
+    const siteWorkBreakdown = calcSiteWorkBreakdown(useId, inp, gsf);
+    const siteWork = siteWorkBreakdown.total;
     const demolition = (inp.siteCondition === 'demolition' && useId !== 'adu') ? inp.parcelSize * 12 : 0;
     let buildCostPSF = BUILD_COST_PSF[useId] || 300;
     if (effects && effects.parkingReduction > 0) {
@@ -4615,7 +4736,7 @@ function generateBudget(useId, inp, effects) {
 
     return {
         gsf, nsf, revenueNSF: nsf, stories, buildingHeight, buildingFootprint, units, parkingSpaces, far,
-        landCost, landValuePSF, siteWork, demolition, construction, buildCostPSF, parkingCost, parkingCostPerSpace, landscaping, hardContingency, totalHard,
+        landCost, landValuePSF, siteWork, siteWorkBreakdown, demolition, construction, buildCostPSF, parkingCost, parkingCostPerSpace, landscaping, hardContingency, totalHard,
         archEng, permits, legal, financing, marketing, devFee, totalSoft,
         totalDev,
         grossRevenue, opex, noi, capRate, stabilizedValue, yieldOnCost, devMargin,
@@ -4945,6 +5066,10 @@ function getDefaultAssumptions(useId, inp, effects) {
 
     const rentMult = NEIGHBORHOOD_RENT_MULT[inp.neighborhood] || 1.0;
 
+    // Calculate default site work for display
+    var swBreakdown = calcSiteWorkBreakdown(useId, inp, gsf);
+    var siteWorkTotalPSF = inp.parcelSize > 0 ? Math.round(swBreakdown.total / inp.parcelSize) : 18;
+
     return {
         far: parseFloat(far.toFixed(2)),
         unitsOrNSF,
@@ -4955,6 +5080,10 @@ function getDefaultAssumptions(useId, inp, effects) {
         opexPct: Math.round(params.opex * 100),
         capRatePct: parseFloat((params.cap * 100).toFixed(1)),
         parkingCostPerSpace: PARKING_COST_MAP[useId] || 35000,
+        siteWorkPSF: siteWorkTotalPSF,
+        siteWorkTotal: swBreakdown.total,
+        siteWorkOverride: null,
+        parcelSize: inp.parcelSize || 10000,
     };
 }
 
@@ -4977,8 +5106,15 @@ function computeFromAssumptions(useId, inp, assumptions, effects) {
     // ADU is an addition — no land acquisition cost
     const landCost = useId === 'adu' ? 0 : inp.parcelSize * landValuePSF;
 
-    // Hard costs — ADU site work scoped to ADU footprint only
-    const siteWork = useId === 'adu' ? Math.round(gsf * 12) : inp.parcelSize * 18;
+    // Hard costs — Site work with user-overridable sub-components
+    let siteWorkBreakdown;
+    if (assumptions.siteWorkOverride !== undefined && assumptions.siteWorkOverride !== null) {
+        // User manually set a total site work cost
+        siteWorkBreakdown = { total: assumptions.siteWorkOverride, grading: 0, utilities: 0, erosion: 0, soilPrep: 0, clearing: 0, isOverride: true };
+    } else {
+        siteWorkBreakdown = calcSiteWorkBreakdown(useId, inp, gsf, assumptions.siteWorkRates);
+    }
+    const siteWork = siteWorkBreakdown.total;
     const demolition = (inp.siteCondition === 'demolition' && useId !== 'adu') ? inp.parcelSize * 12 : 0;
     const buildCostPSF = assumptions.buildCostPSF;
     const construction = gsf * buildCostPSF;
@@ -5012,7 +5148,7 @@ function computeFromAssumptions(useId, inp, assumptions, effects) {
 
     return {
         gsf, nsf, revenueNSF, stories, buildingHeight, buildingFootprint, units, parkingSpaces, far,
-        landCost, siteWork, demolition, construction, buildCostPSF, parkingCost, landscaping, hardContingency, totalHard,
+        landCost, siteWork, siteWorkBreakdown, demolition, construction, buildCostPSF, parkingCost, landscaping, hardContingency, totalHard,
         archEng, permits, legal, financing, marketing, devFee, totalSoft,
         totalDev,
         grossRevenue, opex, noi, capRate, stabilizedValue, yieldOnCost, devMargin,
@@ -5071,6 +5207,11 @@ function renderAssumptions(assumptions, hasUnits) {
                 <label>Parking $/Space</label>
                 <input type="number" class="assumption-input" id="a-parkingCostPerSpace" step="1000" min="0" value="${assumptions.parkingCostPerSpace}" oninput="recalcAnalysis()">
             </div>
+            <div class="assumption-field">
+                <label>Site Work $/SF <span style="font-size:0.6rem;color:#a0aec0;">(of lot)</span></label>
+                <input type="number" class="assumption-input" id="a-siteWorkPSF" step="1" min="0" max="100" value="${assumptions.siteWorkPSF || Math.round(assumptions.siteWorkTotal / (assumptions.parcelSize || 10000))}" oninput="recalcAnalysis()" placeholder="auto">
+                <span style="font-size:0.6rem;color:#a0aec0;">blank = auto-calc</span>
+            </div>
         </div>
     </div>`;
 }
@@ -5102,12 +5243,17 @@ function renderBudgetTable(computed, inp) {
         </tr>
 
         <tr class="section-header"><td colspan="5">HARD COSTS</td></tr>
-        <tr>
-            <td>Site Work &amp; Preparation</td>
+        <tr style="cursor:pointer;" onclick="var el=document.getElementById('siteWorkDetail');el.style.display=el.style.display==='none'?'table-row':'none';">
+            <td><strong>Site Work &amp; Preparation</strong> <span style="font-size:0.65rem;color:#4299e1;">&#9660; click for breakdown</span></td>
             <td>${fmt(computed.siteWork)}</td>
             <td class="dim">${perGSF(computed.siteWork)}</td>
             <td class="dim">${hasUnits ? perUnit(computed.siteWork) : '$' + Math.round(computed.siteWork / (computed.nsf || 1)).toLocaleString()}</td>
             <td class="pct-col">${pct(computed.siteWork)}</td>
+        </tr>
+        <tr id="siteWorkDetail" style="display:none;">
+            <td colspan="5" style="padding:0.5rem 1rem;background:#f7fafc;border-left:3px solid #4299e1;">
+                ${renderSiteWorkBreakdownInline(computed, inp)}
+            </td>
         </tr>
         ${computed.demolition > 0 ? `<tr>
             <td>Demolition</td>
@@ -5214,6 +5360,35 @@ function renderBudgetTable(computed, inp) {
     </table>`;
 }
 
+function renderSiteWorkBreakdownInline(computed, inp) {
+    var sw = computed.siteWorkBreakdown;
+    if (!sw) return '<em style="color:#a0aec0;">No breakdown available</em>';
+
+    var lot = inp.parcelSize || 10000;
+    var fmt = function(v) { return '$' + Math.round(v).toLocaleString(); };
+    var r = sw.rates || {};
+
+    var html = '<div style="font-size:0.75rem;">';
+    html += '<div style="font-weight:600;color:#2b6cb0;margin-bottom:0.4rem;">Site Work Sub-Components (' + lot.toLocaleString() + ' SF lot)</div>';
+    html += '<table style="width:100%;font-size:0.72rem;border-collapse:collapse;margin-bottom:0.5rem;">';
+    html += '<thead><tr style="background:#edf2f7;"><th style="text-align:left;padding:3px 8px;">Component</th><th style="padding:3px 8px;">Rate ($/SF)</th><th style="padding:3px 8px;">Cost</th><th style="text-align:left;padding:3px 8px;">What It Covers</th></tr></thead>';
+    html += '<tbody>';
+    html += '<tr><td style="padding:3px 8px;">Clearing &amp; Grubbing</td><td style="padding:3px 8px;text-align:center;">$' + (r.clearing || 0).toFixed(2) + '</td><td style="padding:3px 8px;text-align:center;">' + fmt(sw.clearing) + '</td><td style="padding:3px 8px;color:#718096;">Remove vegetation, trees, fencing, surface debris</td></tr>';
+    html += '<tr style="background:#f7fafc;"><td style="padding:3px 8px;">Rough Grading</td><td style="padding:3px 8px;text-align:center;">$' + (r.grading || 0).toFixed(2) + '</td><td style="padding:3px 8px;text-align:center;">' + fmt(sw.grading) + '</td><td style="padding:3px 8px;color:#718096;">Cut/fill to design elevations, soil export if needed, retaining walls on slopes</td></tr>';
+    html += '<tr><td style="padding:3px 8px;">Soil Prep &amp; Compaction</td><td style="padding:3px 8px;text-align:center;">$' + (r.soilPrep || 0).toFixed(2) + '</td><td style="padding:3px 8px;text-align:center;">' + fmt(sw.soilPrep) + '</td><td style="padding:3px 8px;color:#718096;">Scarify, moisture condition, compact subgrade per geotech specs</td></tr>';
+    html += '<tr style="background:#f7fafc;"><td style="padding:3px 8px;">Utility Rough-In</td><td style="padding:3px 8px;text-align:center;">$' + (r.utilities || 0).toFixed(2) + '</td><td style="padding:3px 8px;text-align:center;">' + fmt(sw.utilities) + '</td><td style="padding:3px 8px;color:#718096;">Trench &amp; stub water, sewer, storm drain, electric, gas to building pad</td></tr>';
+    html += '<tr><td style="padding:3px 8px;">Erosion Control / SWPPP</td><td style="padding:3px 8px;text-align:center;">$' + (r.erosion || 0).toFixed(2) + '</td><td style="padding:3px 8px;text-align:center;">' + fmt(sw.erosion) + '</td><td style="padding:3px 8px;color:#718096;">Silt fence, fiber rolls, BMPs, SWPPP compliance during grading</td></tr>';
+    html += '<tr style="font-weight:600;border-top:2px solid #cbd5e0;"><td style="padding:4px 8px;">Total Site Work</td><td style="padding:4px 8px;text-align:center;">$' + ((r.clearing + r.grading + r.soilPrep + r.utilities + r.erosion) || 0).toFixed(2) + '</td><td style="padding:4px 8px;text-align:center;">' + fmt(sw.total) + '</td><td></td></tr>';
+    html += '</tbody></table>';
+
+    // Assumption narrative
+    html += '<div style="background:#fffaf0;border:1px solid #fbd38d;border-radius:6px;padding:0.4rem 0.6rem;font-size:0.7rem;">';
+    html += '<strong style="color:#c05621;">Assumptions:</strong> ' + (sw.assumptions || 'Standard urban infill conditions.');
+    html += '<br><span style="color:#718096;">Rates are per SF of lot area. Override these in the editable assumptions panel above (Site Work $/SF) to set a custom total, or use Deep Analysis Tab 25 for phase-level editing.</span>';
+    html += '</div></div>';
+    return html;
+}
+
 function renderReturnsSection(computed) {
     const spread = ((computed.yieldOnCost - computed.capRate) * 100).toFixed(0);
     const spreadLabel = spread >= 0 ? `+${spread} bps` : `${spread} bps`;
@@ -5262,6 +5437,15 @@ function recalcAnalysis() {
         capRatePct: parseFloat(document.getElementById('a-capRatePct').value) || st.assumptions.capRatePct,
         parkingCostPerSpace: parseFloat(document.getElementById('a-parkingCostPerSpace').value) || 0,
     };
+    // Site work override: if user entered a $/SF value, compute total override
+    var siteWorkEl = document.getElementById('a-siteWorkPSF');
+    if (siteWorkEl && siteWorkEl.value !== '' && parseFloat(siteWorkEl.value) > 0) {
+        assumptions.siteWorkOverride = Math.round(parseFloat(siteWorkEl.value) * (st.inp.parcelSize || 10000));
+        assumptions.siteWorkPSF = parseFloat(siteWorkEl.value);
+    } else {
+        assumptions.siteWorkOverride = null;
+        assumptions.siteWorkPSF = null;
+    }
 
     st.assumptions = assumptions;
     const computed = computeFromAssumptions(st.useId, st.inp, assumptions, st.effects);
@@ -5347,6 +5531,11 @@ function renderDeepAssumptions(assumptions, hasUnits, useId, computed) {
                 <label>Parking $/Space</label>
                 <input type="number" class="assumption-input" id="da-parkingCostPerSpace" step="1000" min="0" value="${assumptions.parkingCostPerSpace}" oninput="recalcDeepAnalysis()">
             </div>
+            <div class="assumption-field">
+                <label>Site Work $/SF <span style="font-size:0.6rem;color:#a0aec0;">(of lot)</span></label>
+                <input type="number" class="assumption-input" id="da-siteWorkPSF" step="1" min="0" max="100" value="${assumptions.siteWorkPSF || ''}" oninput="recalcDeepAnalysis()" placeholder="auto">
+                <span style="font-size:0.6rem;color:#a0aec0;">blank = auto-calc</span>
+            </div>
             ${noiDisplay}
         </div>
     </div>`;
@@ -5383,6 +5572,15 @@ function recalcDeepAnalysis() {
         capRatePct: parseFloat(document.getElementById('da-capRatePct').value) || st.assumptions.capRatePct,
         parkingCostPerSpace: parseFloat(document.getElementById('da-parkingCostPerSpace').value) || 0,
     };
+    // Site work override for deep analysis
+    var daSiteWorkEl = document.getElementById('da-siteWorkPSF');
+    if (daSiteWorkEl && daSiteWorkEl.value !== '' && parseFloat(daSiteWorkEl.value) > 0) {
+        assumptions.siteWorkOverride = Math.round(parseFloat(daSiteWorkEl.value) * (st.inp.parcelSize || 10000));
+        assumptions.siteWorkPSF = parseFloat(daSiteWorkEl.value);
+    } else {
+        assumptions.siteWorkOverride = null;
+        assumptions.siteWorkPSF = null;
+    }
 
     st.assumptions = assumptions;
     st.computed = computeFromAssumptions(st.bestUse, st.inp, assumptions, st.effects);
