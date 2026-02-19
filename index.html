@@ -2130,6 +2130,7 @@
         <input type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter')checkAuth();">
         <button type="button" class="auth-btn" onclick="checkAuth()">Enter</button>
         <div class="auth-error" id="authError"></div>
+        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v3.1</div>
     </div>
 </div>
 
@@ -2137,7 +2138,7 @@
     <h1>Highest &amp; Best Use Calculator</h1>
     <p>Land Use Analysis for Los Angeles, CA</p>
     <span class="badge">HBU Analysis Tool</span>
-    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v3.0</span>
+    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v3.1</span>
 </header>
 
 <div class="tab-bar">
@@ -5438,10 +5439,10 @@ function drawSB79Radii(station) {
     var tierColor = station.tier === 1 ? '#805ad5' : '#3182ce';
 
     // ALL circles are purely visual — no click handling, no interactive flag
-    // 1/2 mile = ~805m (outer) — bold dark boundary
+    // 1/2 mile = ~805m (outer) — bold dark boundary, highly visible
     L.circle([station.lat, station.lon], {
-        radius: 805, color: '#2d3748', weight: 4, opacity: 1.0,
-        fillColor: '#2d3748', fillOpacity: 0.18,
+        radius: 805, color: '#1a202c', weight: 5, opacity: 1.0,
+        fillColor: '#1a202c', fillOpacity: 0.22,
         interactive: false,
     }).addTo(sb79Layers.zones);
 
