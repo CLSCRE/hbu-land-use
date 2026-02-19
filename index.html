@@ -2117,6 +2117,34 @@
         }
 
         @media print { .finder-section { display: none !important; } }
+        @media print { #tabPipeline { display: none !important; } }
+
+        /* Pipeline Tab Styles */
+        .pipeline-badge {
+            display: inline-block; padding: 0.15rem 0.55rem; border-radius: 10px;
+            font-size: 0.72rem; font-weight: 700; color: #fff; white-space: nowrap;
+        }
+        .pipeline-badge.submitted { background: #d69e2e; }
+        .pipeline-badge.plan_check { background: #dd6b20; }
+        .pipeline-badge.issued { background: #3182ce; }
+        .pipeline-badge.inspection { background: #38a169; }
+        .pipeline-badge.finaled { background: #718096; }
+        .pipeline-badge.coo { background: #276749; }
+        .pipeline-val-high { color: #c53030; font-weight: 700; }
+        .pipeline-val-mid { color: #dd6b20; font-weight: 600; }
+        .pipeline-overlay-btn {
+            position: absolute; top: 10px; right: 10px; z-index: 1000;
+            padding: 0.4rem 0.85rem; font-size: 0.78rem; font-weight: 600;
+            background: #fff; border: 1.5px solid var(--primary-light); border-radius: 8px;
+            color: var(--primary); cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+        }
+        .pipeline-overlay-btn:hover { background: #ebf8ff; }
+        .pipeline-overlay-btn.active { background: var(--primary); color: #fff; }
+        .pipeline-legend {
+            display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 0.75rem 0; font-size: 0.78rem;
+        }
+        .pipeline-legend-item { display: flex; align-items: center; gap: 0.3rem; }
+        .pipeline-legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -2142,8 +2170,9 @@
 </header>
 
 <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('calculator')">HBU Calculator</button>
-    <button class="tab-btn" onclick="switchTab('finder')">SB 79 Opportunity Finder</button>
+    <button class="tab-btn active" data-tab="calculator" onclick="switchTab('calculator')">HBU Calculator</button>
+    <button class="tab-btn" data-tab="finder" onclick="switchTab('finder')">SB 79 Opportunity Finder</button>
+    <button class="tab-btn" data-tab="pipeline" onclick="switchTab('pipeline')">Development Pipeline</button>
 </div>
 
 <div id="tabCalculator" class="tab-content active">
@@ -2478,6 +2507,111 @@
     </div>
 </div>
 </div><!-- /tabFinder -->
+
+<div id="tabPipeline" class="tab-content">
+<div class="container">
+    <div class="intro-box" style="border-left-color:#3182ce;">
+        <h3>Development Pipeline</h3>
+        <p>Search <strong>active LA City building permits</strong> near any address. Results are color-coded by pipeline stage — from initial submission through Certificate of Occupancy. Use this to evaluate the competitive development landscape around any site. Data sourced from LA City Open Data (updated daily).</p>
+    </div>
+
+    <div id="pipelineMapContainer" style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
+        <div style="text-align:center;margin-bottom:1rem;">
+            <h2 style="font-size:1.3rem;color:var(--primary);margin-bottom:0.25rem;">Permit Activity Map</h2>
+            <p style="font-size:0.88rem;color:var(--text-light);" id="pipelineMapStatus">Enter an address or click the map to set a search center</p>
+        </div>
+        <div id="pipelineMap" style="width:100%;height:500px;border-radius:10px;border:1.5px solid var(--border);z-index:1;"></div>
+        <div class="pipeline-legend" id="pipelineLegend"></div>
+    </div>
+
+    <div style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
+        <h2 style="font-size:1.1rem;color:var(--primary);border-bottom:2px solid var(--border);padding-bottom:0.5rem;margin-bottom:1.25rem;">Search Filters</h2>
+        <div class="finder-controls">
+            <div class="finder-field" style="grid-column: span 2;">
+                <label>Address</label>
+                <div style="display:flex;gap:0.5rem;">
+                    <input type="text" id="pipelineAddress" placeholder="e.g. 6801 Hollywood Blvd, Los Angeles, CA" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();geocodePipelineAddress();}">
+                    <button type="button" class="btn-lookup" onclick="geocodePipelineAddress()" style="white-space:nowrap;">Locate</button>
+                </div>
+            </div>
+            <div class="finder-field">
+                <label>Search Radius</label>
+                <div class="finder-radios">
+                    <label><input type="radio" name="pipelineRadius" value="0.25"> 1/4 mi</label>
+                    <label><input type="radio" name="pipelineRadius" value="0.5" checked> 1/2 mi</label>
+                    <label><input type="radio" name="pipelineRadius" value="1"> 1 mi</label>
+                </div>
+            </div>
+            <div class="finder-field">
+                <label>Permit Type</label>
+                <div class="finder-checks">
+                    <label><input type="checkbox" class="pipelinePermitType" value="bldg" checked> Building</label>
+                    <label><input type="checkbox" class="pipelinePermitType" value="grading"> Grading</label>
+                    <label><input type="checkbox" class="pipelinePermitType" value="elec"> Electrical</label>
+                    <label><input type="checkbox" class="pipelinePermitType" value="plumb"> Plumbing</label>
+                    <label><input type="checkbox" class="pipelinePermitType" value="mech"> Mechanical</label>
+                </div>
+            </div>
+            <div class="finder-field">
+                <label>Pipeline Stage</label>
+                <div class="finder-checks">
+                    <label><input type="checkbox" class="pipelineStage" value="submitted" checked> Submitted</label>
+                    <label><input type="checkbox" class="pipelineStage" value="plan_check" checked> Plan Check</label>
+                    <label><input type="checkbox" class="pipelineStage" value="issued" checked> Issued</label>
+                    <label><input type="checkbox" class="pipelineStage" value="inspection" checked> Under Inspection</label>
+                    <label><input type="checkbox" class="pipelineStage" value="finaled" checked> Finaled</label>
+                    <label><input type="checkbox" class="pipelineStage" value="coo" checked> Cert of Occ</label>
+                </div>
+            </div>
+            <div class="finder-field">
+                <label>Min Valuation ($)</label>
+                <input type="number" id="pipelineMinVal" placeholder="e.g. 500000" min="0" step="10000">
+            </div>
+            <div class="finder-field">
+                <label>Date From</label>
+                <input type="date" id="pipelineDateFrom">
+            </div>
+            <div class="finder-field">
+                <label>Date To</label>
+                <input type="date" id="pipelineDateTo">
+            </div>
+        </div>
+        <div style="display:flex;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;">
+            <button type="button" class="btn-lookup" onclick="runPipelineSearch()" style="padding:0.6rem 1.5rem;">Search Permits</button>
+            <button type="button" class="btn-lookup" onclick="clearPipelineSearch()" style="padding:0.6rem 1.5rem;background:#fff;color:var(--primary);border:1.5px solid var(--primary-light);">Clear</button>
+            <button type="button" class="btn-lookup" onclick="exportPipelineCSV()" id="pipelineExportBtn" style="padding:0.6rem 1.5rem;background:#f0fff4;color:#276749;border:1.5px solid #9ae6b4;display:none;">Export CSV</button>
+        </div>
+        <div class="finder-progress" id="pipelineProgress">
+            <div class="finder-progress-bar"><div class="finder-progress-fill" id="pipelineProgressFill"></div></div>
+            <div class="finder-progress-text" id="pipelineProgressText">Searching permits...</div>
+        </div>
+    </div>
+
+    <div id="pipelineResultsArea" style="display:none;">
+        <div style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+                <h2 style="font-size:1.1rem;color:var(--primary);margin:0;" id="pipelineResultsTitle">Results</h2>
+                <span style="font-size:0.82rem;color:var(--text-light);" id="pipelineResultsSummary"></span>
+            </div>
+            <div class="finder-table-wrapper">
+                <table class="finder-table" id="pipelineTable">
+                    <thead><tr>
+                        <th data-col="address" onclick="setPipelineSort('address')">Address</th>
+                        <th data-col="permit_nbr" onclick="setPipelineSort('permit_nbr')">Permit #</th>
+                        <th data-col="permit_type" onclick="setPipelineSort('permit_type')">Type</th>
+                        <th data-col="stage" onclick="setPipelineSort('stage')">Stage</th>
+                        <th data-col="valuation" onclick="setPipelineSort('valuation')">Valuation</th>
+                        <th data-col="date" onclick="setPipelineSort('date')">Date</th>
+                        <th data-col="zone" onclick="setPipelineSort('zone')">Zone</th>
+                        <th style="cursor:default;">Details</th>
+                    </tr></thead>
+                    <tbody id="pipelineTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div><!-- /tabPipeline -->
 
 <!-- Analysis Detail Modal -->
 <div class="modal-overlay" id="analysisModal" style="display:none;" onclick="if(event.target===this)closeAnalysis();">
@@ -6029,17 +6163,574 @@ let finderSelectedSet = new Set();
 function switchTab(tab) {
     activeTab = tab;
     document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.textContent.toLowerCase().includes(
-            tab === 'calculator' ? 'hbu' : 'opportunity'
-        ));
+        btn.classList.toggle('active', btn.dataset.tab === tab);
     });
     document.getElementById('tabCalculator').classList.toggle('active', tab === 'calculator');
     document.getElementById('tabFinder').classList.toggle('active', tab === 'finder');
+    document.getElementById('tabPipeline').classList.toggle('active', tab === 'pipeline');
 
     if (tab === 'finder' && !finderMapInitialized) {
         setTimeout(() => initFinderMap(), 100);
     } else if (tab === 'finder' && finderMapInstance) {
         setTimeout(() => finderMapInstance.invalidateSize(), 100);
+    }
+    if (tab === 'pipeline' && !pipelineMapInitialized) {
+        setTimeout(() => initPipelineMap(), 100);
+    } else if (tab === 'pipeline' && pipelineMapInstance) {
+        setTimeout(() => pipelineMapInstance.invalidateSize(), 100);
+    }
+}
+
+/* ========================================================
+   DEVELOPMENT PIPELINE — State, constants, functions
+   ======================================================== */
+
+const PIPELINE_STAGE_MAP = {
+    'submitted': 'submitted',
+    'permit submitted': 'submitted',
+    'application submitted': 'submitted',
+    'plan check': 'plan_check',
+    'plan check submitted': 'plan_check',
+    'pcis job in plan check': 'plan_check',
+    'plan check correction(s) made': 'plan_check',
+    'issued': 'issued',
+    'permit issued': 'issued',
+    'under inspection': 'inspection',
+    'inspections started': 'inspection',
+    'finaled': 'finaled',
+    'permit finaled': 'finaled',
+    'coo issued': 'coo',
+    'certificate of occupancy': 'coo',
+    'co issued': 'coo',
+    'temporary certificate of occupancy': 'coo',
+};
+
+const PIPELINE_STAGE_LABELS = {
+    submitted: 'Submitted', plan_check: 'Plan Check', issued: 'Issued',
+    inspection: 'Under Inspection', finaled: 'Finaled', coo: 'Cert of Occ',
+};
+
+const PIPELINE_COLORS = {
+    submitted: '#d69e2e', plan_check: '#dd6b20', issued: '#3182ce',
+    inspection: '#38a169', finaled: '#718096', coo: '#276749',
+};
+
+const PIPELINE_PERMIT_TYPE_MAP = {
+    bldg: 'bldg', grading: 'grading', elec: 'elec', plumb: 'plumb', mech: 'mech',
+};
+
+let pipelineMapInstance = null;
+let pipelineMapInitialized = false;
+let pipelineMarkerLayer = null;
+let pipelineSearchCenter = null; // {lat, lon, label}
+let pipelineResults = [];
+let pipelineSortCol = 'valuation';
+let pipelineSortAsc = false;
+let pipelineOverlayActive = false;
+let pipelineOverlayLayer = null;
+let pipelineCache = new Map(); // key → {ts, data}
+
+function initPipelineMap() {
+    const mapEl = document.getElementById('pipelineMap');
+    if (!mapEl) return;
+    if (pipelineMapInstance) { pipelineMapInstance.remove(); pipelineMapInstance = null; }
+
+    pipelineMapInstance = L.map('pipelineMap').setView([34.05, -118.25], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors', maxZoom: 18,
+    }).addTo(pipelineMapInstance);
+
+    pipelineMarkerLayer = L.layerGroup().addTo(pipelineMapInstance);
+
+    pipelineMapInstance.on('click', function(e) {
+        setPipelineSearchCenter(e.latlng.lat, e.latlng.lng, `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`);
+    });
+
+    renderPipelineMapLegend();
+
+    // Set default date-from to 2 years ago
+    const twoYearsAgo = new Date();
+    twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+    const dateFromEl = document.getElementById('pipelineDateFrom');
+    if (dateFromEl && !dateFromEl.value) {
+        dateFromEl.value = twoYearsAgo.toISOString().split('T')[0];
+    }
+
+    pipelineMapInitialized = true;
+    setTimeout(() => { if (pipelineMapInstance) pipelineMapInstance.invalidateSize(); }, 200);
+}
+
+function renderPipelineMapLegend() {
+    const el = document.getElementById('pipelineLegend');
+    if (!el) return;
+    el.innerHTML = Object.entries(PIPELINE_COLORS).map(([key, color]) =>
+        `<div class="pipeline-legend-item"><span class="pipeline-legend-dot" style="background:${color};"></span>${PIPELINE_STAGE_LABELS[key]}</div>`
+    ).join('');
+}
+
+function setPipelineSearchCenter(lat, lon, label) {
+    pipelineSearchCenter = { lat, lon, label };
+    // Remove old center marker
+    if (pipelineMapInstance._centerMarker) {
+        pipelineMapInstance.removeLayer(pipelineMapInstance._centerMarker);
+    }
+    const icon = L.divIcon({
+        html: '<div style="width:16px;height:16px;border-radius:50%;background:#e53e3e;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);"></div>',
+        iconSize: [16, 16], iconAnchor: [8, 8], className: '',
+    });
+    pipelineMapInstance._centerMarker = L.marker([lat, lon], { icon }).addTo(pipelineMapInstance);
+    pipelineMapInstance.setView([lat, lon], 14);
+    document.getElementById('pipelineMapStatus').textContent = `Search center: ${label}`;
+}
+
+async function geocodePipelineAddress() {
+    const input = document.getElementById('pipelineAddress');
+    const addr = input.value.trim();
+    if (!addr) { alert('Please enter an address.'); return; }
+    try {
+        input.disabled = true;
+        const result = await geocodeAddress(addr);
+        setPipelineSearchCenter(result.lat, result.lon, addr);
+    } catch (e) {
+        alert('Geocoding failed: ' + e.message);
+    } finally {
+        input.disabled = false;
+    }
+}
+
+/* --- API Query Functions --- */
+
+function normalizePipelineRecord(raw, source) {
+    let lat, lon;
+    if (source === 'issued') {
+        // pi9x-tg5x has geolocation field
+        if (raw.geolocation) {
+            lat = parseFloat(raw.geolocation.latitude || raw.geolocation.coordinates?.[1]);
+            lon = parseFloat(raw.geolocation.longitude || raw.geolocation.coordinates?.[0]);
+        }
+        if (!lat && raw.latitude) lat = parseFloat(raw.latitude);
+        if (!lon && raw.longitude) lon = parseFloat(raw.longitude);
+    } else {
+        lat = parseFloat(raw.latitude_y_coordinate || raw.latitude);
+        lon = parseFloat(raw.longitude_x_coordinate || raw.longitude);
+    }
+
+    const statusRaw = (raw.status_desc || raw.status || raw.permit_status || '').toLowerCase().trim();
+    const stage = PIPELINE_STAGE_MAP[statusRaw] || guessStage(statusRaw);
+
+    const permitType = (raw.permit_type || raw.type || raw.permit_type_desc || '').toLowerCase();
+    let typeKey = 'bldg';
+    if (/grad/i.test(permitType)) typeKey = 'grading';
+    else if (/elec/i.test(permitType)) typeKey = 'elec';
+    else if (/plumb/i.test(permitType)) typeKey = 'plumb';
+    else if (/mech/i.test(permitType)) typeKey = 'mech';
+
+    return {
+        permit_nbr: raw.permit_nbr || raw.pcis_permit || raw.permit_number || '',
+        address: raw.address || raw.address_street || raw.project_address || '',
+        permit_type: typeKey,
+        permit_type_label: (raw.permit_type || raw.type || raw.permit_type_desc || 'Building').replace(/^\w/, c => c.toUpperCase()),
+        stage: stage,
+        status_raw: raw.status_desc || raw.status || raw.permit_status || '',
+        valuation: parseFloat(raw.valuation || raw.project_valuation || 0) || 0,
+        date: raw.issue_date || raw.submitted_date || raw.status_date || raw.filed_date || '',
+        zone: raw.zone || raw.existing_zoning || '',
+        description: raw.work_description || raw.project_description || raw.description || '',
+        lat: lat,
+        lon: lon,
+        source: source,
+    };
+}
+
+function guessStage(s) {
+    if (/submit|appli/i.test(s)) return 'submitted';
+    if (/plan.*check|pcis/i.test(s)) return 'plan_check';
+    if (/issue/i.test(s)) return 'issued';
+    if (/inspect/i.test(s)) return 'inspection';
+    if (/final/i.test(s)) return 'finaled';
+    if (/co |certificate|occupan/i.test(s)) return 'coo';
+    return 'submitted';
+}
+
+function buildBoundingBox(lat, lon, radiusMiles) {
+    const latDeg = radiusMiles / 69.0;
+    const lonDeg = radiusMiles / (69.0 * Math.cos(lat * Math.PI / 180));
+    return {
+        minLat: lat - latDeg, maxLat: lat + latDeg,
+        minLon: lon - lonDeg, maxLon: lon + lonDeg,
+    };
+}
+
+async function queryPipelineIssuedPermits(lat, lon, radiusMiles, onProgress) {
+    // pi9x-tg5x — has geolocation for within_circle()
+    const radiusMeters = radiusMiles * 1609.34;
+    const baseUrl = 'https://data.lacity.org/resource/pi9x-tg5x.json';
+    const limit = 1000;
+    let offset = 0;
+    let allRecords = [];
+    const cap = 5000;
+
+    while (offset < cap) {
+        const where = `within_circle(geolocation, ${lat}, ${lon}, ${radiusMeters})`;
+        const url = `${baseUrl}?$where=${encodeURIComponent(where)}&$limit=${limit}&$offset=${offset}&$order=issue_date DESC`;
+        const resp = await fetch(url);
+        if (!resp.ok) break;
+        const data = await resp.json();
+        if (!data || data.length === 0) break;
+        allRecords = allRecords.concat(data.map(r => normalizePipelineRecord(r, 'issued')));
+        if (onProgress) onProgress(`Fetched ${allRecords.length} issued permits...`, Math.min(allRecords.length / cap * 50, 45));
+        if (data.length < limit) break;
+        offset += limit;
+    }
+    return allRecords;
+}
+
+async function queryPipelinePreIssuancePermits(lat, lon, radiusMiles, onProgress) {
+    // gwh9-jnip — no geolocation, use bounding box + haversine cull
+    const bb = buildBoundingBox(lat, lon, radiusMiles);
+    const baseUrl = 'https://data.lacity.org/resource/gwh9-jnip.json';
+    const limit = 1000;
+    let offset = 0;
+    let allRecords = [];
+    const cap = 3000;
+
+    while (offset < cap) {
+        const where = `latitude_y_coordinate >= ${bb.minLat} AND latitude_y_coordinate <= ${bb.maxLat} AND longitude_x_coordinate >= ${bb.minLon} AND longitude_x_coordinate <= ${bb.maxLon}`;
+        const url = `${baseUrl}?$where=${encodeURIComponent(where)}&$limit=${limit}&$offset=${offset}&$order=submitted_date DESC`;
+        const resp = await fetch(url);
+        if (!resp.ok) break;
+        const data = await resp.json();
+        if (!data || data.length === 0) break;
+        const normalized = data.map(r => normalizePipelineRecord(r, 'pre_issuance'));
+        // Client-side haversine filter
+        const filtered = normalized.filter(r => r.lat && r.lon && haversine(lat, lon, r.lat, r.lon) <= radiusMiles);
+        allRecords = allRecords.concat(filtered);
+        if (onProgress) onProgress(`Fetched ${allRecords.length} pre-issuance permits...`, 50 + Math.min(allRecords.length / cap * 45, 45));
+        if (data.length < limit) break;
+        offset += limit;
+    }
+    return allRecords;
+}
+
+async function fetchAllPipelinePermits(lat, lon, radiusMiles, onProgress) {
+    // Check cache
+    const cacheKey = `${lat.toFixed(4)}_${lon.toFixed(4)}_${radiusMiles}`;
+    const cached = pipelineCache.get(cacheKey);
+    if (cached && (Date.now() - cached.ts < 5 * 60 * 1000)) {
+        if (onProgress) onProgress('Using cached results', 100);
+        return cached.data;
+    }
+
+    const [issued, preIssue] = await Promise.all([
+        queryPipelineIssuedPermits(lat, lon, radiusMiles, onProgress),
+        queryPipelinePreIssuancePermits(lat, lon, radiusMiles, onProgress),
+    ]);
+
+    // Deduplicate by permit_nbr
+    const seen = new Set();
+    const combined = [];
+    for (const r of [...issued, ...preIssue]) {
+        const key = r.permit_nbr || `${r.lat}_${r.lon}_${r.address}`;
+        if (!seen.has(key)) { seen.add(key); combined.push(r); }
+    }
+
+    pipelineCache.set(cacheKey, { ts: Date.now(), data: combined });
+    return combined;
+}
+
+/* --- Search, Filter, Sort, Render --- */
+
+async function runPipelineSearch() {
+    if (!pipelineSearchCenter) {
+        alert('Please set a search center first — enter an address or click on the map.');
+        return;
+    }
+
+    const radiusEl = document.querySelector('input[name="pipelineRadius"]:checked');
+    const radius = radiusEl ? parseFloat(radiusEl.value) : 0.5;
+
+    const progressEl = document.getElementById('pipelineProgress');
+    const fillEl = document.getElementById('pipelineProgressFill');
+    const textEl = document.getElementById('pipelineProgressText');
+    progressEl.classList.add('active');
+    fillEl.style.width = '5%';
+    textEl.textContent = 'Starting permit search...';
+
+    try {
+        const allRecords = await fetchAllPipelinePermits(
+            pipelineSearchCenter.lat, pipelineSearchCenter.lon, radius,
+            (msg, pct) => { textEl.textContent = msg; fillEl.style.width = pct + '%'; }
+        );
+
+        fillEl.style.width = '95%';
+        textEl.textContent = `Processing ${allRecords.length} records...`;
+
+        // Apply filters
+        let filtered = applyPipelineFilters(allRecords);
+
+        // Apply date filters
+        const dateFrom = document.getElementById('pipelineDateFrom').value;
+        const dateTo = document.getElementById('pipelineDateTo').value;
+        if (dateFrom) filtered = filtered.filter(r => r.date >= dateFrom);
+        if (dateTo) filtered = filtered.filter(r => r.date <= dateTo + 'T23:59:59');
+
+        pipelineResults = filtered;
+        sortPipelineResults(pipelineResults);
+        renderPipelineResults();
+        renderPipelineMarkers();
+
+        fillEl.style.width = '100%';
+        textEl.textContent = `Found ${filtered.length} permits (from ${allRecords.length} total in radius)`;
+        setTimeout(() => progressEl.classList.remove('active'), 2000);
+    } catch (e) {
+        fillEl.style.width = '0%';
+        textEl.textContent = 'Error: ' + e.message;
+        console.error('Pipeline search error:', e);
+    }
+}
+
+function applyPipelineFilters(records) {
+    // Stage filter
+    const checkedStages = new Set();
+    document.querySelectorAll('.pipelineStage:checked').forEach(cb => checkedStages.add(cb.value));
+    // Permit type filter
+    const checkedTypes = new Set();
+    document.querySelectorAll('.pipelinePermitType:checked').forEach(cb => checkedTypes.add(cb.value));
+    // Min valuation
+    const minVal = parseFloat(document.getElementById('pipelineMinVal').value) || 0;
+
+    return records.filter(r => {
+        if (checkedStages.size > 0 && !checkedStages.has(r.stage)) return false;
+        if (checkedTypes.size > 0 && !checkedTypes.has(r.permit_type)) return false;
+        if (r.valuation < minVal) return false;
+        return true;
+    });
+}
+
+function sortPipelineResults(records) {
+    records.sort((a, b) => {
+        let va = a[pipelineSortCol], vb = b[pipelineSortCol];
+        if (pipelineSortCol === 'valuation') { va = va || 0; vb = vb || 0; }
+        if (typeof va === 'string') va = va.toLowerCase();
+        if (typeof vb === 'string') vb = vb.toLowerCase();
+        if (va < vb) return pipelineSortAsc ? -1 : 1;
+        if (va > vb) return pipelineSortAsc ? 1 : -1;
+        return 0;
+    });
+}
+
+function setPipelineSort(col) {
+    if (pipelineSortCol === col) { pipelineSortAsc = !pipelineSortAsc; }
+    else { pipelineSortCol = col; pipelineSortAsc = col === 'address'; }
+    sortPipelineResults(pipelineResults);
+    renderPipelineResults();
+    // Update header indicators
+    document.querySelectorAll('#pipelineTable th').forEach(th => {
+        th.classList.remove('sort-asc', 'sort-desc');
+        if (th.dataset.col === col) th.classList.add(pipelineSortAsc ? 'sort-asc' : 'sort-desc');
+    });
+}
+
+function renderPipelineResults() {
+    const area = document.getElementById('pipelineResultsArea');
+    const tbody = document.getElementById('pipelineTableBody');
+    const title = document.getElementById('pipelineResultsTitle');
+    const summary = document.getElementById('pipelineResultsSummary');
+    const exportBtn = document.getElementById('pipelineExportBtn');
+
+    if (!pipelineResults.length) {
+        area.style.display = 'none';
+        exportBtn.style.display = 'none';
+        return;
+    }
+
+    area.style.display = 'block';
+    exportBtn.style.display = 'inline-block';
+    title.textContent = `Permit Results`;
+    const totalVal = pipelineResults.reduce((s, r) => s + (r.valuation || 0), 0);
+    summary.textContent = `${pipelineResults.length} permits · $${totalVal.toLocaleString()} total valuation`;
+
+    tbody.innerHTML = pipelineResults.map((r, i) => {
+        const valClass = r.valuation >= 5000000 ? 'pipeline-val-high' : r.valuation >= 500000 ? 'pipeline-val-mid' : '';
+        const valStr = r.valuation ? '$' + r.valuation.toLocaleString() : '—';
+        const dateStr = r.date ? r.date.substring(0, 10) : '—';
+        const stageLabel = PIPELINE_STAGE_LABELS[r.stage] || r.status_raw || r.stage;
+        return `<tr onclick="highlightPipelineMarker(${i})" style="cursor:pointer;">
+            <td>${r.address || '—'}</td>
+            <td style="font-family:monospace;font-size:0.78rem;">${r.permit_nbr || '—'}</td>
+            <td>${r.permit_type_label}</td>
+            <td><span class="pipeline-badge ${r.stage}">${stageLabel}</span></td>
+            <td class="${valClass}">${valStr}</td>
+            <td>${dateStr}</td>
+            <td>${r.zone || '—'}</td>
+            <td style="max-width:200px;font-size:0.75rem;color:var(--text-light);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(r.description || '').replace(/"/g, '&quot;')}">${r.description || '—'}</td>
+        </tr>`;
+    }).join('');
+}
+
+function renderPipelineMarkers() {
+    if (!pipelineMarkerLayer) return;
+    pipelineMarkerLayer.clearLayers();
+
+    const cap = 500;
+    const toShow = pipelineResults.slice(0, cap);
+    toShow.forEach((r, i) => {
+        if (!r.lat || !r.lon) return;
+        const color = PIPELINE_COLORS[r.stage] || '#718096';
+        const marker = L.circleMarker([r.lat, r.lon], {
+            radius: 6, fillColor: color, fillOpacity: 0.8,
+            color: '#fff', weight: 1.5,
+        });
+        const valStr = r.valuation ? '$' + r.valuation.toLocaleString() : 'N/A';
+        const stageLabel = PIPELINE_STAGE_LABELS[r.stage] || r.stage;
+        marker.bindPopup(`<div style="font-size:0.82rem;line-height:1.4;">
+            <strong>${r.address || 'Unknown'}</strong><br>
+            Permit: ${r.permit_nbr}<br>
+            Stage: <span class="pipeline-badge ${r.stage}" style="font-size:0.7rem;">${stageLabel}</span><br>
+            Valuation: ${valStr}<br>
+            ${r.description ? '<em>' + r.description.substring(0, 120) + '</em>' : ''}
+        </div>`, { maxWidth: 280 });
+        marker.on('click', () => highlightPipelineRow(i));
+        marker.addTo(pipelineMarkerLayer);
+    });
+
+    if (pipelineResults.length > cap) {
+        document.getElementById('pipelineResultsSummary').textContent += ` (showing ${cap} of ${pipelineResults.length} on map)`;
+    }
+}
+
+function highlightPipelineMarker(idx) {
+    const r = pipelineResults[idx];
+    if (!r) return;
+    // Highlight table row
+    document.querySelectorAll('#pipelineTable tr.highlighted').forEach(tr => tr.classList.remove('highlighted'));
+    const rows = document.querySelectorAll('#pipelineTableBody tr');
+    if (rows[idx]) {
+        rows[idx].classList.add('highlighted');
+        rows[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    // Pan map
+    if (r.lat && r.lon && pipelineMapInstance) {
+        pipelineMapInstance.setView([r.lat, r.lon], 16);
+    }
+}
+
+function highlightPipelineRow(idx) {
+    document.querySelectorAll('#pipelineTable tr.highlighted').forEach(tr => tr.classList.remove('highlighted'));
+    const rows = document.querySelectorAll('#pipelineTableBody tr');
+    if (rows[idx]) {
+        rows[idx].classList.add('highlighted');
+        rows[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+function clearPipelineSearch() {
+    pipelineResults = [];
+    pipelineSearchCenter = null;
+    if (pipelineMarkerLayer) pipelineMarkerLayer.clearLayers();
+    if (pipelineMapInstance && pipelineMapInstance._centerMarker) {
+        pipelineMapInstance.removeLayer(pipelineMapInstance._centerMarker);
+        pipelineMapInstance._centerMarker = null;
+    }
+    document.getElementById('pipelineResultsArea').style.display = 'none';
+    document.getElementById('pipelineExportBtn').style.display = 'none';
+    document.getElementById('pipelineProgress').classList.remove('active');
+    document.getElementById('pipelineMapStatus').textContent = 'Enter an address or click the map to set a search center';
+    document.getElementById('pipelineAddress').value = '';
+    document.getElementById('pipelineMinVal').value = '';
+    if (pipelineMapInstance) pipelineMapInstance.setView([34.05, -118.25], 12);
+}
+
+function exportPipelineCSV() {
+    if (!pipelineResults.length) return;
+    const headers = ['Address', 'Permit #', 'Type', 'Stage', 'Valuation', 'Date', 'Zone', 'Description', 'Lat', 'Lon'];
+    const rows = pipelineResults.map(r => [
+        r.address, r.permit_nbr, r.permit_type_label,
+        PIPELINE_STAGE_LABELS[r.stage] || r.stage,
+        r.valuation, r.date ? r.date.substring(0, 10) : '',
+        r.zone, (r.description || '').replace(/"/g, '""'),
+        r.lat, r.lon,
+    ]);
+    let csv = headers.join(',') + '\n';
+    rows.forEach(row => {
+        csv += row.map(v => `"${v}"`).join(',') + '\n';
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pipeline_permits_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+/* --- Finder Tab Overlay Integration --- */
+
+function injectPipelineOverlayButton() {
+    const container = document.getElementById('finderMapContainer');
+    if (!container || container.querySelector('.pipeline-overlay-btn')) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pipeline-overlay-btn';
+    btn.textContent = 'Show Permits Nearby';
+    btn.onclick = togglePipelineOverlay;
+    container.style.position = 'relative';
+    container.appendChild(btn);
+}
+
+async function togglePipelineOverlay() {
+    const btn = document.querySelector('.pipeline-overlay-btn');
+    if (!btn) return;
+
+    if (pipelineOverlayActive) {
+        // Remove overlay
+        if (pipelineOverlayLayer && finderMapInstance) {
+            finderMapInstance.removeLayer(pipelineOverlayLayer);
+            pipelineOverlayLayer = null;
+        }
+        pipelineOverlayActive = false;
+        btn.classList.remove('active');
+        btn.textContent = 'Show Permits Nearby';
+        return;
+    }
+
+    // Find selected station
+    const stationSelect = document.getElementById('finderStation2');
+    if (!stationSelect || stationSelect.selectedIndex < 0) {
+        alert('Please select a transit station first.');
+        return;
+    }
+    const idx = parseInt(stationSelect.value);
+    const station = METRO_STATIONS[idx];
+    if (!station) { alert('No station selected.'); return; }
+
+    btn.textContent = 'Loading...';
+    btn.disabled = true;
+
+    try {
+        const permits = await fetchAllPipelinePermits(station.lat, station.lon, 0.5, null);
+        pipelineOverlayLayer = L.layerGroup();
+        const cap = 300;
+        permits.slice(0, cap).forEach(r => {
+            if (!r.lat || !r.lon) return;
+            const color = PIPELINE_COLORS[r.stage] || '#718096';
+            const m = L.circleMarker([r.lat, r.lon], {
+                radius: 4, fillColor: color, fillOpacity: 0.7,
+                color: '#fff', weight: 1,
+            });
+            const stageLabel = PIPELINE_STAGE_LABELS[r.stage] || r.stage;
+            m.bindPopup(`<strong>${r.address || 'Permit'}</strong><br>${r.permit_nbr}<br>${stageLabel}`, { maxWidth: 200 });
+            m.addTo(pipelineOverlayLayer);
+        });
+        pipelineOverlayLayer.addTo(finderMapInstance);
+        pipelineOverlayActive = true;
+        btn.classList.add('active');
+        btn.textContent = `Hide Permits (${Math.min(permits.length, cap)})`;
+    } catch (e) {
+        alert('Failed to load permits: ' + e.message);
+        btn.textContent = 'Show Permits Nearby';
+    } finally {
+        btn.disabled = false;
     }
 }
 
@@ -6098,6 +6789,9 @@ function initFinderMap() {
 
     finderMapInitialized = true;
     setTimeout(() => { if (finderMapInstance) finderMapInstance.invalidateSize(); }, 200);
+
+    // Inject pipeline overlay button
+    injectPipelineOverlayButton();
 }
 
 function drawFinderStationRadii(station) {
