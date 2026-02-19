@@ -2158,7 +2158,7 @@
         <input type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter')checkAuth();">
         <button type="button" class="auth-btn" onclick="checkAuth()">Enter</button>
         <div class="auth-error" id="authError"></div>
-        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v4.0</div>
+        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v4.1</div>
     </div>
 </div>
 
@@ -2166,7 +2166,7 @@
     <h1>Highest &amp; Best Use Calculator</h1>
     <p>Land Use Analysis for Los Angeles, CA</p>
     <span class="badge">HBU Analysis Tool</span>
-    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v4.0</span>
+    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v4.1</span>
 </header>
 
 <div class="tab-bar">
@@ -2488,6 +2488,7 @@
             <span id="savedListCount">0 properties</span>
             <div class="saved-list-actions">
                 <button type="button" class="saved-btn saved-btn-deep" onclick="openDeepAnalysis()">Deep Analysis</button>
+                <button type="button" class="saved-btn" onclick="combineContiguousParcels()" style="background:#805ad5;color:#fff;" id="combineBtn" title="Select 2-4 contiguous parcels to combine">Combine Parcels</button>
                 <button type="button" class="saved-btn saved-btn-export" onclick="exportSavedCSV()">Export to Excel</button>
                 <button type="button" class="saved-btn saved-btn-clear" onclick="clearSavedList()">Clear All</button>
             </div>
@@ -2495,6 +2496,7 @@
         <div class="finder-table-wrapper">
             <table class="finder-table" id="savedListTable">
                 <thead><tr>
+                    <th style="cursor:default;width:30px;"><input type="checkbox" id="savedSelectAll" onclick="toggleSavedSelectAll()" title="Select for combining"></th>
                     <th style="cursor:default;">Address</th>
                     <th style="cursor:default;">APN</th>
                     <th style="cursor:default;">Lot Size</th>
@@ -7732,6 +7734,7 @@ function renderSavedList() {
         const apnClean = (r.apn || '').replace(/[^0-9]/g, '');
         const links = `<span class="prop-links"><a href="https://www.zillow.com/homes/${enc}_rb/" target="_blank" title="Zillow">Z</a> | <a href="https://www.redfin.com/search?q=${enc}" target="_blank" title="Redfin">R</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" title="LA County Assessor">LA</a></span>`;
         return `<tr>
+            <td><input type="checkbox" class="saved-select" data-idx="${i}"></td>
             <td>${r.address}</td>
             <td>${r.apn}</td>
             <td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString() + ' sf' : '-'}</td>
@@ -7753,6 +7756,68 @@ function clearSavedList() {
     if (!confirm('Remove all saved properties?')) return;
     setSavedList([]);
     renderSavedList();
+}
+
+function toggleSavedSelectAll() {
+    var allCB = document.getElementById('savedSelectAll');
+    document.querySelectorAll('.saved-select').forEach(function(cb) { cb.checked = allCB.checked; });
+}
+
+function combineContiguousParcels() {
+    var checks = document.querySelectorAll('.saved-select:checked');
+    if (checks.length < 2 || checks.length > 4) {
+        alert('Select 2-4 contiguous parcels to combine.');
+        return;
+    }
+    var saved = getSavedList();
+    var selected = [];
+    checks.forEach(function(cb) {
+        var idx = parseInt(cb.getAttribute('data-idx'));
+        if (saved[idx]) selected.push(saved[idx]);
+    });
+
+    // Create combined "super parcel"
+    var combinedLotSize = selected.reduce(function(s, p) { return s + (p.lotSizeSqFt || 0); }, 0);
+    var combinedLandVal = selected.reduce(function(s, p) { return s + (p.landVal || 0); }, 0);
+    var combinedImpVal = selected.reduce(function(s, p) { return s + (p.impVal || 0); }, 0);
+    var avgLat = selected.reduce(function(s, p) { return s + (p.lat || 0); }, 0) / selected.length;
+    var avgLon = selected.reduce(function(s, p) { return s + (p.lon || 0); }, 0) / selected.length;
+    var addresses = selected.map(function(p) { return p.address || p.apn; });
+
+    // Use the best allowances from any of the parcels
+    var bestFar = 0, bestHeight = 0, bestDensity = 0;
+    selected.forEach(function(p) {
+        var a = p.allowances || {};
+        if ((a.far || 0) > bestFar) bestFar = a.far;
+        if ((a.height || 0) > bestHeight) bestHeight = a.height;
+        if ((a.density || 0) > bestDensity) bestDensity = a.density;
+    });
+
+    var combinedParcel = {
+        address: 'COMBINED: ' + addresses.join(' + '),
+        apn: selected.map(function(p) { return p.apn; }).join('+'),
+        lotSizeSqFt: combinedLotSize,
+        useType: selected[0].useType || 'Commercial',
+        yearBuilt: 0,
+        landVal: combinedLandVal,
+        impVal: combinedImpVal,
+        impRatio: combinedLandVal > 0 ? combinedImpVal / combinedLandVal : 0,
+        lat: avgLat,
+        lon: avgLon,
+        zone: selected[0].zone || 'inner',
+        allowances: { far: bestFar || 3.0, height: bestHeight || 55, density: bestDensity || 70, parking: '0.5/unit' },
+        isCombined: true,
+        componentParcels: selected,
+    };
+
+    // Add combined parcel to saved list and open deep analysis
+    var newSaved = [combinedParcel].concat(saved);
+    var origSaved = localStorage.getItem('sb79_saved_list');
+    localStorage.setItem('sb79_saved_list', JSON.stringify(newSaved));
+    openDeepAnalysis();
+    // Restore original
+    if (origSaved) localStorage.setItem('sb79_saved_list', origSaved);
+    else localStorage.removeItem('sb79_saved_list');
 }
 
 function exportSavedCSV() {
@@ -12498,6 +12563,75 @@ function renderComparisonDashboard(saved) {
         html += '</div></div>';
     }
     html += '';
+
+    // Portfolio Investment Thesis
+    html += '</div><div class="analysis-section"><h3>Portfolio Investment Thesis</h3>';
+    html += '<p style="font-size:0.78rem;color:#718096;margin-bottom:1rem;">Combined analysis of all ' + analyses.length + ' properties as a single portfolio. Evaluate aggregate returns, diversification benefits, and combined development strategy.</p>';
+
+    // Portfolio summary metrics
+    var portfolioEquity = Math.round(totalCost * 0.35);
+    var portfolioCF = totalNOI - Math.round((totalCost - portfolioEquity) * 0.065);
+    var portfolioCOC = portfolioEquity > 0 ? portfolioCF / portfolioEquity : 0;
+    var portfolioYOC = totalCost > 0 ? totalNOI / totalCost : 0;
+    var weightedMargin = analyses.reduce(function(s, a) { return s + a.computed.devMargin * a.computed.totalDev; }, 0) / Math.max(totalCost, 1);
+    var weightedIRR = analyses.reduce(function(s, a) { return s + a.irr * a.computed.totalDev; }, 0) / Math.max(totalCost, 1);
+    var avgTimeline = Math.round(analyses.reduce(function(s, a) { return s + a.totalMo; }, 0) / analyses.length);
+    var totalGSF = analyses.reduce(function(s, a) { return s + a.computed.gsf; }, 0);
+
+    html += '<div class="exec-summary-grid">';
+    html += '<div class="exec-summary-card"><h4>Total Portfolio Cost</h4><div class="exec-metric-lg">' + formatCompactDollars(totalCost) + '</div><div class="exec-metric-sub">' + analyses.length + ' properties | ' + totalGSF.toLocaleString() + ' total GSF</div></div>';
+    html += '<div class="exec-summary-card"><h4>Portfolio Value</h4><div class="exec-metric-lg" style="color:#276749;">' + formatCompactDollars(totalValue) + '</div><div class="exec-metric-sub">Profit: ' + formatCompactDollars(totalValue - totalCost) + '</div></div>';
+    html += '<div class="exec-summary-card"><h4>Wtd Avg Margin</h4><div class="exec-metric-lg" style="color:' + (weightedMargin >= 0.15 ? '#276749' : '#b7791f') + ';">' + (weightedMargin * 100).toFixed(1) + '%</div><div class="exec-metric-sub">Wtd IRR: ' + (weightedIRR * 100).toFixed(1) + '%</div></div>';
+    html += '<div class="exec-summary-card"><h4>Portfolio Cash Flow</h4><div class="exec-metric-lg">' + formatCompactDollars(portfolioCF) + '/yr</div><div class="exec-metric-sub">' + (portfolioCOC * 100).toFixed(1) + '% cash-on-cash | ' + totalUnits + ' total units</div></div>';
+    html += '</div>';
+
+    // Capital structure
+    html += '<h4 style="font-size:0.85rem;margin:1.25rem 0 0.5rem;">Portfolio Capital Structure</h4>';
+    var portfolioDebt = totalCost - portfolioEquity;
+    html += '<div style="display:flex;gap:1rem;margin-bottom:1rem;font-size:0.78rem;flex-wrap:wrap;">';
+    html += '<div style="background:#ebf8ff;border-radius:6px;padding:0.5rem 1rem;"><strong>Equity Required:</strong> ' + formatCompactDollars(portfolioEquity) + ' (35%)</div>';
+    html += '<div style="background:#fefcbf;border-radius:6px;padding:0.5rem 1rem;"><strong>Total Debt:</strong> ' + formatCompactDollars(portfolioDebt) + ' (65%)</div>';
+    html += '<div style="background:#f0fff4;border-radius:6px;padding:0.5rem 1rem;"><strong>Portfolio NOI:</strong> ' + formatCompactDollars(totalNOI) + '/yr</div>';
+    html += '<div style="background:#fed7d7;border-radius:6px;padding:0.5rem 1rem;"><strong>Debt Service:</strong> ' + formatCompactDollars(Math.round(portfolioDebt * 0.065)) + '/yr</div>';
+    html += '</div>';
+
+    // Diversification analysis
+    html += '<h4 style="font-size:0.85rem;margin:1.25rem 0 0.5rem;">Diversification Analysis</h4>';
+    var useTypes = {};
+    analyses.forEach(function(a) {
+        if (!useTypes[a.useName]) useTypes[a.useName] = { count: 0, cost: 0, value: 0, noi: 0 };
+        useTypes[a.useName].count++;
+        useTypes[a.useName].cost += a.computed.totalDev;
+        useTypes[a.useName].value += a.computed.stabilizedValue;
+        useTypes[a.useName].noi += a.computed.noi;
+    });
+    html += '<div style="overflow-x:auto;"><table class="budget-table" style="font-size:0.75rem;">';
+    html += '<tr><th>Use Type</th><th style="text-align:center;">Properties</th><th style="text-align:right;">Cost</th><th style="text-align:right;">Value</th><th style="text-align:right;">NOI</th><th style="text-align:right;">% of Portfolio</th></tr>';
+    Object.keys(useTypes).forEach(function(name) {
+        var ut = useTypes[name];
+        var pct = totalCost > 0 ? (ut.cost / totalCost * 100).toFixed(0) : 0;
+        html += '<tr><td style="font-weight:600;">' + name + '</td><td style="text-align:center;">' + ut.count + '</td>';
+        html += '<td style="text-align:right;">' + formatCompactDollars(ut.cost) + '</td>';
+        html += '<td style="text-align:right;">' + formatCompactDollars(ut.value) + '</td>';
+        html += '<td style="text-align:right;">' + formatCompactDollars(ut.noi) + '</td>';
+        html += '<td style="text-align:right;">' + pct + '%</td></tr>';
+    });
+    html += '</table></div>';
+
+    // Execution strategy
+    html += '<h4 style="font-size:0.85rem;margin:1.25rem 0 0.5rem;">Phased Execution Strategy</h4>';
+    var sortedByIRR = analyses.slice().sort(function(a, b) { return b.irr - a.irr; });
+    html += '<div style="font-size:0.78rem;color:var(--text);line-height:1.6;">';
+    html += '<p><strong>Recommended execution order</strong> (highest IRR first to recycle equity):</p>';
+    html += '<ol style="margin:0.5rem 0;padding-left:1.5rem;">';
+    var cumMo = 0;
+    sortedByIRR.forEach(function(a, i) {
+        cumMo += a.totalMo;
+        html += '<li><strong>' + (a.prop.address || 'Property ' + (i + 1)).substring(0, 30) + '</strong> — ' + a.useName + ' (' + a.totalMo + ' mo, ' + (a.irr * 100).toFixed(1) + '% IRR, ' + formatCompactDollars(a.computed.totalDev) + ' cost)</li>';
+    });
+    html += '</ol>';
+    html += '<p style="margin-top:0.5rem;">Sequential execution: ~' + cumMo + ' months. Staggered (overlapping): ~' + Math.round(cumMo * 0.65) + ' months with equity recycling from earlier completions.</p>';
+    html += '</div>';
 
     // Quick recommendation
     html += '</div><div class="analysis-section">';
