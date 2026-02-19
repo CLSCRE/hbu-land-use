@@ -2158,7 +2158,7 @@
         <input type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter')checkAuth();">
         <button type="button" class="auth-btn" onclick="checkAuth()">Enter</button>
         <div class="auth-error" id="authError"></div>
-        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v3.7</div>
+        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v3.8</div>
     </div>
 </div>
 
@@ -2166,13 +2166,14 @@
     <h1>Highest &amp; Best Use Calculator</h1>
     <p>Land Use Analysis for Los Angeles, CA</p>
     <span class="badge">HBU Analysis Tool</span>
-    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v3.7</span>
+    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v3.8</span>
 </header>
 
 <div class="tab-bar">
     <button class="tab-btn active" data-tab="calculator" onclick="switchTab('calculator')">HBU Calculator</button>
     <button class="tab-btn" data-tab="finder" onclick="switchTab('finder')">SB 79 Opportunity Finder</button>
     <button class="tab-btn" data-tab="pipeline" onclick="switchTab('pipeline')">Development Pipeline</button>
+    <button class="tab-btn" data-tab="contacts" onclick="switchTab('contacts')">Contacts Directory</button>
 </div>
 
 <div id="tabCalculator" class="tab-content active">
@@ -2612,6 +2613,35 @@
     </div>
 </div>
 </div><!-- /tabPipeline -->
+
+<div id="tabContacts" class="tab-content">
+<div class="container">
+    <div class="intro-box" style="border-left-color:#805ad5;">
+        <h3>Contacts Directory</h3>
+        <p>Your <strong>one-stop shop</strong> for all development-related contacts in Los Angeles County. Planning departments, city officials, architects, engineers, contractors, lenders, and consultants. Filter by category or search by name.</p>
+    </div>
+
+    <div style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.25rem;">
+            <input type="text" id="contactSearch" placeholder="Search contacts..." style="flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:0.85rem;" oninput="filterContacts()">
+            <select id="contactCategory" style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:0.85rem;" onchange="filterContacts()">
+                <option value="">All Categories</option>
+                <option value="planning">Planning Departments</option>
+                <option value="building">Building & Safety</option>
+                <option value="housing">Housing Agencies</option>
+                <option value="architect">Architects</option>
+                <option value="engineer">Engineers</option>
+                <option value="gc">General Contractors</option>
+                <option value="lender">Lenders & Finance</option>
+                <option value="legal">Legal / Land Use</option>
+                <option value="consultant">Consultants</option>
+                <option value="utility">Utilities</option>
+            </select>
+        </div>
+        <div id="contactsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem;"></div>
+    </div>
+</div>
+</div><!-- /tabContacts -->
 
 <!-- Analysis Detail Modal -->
 <div class="modal-overlay" id="analysisModal" style="display:none;" onclick="if(event.target===this)closeAnalysis();">
@@ -6221,7 +6251,12 @@ function switchTab(tab) {
     document.getElementById('tabCalculator').classList.toggle('active', tab === 'calculator');
     document.getElementById('tabFinder').classList.toggle('active', tab === 'finder');
     document.getElementById('tabPipeline').classList.toggle('active', tab === 'pipeline');
+    document.getElementById('tabContacts').classList.toggle('active', tab === 'contacts');
 
+    if (tab === 'contacts' && !contactsInitialized) {
+        renderContactsDirectory();
+        contactsInitialized = true;
+    }
     if (tab === 'finder' && !finderMapInitialized) {
         setTimeout(() => initFinderMap(), 100);
     } else if (tab === 'finder' && finderMapInstance) {
@@ -6282,6 +6317,137 @@ let pipelineSortAsc = false;
 let pipelineOverlayActive = false;
 let pipelineOverlayLayer = null;
 let pipelineCache = new Map(); // key → {ts, data}
+
+// ===================================================================
+//  CONTACTS DIRECTORY
+// ===================================================================
+let contactsInitialized = false;
+
+const CONTACTS_DATA = [
+    // === Planning Departments ===
+    { name: 'LA City Planning Dept', category: 'planning', role: 'City Planning', phone: '(213) 978-1271', email: 'planning.lacityplanning@lacity.org', website: 'https://planning.lacity.gov', address: '200 N Spring St, Room 525, Los Angeles, CA 90012', notes: 'Zoning, General Plan, entitlements, CEQA' },
+    { name: 'LA County Dept of Regional Planning', category: 'planning', role: 'County Planning', phone: '(213) 974-6411', email: 'planning@planning.lacounty.gov', website: 'https://planning.lacounty.gov', address: '320 W Temple St, Los Angeles, CA 90012', notes: 'Unincorporated LA County areas' },
+    { name: 'Santa Monica Planning', category: 'planning', role: 'City Planning', phone: '(310) 458-8341', email: 'planning@smgov.net', website: 'https://www.smgov.net/Departments/PCD/', address: '1685 Main St, Room 212, Santa Monica, CA 90401', notes: 'Planning, zoning, permits' },
+    { name: 'Culver City Planning', category: 'planning', role: 'City Planning', phone: '(310) 253-5750', email: 'planning@culvercity.org', website: 'https://www.culvercity.org/City-Hall/Community-Development/Planning-Division', address: '9770 Culver Blvd, Culver City, CA 90232', notes: 'Current & advance planning' },
+    { name: 'Beverly Hills Planning', category: 'planning', role: 'City Planning', phone: '(310) 285-1141', email: 'planning@beverlyhills.org', website: 'https://www.beverlyhills.org/departments/communitydevelopment/planningdivision/', address: '455 N Rexford Dr, Beverly Hills, CA 90210', notes: 'Planning Commission, design review' },
+    { name: 'West Hollywood Planning', category: 'planning', role: 'City Planning', phone: '(323) 848-6475', email: '', website: 'https://www.weho.org/city-government/city-departments/community-development/planning-division', address: '8300 Santa Monica Blvd, West Hollywood, CA 90069', notes: 'Rent stabilization, planning' },
+    { name: 'Pasadena Planning', category: 'planning', role: 'City Planning', phone: '(626) 744-4009', email: 'planning@cityofpasadena.net', website: 'https://www.cityofpasadena.net/planning/', address: '175 N Garfield Ave, Pasadena, CA 91101', notes: 'Historic preservation, design review' },
+    { name: 'Glendale Community Development', category: 'planning', role: 'City Planning', phone: '(818) 548-2140', email: '', website: 'https://www.glendaleca.gov/government/departments/community-development', address: '633 E Broadway, Room 103, Glendale, CA 91206', notes: 'Planning, building, code compliance' },
+    { name: 'Burbank Planning', category: 'planning', role: 'City Planning', phone: '(818) 238-5250', email: '', website: 'https://www.burbankca.gov/web/community-development/planning-division', address: '150 N Third St, Burbank, CA 91502', notes: 'Current planning, advance planning' },
+    { name: 'Long Beach Development Services', category: 'planning', role: 'City Planning', phone: '(562) 570-6194', email: '', website: 'https://www.longbeach.gov/lbds/', address: '411 W Ocean Blvd, 3rd Floor, Long Beach, CA 90802', notes: 'Planning, building, code enforcement' },
+    { name: 'Inglewood Planning', category: 'planning', role: 'City Planning', phone: '(310) 412-5230', email: '', website: 'https://www.cityofinglewood.org/148/Planning-Division', address: 'One Manchester Blvd, Inglewood, CA 90301', notes: 'SoFi Stadium area, TOC opportunities' },
+
+    // === Building & Safety ===
+    { name: 'LA Dept of Building & Safety (LADBS)', category: 'building', role: 'Building & Safety', phone: '(213) 482-0000', email: '', website: 'https://www.ladbs.org', address: '201 N Figueroa St, Suite 1000, Los Angeles, CA 90012', notes: 'Permits, inspections, code enforcement, plan check' },
+    { name: 'LADBS Express Permit', category: 'building', role: 'Express Permits', phone: '(213) 482-0466', email: '', website: 'https://www.ladbs.org/services/check-status/express-permit', address: '201 N Figueroa St, Los Angeles, CA 90012', notes: 'Over-the-counter permits for minor work' },
+    { name: 'LA County Building & Safety', category: 'building', role: 'County Building', phone: '(626) 458-3177', email: '', website: 'https://dpw.lacounty.gov/building-and-safety/', address: '900 S Fremont Ave, Alhambra, CA 91803', notes: 'Unincorporated areas' },
+    { name: 'LA Fire Dept (LAFD) - Plan Check', category: 'building', role: 'Fire Dept Plan Check', phone: '(213) 978-3860', email: '', website: 'https://www.lafd.org/fire-prevention/plan-check', address: '200 N Main St, Room 1700, Los Angeles, CA 90012', notes: 'Fire life safety plan review' },
+
+    // === Housing Agencies ===
+    { name: 'LA Housing Dept (LAHD)', category: 'housing', role: 'Housing Authority', phone: '(866) 557-7368', email: '', website: 'https://housing.lacity.gov', address: '1200 W 7th St, Suite 100, Los Angeles, CA 90017', notes: 'Affordable housing, rent stabilization, REAP' },
+    { name: 'HACLA (Housing Authority)', category: 'housing', role: 'Housing Authority', phone: '(213) 252-2500', email: '', website: 'https://www.hacla.org', address: '2600 Wilshire Blvd, Los Angeles, CA 90057', notes: 'Section 8, public housing, mixed-finance' },
+    { name: 'CA HCD (Housing & Community Development)', category: 'housing', role: 'State Housing', phone: '(916) 263-2911', email: '', website: 'https://www.hcd.ca.gov', address: '2020 W El Camino Ave, Suite 500, Sacramento, CA 95833', notes: 'RHNA, housing element, state programs' },
+    { name: 'CTCAC (Tax Credit Allocation)', category: 'housing', role: 'Tax Credits', phone: '(916) 654-6340', email: '', website: 'https://www.treasurer.ca.gov/ctcac/', address: '915 Capitol Mall, Suite 485, Sacramento, CA 95814', notes: 'LIHTC 4% and 9% allocations' },
+
+    // === Architects ===
+    { name: 'KTGY Architecture + Planning', category: 'architect', role: 'Architect (Multifamily)', phone: '(310) 394-2623', email: '', website: 'https://ktgy.com', address: '17911 Von Karman Ave, Irvine, CA 92614', notes: 'Multifamily, mixed-use, senior living' },
+    { name: 'AC Martin Partners', category: 'architect', role: 'Architect (Mixed-Use)', phone: '(213) 683-1900', email: '', website: 'https://acmartin.com', address: '444 S Flower St, Suite 1200, Los Angeles, CA 90071', notes: 'DTLA towers, mixed-use, civic' },
+    { name: 'HKS Architects', category: 'architect', role: 'Architect (Commercial)', phone: '(213) 542-5900', email: '', website: 'https://www.hksinc.com', address: '350 S Figueroa St, Suite 200, Los Angeles, CA 90071', notes: 'Office, hospitality, sports/entertainment' },
+    { name: 'Steinberg Hart', category: 'architect', role: 'Architect (Community)', phone: '(213) 629-0500', email: '', website: 'https://www.steinberghart.com', address: '750 B St, Suite 2300, San Diego, CA 92101', notes: 'Affordable housing, community, education' },
+    { name: 'Togawa Smith Martin', category: 'architect', role: 'Architect (Affordable)', phone: '(323) 258-7028', email: '', website: 'https://tsminc.com', address: '460 S Spring St, Suite 500, Los Angeles, CA 90013', notes: 'Affordable, supportive housing specialist' },
+
+    // === Engineers ===
+    { name: 'KPFF Consulting Engineers', category: 'engineer', role: 'Structural Engineer', phone: '(213) 318-4140', email: '', website: 'https://www.kpff.com', address: '515 S Flower St, Suite 4500, Los Angeles, CA 90071', notes: 'Structural, civil, seismic' },
+    { name: 'Psomas Engineering', category: 'engineer', role: 'Civil Engineer', phone: '(213) 223-1400', email: '', website: 'https://www.psomas.com', address: '555 S Flower St, Suite 4300, Los Angeles, CA 90071', notes: 'Civil, surveying, environmental' },
+    { name: 'ARUP', category: 'engineer', role: 'MEP / Multidiscipline', phone: '(213) 629-5575', email: '', website: 'https://www.arup.com', address: '900 Wilshire Blvd, Suite 700, Los Angeles, CA 90017', notes: 'Structural, MEP, fire, sustainability' },
+    { name: 'Buro Happold', category: 'engineer', role: 'MEP Engineer', phone: '(213) 337-0025', email: '', website: 'https://www.burohappold.com', address: '6601 Center Dr West, Suite 500, Los Angeles, CA 90045', notes: 'MEP, sustainability, smart buildings' },
+
+    // === General Contractors ===
+    { name: 'AECOM-Hunt', category: 'gc', role: 'General Contractor', phone: '(213) 593-8000', email: '', website: 'https://www.aecom.com', address: '300 S Grand Ave, Suite 1000, Los Angeles, CA 90071', notes: 'Large-scale, infrastructure, mixed-use' },
+    { name: 'Suffolk Construction', category: 'gc', role: 'General Contractor', phone: '(213) 787-3700', email: '', website: 'https://www.suffolk.com', address: '915 Wilshire Blvd, Suite 1700, Los Angeles, CA 90017', notes: 'High-rise, multifamily, healthcare' },
+    { name: 'Bernards', category: 'gc', role: 'General Contractor', phone: '(909) 941-5225', email: '', website: 'https://www.bernards.com', address: '555 First St, San Fernando, CA 91340', notes: 'Affordable housing, education, healthcare' },
+    { name: 'Morley Builders', category: 'gc', role: 'General Contractor', phone: '(310) 471-4900', email: '', website: 'https://www.morleybuilders.com', address: '2901 28th St, Suite 100, Santa Monica, CA 90405', notes: 'Mixed-use, multifamily, commercial' },
+    { name: 'Webcor Builders', category: 'gc', role: 'General Contractor', phone: '(213) 271-1780', email: '', website: 'https://www.webcor.com', address: '555 S Flower St, Suite 4800, Los Angeles, CA 90071', notes: 'High-rise, lab/life science, hospitality' },
+
+    // === Lenders & Finance ===
+    { name: 'CBRE Capital Markets', category: 'lender', role: 'Capital Markets', phone: '(213) 613-3226', email: '', website: 'https://www.cbre.com/services/capital-markets', address: '400 S Hope St, 25th Floor, Los Angeles, CA 90071', notes: 'Debt placement, equity raise, investment sales' },
+    { name: 'JLL Capital Markets', category: 'lender', role: 'Capital Markets', phone: '(213) 239-6000', email: '', website: 'https://www.jll.com', address: '515 S Flower St, Suite 3200, Los Angeles, CA 90071', notes: 'Debt, equity, structured finance' },
+    { name: 'Pacific Western Bank (Banc of California)', category: 'lender', role: 'Construction Lender', phone: '(310) 887-8500', email: '', website: 'https://www.bancofcal.com', address: '3 MacArthur Pl, Santa Ana, CA 92707', notes: 'Construction, bridge, permanent loans' },
+    { name: 'Ready Capital', category: 'lender', role: 'Bridge/Construction Lender', phone: '(212) 257-4600', email: '', website: 'https://readycapital.com', address: '1251 Avenue of the Americas, 50th Fl, NY, NY 10020', notes: 'Bridge, construction, SBA 504' },
+    { name: 'Enterprise Community Investment (LIHTC)', category: 'lender', role: 'LIHTC Syndicator', phone: '(410) 964-1230', email: '', website: 'https://www.enterprisecommunity.org', address: '70 Corporate Center, Columbia, MD 21044', notes: 'LIHTC syndication, affordable housing finance' },
+    { name: 'Raymond James Tax Credit Funds', category: 'lender', role: 'LIHTC Syndicator', phone: '(800) 438-8088', email: '', website: 'https://www.rjtcf.com', address: '880 Carillon Pkwy, St. Petersburg, FL 33716', notes: 'LIHTC, Historic Tax Credit, NMTC syndication' },
+
+    // === Legal / Land Use ===
+    { name: 'Armbruster Goldsmith & Delvac', category: 'legal', role: 'Land Use Attorney', phone: '(310) 209-8800', email: '', website: 'https://www.agd-landuse.com', address: '12100 Wilshire Blvd, Suite 1600, Los Angeles, CA 90025', notes: 'Entitlements, CEQA, development agreements' },
+    { name: 'Latham & Watkins (Land Use)', category: 'legal', role: 'Land Use Attorney', phone: '(213) 485-1234', email: '', website: 'https://www.lw.com', address: '355 S Grand Ave, Suite 100, Los Angeles, CA 90071', notes: 'Complex entitlements, P3, environmental' },
+    { name: 'Manatt Phelps & Phillips', category: 'legal', role: 'RE/Land Use Attorney', phone: '(310) 312-4000', email: '', website: 'https://www.manatt.com', address: '2049 Century Park E, Suite 1700, Los Angeles, CA 90067', notes: 'Real estate, land use, affordable housing' },
+    { name: 'Cox Castle & Nicholson', category: 'legal', role: 'RE Attorney', phone: '(310) 284-2200', email: '', website: 'https://www.coxcastle.com', address: '2049 Century Park E, Suite 2800, Los Angeles, CA 90067', notes: 'Real estate transactions, construction, land use' },
+
+    // === Consultants ===
+    { name: 'Kosmont Companies', category: 'consultant', role: 'RE/Financial Advisory', phone: '(213) 417-3300', email: '', website: 'https://www.kosmont.com', address: '865 S Figueroa St, Suite 3500, Los Angeles, CA 90017', notes: 'P3, fiscal impact, EIFD/CRIA, economic development' },
+    { name: 'HR&A Advisors', category: 'consultant', role: 'Economic Consultant', phone: '(212) 977-6200', email: '', website: 'https://www.hraadvisors.com', address: '700 S Flower St, Suite 2995, Los Angeles, CA 90017', notes: 'Economic analysis, housing policy, public finance' },
+    { name: 'Keyser Marston Associates', category: 'consultant', role: 'RE Economics', phone: '(310) 396-4556', email: '', website: 'https://www.keysermarston.com', address: '1880 Century Park E, Suite 818, Los Angeles, CA 90067', notes: 'Feasibility, fiscal impact, affordable housing' },
+    { name: 'CBRE Consulting', category: 'consultant', role: 'Market Research', phone: '(213) 613-3333', email: '', website: 'https://www.cbre.com/services/advisory-and-consulting', address: '400 S Hope St, 25th Floor, Los Angeles, CA 90071', notes: 'Market studies, valuations, HBU analysis' },
+    { name: 'EPS (Economic & Planning Systems)', category: 'consultant', role: 'Economic Consultant', phone: '(510) 841-9190', email: '', website: 'https://www.epsys.com', address: '1 Kaiser Plaza, Suite 1410, Oakland, CA 94612', notes: 'Fiscal impact, public finance, housing policy' },
+
+    // === Utilities ===
+    { name: 'LADWP (Water & Power)', category: 'utility', role: 'Electric & Water', phone: '(800) 342-5397', email: '', website: 'https://www.ladwp.com', address: '111 N Hope St, Los Angeles, CA 90012', notes: 'Electric service, water connections, solar incentives' },
+    { name: 'SoCalGas', category: 'utility', role: 'Natural Gas', phone: '(800) 427-2200', email: '', website: 'https://www.socalgas.com', address: '555 W 5th St, Los Angeles, CA 90013', notes: 'Gas service, energy efficiency programs' },
+    { name: 'LA Bureau of Sanitation', category: 'utility', role: 'Sewer & Stormwater', phone: '(800) 773-2489', email: '', website: 'https://www.lacitysan.org', address: '2714 Media Center Dr, Los Angeles, CA 90065', notes: 'Sewer connections, S-permits, stormwater' },
+    { name: 'Spectrum / Charter Business', category: 'utility', role: 'Telecom', phone: '(855) 222-0102', email: '', website: 'https://www.spectrum.com/business', address: '', notes: 'Fiber, internet, bulk building agreements' },
+];
+
+const CATEGORY_ICONS = {
+    planning: '🏛️', building: '🔨', housing: '🏠', architect: '📐',
+    engineer: '⚙️', gc: '🏗️', lender: '💰', legal: '⚖️',
+    consultant: '📊', utility: '⚡',
+};
+const CATEGORY_LABELS = {
+    planning: 'Planning', building: 'Building & Safety', housing: 'Housing',
+    architect: 'Architecture', engineer: 'Engineering', gc: 'General Contractor',
+    lender: 'Finance', legal: 'Legal', consultant: 'Consulting', utility: 'Utilities',
+};
+
+function renderContactsDirectory() {
+    var grid = document.getElementById('contactsGrid');
+    if (!grid) return;
+    renderContactCards(CONTACTS_DATA, grid);
+}
+
+function renderContactCards(contacts, container) {
+    var html = '';
+    contacts.forEach(function(c) {
+        var icon = CATEGORY_ICONS[c.category] || '📋';
+        var catLabel = CATEGORY_LABELS[c.category] || c.category;
+        html += '<div class="contact-card" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem;transition:box-shadow 0.2s;">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;">';
+        html += '<div><div style="font-size:0.88rem;font-weight:700;color:var(--text);">' + icon + ' ' + c.name + '</div>';
+        html += '<div style="font-size:0.72rem;color:var(--text-light);">' + c.role + '</div></div>';
+        html += '<span style="background:#edf2f7;padding:2px 8px;border-radius:4px;font-size:0.65rem;color:#4a5568;white-space:nowrap;">' + catLabel + '</span>';
+        html += '</div>';
+        if (c.phone) html += '<div style="font-size:0.75rem;margin-bottom:0.25rem;">📞 <a href="tel:' + c.phone.replace(/[^0-9+]/g, '') + '" style="color:#3182ce;">' + c.phone + '</a></div>';
+        if (c.email) html += '<div style="font-size:0.75rem;margin-bottom:0.25rem;">✉️ <a href="mailto:' + c.email + '" style="color:#3182ce;">' + c.email + '</a></div>';
+        if (c.website) html += '<div style="font-size:0.75rem;margin-bottom:0.25rem;">🌐 <a href="' + c.website + '" target="_blank" style="color:#3182ce;">' + c.website.replace('https://', '').replace('http://', '') + '</a></div>';
+        if (c.address) html += '<div style="font-size:0.72rem;color:var(--text-light);margin-bottom:0.25rem;">📍 ' + c.address + '</div>';
+        if (c.notes) html += '<div style="font-size:0.7rem;color:#718096;font-style:italic;border-top:1px solid var(--border);padding-top:0.4rem;margin-top:0.4rem;">' + c.notes + '</div>';
+        html += '</div>';
+    });
+    if (contacts.length === 0) {
+        html = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-light);font-size:0.88rem;">No contacts match your search.</div>';
+    }
+    container.innerHTML = html;
+}
+
+function filterContacts() {
+    var search = (document.getElementById('contactSearch').value || '').toLowerCase();
+    var category = document.getElementById('contactCategory').value;
+    var filtered = CONTACTS_DATA.filter(function(c) {
+        var matchCat = !category || c.category === category;
+        var matchSearch = !search || c.name.toLowerCase().indexOf(search) >= 0 || c.role.toLowerCase().indexOf(search) >= 0 || (c.notes || '').toLowerCase().indexOf(search) >= 0 || (c.address || '').toLowerCase().indexOf(search) >= 0;
+        return matchCat && matchSearch;
+    });
+    renderContactCards(filtered, document.getElementById('contactsGrid'));
+}
 
 function initPipelineMap() {
     const mapEl = document.getElementById('pipelineMap');
