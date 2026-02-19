@@ -2137,6 +2137,7 @@
     <h1>Highest &amp; Best Use Calculator</h1>
     <p>Land Use Analysis for Los Angeles, CA</p>
     <span class="badge">HBU Analysis Tool</span>
+    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v2.5</span>
 </header>
 
 <div class="tab-bar">
@@ -5390,29 +5391,31 @@ function makeZoneClickHandler(station, mapInstance) {
 function drawSB79Radii(station) {
     if (!sb79Layers.zones) return;
     var tierColor = station.tier === 1 ? '#805ad5' : '#3182ce';
-    var handler = makeZoneClickHandler(station, sb79Map);
 
-    // Draw LARGEST first (bottom), SMALLEST last (top) — topmost wins clicks
-    // 1/2 mile = ~805m (outer)
+    // ONLY the outer circle is interactive — it captures ALL clicks in the zone area
+    // and uses haversine to calculate the exact correct zone label.
+    // Inner and adjacent circles are visual-only to prevent multiple handlers firing.
+
+    // 1/2 mile = ~805m (outer) — THE ONLY INTERACTIVE CIRCLE
     L.circle([station.lat, station.lon], {
         radius: 805, color: '#000000', weight: 3.5, opacity: 0.9,
-        fillColor: '#1a202c', fillOpacity: 0.12,
+        fillColor: '#1a202c', fillOpacity: 0.15,
         interactive: true, bubblingMouseEvents: false,
-    }).on('click', handler).addTo(sb79Layers.zones);
+    }).on('click', makeZoneClickHandler(station, sb79Map)).addTo(sb79Layers.zones);
 
-    // 1/4 mile = ~402m (inner)
+    // 1/4 mile = ~402m (inner) — visual only
     L.circle([station.lat, station.lon], {
-        radius: 402, color: tierColor, weight: 1.5, opacity: 0.6,
-        fillColor: tierColor, fillOpacity: 0.08,
-        interactive: true, bubblingMouseEvents: false, dashArray: '8,6',
-    }).on('click', handler).addTo(sb79Layers.zones);
+        radius: 402, color: tierColor, weight: 2, opacity: 0.7,
+        fillColor: tierColor, fillOpacity: 0.10,
+        interactive: false, dashArray: '8,6',
+    }).addTo(sb79Layers.zones);
 
-    // 200ft = ~61m (adjacent)
+    // 200ft = ~61m (adjacent) — visual only
     L.circle([station.lat, station.lon], {
-        radius: 61, color: tierColor, weight: 2, opacity: 0.8,
-        fillColor: tierColor, fillOpacity: 0.18,
-        interactive: true, bubblingMouseEvents: false,
-    }).on('click', handler).addTo(sb79Layers.zones);
+        radius: 61, color: tierColor, weight: 2.5, opacity: 0.9,
+        fillColor: tierColor, fillOpacity: 0.22,
+        interactive: false,
+    }).addTo(sb79Layers.zones);
 }
 
 function showStationRadii(stationIdx) {
@@ -6055,30 +6058,31 @@ function drawFinderStationRadii(station) {
         finderMapInstance._finderRadii.forEach(c => finderMapInstance.removeLayer(c));
     }
     var tierColor = station.tier === 1 ? '#805ad5' : '#3182ce';
-    var handler = makeZoneClickHandler(station, finderMapInstance);
     var circles = [];
 
-    // Draw LARGEST first (bottom), SMALLEST last (top) — topmost wins clicks
-    // 1/2 mile = ~805m (outer)
+    // ONLY the outer circle is interactive — uses haversine for exact zone label.
+    // Inner and adjacent are visual-only to prevent multiple handlers overwriting popup.
+
+    // 1/2 mile = ~805m (outer) — THE ONLY INTERACTIVE CIRCLE
     circles.push(L.circle([station.lat, station.lon], {
         radius: 805, color: '#000000', weight: 3.5, opacity: 0.9,
-        fillColor: '#1a202c', fillOpacity: 0.12,
+        fillColor: '#1a202c', fillOpacity: 0.15,
         interactive: true, bubblingMouseEvents: false,
-    }).on('click', handler).addTo(finderMapInstance));
+    }).on('click', makeZoneClickHandler(station, finderMapInstance)).addTo(finderMapInstance));
 
-    // 1/4 mile = ~402m (inner)
+    // 1/4 mile = ~402m (inner) — visual only
     circles.push(L.circle([station.lat, station.lon], {
-        radius: 402, color: tierColor, weight: 1.5, opacity: 0.6,
-        fillColor: tierColor, fillOpacity: 0.08,
-        interactive: true, bubblingMouseEvents: false, dashArray: '8,6',
-    }).on('click', handler).addTo(finderMapInstance));
+        radius: 402, color: tierColor, weight: 2, opacity: 0.7,
+        fillColor: tierColor, fillOpacity: 0.10,
+        interactive: false, dashArray: '8,6',
+    }).addTo(finderMapInstance));
 
-    // 200ft = ~61m (adjacent)
+    // 200ft = ~61m (adjacent) — visual only
     circles.push(L.circle([station.lat, station.lon], {
-        radius: 61, color: tierColor, weight: 2, opacity: 0.8,
-        fillColor: tierColor, fillOpacity: 0.18,
-        interactive: true, bubblingMouseEvents: false,
-    }).on('click', handler).addTo(finderMapInstance));
+        radius: 61, color: tierColor, weight: 2.5, opacity: 0.9,
+        fillColor: tierColor, fillOpacity: 0.22,
+        interactive: false,
+    }).addTo(finderMapInstance));
 
     finderMapInstance._finderRadii = circles;
     finderMapInstance.setView([station.lat, station.lon], 14);
