@@ -1799,65 +1799,8 @@
         .scenario-bear { background: #fff5f5; }
         .scenario-base { background: #f0fff4; }
         .scenario-bull { background: #ebf8ff; }
-        .tornado-container { margin: 1.5rem 0; }
-        .tornado-bar-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 0.4rem;
-            font-size: 0.78rem;
-        }
-        .tornado-label {
-            width: 120px;
-            text-align: right;
-            padding-right: 0.75rem;
-            font-weight: 500;
-            flex-shrink: 0;
-        }
-        .tornado-bar-area {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            position: relative;
-            height: 22px;
-        }
-        .tornado-bar-neg {
-            height: 100%;
-            background: #fc8181;
-            border-radius: 4px 0 0 4px;
-            position: absolute;
-            right: 50%;
-        }
-        .tornado-bar-pos {
-            height: 100%;
-            background: #68d391;
-            border-radius: 0 4px 4px 0;
-            position: absolute;
-            left: 50%;
-        }
-        .tornado-center-line {
-            position: absolute;
-            left: 50%;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: var(--text);
-        }
-        .tornado-value-left {
-            position: absolute;
-            right: calc(50% + 4px);
-            font-size: 0.7rem;
-            color: #c53030;
-            top: 50%;
-            transform: translateY(-50%) translateX(-100%);
-        }
-        .tornado-value-right {
-            position: absolute;
-            left: calc(50% + 4px);
-            font-size: 0.7rem;
-            color: #276749;
-            top: 50%;
-            transform: translateY(-50%) translateX(100%);
-        }
+        .tornado-svg-bar { transition: opacity 0.15s; cursor: default; }
+        .tornado-svg-bar:hover { opacity: 0.75; }
         .breakeven-card {
             background: #fffff0;
             border: 2px solid #ecc94b;
@@ -1881,27 +1824,8 @@
         .breakeven-label { font-size: 0.72rem; color: var(--text-light); }
 
         /* Heat Map */
-        .heatmap-wrapper {
-            overflow-x: auto;
-            margin: 1.5rem 0;
-        }
-        .heatmap-table {
-            border-collapse: collapse;
-            font-size: 0.72rem;
-        }
-        .heatmap-table th {
-            padding: 0.3rem 0.5rem;
-            font-weight: 600;
-            text-align: center;
-            background: #f8fafc;
-        }
-        .heatmap-table td {
-            padding: 0.3rem 0.5rem;
-            text-align: center;
-            font-weight: 600;
-            min-width: 52px;
-        }
-        .heatmap-table .row-header { text-align: right; padding-right: 0.75rem; font-weight: 600; background: #f8fafc; }
+        .heatmap-svg-cell { transition: opacity 0.15s; cursor: default; }
+        .heatmap-svg-cell:hover { opacity: 0.8; }
 
         /* Affordable Housing */
         .afford-tier-grid {
@@ -2303,7 +2227,7 @@
             .dt-controls { display: none !important; }
             .dt-reset-btn { display: none !important; }
             /* Ensure tables don't break mid-row */
-            .afford-comparison-table tr, .scenario-table tr, .heatmap-table tr { page-break-inside: avoid; }
+            .afford-comparison-table tr, .scenario-table tr { page-break-inside: avoid; }
             /* Keep analysis sections together when possible */
             .analysis-section { page-break-inside: avoid; }
             .exec-summary-grid { page-break-inside: avoid; }
@@ -2352,13 +2276,8 @@
             /* Scenario table */
             .scenario-table { font-size: 0.72rem; }
             .scenario-table th, .scenario-table td { padding: 0.4rem 0.3rem; }
-            /* Tornado */
-            .tornado-bar-row { flex-wrap: wrap; gap: 0.2rem; }
-            .tornado-label { width: 100%; font-size: 0.7rem; }
-            .tornado-bar-area { flex: 1; min-width: 0; }
-            /* Heatmap — already has overflow-x: auto via .heatmap-wrapper */
-            .heatmap-table { font-size: 0.65rem; }
-            .heatmap-table td, .heatmap-table th { padding: 0.2rem 0.3rem; min-width: 38px; }
+            /* Tornado SVG scales via viewBox — no mobile overrides needed */
+            /* Heatmap SVG scales via viewBox — no mobile overrides needed */
             /* Comparison tables */
             .afford-comparison-table { font-size: 0.72rem; }
             .afford-comparison-table th, .afford-comparison-table td { padding: 0.3rem 0.4rem; }
@@ -2382,7 +2301,6 @@
             .exec-summary-card { padding: 0.75rem; }
             .exec-metric-lg { font-size: 1.1rem; }
             .scenario-table { font-size: 0.65rem; }
-            .tornado-container { margin: 0.75rem 0; }
             .breakeven-card { padding: 0.75rem; }
         }
     </style>
@@ -5714,7 +5632,7 @@ function renderSiteWorkBreakdownInline(computed, inp) {
     // Assumption narrative
     html += '<div style="background:#fffaf0;border:1px solid #fbd38d;border-radius:6px;padding:0.4rem 0.6rem;font-size:0.7rem;">';
     html += '<strong style="color:#c05621;">Assumptions:</strong> ' + (sw.assumptions || 'Standard urban infill conditions.');
-    html += '<br><span style="color:#718096;">Rates are per SF of lot area. Override these in the editable assumptions panel above (Site Work $/SF) to set a custom total, or use Deep Analysis Tab 25 for phase-level editing.</span>';
+    html += '<br><span style="color:#718096;">Rates are per SF of lot area. Override these in the editable assumptions panel above (Site Work $/SF) to set a custom total, or use Deep Analysis Tab 3 (Earthwork) for phase-level editing.</span>';
     html += '</div></div>';
     return html;
 }
@@ -9744,27 +9662,59 @@ function buildSensitivityContent(st) {
     html += `<div style="font-size:0.75rem;color:var(--text-light);margin-top:0.5rem;">Bear: ${bearDesc} | Bull: ${bullDesc}</div>`;
     html += `</div>`;
 
-    // Tornado Diagram
+    // Tornado Diagram — SVG
     html += `<div class="analysis-section"><h3>Sensitivity Tornado — Impact on Development Margin</h3>`;
-    html += `<div class="tornado-container">`;
-    const maxSwing = Math.max(...sens.tornado.map(t => Math.max(Math.abs(t.highMargin - t.baseMargin), Math.abs(t.lowMargin - t.baseMargin))));
-    const barScale = maxSwing > 0 ? 45 / maxSwing : 1; // max 45% of width
+    var tData = sens.tornado;
+    var tMaxSwing = Math.max(...tData.map(t => Math.max(Math.abs(t.highMargin - t.baseMargin), Math.abs(t.lowMargin - t.baseMargin))));
+    if (tMaxSwing === 0) tMaxSwing = 0.01;
+    var tBarH = 28, tGap = 6, tLabelW = 130, tRangeW = 90, tPad = { top: 30, bottom: 40, left: tLabelW + 10, right: tRangeW + 10 };
+    var tChartW = 700, tBarAreaW = tChartW - tPad.left - tPad.right;
+    var tChartH = tPad.top + tData.length * (tBarH + tGap) - tGap + tPad.bottom;
+    var tCenterX = tPad.left + tBarAreaW / 2;
+    var tBaseM = (sens.base.devMargin * 100).toFixed(1);
+    // Compute nice grid ticks
+    var tTickStep = tMaxSwing * 100 > 10 ? 5 : tMaxSwing * 100 > 3 ? 2 : 1;
+    var tMaxTick = Math.ceil(tMaxSwing * 100 / tTickStep) * tTickStep;
+    var tScale = (tBarAreaW / 2) / (tMaxTick / 100);
 
-    for (const t of sens.tornado) {
-        const negWidth = Math.abs(t.lowMargin - t.baseMargin) * barScale;
-        const posWidth = Math.abs(t.highMargin - t.baseMargin) * barScale;
-        html += `<div class="tornado-bar-row">
-            <span class="tornado-label">${t.label}</span>
-            <div class="tornado-bar-area">
-                <div class="tornado-center-line"></div>
-                <div class="tornado-bar-neg" style="width:${negWidth}%"></div>
-                <div class="tornado-bar-pos" style="width:${posWidth}%"></div>
-            </div>
-            <span style="width:80px;text-align:left;font-size:0.72rem;padding-left:0.5rem;flex-shrink:0;">${(t.lowMargin * 100).toFixed(1)}% — ${(t.highMargin * 100).toFixed(1)}%</span>
-        </div>`;
+    html += `<div style="overflow-x:auto;"><svg viewBox="0 0 ${tChartW} ${tChartH}" style="width:100%;max-width:${tChartW}px;font-family:inherit;" xmlns="http://www.w3.org/2000/svg">`;
+    // Gridlines & axis labels
+    for (var gt = -tMaxTick; gt <= tMaxTick; gt += tTickStep) {
+        var gx = tCenterX + (gt / 100) * tScale;
+        var isCenter = gt === 0;
+        html += `<line x1="${gx}" y1="${tPad.top - 5}" x2="${gx}" y2="${tChartH - tPad.bottom + 5}" stroke="${isCenter ? '#2d3748' : '#e2e8f0'}" stroke-width="${isCenter ? 1.5 : 0.5}" />`;
+        var tickLabel = gt === 0 ? tBaseM + '%' : (gt >= 0 ? '+' : '') + gt + '%';
+        html += `<text x="${gx}" y="${tPad.top - 10}" text-anchor="middle" font-size="10" fill="#718096">${tickLabel}</text>`;
     }
-    html += `</div>`;
-    html += `<div style="font-size:0.75rem;color:var(--text-light);text-align:center;">Red = downside | Green = upside | Center line = base case (${(sens.base.devMargin * 100).toFixed(1)}%)</div>`;
+    // X-axis label
+    html += `<text x="${tCenterX}" y="${tChartH - 5}" text-anchor="middle" font-size="11" fill="#718096">Development Margin Change from Base Case (${tBaseM}%)</text>`;
+    // Bars
+    for (var ti = 0; ti < tData.length; ti++) {
+        var td = tData[ti];
+        var rowY = tPad.top + ti * (tBarH + tGap);
+        var negSwing = Math.abs(td.lowMargin - td.baseMargin);
+        var posSwing = Math.abs(td.highMargin - td.baseMargin);
+        var negW = negSwing * tScale;
+        var posW = posSwing * tScale;
+        // Label
+        html += `<text x="${tPad.left - 10}" y="${rowY + tBarH / 2 + 4}" text-anchor="end" font-size="12" font-weight="500" fill="#2d3748">${td.label}</text>`;
+        // Negative bar (red, extends left from center)
+        if (negW > 0) {
+            html += `<rect x="${tCenterX - negW}" y="${rowY}" width="${negW}" height="${tBarH}" rx="3" fill="#fc8181" class="tornado-svg-bar"><title>${td.label}: ${(td.lowMargin * 100).toFixed(1)}% (downside)</title></rect>`;
+        }
+        // Positive bar (green, extends right from center)
+        if (posW > 0) {
+            html += `<rect x="${tCenterX}" y="${rowY}" width="${posW}" height="${tBarH}" rx="3" fill="#68d391" class="tornado-svg-bar"><title>${td.label}: ${(td.highMargin * 100).toFixed(1)}% (upside)</title></rect>`;
+        }
+        // Range text
+        html += `<text x="${tChartW - tPad.right + 15}" y="${rowY + tBarH / 2 + 4}" font-size="11" fill="#4a5568">${(td.lowMargin * 100).toFixed(1)}% — ${(td.highMargin * 100).toFixed(1)}%</text>`;
+    }
+    html += `</svg></div>`;
+    html += `<div style="display:flex;gap:1.5rem;justify-content:center;font-size:0.75rem;color:var(--text-light);margin-top:0.5rem;">
+        <span><span style="display:inline-block;width:12px;height:12px;background:#fc8181;border-radius:2px;vertical-align:middle;margin-right:4px;"></span>Downside</span>
+        <span><span style="display:inline-block;width:12px;height:12px;background:#68d391;border-radius:2px;vertical-align:middle;margin-right:4px;"></span>Upside</span>
+        <span>Center line = base case (${tBaseM}%)</span>
+    </div>`;
     html += `</div>`;
 
     // Breakeven Analysis
@@ -9785,34 +9735,64 @@ function buildSensitivityContent(st) {
         </div>
     </div>`;
 
-    // Heat Map
+    // Heat Map — SVG
     html += `<div class="analysis-section" style="margin-top:1.5rem;"><h3>Development Margin Heat Map — Rent vs. Cost Sensitivity</h3>`;
-    html += `<div class="heatmap-wrapper"><table class="heatmap-table">`;
-    html += `<thead><tr><th class="row-header">Cost \\ Rent</th>`;
-    for (const rs of sens.rentSteps) {
-        html += `<th>${rs >= 0 ? '+' : ''}${(rs * 100).toFixed(0)}%</th>`;
+    var hmCols = sens.rentSteps.length, hmRows = sens.costSteps.length;
+    var hmCell = 52, hmLabelW = 60, hmLabelH = 28, hmPad = { top: 40, left: hmLabelW + 8, bottom: 50, right: 20 };
+    var hmW = hmPad.left + hmCols * hmCell + hmPad.right;
+    var hmH = hmPad.top + hmRows * hmCell + hmPad.bottom + hmLabelH;
+
+    function hmColor(m) {
+        if (m >= 0.20) return '#276749';
+        if (m >= 0.10) return '#38a169';
+        if (m >= 0.05) return '#68d391';
+        if (m >= 0) return '#fefcbf';
+        if (m >= -0.10) return '#fc8181';
+        return '#c53030';
     }
-    html += `</tr></thead><tbody>`;
-    for (let ci = 0; ci < sens.costSteps.length; ci++) {
-        html += `<tr><td class="row-header">${sens.costSteps[ci] >= 0 ? '+' : ''}${(sens.costSteps[ci] * 100).toFixed(0)}%</td>`;
-        for (let ri = 0; ri < sens.rentSteps.length; ri++) {
-            const margin = sens.heatmap[ci][ri];
-            const pct = (margin * 100).toFixed(0);
-            let bg;
-            if (margin >= 0.20) bg = '#276749';
-            else if (margin >= 0.10) bg = '#38a169';
-            else if (margin >= 0.05) bg = '#68d391';
-            else if (margin >= 0) bg = '#fefcbf';
-            else if (margin >= -0.10) bg = '#fc8181';
-            else bg = '#c53030';
-            const textColor = (margin >= 0.10 || margin < -0.05) ? 'white' : '#2d3748';
-            const isCurrent = sens.costSteps[ci] === 0 && sens.rentSteps[ri] === 0;
-            html += `<td style="background:${bg};color:${textColor};${isCurrent ? 'border:2px solid var(--primary);font-weight:800;' : ''}">${pct}%</td>`;
+    function hmText(m) { return (m >= 0.10 || m < -0.05) ? 'white' : '#2d3748'; }
+
+    html += `<div style="overflow-x:auto;"><svg viewBox="0 0 ${hmW} ${hmH}" style="width:100%;max-width:${hmW}px;font-family:inherit;" xmlns="http://www.w3.org/2000/svg">`;
+    // Column headers (Rent %)
+    html += `<text x="${hmPad.left + hmCols * hmCell / 2}" y="14" text-anchor="middle" font-size="11" font-weight="600" fill="#4a5568">Rent Change %</text>`;
+    for (var rhi = 0; rhi < hmCols; rhi++) {
+        var rhx = hmPad.left + rhi * hmCell + hmCell / 2;
+        var rhLabel = (sens.rentSteps[rhi] >= 0 ? '+' : '') + (sens.rentSteps[rhi] * 100).toFixed(0) + '%';
+        html += `<text x="${rhx}" y="${hmPad.top - 8}" text-anchor="middle" font-size="10" fill="#718096">${rhLabel}</text>`;
+    }
+    // Row headers (Cost %) + axis label
+    html += `<text x="12" y="${hmPad.top + hmRows * hmCell / 2}" text-anchor="middle" font-size="11" font-weight="600" fill="#4a5568" transform="rotate(-90,12,${hmPad.top + hmRows * hmCell / 2})">Cost Change %</text>`;
+    for (var chi = 0; chi < hmRows; chi++) {
+        var chy = hmPad.top + chi * hmCell + hmCell / 2 + 4;
+        var chLabel = (sens.costSteps[chi] >= 0 ? '+' : '') + (sens.costSteps[chi] * 100).toFixed(0) + '%';
+        html += `<text x="${hmPad.left - 8}" y="${chy}" text-anchor="end" font-size="10" fill="#718096">${chLabel}</text>`;
+    }
+    // Cells
+    for (var hci = 0; hci < hmRows; hci++) {
+        for (var hri = 0; hri < hmCols; hri++) {
+            var hm = sens.heatmap[hci][hri];
+            var hpct = (hm * 100).toFixed(0);
+            var hx = hmPad.left + hri * hmCell, hy = hmPad.top + hci * hmCell;
+            var hIsCur = sens.costSteps[hci] === 0 && sens.rentSteps[hri] === 0;
+            html += `<rect x="${hx}" y="${hy}" width="${hmCell}" height="${hmCell}" fill="${hmColor(hm)}" stroke="${hIsCur ? '#2b6cb0' : '#e2e8f0'}" stroke-width="${hIsCur ? 2.5 : 0.5}" rx="2" class="heatmap-svg-cell"><title>Cost ${(sens.costSteps[hci] >= 0 ? '+' : '')}${(sens.costSteps[hci] * 100).toFixed(0)}%, Rent ${(sens.rentSteps[hri] >= 0 ? '+' : '')}${(sens.rentSteps[hri] * 100).toFixed(0)}%: Margin ${hpct}%</title></rect>`;
+            html += `<text x="${hx + hmCell / 2}" y="${hy + hmCell / 2 + 4}" text-anchor="middle" font-size="11" font-weight="${hIsCur ? '800' : '500'}" fill="${hmText(hm)}" pointer-events="none">${hpct}%</text>`;
         }
-        html += `</tr>`;
     }
-    html += `</tbody></table></div>`;
-    html += `<div style="font-size:0.75rem;color:var(--text-light);margin-top:0.5rem;">Cell values show development margin. Green = profitable, Yellow = marginal, Red = negative. Outlined cell = base case.</div>`;
+    // Legend
+    var hmLegendY = hmPad.top + hmRows * hmCell + 20;
+    var hmLegendItems = [
+        { color: '#276749', label: '≥ 20%' }, { color: '#38a169', label: '10-20%' },
+        { color: '#68d391', label: '5-10%' }, { color: '#fefcbf', label: '0-5%' },
+        { color: '#fc8181', label: '-10-0%' }, { color: '#c53030', label: '< -10%' }
+    ];
+    var hmLegStartX = hmPad.left;
+    for (var hli = 0; hli < hmLegendItems.length; hli++) {
+        var hlx = hmLegStartX + hli * 80;
+        html += `<rect x="${hlx}" y="${hmLegendY}" width="14" height="14" rx="2" fill="${hmLegendItems[hli].color}" />`;
+        html += `<text x="${hlx + 18}" y="${hmLegendY + 11}" font-size="10" fill="#718096">${hmLegendItems[hli].label}</text>`;
+    }
+    html += `</svg></div>`;
+    html += `<div style="font-size:0.75rem;color:var(--text-light);margin-top:0.5rem;">Hover cells for details. Blue-outlined cell = base case.</div>`;
     html += `</div>`;
 
     return html;
@@ -12629,17 +12609,6 @@ function renderInfrastructureTab(st) {
 }
 
 
-function renderComingSoonTab(title, description, phase) {
-    return `<div class="deep-tab-panel">
-        <div class="coming-soon-panel">
-            <div class="icon">🔒</div>
-            <h3>${title}</h3>
-            <p style="font-size:0.88rem;max-width:500px;margin:0 auto;">${description}</p>
-            <p style="margin-top:1rem;font-size:0.78rem;color:#a0aec0;">Coming in ${phase}</p>
-        </div>
-    </div>`;
-}
-
 
 // ============================================================
 //  SKILL 34: Cut & Fill / Earthwork Analysis
@@ -15332,23 +15301,34 @@ function renderExportTab(st) {
             </div>
             <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0;">
             <div style="font-weight:600;color:var(--primary);margin-bottom:0.5rem;">Table of Contents</div>
-            <ol style="padding-left:1.25rem;line-height:2;">
-                <li>Executive Summary & Recommended Use</li>
-                <li>Entitlement Pathway Analysis</li>
-                <li>Pro Forma & Sensitivity Scenarios</li>
-                <li>Market Comparable Analysis</li>
-                <li>Construction Type & Code Compliance</li>
-                <li>Affordable Housing Compliance</li>
-                <li>Tax & Incentive Analysis</li>
-                <li>Community & Political Risk</li>
-                <li>Unit Mix Optimization</li>
-                <li>Infrastructure & Utilities</li>
-                <li>Site Plan & 3D Massing</li>
-                <li>Earthwork Analysis</li>
-                <li>Environmental Constraints</li>
+            <ol style="padding-left:1.25rem;line-height:1.9;columns:2;column-gap:2rem;">
+                <li>Executive Summary</li>
+                <li>Market Comps</li>
+                <li>Environmental</li>
+                <li>Earthwork</li>
+                <li>Infrastructure</li>
+                <li>Community Risk</li>
+                <li>Entitlement Pathway</li>
+                <li>RHNA Compliance</li>
+                <li>Affordable Compliance</li>
+                <li>Dev Agreement</li>
+                <li>Generative Design</li>
+                <li>Site Plan &amp; 3D</li>
+                <li>Unit Mix</li>
                 <li>Parking Design</li>
-                <li>Generative Design Scenarios</li>
+                <li>Construction &amp; Code</li>
+                <li>Pro Forma &amp; Scenarios</li>
                 <li>KPI Dashboard</li>
+                <li>Public Finance</li>
+                <li>Tax &amp; Incentives</li>
+                <li>Incentive Matrix</li>
+                <li>P3 Structuring</li>
+                <li>Investor Module</li>
+                <li>Dev Timeline</li>
+                <li>10-Yr Cash Flow</li>
+                <li>Fiscal Impact</li>
+                <li>Asset Strategy</li>
+                <li>Export &amp; Reports</li>
             </ol>
             <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0;">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
@@ -15521,7 +15501,7 @@ const EIFD_PARAMS = {
 };
 
 // ============================================================
-//  TAB 25: DEVELOPMENT TIMELINE — FULL PROCESS WITH EDITABLE PHASES
+//  TAB 22: DEVELOPMENT TIMELINE — FULL PROCESS WITH EDITABLE PHASES
 // ============================================================
 
 function getDefaultDevTimeline(st) {
@@ -16422,7 +16402,7 @@ function renderP3StructuringTab(st) {
 }
 
 // ===================================================================
-//  TAB 21: INCENTIVE COMPARISON MATRIX
+//  TAB 19: INCENTIVE COMPARISON MATRIX
 // ===================================================================
 // Incentive Matrix state — tracks which programs are selected/applied
 var incentiveMatrixSelections = null; // null = auto (all eligible selected)
@@ -16584,7 +16564,7 @@ function renderIncentiveMatrixTab(st) {
 }
 
 // ===================================================================
-//  TAB 22: DEVELOPMENT AGREEMENT TERM SHEET
+//  TAB 9: DEVELOPMENT AGREEMENT TERM SHEET
 // ===================================================================
 // Dev Agreement dynamic controls
 var DA_DEFAULTS = {
@@ -16773,7 +16753,7 @@ function renderDevAgreementTab(st) {
 }
 
 // ===================================================================
-//  TAB 23: ASSET STRATEGY (HOLD / SELL / REFI)
+//  TAB 25: ASSET STRATEGY (HOLD / SELL / REFI)
 // ===================================================================
 // Asset Strategy defaults — used for initial render and reset
 var ASSET_STRATEGY_DEFAULTS = {
@@ -17039,7 +17019,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ============================================================
-//  TAB 26: INVESTOR MODULE — GP/LP Capital Stack & Waterfall
+//  TAB 21: INVESTOR MODULE — GP/LP Capital Stack & Waterfall
 // ============================================================
 
 function calcIRR(cashFlows, guess) {
