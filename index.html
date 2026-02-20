@@ -9181,6 +9181,9 @@ function renderDeepTabPanels(skipTab0) {
         html += renderCommunityRiskTab(st);
         // Entitlements
         html += renderEntitlementTab(st);
+        html += renderRHNATab(st);
+        html += renderAffordableTab(st);
+        html += renderDevAgreementTab(st);
         // Design
         html += renderGenerativeDesignTab(st);
         html += renderEnhancedSitePlanTab(st);
@@ -9191,8 +9194,7 @@ function renderDeepTabPanels(skipTab0) {
         html += renderSensitivityTab(st);
         html += renderKPIDashboard(st);
         // Export (last)
-        [renderRHNATab, renderAffordableTab, renderDevAgreementTab,
-         renderPublicFinanceTab, renderTaxIncentivesTab, renderIncentiveMatrixTab, renderP3StructuringTab,
+        [renderPublicFinanceTab, renderTaxIncentivesTab, renderIncentiveMatrixTab, renderP3StructuringTab,
          renderInvestorModuleTab,
          renderDevTimelineTab, renderCashFlowModelTab, renderFiscalImpactTab, renderAssetStrategyTab,
          renderExportTab
@@ -9258,6 +9260,12 @@ function renderDeepTabPanels(skipTab0) {
     // --- Entitlements ---
     // Tab 6: Entitlement Pathway
     html += renderEntitlementTab(st);
+    // Tab 7: RHNA Compliance
+    html += renderRHNATab(st);
+    // Tab 8: Affordable Compliance
+    html += renderAffordableTab(st);
+    // Tab 9: Dev Agreement
+    html += renderDevAgreementTab(st);
 
     // --- Design ---
     // Tab 10: Generative Design Engine
@@ -9279,10 +9287,6 @@ function renderDeepTabPanels(skipTab0) {
 
     // Remaining tabs wrapped in try-catch
     var newTabRenderers = [
-        // Entitlements (cont.)
-        { name: 'RHNA Compliance', fn: renderRHNATab },
-        { name: 'Affordable Compliance', fn: renderAffordableTab },
-        { name: 'Dev Agreement', fn: renderDevAgreementTab },
         // Financial (cont.)
         { name: 'Public Finance', fn: renderPublicFinanceTab },
         { name: 'Tax & Incentives', fn: renderTaxIncentivesTab },
