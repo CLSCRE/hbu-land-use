@@ -1471,6 +1471,20 @@
             font-weight: 400;
         }
         .deep-tab-btn.coming-soon:hover { color: #cbd5e0; background: none; }
+        .deep-tab-divider {
+            display: flex;
+            align-items: center;
+            padding: 0 0.5rem 0 0.7rem;
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #a0aec0;
+            white-space: nowrap;
+            border-left: 2px solid #e2e8f0;
+            margin: 0.35rem 0;
+            user-select: none;
+        }
 
         .deep-tab-panel {
             display: none;
@@ -2697,32 +2711,38 @@
         </div>
         <div class="deep-tabs" id="deepTabs">
             <button class="deep-tab-btn active" onclick="switchDeepTab(0)">Executive Summary</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(1)">Entitlement Pathway</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(2)">Pro Forma &amp; Scenarios</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(3)">Market Comps</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(4)">Construction &amp; Code</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(5)">Affordable Compliance</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(6)">Tax &amp; Incentives</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(7)">Community Risk</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(8)">Unit Mix</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(9)">Infrastructure</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(10)">Site Plan &amp; 3D</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(11)">Earthwork</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(12)">Environmental</button>
+            <span class="deep-tab-divider">Due Diligence</span>
+            <button class="deep-tab-btn" onclick="switchDeepTab(1)">Market Comps</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(2)">Environmental</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(3)">Earthwork</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(4)">Infrastructure</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(5)">Community Risk</button>
+            <span class="deep-tab-divider">Entitlements</span>
+            <button class="deep-tab-btn" onclick="switchDeepTab(6)">Entitlement Pathway</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(7)">RHNA Compliance</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(8)">Affordable Compliance</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(9)">Dev Agreement</button>
+            <span class="deep-tab-divider">Design</span>
+            <button class="deep-tab-btn" onclick="switchDeepTab(10)">Generative Design</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(11)">Site Plan &amp; 3D</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(12)">Unit Mix</button>
             <button class="deep-tab-btn" onclick="switchDeepTab(13)">Parking Design</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(14)">Generative Design</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(15)">KPI Dashboard</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(16)">Export &amp; Reports</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(14)">Construction &amp; Code</button>
+            <span class="deep-tab-divider">Financial</span>
+            <button class="deep-tab-btn" onclick="switchDeepTab(15)">Pro Forma &amp; Scenarios</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(16)">KPI Dashboard</button>
             <button class="deep-tab-btn" onclick="switchDeepTab(17)">Public Finance</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(18)">Fiscal Impact</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(19)">RHNA Compliance</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(18)">Tax &amp; Incentives</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(19)">Incentive Matrix</button>
             <button class="deep-tab-btn" onclick="switchDeepTab(20)">P3 Structuring</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(21)">Incentive Matrix</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(22)">Dev Agreement</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(23)">Asset Strategy</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(24)">10-Yr Cash Flow</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(25)">Dev Timeline</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(26)">Investor Module</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(21)">Investor Module</button>
+            <span class="deep-tab-divider">Stabilized</span>
+            <button class="deep-tab-btn" onclick="switchDeepTab(22)">Dev Timeline</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(23)">10-Yr Cash Flow</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(24)">Fiscal Impact</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(25)">Asset Strategy</button>
+            <span class="deep-tab-divider">Export</span>
+            <button class="deep-tab-btn" onclick="switchDeepTab(26)">Export &amp; Reports</button>
         </div>
         <div id="deepTabPanels"></div>
     </div>
@@ -8911,25 +8931,29 @@ function renderDeepTabPanels(skipTab0) {
             panels[i].remove();
         }
         let html = '';
-        html += renderEntitlementTab(st);
-        html += renderSensitivityTab(st);
+        // Due Diligence
         html += renderMarketCompsTab(st);
-        html += renderConstructionTab(st);
-        html += renderAffordableTab(st);
-        html += renderTaxIncentivesTab(st);
-        html += renderCommunityRiskTab(st);
-        html += renderUnitMixTab(st);
-        html += renderInfrastructureTab(st);
-        html += renderEnhancedSitePlanTab(st);
-        html += renderEarthworkTab(st);
         html += renderEnvironmentalTab(st);
-        html += renderParkingTab(st);
+        html += renderEarthworkTab(st);
+        html += renderInfrastructureTab(st);
+        html += renderCommunityRiskTab(st);
+        // Entitlements
+        html += renderEntitlementTab(st);
+        // Design
         html += renderGenerativeDesignTab(st);
+        html += renderEnhancedSitePlanTab(st);
+        html += renderUnitMixTab(st);
+        html += renderParkingTab(st);
+        html += renderConstructionTab(st);
+        // Financial
+        html += renderSensitivityTab(st);
         html += renderKPIDashboard(st);
-        html += renderExportTab(st);
-        [renderPublicFinanceTab, renderFiscalImpactTab, renderRHNATab, renderP3StructuringTab,
-         renderIncentiveMatrixTab, renderDevAgreementTab, renderAssetStrategyTab, renderCashFlowModelTab, renderDevTimelineTab,
-         renderInvestorModuleTab
+        // Export (last)
+        [renderRHNATab, renderAffordableTab, renderDevAgreementTab,
+         renderPublicFinanceTab, renderTaxIncentivesTab, renderIncentiveMatrixTab, renderP3StructuringTab,
+         renderInvestorModuleTab,
+         renderDevTimelineTab, renderCashFlowModelTab, renderFiscalImpactTab, renderAssetStrategyTab,
+         renderExportTab
         ].forEach(function(fn) {
             try { html += fn(st); } catch(e) {
                 console.error('Error in tab render:', e);
@@ -8977,66 +9001,59 @@ function renderDeepTabPanels(skipTab0) {
         html += renderExecSummaryTab(st);
     }
 
-    // Tab 1: Entitlement Pathway
-    html += renderEntitlementTab(st);
-
-    // Tab 2: Pro Forma & Scenarios
-    html += renderSensitivityTab(st);
-
-    // Tab 3: Market Comps
+    // --- Due Diligence ---
+    // Tab 1: Market Comps
     html += renderMarketCompsTab(st);
-
-    // Tab 4: Construction Type & Code Compliance
-    html += renderConstructionTab(st);
-
-    // Tab 5: Affordable Housing Compliance
-    html += renderAffordableTab(st);
-
-    // Tab 6: Tax & Incentives
-    html += renderTaxIncentivesTab(st);
-
-    // Tab 7: Community & Political Risk
+    // Tab 2: Environmental Constraints & Stormwater
+    html += renderEnvironmentalTab(st);
+    // Tab 3: Cut & Fill / Earthwork Analysis
+    html += renderEarthworkTab(st);
+    // Tab 4: Infrastructure & Utility Assessment
+    html += renderInfrastructureTab(st);
+    // Tab 5: Community & Political Risk
     html += renderCommunityRiskTab(st);
 
-    // Tab 8: Unit Mix Optimizer
-    html += renderUnitMixTab(st);
+    // --- Entitlements ---
+    // Tab 6: Entitlement Pathway
+    html += renderEntitlementTab(st);
 
-    // Tab 9: Infrastructure & Utility Assessment
-    html += renderInfrastructureTab(st);
-
-    // Tab 10: Enhanced Site Plan & 3D Massing
+    // --- Design ---
+    // Tab 10: Generative Design Engine
+    html += renderGenerativeDesignTab(st);
+    // Tab 11: Enhanced Site Plan & 3D Massing
     html += renderEnhancedSitePlanTab(st);
-
-    // Tab 11: Cut & Fill / Earthwork Analysis
-    html += renderEarthworkTab(st);
-
-    // Tab 12: Environmental Constraints & Stormwater
-    html += renderEnvironmentalTab(st);
-
+    // Tab 12: Unit Mix Optimizer
+    html += renderUnitMixTab(st);
     // Tab 13: Parking Design & Layout Analyzer
     html += renderParkingTab(st);
+    // Tab 14: Construction Type & Code Compliance
+    html += renderConstructionTab(st);
 
-    // Tab 14: Generative Design Engine
-    html += renderGenerativeDesignTab(st);
-
-    // Tab 15: KPI Dashboard
+    // --- Financial ---
+    // Tab 15: Pro Forma & Scenarios
+    html += renderSensitivityTab(st);
+    // Tab 16: KPI Dashboard
     html += renderKPIDashboard(st);
 
-    // Tab 16: Export & Reports
-    html += renderExportTab(st);
-
-    // Tabs 17-24: Wrap each in try-catch so one error doesn't kill all tabs
+    // Remaining tabs wrapped in try-catch
     var newTabRenderers = [
-        { name: 'Public Finance', fn: renderPublicFinanceTab },
-        { name: 'Fiscal Impact', fn: renderFiscalImpactTab },
+        // Entitlements (cont.)
         { name: 'RHNA Compliance', fn: renderRHNATab },
-        { name: 'P3 Structuring', fn: renderP3StructuringTab },
-        { name: 'Incentive Matrix', fn: renderIncentiveMatrixTab },
+        { name: 'Affordable Compliance', fn: renderAffordableTab },
         { name: 'Dev Agreement', fn: renderDevAgreementTab },
-        { name: 'Asset Strategy', fn: renderAssetStrategyTab },
-        { name: '10-Yr Cash Flow', fn: renderCashFlowModelTab },
-        { name: 'Dev Timeline', fn: renderDevTimelineTab },
+        // Financial (cont.)
+        { name: 'Public Finance', fn: renderPublicFinanceTab },
+        { name: 'Tax & Incentives', fn: renderTaxIncentivesTab },
+        { name: 'Incentive Matrix', fn: renderIncentiveMatrixTab },
+        { name: 'P3 Structuring', fn: renderP3StructuringTab },
         { name: 'Investor Module', fn: renderInvestorModuleTab },
+        // Stabilized Asset
+        { name: 'Dev Timeline', fn: renderDevTimelineTab },
+        { name: '10-Yr Cash Flow', fn: renderCashFlowModelTab },
+        { name: 'Fiscal Impact', fn: renderFiscalImpactTab },
+        { name: 'Asset Strategy', fn: renderAssetStrategyTab },
+        // Export
+        { name: 'Export & Reports', fn: renderExportTab },
     ];
     newTabRenderers.forEach(function(t) {
         try {
