@@ -1537,6 +1537,7 @@
         /* Tab Navigation */
         .deep-tabs {
             display: flex;
+            align-items: flex-end;
             overflow-x: auto;
             background: #f8fafc;
             border-bottom: 2px solid var(--border);
@@ -1571,19 +1572,24 @@
             font-weight: 400;
         }
         .deep-tab-btn.coming-soon:hover { color: #cbd5e0; background: none; }
-        .deep-tab-divider {
+        .deep-tab-group {
             display: flex;
-            align-items: center;
-            padding: 0 0.5rem 0 0.7rem;
-            font-size: 0.62rem;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .deep-tab-group-label {
+            font-size: 0.6rem;
             font-weight: 700;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.07em;
             text-transform: uppercase;
-            color: #a0aec0;
-            white-space: nowrap;
-            border-left: 2px solid #e2e8f0;
-            margin: 0.35rem 0;
+            color: #805ad5;
+            text-align: center;
+            padding: 0.35rem 0.5rem 0;
             user-select: none;
+            white-space: nowrap;
+        }
+        .deep-tab-group-btns {
+            display: flex;
         }
 
         .deep-tab-panel {
@@ -2810,39 +2816,65 @@
             </div>
         </div>
         <div class="deep-tabs" id="deepTabs">
-            <button class="deep-tab-btn active" onclick="switchDeepTab(0)">Executive Summary</button>
-            <span class="deep-tab-divider">Due Diligence</span>
-            <button class="deep-tab-btn" onclick="switchDeepTab(1)">Market Comps</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(2)">Environmental</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(3)">Earthwork</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(4)">Infrastructure</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(5)">Community Risk</button>
-            <span class="deep-tab-divider">Entitlements</span>
-            <button class="deep-tab-btn" onclick="switchDeepTab(6)">Entitlement Pathway</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(7)">RHNA Compliance</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(8)">Affordable Compliance</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(9)">Dev Agreement</button>
-            <span class="deep-tab-divider">Design</span>
-            <button class="deep-tab-btn" onclick="switchDeepTab(10)">Generative Design</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(11)">Site Plan &amp; 3D</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(12)">Unit Mix</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(13)">Parking Design</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(14)">Construction &amp; Code</button>
-            <span class="deep-tab-divider">Financial</span>
-            <button class="deep-tab-btn" onclick="switchDeepTab(15)">Pro Forma &amp; Scenarios</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(16)">KPI Dashboard</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(17)">Public Finance</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(18)">Tax &amp; Incentives</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(19)">Incentive Matrix</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(20)">P3 Structuring</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(21)">Investor Module</button>
-            <span class="deep-tab-divider">Stabilized</span>
-            <button class="deep-tab-btn" onclick="switchDeepTab(22)">Dev Timeline</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(23)">10-Yr Cash Flow</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(24)">Fiscal Impact</button>
-            <button class="deep-tab-btn" onclick="switchDeepTab(25)">Asset Strategy</button>
-            <span class="deep-tab-divider">Export</span>
-            <button class="deep-tab-btn" onclick="switchDeepTab(26)">Export &amp; Reports</button>
+            <div class="deep-tab-group">
+                <button class="deep-tab-btn active" onclick="switchDeepTab(0)">Executive Summary</button>
+            </div>
+            <div class="deep-tab-group">
+                <div class="deep-tab-group-label">Due Diligence</div>
+                <div class="deep-tab-group-btns">
+                    <button class="deep-tab-btn" onclick="switchDeepTab(1)">Market Comps</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(2)">Environmental</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(3)">Earthwork</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(4)">Infrastructure</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(5)">Community Risk</button>
+                </div>
+            </div>
+            <div class="deep-tab-group">
+                <div class="deep-tab-group-label">Entitlements</div>
+                <div class="deep-tab-group-btns">
+                    <button class="deep-tab-btn" onclick="switchDeepTab(6)">Entitlement Pathway</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(7)">RHNA Compliance</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(8)">Affordable Compliance</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(9)">Dev Agreement</button>
+                </div>
+            </div>
+            <div class="deep-tab-group">
+                <div class="deep-tab-group-label">Design</div>
+                <div class="deep-tab-group-btns">
+                    <button class="deep-tab-btn" onclick="switchDeepTab(10)">Generative Design</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(11)">Site Plan &amp; 3D</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(12)">Unit Mix</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(13)">Parking Design</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(14)">Construction &amp; Code</button>
+                </div>
+            </div>
+            <div class="deep-tab-group">
+                <div class="deep-tab-group-label">Financial</div>
+                <div class="deep-tab-group-btns">
+                    <button class="deep-tab-btn" onclick="switchDeepTab(15)">Pro Forma &amp; Scenarios</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(16)">KPI Dashboard</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(17)">Public Finance</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(18)">Tax &amp; Incentives</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(19)">Incentive Matrix</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(20)">P3 Structuring</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(21)">Investor Module</button>
+                </div>
+            </div>
+            <div class="deep-tab-group">
+                <div class="deep-tab-group-label">Stabilized</div>
+                <div class="deep-tab-group-btns">
+                    <button class="deep-tab-btn" onclick="switchDeepTab(22)">Dev Timeline</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(23)">10-Yr Cash Flow</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(24)">Fiscal Impact</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(25)">Asset Strategy</button>
+                </div>
+            </div>
+            <div class="deep-tab-group">
+                <div class="deep-tab-group-label">Export</div>
+                <div class="deep-tab-group-btns">
+                    <button class="deep-tab-btn" onclick="switchDeepTab(26)">Export &amp; Reports</button>
+                </div>
+            </div>
         </div>
         <div id="deepTabPanels"></div>
     </div>
