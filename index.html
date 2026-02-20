@@ -1082,6 +1082,106 @@
             border-color: var(--accent);
             box-shadow: 0 0 0 3px rgba(232,168,56,0.15);
         }
+        /* Dynamic tab slider controls */
+        .dt-controls {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 1.25rem;
+        }
+        .dt-controls-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .dt-controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 10px 18px;
+        }
+        .dt-slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .dt-slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-size: 0.7rem;
+            color: #4a5568;
+        }
+        .dt-slider-label .dt-val {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.75rem;
+        }
+        .dt-slider-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .dt-slider-row input[type="range"] {
+            flex: 1;
+            height: 5px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #e2e8f0;
+            border-radius: 3px;
+            outline: none;
+        }
+        .dt-slider-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+        }
+        .dt-slider-row input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+        }
+        .dt-slider-row input[type="number"] {
+            width: 62px;
+            padding: 3px 5px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 0.73rem;
+            font-weight: 600;
+            color: var(--primary);
+            text-align: right;
+            background: #fffdf5;
+        }
+        .dt-slider-row input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(232,168,56,0.15);
+        }
+        .dt-reset-btn {
+            font-size: 0.65rem;
+            color: #a0aec0;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            border-radius: 4px;
+            padding: 2px 8px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+        .dt-reset-btn:hover { color: #e53e3e; border-color: #feb2b2; }
 
         /* Clickable Legislation Cards & Badges */
         .legislation-card.clickable {
@@ -15452,28 +15552,97 @@ function renderDevAgreementTab(st) {
 // ===================================================================
 //  TAB 23: ASSET STRATEGY (HOLD / SELL / REFI)
 // ===================================================================
-function renderAssetStrategyTab(st) {
+// Asset Strategy defaults — used for initial render and reset
+var ASSET_STRATEGY_DEFAULTS = {
+    equityPct: 35, debtRate: 6.5, noiGrowth: 3.0,
+    capRateCompress: 0.15, dispositionCost: 2.5, refiLTV: 75, taxRate: 25
+};
+var assetStrategyOverrides = null; // null = use defaults
+
+function getAssetStrategyParams() {
+    var d = ASSET_STRATEGY_DEFAULTS;
+    var o = assetStrategyOverrides || {};
+    return {
+        equityPct:       o.equityPct       != null ? o.equityPct       : d.equityPct,
+        debtRate:        o.debtRate        != null ? o.debtRate        : d.debtRate,
+        noiGrowth:       o.noiGrowth       != null ? o.noiGrowth       : d.noiGrowth,
+        capRateCompress: o.capRateCompress != null ? o.capRateCompress : d.capRateCompress,
+        dispositionCost: o.dispositionCost != null ? o.dispositionCost : d.dispositionCost,
+        refiLTV:         o.refiLTV         != null ? o.refiLTV         : d.refiLTV,
+        taxRate:         o.taxRate         != null ? o.taxRate         : d.taxRate,
+    };
+}
+
+function recalcAssetStrategy() {
+    if (!assetStrategyOverrides) assetStrategyOverrides = {};
+    // Read all slider/input values
+    var fields = ['equityPct','debtRate','noiGrowth','capRateCompress','dispositionCost','refiLTV','taxRate'];
+    fields.forEach(function(f) {
+        var el = document.getElementById('as-' + f);
+        if (el) assetStrategyOverrides[f] = parseFloat(el.value);
+    });
+    // Sync sliders ↔ number inputs
+    fields.forEach(function(f) {
+        var slider = document.getElementById('as-' + f + '-slider');
+        var num = document.getElementById('as-' + f);
+        if (slider && num && document.activeElement === slider) num.value = slider.value;
+        if (slider && num && document.activeElement === num) slider.value = num.value;
+        // Update display value
+        var valSpan = document.getElementById('as-' + f + '-val');
+        if (valSpan && num) valSpan.textContent = parseFloat(num.value).toFixed(f === 'capRateCompress' ? 2 : 1) + '%';
+    });
+    // Re-render content only
+    var container = document.getElementById('assetStrategyContent');
+    if (container) container.innerHTML = buildAssetStrategyContent();
+}
+
+function resetAssetStrategy() {
+    assetStrategyOverrides = null;
+    recalcAssetStrategy();
+    // Re-sync slider positions to defaults
+    var p = getAssetStrategyParams();
+    Object.keys(p).forEach(function(f) {
+        var slider = document.getElementById('as-' + f + '-slider');
+        var num = document.getElementById('as-' + f);
+        if (slider) slider.value = p[f];
+        if (num) num.value = p[f];
+        var valSpan = document.getElementById('as-' + f + '-val');
+        if (valSpan) valSpan.textContent = p[f].toFixed(f === 'capRateCompress' ? 2 : 1) + '%';
+    });
+}
+
+function buildAssetStrategySlider(id, label, val, min, max, step) {
+    var dec = (id === 'capRateCompress') ? 2 : 1;
+    var h = '<div class="dt-slider-group">';
+    h += '<div class="dt-slider-label"><span>' + label + '</span><span class="dt-val" id="as-' + id + '-val">' + val.toFixed(dec) + '%</span></div>';
+    h += '<div class="dt-slider-row">';
+    h += '<input type="range" id="as-' + id + '-slider" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '" oninput="document.getElementById(\'as-' + id + '\').value=this.value;recalcAssetStrategy()">';
+    h += '<input type="number" id="as-' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '" oninput="document.getElementById(\'as-' + id + '-slider\').value=this.value;recalcAssetStrategy()">';
+    h += '</div></div>';
+    return h;
+}
+
+function buildAssetStrategyContent() {
+    var st = deepAnalysisState;
+    if (!st) return '';
     var c = st.computed, a = st.assumptions;
     var fmt = function(v) { return '$' + Math.round(v).toLocaleString(); };
     var fmtM = function(v) { return v >= 1e6 ? '$' + (v / 1e6).toFixed(1) + 'M' : fmt(v); };
-    var html = '<div class="deep-tab-panel">';
-    html += '<div class="analysis-section"><h3>Asset Management Strategy</h3>';
-    html += '<p style="font-size:0.78rem;color:#718096;margin-bottom:1rem;">Post-stabilization strategy analysis comparing hold, sell, and refinance scenarios. Evaluates optimal exit timing based on IRR, equity multiple, and cash flow objectives.</p>';
+    var p = getAssetStrategyParams();
 
     var totalDev = c.totalDev;
     var noi = c.noi;
     var capRate = c.capRate || 0.05;
-    var stabilized = c.stabilizedValue;
-    var equity = Math.round(totalDev * 0.35);
+    var equity = Math.round(totalDev * (p.equityPct / 100));
     var debt = totalDev - equity;
-    var debtRate = 0.065;
+    var debtRate = p.debtRate / 100;
     var debtService = Math.round(debt * debtRate);
-    var noiGrowth = 0.03;
-    var capRateCompression = 0.0015;
-    var dispositionCost = 0.025;
-    var refiLTV = 0.75;
+    var noiGrowth = p.noiGrowth / 100;
+    var capRateCompression = p.capRateCompress / 100;
+    var dispositionCost = p.dispositionCost / 100;
+    var refiLTV = p.refiLTV / 100;
+    var taxRate = p.taxRate / 100;
 
-    // 10-year projection
     var years = [];
     var cumCashFlow = 0;
     for (var yr = 1; yr <= 10; yr++) {
@@ -15485,32 +15654,23 @@ function renderAssetStrategyTab(st) {
         cumCashFlow += annualCF;
         var totalReturn = netSaleProceeds + cumCashFlow;
         var equityMultiple = equity > 0 ? totalReturn / equity : 0;
-        var annualizedIRR = equity > 0 ? Math.pow(totalReturn / equity, 1 / yr) - 1 : 0;
+        var annualizedIRR = equity > 0 ? Math.pow(Math.max(totalReturn / equity, 0), 1 / yr) - 1 : 0;
         var refiValue = Math.round(exitValue * refiLTV);
         var refiProceeds = refiValue - debt;
-
         years.push({
-            year: yr,
-            noi: projNOI,
-            cashFlow: annualCF,
-            cumCashFlow: cumCashFlow,
-            exitCap: exitCap,
-            exitValue: exitValue,
-            netSaleProceeds: netSaleProceeds,
-            totalReturn: totalReturn,
-            equityMultiple: equityMultiple,
-            irr: annualizedIRR,
-            refiValue: refiValue,
-            refiProceeds: refiProceeds,
+            year: yr, noi: projNOI, cashFlow: annualCF, cumCashFlow: cumCashFlow,
+            exitCap: exitCap, exitValue: exitValue, netSaleProceeds: netSaleProceeds,
+            totalReturn: totalReturn, equityMultiple: equityMultiple, irr: annualizedIRR,
+            refiValue: refiValue, refiProceeds: refiProceeds,
             cashOnCash: equity > 0 ? annualCF / equity : 0,
         });
     }
 
-    // Find optimal exit year
     var bestIRRYear = years.reduce(function(best, y) { return y.irr > best.irr ? y : best; }, years[0]);
     var bestMultYear = years[years.length - 1];
 
-    // Summary
+    var html = '';
+    // Summary cards
     html += '<div class="exec-summary-grid">';
     html += '<div class="exec-summary-card"><h4>Initial Equity</h4><div class="exec-metric-lg">' + fmtM(equity) + '</div><div class="exec-metric-sub">' + Math.round(equity / totalDev * 100) + '% of total dev cost</div></div>';
     html += '<div class="exec-summary-card"><h4>Optimal Exit (IRR)</h4><div class="exec-metric-lg">Year ' + bestIRRYear.year + '</div><div class="exec-metric-sub">' + (bestIRRYear.irr * 100).toFixed(1) + '% annualized IRR</div></div>';
@@ -15522,14 +15682,10 @@ function renderAssetStrategyTab(st) {
     html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">10-Year Hold Analysis</h4>';
     html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.72rem;">';
     html += '<thead><tr style="background:#edf2f7;">';
-    html += '<th style="padding:6px;text-align:center;">Year</th>';
-    html += '<th style="padding:6px;text-align:right;">NOI</th>';
-    html += '<th style="padding:6px;text-align:right;">Cash Flow</th>';
-    html += '<th style="padding:6px;text-align:right;">Cash-on-Cash</th>';
-    html += '<th style="padding:6px;text-align:right;">Exit Cap</th>';
-    html += '<th style="padding:6px;text-align:right;">Exit Value</th>';
-    html += '<th style="padding:6px;text-align:right;">Net Proceeds</th>';
-    html += '<th style="padding:6px;text-align:right;">Equity Multiple</th>';
+    html += '<th style="padding:6px;text-align:center;">Year</th><th style="padding:6px;text-align:right;">NOI</th>';
+    html += '<th style="padding:6px;text-align:right;">Cash Flow</th><th style="padding:6px;text-align:right;">Cash-on-Cash</th>';
+    html += '<th style="padding:6px;text-align:right;">Exit Cap</th><th style="padding:6px;text-align:right;">Exit Value</th>';
+    html += '<th style="padding:6px;text-align:right;">Net Proceeds</th><th style="padding:6px;text-align:right;">Equity Multiple</th>';
     html += '<th style="padding:6px;text-align:right;">IRR</th>';
     html += '</tr></thead><tbody>';
     years.forEach(function(y) {
@@ -15548,17 +15704,15 @@ function renderAssetStrategyTab(st) {
         html += '</tr>';
     });
     html += '</tbody></table></div>';
-    html += '<div style="font-size:0.68rem;color:#718096;margin-top:0.3rem;">★ = Optimal exit year based on IRR. Assumptions: ' + (noiGrowth * 100).toFixed(0) + '% annual NOI growth, ' + (capRateCompression * 100).toFixed(1) + '% annual cap rate compression, ' + (debtRate * 100).toFixed(1) + '% debt rate, ' + (dispositionCost * 100).toFixed(1) + '% disposition cost.</div>';
 
-    // Strategy comparison
+    // Strategy comparison at Year 5
     html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">Strategy Comparison at Year 5</h4>';
     var y5 = years[4];
     var strategies = [
         {
             name: 'Hold & Operate',
             desc: 'Continue operations, collect cash flow, build equity through NOI growth and debt paydown.',
-            metric1Label: 'Cumulative Cash Flow',
-            metric1Value: fmtM(y5.cumCashFlow),
+            metric1Label: 'Cumulative Cash Flow', metric1Value: fmtM(y5.cumCashFlow),
             metric2Label: 'Avg Cash-on-Cash',
             metric2Value: (years.slice(0, 5).reduce(function(s, y) { return s + y.cashOnCash; }, 0) / 5 * 100).toFixed(1) + '%',
             recommendation: noi > debtService * 1.25 ? 'Recommended — Strong DSCR' : 'Caution — Tight DSCR',
@@ -15567,18 +15721,15 @@ function renderAssetStrategyTab(st) {
         {
             name: 'Sell / Dispose',
             desc: 'Sell asset at market cap rate. Realize gains, return equity to investors, 1031 exchange option.',
-            metric1Label: 'Net Sale Proceeds',
-            metric1Value: fmtM(y5.netSaleProceeds),
-            metric2Label: 'Total Return (incl CF)',
-            metric2Value: y5.equityMultiple.toFixed(2) + 'x equity',
+            metric1Label: 'Net Sale Proceeds', metric1Value: fmtM(y5.netSaleProceeds),
+            metric2Label: 'Total Return (incl CF)', metric2Value: y5.equityMultiple.toFixed(2) + 'x equity',
             recommendation: y5.irr > 0.15 ? 'Attractive exit — Strong IRR' : 'Consider holding for value growth',
             recColor: y5.irr > 0.15 ? '#276749' : '#d69e2e',
         },
         {
             name: 'Refinance & Hold',
             desc: 'Cash-out refinance at higher stabilized value. Return equity while retaining ownership.',
-            metric1Label: 'Refi Proceeds',
-            metric1Value: fmtM(y5.refiProceeds),
+            metric1Label: 'Refi Proceeds', metric1Value: fmtM(y5.refiProceeds),
             metric2Label: 'Equity Returned',
             metric2Value: (equity > 0 ? (y5.refiProceeds / equity * 100).toFixed(0) : '0') + '% of equity',
             recommendation: y5.refiProceeds > equity ? 'Full equity return possible' : 'Partial equity return — hold for appreciation',
@@ -15600,7 +15751,7 @@ function renderAssetStrategyTab(st) {
     });
     html += '</div>';
 
-    // 1031 Exchange section
+    // 1031 Exchange
     html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">1031 Exchange Considerations</h4>';
     html += '<div style="background:#fffff0;border:1px solid #ecc94b;border-radius:8px;padding:1rem;font-size:0.75rem;">';
     html += '<div style="font-weight:600;margin-bottom:0.5rem;color:#744210;">Tax-Deferred Exchange (IRC §1031)</div>';
@@ -15609,10 +15760,37 @@ function renderAssetStrategyTab(st) {
     html += '<li><strong>180-Day Closing:</strong> Must close on replacement property within 180 days</li>';
     html += '<li><strong>Like-Kind:</strong> Real property for real property (held for investment or business use)</li>';
     html += '<li><strong>Qualified Intermediary:</strong> Required to hold proceeds — cannot take constructive receipt</li>';
-    html += '<li><strong>Estimated Tax Deferred:</strong> <strong style="color:#276749;">' + fmtM(Math.round((y5.netSaleProceeds) * 0.25)) + '</strong> (combined federal + state at ~25% effective rate)</li>';
+    html += '<li><strong>Estimated Tax Deferred:</strong> <strong style="color:#276749;">' + fmtM(Math.round(y5.netSaleProceeds * taxRate)) + '</strong> (at ' + (taxRate * 100).toFixed(0) + '% effective rate)</li>';
     html += '</ul></div>';
 
     html += '<div style="font-size:0.72rem;color:#718096;margin-top:1.25rem;">Source: <a href="https://www.irs.gov/newsroom/like-kind-exchanges-real-estate-tax-tips" target="_blank" style="color:#3182ce;">IRS §1031 Guide</a> | <a href="https://www.ftb.ca.gov/forms/misc/1100.html" target="_blank" style="color:#3182ce;">CA FTB 1031 Reporting</a> | <a href="https://www.kosmont.com/services/asset-management" target="_blank" style="color:#3182ce;">Kosmont Asset Management</a></div>';
+    return html;
+}
+
+function renderAssetStrategyTab(st) {
+    var p = getAssetStrategyParams();
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="analysis-section"><h3>Asset Management Strategy</h3>';
+    html += '<p style="font-size:0.78rem;color:#718096;margin-bottom:1rem;">Post-stabilization strategy analysis comparing hold, sell, and refinance scenarios. Adjust assumptions below to model different exit strategies.</p>';
+
+    // Slider control panel
+    html += '<div class="dt-controls">';
+    html += '<div class="dt-controls-title"><span>Assumptions</span><button class="dt-reset-btn" onclick="resetAssetStrategy()">Reset Defaults</button></div>';
+    html += '<div class="dt-controls-grid">';
+    html += buildAssetStrategySlider('equityPct',       'Equity %',              p.equityPct,       10, 100, 1);
+    html += buildAssetStrategySlider('debtRate',        'Debt Rate',             p.debtRate,        3,  12,  0.1);
+    html += buildAssetStrategySlider('noiGrowth',       'NOI Growth / Yr',       p.noiGrowth,       0,  8,   0.25);
+    html += buildAssetStrategySlider('capRateCompress', 'Cap Rate Compress / Yr', p.capRateCompress, 0,  0.5, 0.01);
+    html += buildAssetStrategySlider('dispositionCost', 'Disposition Cost',       p.dispositionCost, 0,  5,   0.25);
+    html += buildAssetStrategySlider('refiLTV',         'Refi LTV',              p.refiLTV,         50, 85,  1);
+    html += buildAssetStrategySlider('taxRate',         'Effective Tax Rate',     p.taxRate,         10, 45,  1);
+    html += '</div></div>';
+
+    // Dynamic content area
+    html += '<div id="assetStrategyContent">';
+    html += buildAssetStrategyContent();
+    html += '</div>';
+
     html += '</div></div>';
     return html;
 }
