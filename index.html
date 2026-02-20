@@ -2330,6 +2330,50 @@
         }
         .pipeline-legend-item { display: flex; align-items: center; gap: 0.3rem; }
         .pipeline-legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+        /* === Deep Analysis Mobile Responsiveness === */
+        @media (max-width: 768px) {
+            .deep-tab-panel { padding: 1rem; }
+            .dt-controls-grid { grid-template-columns: 1fr !important; }
+            .dt-slider-row { flex-wrap: wrap; }
+            .dt-slider-row input[type="range"] { min-width: 0; flex: 1; }
+            .dt-slider-row input[type="number"] { width: 60px !important; flex-shrink: 0; }
+            /* Scenario table */
+            .scenario-table { font-size: 0.72rem; }
+            .scenario-table th, .scenario-table td { padding: 0.4rem 0.3rem; }
+            /* Tornado */
+            .tornado-bar-row { flex-wrap: wrap; gap: 0.2rem; }
+            .tornado-label { width: 100%; font-size: 0.7rem; }
+            .tornado-bar-area { flex: 1; min-width: 0; }
+            /* Heatmap — already has overflow-x: auto via .heatmap-wrapper */
+            .heatmap-table { font-size: 0.65rem; }
+            .heatmap-table td, .heatmap-table th { padding: 0.2rem 0.3rem; min-width: 38px; }
+            /* Comparison tables */
+            .afford-comparison-table { font-size: 0.72rem; }
+            .afford-comparison-table th, .afford-comparison-table td { padding: 0.3rem 0.4rem; }
+            /* Sensitivity sliders grid */
+            .sens-scenario-grid { grid-template-columns: 1fr !important; }
+            /* Breakeven cards */
+            .breakeven-grid { grid-template-columns: 1fr !important; }
+            /* KPI grid */
+            .kpi-grid { grid-template-columns: 1fr !important; }
+            /* Deep tab navigation — horizontal scroll */
+            #deepTabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .deep-tab-btn { white-space: nowrap; flex-shrink: 0; font-size: 0.65rem; padding: 0.4rem 0.6rem; }
+            /* Summary cards */
+            .exec-metric-lg { font-size: 1.3rem; }
+        }
+        @media (max-width: 480px) {
+            .deep-tab-panel { padding: 0.5rem; }
+            .analysis-section { padding: 0.75rem !important; }
+            .analysis-section h3 { font-size: 0.9rem; }
+            .exec-summary-grid { gap: 0.75rem; }
+            .exec-summary-card { padding: 0.75rem; }
+            .exec-metric-lg { font-size: 1.1rem; }
+            .scenario-table { font-size: 0.65rem; }
+            .tornado-container { margin: 0.75rem 0; }
+            .breakeven-card { padding: 0.75rem; }
+        }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -9833,7 +9877,7 @@ function renderSensitivityTab(st) {
 
     // Scenario Sliders
     html += `<div class="dt-controls"><div class="dt-controls-title">Bear / Bull Scenario Assumptions <button class="dt-reset-btn" onclick="resetSensitivity()">Reset Defaults</button></div>`;
-    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.25rem 2rem;">`;
+    html += `<div class="sens-scenario-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.25rem 2rem;">`;
     html += `<div><div style="font-size:0.78rem;font-weight:700;color:#c53030;margin-bottom:0.5rem;">Bear Case</div>`;
     html += sensSliderHtml('sens-bearCostPct', 'Cost Increase', 0, 30, 1, sensScenario.bearCostPct, '%');
     html += sensSliderHtml('sens-bearRentPct', 'Rent Change', -30, 0, 1, sensScenario.bearRentPct, '%');
@@ -11669,7 +11713,7 @@ function buildConstructionContent(st) {
         </div>`;
 
     html += `<h4 style="font-size:0.88rem;color:var(--primary);margin-bottom:0.75rem;">Construction Type Cost Comparison <span style="font-size:0.72rem;color:var(--text-light);font-weight:400;margin-left:0.5rem;">Click row for details</span></h4>`;
-    html += `<table class="afford-comparison-table" style="border-collapse:collapse;"><thead><tr>
+    html += `<div style="overflow-x:auto;"><table class="afford-comparison-table" style="border-collapse:collapse;"><thead><tr>
         <th>Type</th><th>Description</th><th>Cost/SF Range</th><th>Max Stories*</th><th>Fire Rating</th><th>Duration</th><th>Typical Use</th>
     </tr></thead><tbody>`;
     const typeRowKeys = ['V-B', 'V-A', 'III-A', 'II-A', 'I-B', 'I-A'];
@@ -11698,7 +11742,7 @@ function buildConstructionContent(st) {
             </td>
         </tr>`;
     }
-    html += `</tbody></table>`;
+    html += `</tbody></table></div>`;
     html += `<div style="font-size:0.75rem;color:var(--text-light);margin-top:0.35rem;">*Max stories with sprinklers and allowable area increases per IBC Table 504.4.</div>`;
     html += `</div>`;
 
