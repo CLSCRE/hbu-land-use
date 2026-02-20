@@ -13989,7 +13989,8 @@ function renderCashFlowModelTab(st) {
     html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">Vacancy Rate</label><input type="number" id="cf-vacancy" value="5.0" step="0.5" min="0" max="25" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcCashFlow()"> <span style="font-size:0.65rem;color:#a0aec0;">%</span></div>';
     html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">Cap Ex Reserve</label><input type="number" id="cf-capex" value="3.0" step="0.5" min="0" max="15" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcCashFlow()"> <span style="font-size:0.65rem;color:#a0aec0;">% of revenue</span></div>';
     html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">Debt Rate</label><input type="number" id="cf-debtRate" value="6.5" step="0.25" min="3" max="12" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcCashFlow()"> <span style="font-size:0.65rem;color:#a0aec0;">%</span></div>';
-    html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">LTV</label><input type="number" id="cf-ltv" value="65" step="5" min="0" max="85" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcCashFlow()"> <span style="font-size:0.65rem;color:#a0aec0;">%</span></div>';
+    html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">LTV</label><input type="number" id="cf-ltv" value="75" step="5" min="0" max="85" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcCashFlow()"> <span style="font-size:0.65rem;color:#a0aec0;">%</span></div>';
+    html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">Target DSCR</label><input type="number" id="cf-targetDSCR" value="1.20" step="0.05" min="1.0" max="2.0" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcCashFlow()"> <span style="font-size:0.65rem;color:#a0aec0;">x</span></div>';
     html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">Exit Cap Rate</label><input type="number" id="cf-exitCap" value="' + ((c.capRate || 0.05) * 100 + 0.25).toFixed(2) + '" step="0.25" min="2" max="12" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcCashFlow()"> <span style="font-size:0.65rem;color:#a0aec0;">%</span></div>';
     html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">Mgmt Fee</label><input type="number" id="cf-mgmt" value="4.0" step="0.5" min="0" max="10" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcCashFlow()"> <span style="font-size:0.65rem;color:#a0aec0;">% of EGI</span></div>';
     html += '</div></div>';
@@ -14016,12 +14017,29 @@ function buildCashFlowTable(c) {
     var exitCap = parseFloat((document.getElementById('cf-exitCap') || {}).value) / 100 || ((c.capRate || 0.05) + 0.0025);
     var mgmtRate = parseFloat((document.getElementById('cf-mgmt') || {}).value) / 100 || 0.04;
 
+    var targetDSCR = parseFloat((document.getElementById('cf-targetDSCR') || {}).value) || 1.20;
+
     var totalDev = c.totalDev;
-    var equity = Math.round(totalDev * (1 - ltv));
     var loanAmount = Math.round(totalDev * ltv);
     var annualDS = Math.round(loanAmount * debtRate);
     var baseRevenue = c.grossRevenue;
     var baseOpex = c.opex;
+
+    // DSCR constraint: if Year 1 NOI / DS < target, reduce loan to meet target DSCR
+    var y1RevEst = Math.round(baseRevenue * (1 + revGrowth));
+    var y1VacEst = Math.round(y1RevEst * vacancyRate);
+    var y1EgiEst = y1RevEst - y1VacEst;
+    var y1OpexEst = Math.round(baseOpex * (1 + expGrowth));
+    var y1MgmtEst = Math.round(y1EgiEst * mgmtRate);
+    var y1CapexEst = Math.round(y1RevEst * capexRate);
+    var y1NoiEst = y1EgiEst - y1OpexEst - y1MgmtEst - y1CapexEst;
+    var maxDSFromDSCR = targetDSCR > 0 ? Math.round(y1NoiEst / targetDSCR) : annualDS;
+    var maxLoanFromDSCR = debtRate > 0 ? Math.round(maxDSFromDSCR / debtRate) : loanAmount;
+    if (loanAmount > maxLoanFromDSCR && maxLoanFromDSCR > 0) {
+        loanAmount = maxLoanFromDSCR;
+        annualDS = Math.round(loanAmount * debtRate);
+    }
+    var equity = totalDev - loanAmount;
 
     var years = [];
     var cumCF = 0;
@@ -14059,17 +14077,22 @@ function buildCashFlowTable(c) {
     // Summary cards
     var y1 = years[0], y5 = years[4], y10 = years[9];
     var html = '<div class="exec-summary-grid" style="margin-bottom:1rem;">';
-    html += '<div class="exec-summary-card"><h4>Year 1 NOI</h4><div class="exec-metric-lg">' + fmtM(y1.noi) + '</div><div class="exec-metric-sub">DSCR: ' + y1.dscr.toFixed(2) + 'x</div></div>';
+    var y1DscrColor = y1.dscr >= 1.20 ? '#276749' : y1.dscr >= 1.0 ? '#b7791f' : '#c53030';
+    var y1DscrLabel = y1.dscr >= 1.20 ? '' : y1.dscr >= 1.0 ? ' (Tight)' : ' (No Coverage)';
+    html += '<div class="exec-summary-card"><h4>Year 1 NOI</h4><div class="exec-metric-lg">' + fmtM(y1.noi) + '</div><div class="exec-metric-sub">DSCR: <strong style="color:' + y1DscrColor + ';">' + y1.dscr.toFixed(2) + 'x' + y1DscrLabel + '</strong></div></div>';
     html += '<div class="exec-summary-card"><h4>Year 1 Cash-on-Cash</h4><div class="exec-metric-lg" style="color:' + (y1.cocReturn > 0.08 ? '#276749' : '#b7791f') + ';">' + (y1.cocReturn * 100).toFixed(1) + '%</div><div class="exec-metric-sub">' + fmtM(y1.cashFlowADS) + ' after debt</div></div>';
     html += '<div class="exec-summary-card"><h4>Year 5 Exit</h4><div class="exec-metric-lg">' + y5.eqMult.toFixed(2) + 'x</div><div class="exec-metric-sub">' + (y5.irr * 100).toFixed(1) + '% IRR | ' + fmtM(y5.exitValue) + ' value</div></div>';
     html += '<div class="exec-summary-card"><h4>Year 10 Exit</h4><div class="exec-metric-lg">' + y10.eqMult.toFixed(2) + 'x</div><div class="exec-metric-sub">' + (y10.irr * 100).toFixed(1) + '% IRR | ' + fmtM(y10.exitValue) + ' value</div></div>';
     html += '</div>';
 
     // Capital structure
-    html += '<div style="display:flex;gap:1rem;margin-bottom:1rem;font-size:0.75rem;">';
-    html += '<div style="background:#ebf8ff;border-radius:6px;padding:0.5rem 1rem;"><strong>Equity:</strong> ' + fmtM(equity) + ' (' + Math.round((1 - ltv) * 100) + '%)</div>';
-    html += '<div style="background:#fefcbf;border-radius:6px;padding:0.5rem 1rem;"><strong>Debt:</strong> ' + fmtM(loanAmount) + ' (' + Math.round(ltv * 100) + '% LTV @ ' + (debtRate * 100).toFixed(1) + '%)</div>';
+    var effectiveLTV = totalDev > 0 ? loanAmount / totalDev : 0;
+    var dscrConstrained = loanAmount < Math.round(totalDev * ltv);
+    html += '<div style="display:flex;gap:1rem;margin-bottom:1rem;font-size:0.75rem;flex-wrap:wrap;">';
+    html += '<div style="background:#ebf8ff;border-radius:6px;padding:0.5rem 1rem;"><strong>Equity:</strong> ' + fmtM(equity) + ' (' + Math.round((1 - effectiveLTV) * 100) + '%)</div>';
+    html += '<div style="background:#fefcbf;border-radius:6px;padding:0.5rem 1rem;"><strong>Debt:</strong> ' + fmtM(loanAmount) + ' (' + Math.round(effectiveLTV * 100) + '% LTV @ ' + (debtRate * 100).toFixed(1) + '%)' + (dscrConstrained ? ' <span style="color:#b7791f;font-size:0.68rem;">DSCR-constrained</span>' : '') + '</div>';
     html += '<div style="background:#fed7d7;border-radius:6px;padding:0.5rem 1rem;"><strong>Annual Debt Service:</strong> ' + fmtM(annualDS) + '</div>';
+    html += '<div style="background:#f0fff4;border-radius:6px;padding:0.5rem 1rem;"><strong>Target DSCR:</strong> ' + targetDSCR.toFixed(2) + 'x</div>';
     html += '</div>';
 
     // Full cash flow table
@@ -14092,7 +14115,8 @@ function buildCashFlowTable(c) {
 
     years.forEach(function(y) {
         var bg = y.year % 2 === 0 ? '#f7fafc' : '#fff';
-        var dscrColor = y.dscr >= 1.25 ? '#276749' : y.dscr >= 1.0 ? '#d69e2e' : '#c53030';
+        var dscrColor = y.dscr >= 1.20 ? '#276749' : y.dscr >= 1.0 ? '#b7791f' : '#c53030';
+        var dscrBg = y.dscr >= 1.20 ? '' : y.dscr >= 1.0 ? 'background:#fffff0;' : 'background:#fff5f5;';
         html += '<tr style="background:' + bg + ';border-bottom:1px solid #e2e8f0;">';
         html += '<td style="padding:5px 6px;text-align:center;font-weight:600;">' + y.year + '</td>';
         html += '<td style="padding:5px 6px;text-align:right;">' + fmt(y.gpRevenue) + '</td>';
@@ -14104,7 +14128,7 @@ function buildCashFlowTable(c) {
         html += '<td style="padding:5px 6px;text-align:right;font-weight:700;">' + fmt(y.noi) + '</td>';
         html += '<td style="padding:5px 6px;text-align:right;">(' + fmt(y.debtService) + ')</td>';
         html += '<td style="padding:5px 6px;text-align:right;font-weight:700;color:' + (y.cashFlowADS > 0 ? '#276749' : '#c53030') + ';">' + fmt(y.cashFlowADS) + '</td>';
-        html += '<td style="padding:5px 6px;text-align:right;color:' + dscrColor + ';">' + y.dscr.toFixed(2) + 'x</td>';
+        html += '<td style="padding:5px 6px;text-align:right;color:' + dscrColor + ';font-weight:700;' + dscrBg + '">' + y.dscr.toFixed(2) + 'x</td>';
         html += '<td style="padding:5px 6px;text-align:right;">' + (y.cocReturn * 100).toFixed(1) + '%</td>';
         html += '</tr>';
     });
