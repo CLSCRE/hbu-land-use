@@ -1,2 +1,4 @@
 .claude/
 .vercel
+*.pdf
+_ul
