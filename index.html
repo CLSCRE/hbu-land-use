@@ -4966,10 +4966,10 @@ function generateBudget(useId, inp, effects) {
     const grossRevenue = nsf * revenuePSF;
     const opex = Math.round(grossRevenue * params.opex);
     const noi = grossRevenue - opex;
-    const capRate = params.cap;
-    const stabilizedValue = Math.round(noi / capRate);
-    const yieldOnCost = noi / totalDev;
-    const devMargin = (stabilizedValue - totalDev) / totalDev;
+    const capRate = params.cap || 0.05;
+    const stabilizedValue = capRate > 0 ? Math.round(noi / capRate) : 0;
+    const yieldOnCost = totalDev > 0 ? noi / totalDev : 0;
+    const devMargin = totalDev > 0 ? (stabilizedValue - totalDev) / totalDev : 0;
 
     return {
         gsf, nsf, revenueNSF: nsf, stories, buildingHeight, buildingFootprint, units, parkingSpaces, far,
@@ -5857,6 +5857,40 @@ function renderDeepAssumptions(assumptions, hasUnits, useId, computed) {
             ${noiDisplay}
         </div>
     </div>`;
+}
+
+// Snapshot current da- input values into st.assumptions so they persist across re-renders.
+// Call this before any renderDeepTabPanels(true) that doesn't go through recalcDeepAnalysis.
+function snapshotDeepAssumptions() {
+    var st = deepAnalysisState;
+    if (!st || !st.assumptions) return;
+    var fields = ['far','unitsOrNSF','parkingSpaces','buildCostPSF','landValuePSF','opexPct','capRatePct','parkingCostPerSpace'];
+    for (var i = 0; i < fields.length; i++) {
+        var el = document.getElementById('da-' + fields[i]);
+        if (el && el.value !== '') {
+            var v = parseFloat(el.value);
+            if (!isNaN(v)) st.assumptions[fields[i]] = v;
+        }
+    }
+    // Revenue (residential = rentPerUnit, commercial = revenuePSF)
+    var rentEl = document.getElementById('da-rentPerUnit');
+    var revEl = document.getElementById('da-revenuePSF');
+    if (rentEl && rentEl.value !== '') {
+        var params = BUILDING_PARAMS[st.bestUse] || {};
+        var rent = parseFloat(rentEl.value);
+        if (!isNaN(rent) && rent > 0 && params.unitSF > 0) {
+            st.assumptions.revenuePSF = Math.round(rent * 12 / params.unitSF);
+        }
+    } else if (revEl && revEl.value !== '') {
+        var v = parseFloat(revEl.value);
+        if (!isNaN(v)) st.assumptions.revenuePSF = v;
+    }
+    // Site work override
+    var swEl = document.getElementById('da-siteWorkPSF');
+    if (swEl && swEl.value !== '' && parseFloat(swEl.value) > 0) {
+        st.assumptions.siteWorkOverride = Math.round(parseFloat(swEl.value) * (st.inp.parcelSize || 10000));
+        st.assumptions.siteWorkPSF = parseFloat(swEl.value);
+    }
 }
 
 function recalcDeepAnalysis() {
@@ -9202,6 +9236,8 @@ function renderDeepTabPanels(skipTab0) {
     if (!st) return;
 
     if (skipTab0) {
+        // Persist any in-progress assumption edits before re-rendering
+        snapshotDeepAssumptions();
         // Re-render only tabs 1+, preserving tab 0 (comparison dashboard)
         const container = document.getElementById('deepTabPanels');
         const panels = container.querySelectorAll('.deep-tab-panel');
@@ -9744,7 +9780,8 @@ function recalcSensitivity() {
         var el = document.getElementById('sens-' + fields[i]);
         var slider = document.getElementById('sens-' + fields[i] + '-slider');
         if (el) {
-            sensScenario[fields[i]] = parseFloat(el.value);
+            var parsed = parseFloat(el.value);
+            sensScenario[fields[i]] = isNaN(parsed) ? sensScenarioDefaults[fields[i]] : parsed;
             if (slider && document.activeElement === el) slider.value = el.value;
             if (slider && document.activeElement === slider) el.value = slider.value;
         }
