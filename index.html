@@ -12185,7 +12185,7 @@ function renderComingSoonTab(title, description, phase) {
 //  SKILL 34: Cut & Fill / Earthwork Analysis
 // ============================================================
 
-const EARTHWORK_COSTS = {
+const EARTHWORK_COSTS_DEFAULT = {
     cut:           8.50,   // $/CY on-site cut
     fill:          6.00,   // $/CY on-site fill (reuse from cut)
     import:       28.00,   // $/CY imported fill (haul + material)
@@ -12196,6 +12196,30 @@ const EARTHWORK_COSTS = {
     compaction:     2.80,  // $/CY compaction
     erosionControl: 1.25,  // $/SF SWPPP erosion control during grading
 };
+var EARTHWORK_COSTS = Object.assign({}, EARTHWORK_COSTS_DEFAULT);
+
+function recalcEarthwork() {
+    var fields = {cut:'ew-cut',fill:'ew-fill','import':'ew-import','export':'ew-export',retainingWall:'ew-retWall',shoring:'ew-shoring',grading:'ew-grading',compaction:'ew-compact',erosionControl:'ew-erosion'};
+    Object.keys(fields).forEach(function(k) {
+        var el = document.getElementById(fields[k]);
+        if (el) EARTHWORK_COSTS[k] = parseFloat(el.value) || EARTHWORK_COSTS_DEFAULT[k];
+    });
+    var st = deepAnalysisState;
+    if (!st) return;
+    var container = document.getElementById('earthworkContent');
+    if (!container) return;
+    var ew = analyzeEarthwork(st.bestUse, st.inp, st.computed);
+    container.innerHTML = buildEarthworkContent(ew, st.inp);
+}
+function resetEarthwork() {
+    EARTHWORK_COSTS = Object.assign({}, EARTHWORK_COSTS_DEFAULT);
+    var fields = {cut:'ew-cut',fill:'ew-fill','import':'ew-import','export':'ew-export',retainingWall:'ew-retWall',shoring:'ew-shoring',grading:'ew-grading',compaction:'ew-compact',erosionControl:'ew-erosion'};
+    Object.keys(fields).forEach(function(k) {
+        var el = document.getElementById(fields[k]);
+        if (el) el.value = EARTHWORK_COSTS_DEFAULT[k];
+    });
+    recalcEarthwork();
+}
 
 function analyzeEarthwork(useId, inp, computed) {
     var parcelSF = inp.parcelSize || 10000;
@@ -12339,62 +12363,70 @@ function generateEarthworkSVG(earthwork, inp) {
     return svg;
 }
 
-function renderEarthworkTab(st) {
-    var useId = st.bestUse;
-    var inp = st.inp;
-    var computed = st.computed;
-    var ew = analyzeEarthwork(useId, inp, computed);
-
-    var html = '<div class="deep-tab-panel">';
-    html += '<div class="analysis-section"><h3>Cut & Fill / Earthwork Analysis</h3>';
-
-    // Cross section SVG
+function buildEarthworkContent(ew, inp) {
+    var html = '';
     html += '<div style="margin-bottom:1.5rem;">' + generateEarthworkSVG(ew, inp) + '</div>';
-
-    // Volume summary
     html += '<div class="exec-summary-grid">';
     html += '<div class="exec-summary-card"><h4>Cut Volume</h4><div class="exec-metric-lg" style="color:#c53030;">' + ew.cutVolume.toLocaleString() + ' CY</div><div class="exec-metric-sub">Includes ' + ew.padExcavation.toLocaleString() + ' CY pad excavation</div></div>';
     html += '<div class="exec-summary-card"><h4>Fill Volume</h4><div class="exec-metric-lg" style="color:#276749;">' + ew.fillVolume.toLocaleString() + ' CY</div><div class="exec-metric-sub">On-site reuse from cut material</div></div>';
-    if (ew.exportVolume > 0) {
-        html += '<div class="exec-summary-card"><h4>Export Off-Site</h4><div class="exec-metric-lg" style="color:#dd6b20;">' + ew.exportVolume.toLocaleString() + ' CY</div><div class="exec-metric-sub">~' + Math.ceil(ew.exportVolume / 14) + ' truck loads (14 CY ea.)</div></div>';
-    }
-    if (ew.importVolume > 0) {
-        html += '<div class="exec-summary-card"><h4>Import Fill</h4><div class="exec-metric-lg" style="color:#2b6cb0;">' + ew.importVolume.toLocaleString() + ' CY</div><div class="exec-metric-sub">~' + Math.ceil(ew.importVolume / 14) + ' truck loads (14 CY ea.)</div></div>';
-    }
+    if (ew.exportVolume > 0) html += '<div class="exec-summary-card"><h4>Export Off-Site</h4><div class="exec-metric-lg" style="color:#dd6b20;">' + ew.exportVolume.toLocaleString() + ' CY</div><div class="exec-metric-sub">~' + Math.ceil(ew.exportVolume / 14) + ' truck loads (14 CY ea.)</div></div>';
+    if (ew.importVolume > 0) html += '<div class="exec-summary-card"><h4>Import Fill</h4><div class="exec-metric-lg" style="color:#2b6cb0;">' + ew.importVolume.toLocaleString() + ' CY</div><div class="exec-metric-sub">~' + Math.ceil(ew.importVolume / 14) + ' truck loads (14 CY ea.)</div></div>';
     html += '<div class="exec-summary-card"><h4>Total Earthwork Cost</h4><div class="exec-metric-lg">' + formatCompactDollars(ew.totalCost) + '</div><div class="exec-metric-sub">Grade differential: ' + ew.gradeDifferential + ' ft (' + ew.topography + ')</div></div>';
-    if (ew.subLevels > 0) {
-        html += '<div class="exec-summary-card"><h4>Subterranean Levels</h4><div class="exec-metric-lg">' + ew.subLevels + '</div><div class="exec-metric-sub">Shoring cost: ' + formatCompactDollars(ew.shoringCost) + '</div></div>';
-    }
+    if (ew.subLevels > 0) html += '<div class="exec-summary-card"><h4>Subterranean Levels</h4><div class="exec-metric-lg">' + ew.subLevels + '</div><div class="exec-metric-sub">Shoring cost: ' + formatCompactDollars(ew.shoringCost) + '</div></div>';
     html += '</div>';
-
-    // Cost breakdown table
     html += '<table class="budget-table" style="margin-top:1.5rem;"><tr class="section-header"><td colspan="3">Earthwork Cost Breakdown</td></tr>';
     html += '<tr><th style="text-align:left;">Item</th><th>Quantity</th><th>Cost</th></tr>';
     html += '<tr><td>Rough Grading</td><td class="dim">' + Math.round(inp.parcelSize / 9).toLocaleString() + ' SY</td><td>' + fmt(ew.costs.grading) + '</td></tr>';
     html += '<tr><td>Cut (On-Site)</td><td class="dim">' + ew.cutVolume.toLocaleString() + ' CY</td><td>' + fmt(ew.costs.cut) + '</td></tr>';
     html += '<tr><td>Fill (On-Site Reuse)</td><td class="dim">' + ew.fillVolume.toLocaleString() + ' CY</td><td>' + fmt(ew.costs.fill) + '</td></tr>';
-    if (ew.importVolume > 0) {
-        html += '<tr><td>Import Fill (Haul + Material)</td><td class="dim">' + ew.importVolume.toLocaleString() + ' CY</td><td>' + fmt(ew.costs.import) + '</td></tr>';
-    }
-    if (ew.exportVolume > 0) {
-        html += '<tr><td>Export Off-Site (Haul + Dump)</td><td class="dim">' + ew.exportVolume.toLocaleString() + ' CY</td><td>' + fmt(ew.costs.export) + '</td></tr>';
-    }
+    if (ew.importVolume > 0) html += '<tr><td>Import Fill (Haul + Material)</td><td class="dim">' + ew.importVolume.toLocaleString() + ' CY</td><td>' + fmt(ew.costs.import) + '</td></tr>';
+    if (ew.exportVolume > 0) html += '<tr><td>Export Off-Site (Haul + Dump)</td><td class="dim">' + ew.exportVolume.toLocaleString() + ' CY</td><td>' + fmt(ew.costs.export) + '</td></tr>';
     html += '<tr><td>Compaction</td><td class="dim">' + (ew.fillVolume + ew.importVolume).toLocaleString() + ' CY</td><td>' + fmt(ew.costs.compaction) + '</td></tr>';
     html += '<tr><td>Erosion Control / SWPPP</td><td class="dim">' + inp.parcelSize.toLocaleString() + ' SF</td><td>' + fmt(ew.costs.erosion) + '</td></tr>';
-    if (ew.retainingWall.needed) {
-        html += '<tr><td>Retaining Wall</td><td class="dim">' + ew.retainingWall.area.toLocaleString() + ' SF face</td><td>' + fmt(ew.costs.retaining) + '</td></tr>';
-    }
-    if (ew.shoringCost > 0) {
-        html += '<tr><td>Temporary Shoring</td><td class="dim">' + ew.subLevels + ' sub levels</td><td>' + fmt(ew.costs.shoring) + '</td></tr>';
-    }
+    if (ew.retainingWall.needed) html += '<tr><td>Retaining Wall</td><td class="dim">' + ew.retainingWall.area.toLocaleString() + ' SF face</td><td>' + fmt(ew.costs.retaining) + '</td></tr>';
+    if (ew.shoringCost > 0) html += '<tr><td>Temporary Shoring</td><td class="dim">' + ew.subLevels + ' sub levels</td><td>' + fmt(ew.costs.shoring) + '</td></tr>';
     html += '<tr class="grand-total"><td colspan="2">Total Earthwork</td><td>' + fmt(ew.totalCost) + '</td></tr>';
     html += '</table>';
-
-    // Retaining wall detail
     if (ew.retainingWall.needed) {
         html += '<div class="risk-card" style="margin-top:1.25rem;"><strong>Retaining Wall Required</strong>';
         html += '<p>Site topography (' + ew.topography + ') requires a retaining wall: ' + ew.retainingWall.length + ' LF long x ' + ew.retainingWall.height + ' ft high (' + ew.retainingWall.area.toLocaleString() + ' SF of wall face). Reinforced concrete or masonry block construction recommended. Geotechnical report required for design.</p></div>';
     }
+    return html;
+}
+
+function renderEarthworkTab(st) {
+    var ew = analyzeEarthwork(st.bestUse, st.inp, st.computed);
+    var ec = EARTHWORK_COSTS;
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="analysis-section"><h3>Cut & Fill / Earthwork Analysis</h3>';
+
+    // Dynamic controls
+    html += '<div class="dt-controls">';
+    html += '<div class="dt-controls-title"><span>Unit Costs (editable)</span><button class="dt-reset-btn" onclick="resetEarthwork()">Reset Defaults</button></div>';
+    html += '<div class="dt-controls-grid">';
+    var costs = [
+        {id:'ew-cut',label:'Cut $/CY',val:ec.cut,min:1,max:30,step:0.5},
+        {id:'ew-fill',label:'Fill $/CY',val:ec.fill,min:1,max:20,step:0.5},
+        {id:'ew-import',label:'Import $/CY',val:ec['import'],min:5,max:60,step:1},
+        {id:'ew-export',label:'Export $/CY',val:ec['export'],min:5,max:50,step:1},
+        {id:'ew-retWall',label:'Ret. Wall $/SF',val:ec.retainingWall,min:20,max:200,step:5},
+        {id:'ew-shoring',label:'Shoring $/SF',val:ec.shoring,min:10,max:100,step:5},
+        {id:'ew-grading',label:'Grading $/SY',val:ec.grading,min:1,max:10,step:0.25},
+        {id:'ew-compact',label:'Compact $/CY',val:ec.compaction,min:1,max:10,step:0.25},
+        {id:'ew-erosion',label:'Erosion $/SF',val:ec.erosionControl,min:0.25,max:5,step:0.25},
+    ];
+    costs.forEach(function(c) {
+        html += '<div class="dt-slider-group">';
+        html += '<div class="dt-slider-label"><span>' + c.label + '</span><span class="dt-val">$' + c.val.toFixed(2) + '</span></div>';
+        html += '<div class="dt-slider-row">';
+        html += '<input type="number" id="' + c.id + '" value="' + c.val + '" min="' + c.min + '" max="' + c.max + '" step="' + c.step + '" oninput="recalcEarthwork()">';
+        html += '</div></div>';
+    });
+    html += '</div></div>';
+
+    html += '<div id="earthworkContent">';
+    html += buildEarthworkContent(ew, st.inp);
+    html += '</div>';
 
     html += '</div></div>';
     return html;
