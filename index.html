@@ -8800,6 +8800,7 @@ function calculateAffordableCompliance(useId, inp, effects, computed) {
 // ============================================================
 
 let deepAnalysisState = null;
+let deepAnalysisSelectedProps = []; // boolean array: which saved props are selected for Exec tab
 
 function openDeepAnalysis() {
     const saved = getSavedList();
@@ -8820,6 +8821,9 @@ function openDeepAnalysis() {
     const computed = computeFromAssumptions(bestUse, inp, assumptions, effects);
 
     deepAnalysisState = { prop, inp, bestUse, legislation, effects, assumptions, computed, saved, selectedPropertyIndex: 0 };
+
+    // Initialize all properties as selected for Exec tab
+    deepAnalysisSelectedProps = saved.map(function() { return true; });
 
     // Set title
     document.getElementById('deepModalTitle').textContent = `Deep Analysis: ${prop.address || prop.apn}`;
@@ -8938,9 +8942,37 @@ function renderDeepTabPanels(skipTab0) {
 
     let html = '';
 
-    // Tab 0: Executive Summary (or Comparison Dashboard if 2+ properties)
+    // Tab 0: Executive Summary (with property selector if 2+ properties)
     if (st.saved && st.saved.length >= 2) {
-        html += renderComparisonDashboard(st.saved);
+        html += '<div class="deep-tab-panel active">';
+        html += renderExecPropertySelector(st.saved);
+        html += '<div id="execSummaryContent">';
+        var selectedSaved = st.saved.filter(function(_, i) { return deepAnalysisSelectedProps[i]; });
+        if (selectedSaved.length === 0) {
+            html += '<div class="analysis-section" style="text-align:center;padding:40px;color:#718096;"><p>Select at least one property above to view the Executive Summary.</p></div>';
+        } else if (selectedSaved.length === 1) {
+            // Build a single-property st for the selected property
+            var sp = selectedSaved[0];
+            var spInp = buildInpFromSaved(sp);
+            var spBestUse = determineBestUse(spInp);
+            var spLeg = getApplicableLegislation(spBestUse, spInp);
+            var spEff = stackLegislationEffects(spLeg);
+            var spAss = getDefaultAssumptions(spBestUse, spInp, spEff);
+            var spComp = computeFromAssumptions(spBestUse, spInp, spAss, spEff);
+            var singleSt = { prop: sp, inp: spInp, bestUse: spBestUse, legislation: spLeg, effects: spEff, assumptions: spAss, computed: spComp };
+            // renderExecSummaryTab wraps in deep-tab-panel, so we extract its inner content
+            var execHtml = renderExecSummaryTab(singleSt);
+            // Strip the outer deep-tab-panel wrapper since we already have one
+            execHtml = execHtml.replace(/^<div class="deep-tab-panel[^"]*">/, '').replace(/<\/div>\s*$/, '');
+            html += execHtml;
+        } else {
+            // Render comparison dashboard for selected subset
+            var dashHtml = renderComparisonDashboard(selectedSaved);
+            dashHtml = dashHtml.replace(/^<div class="deep-tab-panel[^"]*">/, '').replace(/<\/div>\s*$/, '');
+            html += dashHtml;
+        }
+        html += '</div>'; // close execSummaryContent
+        html += '</div>'; // close deep-tab-panel
     } else {
         html += renderExecSummaryTab(st);
     }
@@ -13359,6 +13391,82 @@ function renderComparisonDashboard(saved) {
 
     html += '</div></div>';
     return html;
+}
+
+
+// ============================================================
+//  Executive Summary Property Selector
+// ============================================================
+
+function renderExecPropertySelector(saved) {
+    var allChecked = deepAnalysisSelectedProps.every(function(v) { return v; });
+    var noneChecked = deepAnalysisSelectedProps.every(function(v) { return !v; });
+    var html = '<div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px;margin-bottom:16px;">';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;">';
+    html += '<span style="font-weight:600;font-size:0.85rem;color:#2d3748;">Properties in Summary:</span>';
+    html += '<div style="display:flex;gap:6px;">';
+    html += '<button onclick="execSelectAll(true)" style="padding:3px 10px;font-size:0.75rem;border-radius:4px;border:1px solid #cbd5e0;background:' + (allChecked ? '#3182ce' : '#fff') + ';color:' + (allChecked ? '#fff' : '#4a5568') + ';cursor:pointer;">All</button>';
+    html += '<button onclick="execSelectAll(false)" style="padding:3px 10px;font-size:0.75rem;border-radius:4px;border:1px solid #cbd5e0;background:' + (noneChecked ? '#e53e3e' : '#fff') + ';color:' + (noneChecked ? '#fff' : '#4a5568') + ';cursor:pointer;">Clear</button>';
+    html += '</div></div>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
+    for (var i = 0; i < saved.length; i++) {
+        var p = saved[i];
+        var label = p.address || p.apn || ('Property ' + (i + 1));
+        var checked = deepAnalysisSelectedProps[i] ? 'checked' : '';
+        html += '<label style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;border:1px solid ' + (deepAnalysisSelectedProps[i] ? '#3182ce' : '#e2e8f0') + ';background:' + (deepAnalysisSelectedProps[i] ? 'rgba(49,130,206,0.08)' : '#fff') + ';cursor:pointer;font-size:0.8rem;color:#2d3748;transition:all 0.15s;">';
+        html += '<input type="checkbox" ' + checked + ' onchange="toggleExecProp(' + i + ')" style="accent-color:#3182ce;cursor:pointer;">';
+        html += '<span>' + label + '</span>';
+        html += '</label>';
+    }
+    html += '</div></div>';
+    return html;
+}
+
+function execSelectAll(selectAll) {
+    deepAnalysisSelectedProps = deepAnalysisSelectedProps.map(function() { return selectAll; });
+    updateExecSelection();
+}
+
+function toggleExecProp(idx) {
+    deepAnalysisSelectedProps[idx] = !deepAnalysisSelectedProps[idx];
+    updateExecSelection();
+}
+
+function updateExecSelection() {
+    var st = deepAnalysisState;
+    if (!st || !st.saved || st.saved.length < 2) return;
+
+    var selectedSaved = st.saved.filter(function(_, i) { return deepAnalysisSelectedProps[i]; });
+
+    // Re-render the entire tab 0 panel (selector + content)
+    var panel = document.querySelector('#deepTabPanels .deep-tab-panel:first-child');
+    if (!panel) return;
+
+    var html = renderExecPropertySelector(st.saved);
+    html += '<div id="execSummaryContent">';
+
+    if (selectedSaved.length === 0) {
+        html += '<div class="analysis-section" style="text-align:center;padding:40px;color:#718096;"><p>Select at least one property above to view the Executive Summary.</p></div>';
+    } else if (selectedSaved.length === 1) {
+        var sp = selectedSaved[0];
+        var spInp = buildInpFromSaved(sp);
+        var spBestUse = determineBestUse(spInp);
+        var spLeg = getApplicableLegislation(spBestUse, spInp);
+        var spEff = stackLegislationEffects(spLeg);
+        var spAss = getDefaultAssumptions(spBestUse, spInp, spEff);
+        var spComp = computeFromAssumptions(spBestUse, spInp, spAss, spEff);
+        var singleSt = { prop: sp, inp: spInp, bestUse: spBestUse, legislation: spLeg, effects: spEff, assumptions: spAss, computed: spComp };
+        var execHtml = renderExecSummaryTab(singleSt);
+        execHtml = execHtml.replace(/^<div class="deep-tab-panel[^"]*">/, '').replace(/<\/div>\s*$/, '');
+        html += execHtml;
+    } else {
+        var dashHtml = renderComparisonDashboard(selectedSaved);
+        dashHtml = dashHtml.replace(/^<div class="deep-tab-panel[^"]*">/, '').replace(/<\/div>\s*$/, '');
+        html += dashHtml;
+    }
+
+    html += '</div>';
+    panel.innerHTML = html;
 }
 
 
