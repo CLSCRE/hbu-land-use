@@ -13943,8 +13943,34 @@ function renderKPIDashboard(st) {
     const physScore = scorePhysical(bestUse, inp);
     const ease = computeEaseOfExecution(bestUse, inp, effects, legalScore * 100);
     const risk = computeRiskLevel(bestUse, inp, legalScore, physScore);
-    const dscr = computed.noi / (computed.totalDev * 0.06); // Assume 6% debt service
-    const ltv = computed.totalDev / computed.stabilizedValue;
+
+    // --- Properly sized loan based on standard lending parameters ---
+    // Read from editable inputs if they exist (after first render), otherwise use defaults
+    var kpiLTV = parseFloat((document.getElementById('kpi-ltv') || {}).value) / 100 || 0.75;
+    var kpiRate = parseFloat((document.getElementById('kpi-rate') || {}).value) / 100 || 0.065;
+    var kpiAmort = parseInt((document.getElementById('kpi-amort') || {}).value) || 30;
+    var kpiMinDSCR = parseFloat((document.getElementById('kpi-minDscr') || {}).value) || 1.20;
+
+    // Loan sizing: lesser of LTV constraint and DSCR constraint
+    var ltvLoan = Math.round(computed.stabilizedValue * kpiLTV);
+    // DSCR-constrained loan: solve for max loan where NOI / annual DS >= minDSCR
+    // Monthly payment = P * [r(1+r)^n] / [(1+r)^n - 1] where r = monthly rate, n = months
+    var monthlyRate = kpiRate / 12;
+    var numPayments = kpiAmort * 12;
+    var annuityFactor = monthlyRate > 0 ? (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1) : 1 / numPayments;
+    var maxAnnualDS = computed.noi / kpiMinDSCR;
+    var maxMonthlyDS = maxAnnualDS / 12;
+    var dscrLoan = monthlyRate > 0 ? Math.round(maxMonthlyDS / annuityFactor) : Math.round(maxAnnualDS * kpiAmort);
+
+    // Binding constraint: take the lesser loan
+    var loanAmount = Math.min(ltvLoan, dscrLoan);
+    var bindingConstraint = loanAmount === dscrLoan ? 'DSCR' : 'LTV';
+    var actualLTV = computed.stabilizedValue > 0 ? loanAmount / computed.stabilizedValue : 0;
+    var annualDS = Math.round(loanAmount * annuityFactor * 12);
+    var dscr = annualDS > 0 ? computed.noi / annualDS : 99;
+    var equityRequired = computed.totalDev - loanAmount;
+    var loanToDevCost = computed.totalDev > 0 ? loanAmount / computed.totalDev : 0;
+    var debtYield = loanAmount > 0 ? computed.noi / loanAmount : 0;
 
     const kpis = [
         { id: 'margin', label: 'Dev Margin', value: (computed.devMargin * 100).toFixed(1) + '%', raw: computed.devMargin, green: 0.15, yellow: 0.08, views: ['developer', 'equity'] },
@@ -13960,10 +13986,62 @@ function renderKPIDashboard(st) {
         { id: 'timeline', label: 'Timeline', value: totalMo + ' months', raw: -totalMo, green: -24, yellow: -36, views: ['equity'] },
         { id: 'ease', label: 'Ease Score', value: ease + '/100', raw: ease, green: 60, yellow: 35, views: [] },
         { id: 'dscr', label: 'DSCR', value: dscr.toFixed(2) + 'x', raw: dscr, green: 1.25, yellow: 1.10, views: ['lender'] },
-        { id: 'ltv', label: 'LTV Ratio', value: (ltv * 100).toFixed(0) + '%', raw: -ltv, green: -0.65, yellow: -0.75, views: ['lender'] },
+        { id: 'ltv', label: 'LTV Ratio', value: (actualLTV * 100).toFixed(0) + '%', raw: -actualLTV, green: -0.65, yellow: -0.75, views: ['lender'] },
+        { id: 'debtyield', label: 'Debt Yield', value: (debtYield * 100).toFixed(1) + '%', raw: debtYield, green: 0.08, yellow: 0.06, views: ['lender'] },
     ];
 
     let html = `<div class="deep-tab-panel">`;
+
+    // --- Editable Loan Sizing Assumptions ---
+    html += `<div class="analysis-section">
+        <h3>Loan Sizing Assumptions (editable)</h3>
+        <p style="font-size:0.78rem;color:var(--text-light);margin-bottom:0.75rem;">Permanent loan sized to the <strong>lesser</strong> of the LTV constraint and DSCR constraint. Adjust parameters to see how lending metrics change.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem;margin-bottom:1rem;">
+            <div>
+                <label style="font-size:0.7rem;color:#718096;display:block;">Max LTV</label>
+                <input type="number" id="kpi-ltv" value="${Math.round(kpiLTV * 100)}" step="5" min="40" max="85" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcKPIDashboard()">
+                <span style="font-size:0.65rem;color:#a0aec0;">%</span>
+            </div>
+            <div>
+                <label style="font-size:0.7rem;color:#718096;display:block;">Interest Rate</label>
+                <input type="number" id="kpi-rate" value="${(kpiRate * 100).toFixed(1)}" step="0.25" min="2" max="15" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcKPIDashboard()">
+                <span style="font-size:0.65rem;color:#a0aec0;">%</span>
+            </div>
+            <div>
+                <label style="font-size:0.7rem;color:#718096;display:block;">Amortization</label>
+                <input type="number" id="kpi-amort" value="${kpiAmort}" step="5" min="10" max="40" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcKPIDashboard()">
+                <span style="font-size:0.65rem;color:#a0aec0;">years</span>
+            </div>
+            <div>
+                <label style="font-size:0.7rem;color:#718096;display:block;">Min DSCR</label>
+                <input type="number" id="kpi-minDscr" value="${kpiMinDSCR.toFixed(2)}" step="0.05" min="1.0" max="2.0" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcKPIDashboard()">
+                <span style="font-size:0.65rem;color:#a0aec0;">x</span>
+            </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:0.75rem;">
+            <div style="background:#f0fff4;border:1px solid #c6f6d5;border-radius:8px;padding:0.6rem 0.8rem;">
+                <div style="font-size:0.68rem;color:#718096;">Loan Amount</div>
+                <div style="font-size:1.1rem;font-weight:700;color:#276749;">${formatCompactDollars(loanAmount)}</div>
+                <div style="font-size:0.65rem;color:#38a169;">Constrained by ${bindingConstraint}</div>
+            </div>
+            <div style="background:#ebf8ff;border:1px solid #bee3f8;border-radius:8px;padding:0.6rem 0.8rem;">
+                <div style="font-size:0.68rem;color:#718096;">Annual Debt Service</div>
+                <div style="font-size:1.1rem;font-weight:700;color:#2b6cb0;">${formatCompactDollars(annualDS)}</div>
+                <div style="font-size:0.65rem;color:#4299e1;">${formatCompactDollars(Math.round(annualDS / 12))}/mo</div>
+            </div>
+            <div style="background:#fefcbf;border:1px solid #f6e05e;border-radius:8px;padding:0.6rem 0.8rem;">
+                <div style="font-size:0.68rem;color:#718096;">Equity Required</div>
+                <div style="font-size:1.1rem;font-weight:700;color:#b7791f;">${formatCompactDollars(equityRequired)}</div>
+                <div style="font-size:0.65rem;color:#d69e2e;">${Math.round((1 - loanToDevCost) * 100)}% of total dev cost</div>
+            </div>
+            <div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.6rem 0.8rem;">
+                <div style="font-size:0.68rem;color:#718096;">Actual LTV / DSCR</div>
+                <div style="font-size:1.1rem;font-weight:700;color:#4a5568;">${(actualLTV * 100).toFixed(0)}% / ${dscr.toFixed(2)}x</div>
+                <div style="font-size:0.65rem;color:#718096;">Debt Yield: ${(debtYield * 100).toFixed(1)}%</div>
+            </div>
+        </div>
+    </div>`;
+
     html += `<div class="analysis-section"><h3>Key Performance Indicators</h3>
         <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:1rem;">Select a view preset to highlight relevant KPIs, or review all metrics at a glance.</p>
         <div class="preset-btns">
@@ -14014,6 +14092,19 @@ function renderKPIDashboard(st) {
     html += `</div></div>`;
     html += `</div>`;
     return html;
+}
+
+function recalcKPIDashboard() {
+    var st = deepAnalysisState;
+    if (!st || !st.computed) return;
+    // Re-render only the KPI tab content
+    var panels = document.querySelectorAll('.deep-tab-panel');
+    if (panels && panels[15]) {
+        var tempDiv = document.createElement('div');
+        tempDiv.innerHTML = renderKPIDashboard(st);
+        var newContent = tempDiv.querySelector('.deep-tab-panel');
+        if (newContent) panels[15].innerHTML = newContent.innerHTML;
+    }
 }
 
 function filterKPIs(view) {
