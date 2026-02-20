@@ -1183,6 +1183,71 @@
         }
         .dt-reset-btn:hover { color: #e53e3e; border-color: #feb2b2; }
 
+        /* Design Configurator (Tab 11) */
+        .configurator-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 1.25rem;
+            align-items: start;
+        }
+        @media (max-width: 900px) {
+            .configurator-layout { grid-template-columns: 1fr; }
+        }
+        .configurator-panel {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1rem 1rem 1.25rem;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .cfg-kpi-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+        @media (max-width: 600px) { .cfg-kpi-strip { grid-template-columns: repeat(2, 1fr); } }
+        .cfg-kpi {
+            text-align: center;
+            background: #fff;
+            border-radius: 8px;
+            padding: 0.6rem 0.5rem;
+            border: 1px solid var(--border);
+        }
+        .cfg-kpi-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .cfg-kpi-label {
+            font-size: 0.65rem;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+        .cfg-section-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #805ad5;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin: 0.85rem 0 0.4rem;
+            padding-bottom: 0.2rem;
+            border-bottom: 1px solid #e9d8fd;
+        }
+        .cfg-section-title:first-child { margin-top: 0; }
+        .cfg-auto-display {
+            font-size: 0.72rem;
+            color: #718096;
+            padding: 4px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .cfg-auto-display .cfg-auto-val {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
         /* Clickable Legislation Cards & Badges */
         .legislation-card.clickable {
             cursor: pointer;
@@ -5237,6 +5302,17 @@ function getDefaultAssumptions(useId, inp, effects) {
         siteWorkTotal: swBreakdown.total,
         siteWorkOverride: null,
         parcelSize: inp.parcelSize || 10000,
+        // Design Configurator fields
+        coveragePct: 70,
+        efficiencyPct: Math.round(params.eff * 100),
+        setbackFront: params.setF,
+        setbackSide: params.setS,
+        setbackRear: params.setS,
+        amenityPct: 0,
+        parkingType: 'surface',
+        unitMixStudio: Math.round(((UNIT_MIX_PROFILES[inp.neighborhood] || UNIT_MIX_PROFILES.dtla).studio) * 100),
+        unitMixBr1: Math.round(((UNIT_MIX_PROFILES[inp.neighborhood] || UNIT_MIX_PROFILES.dtla).br1) * 100),
+        unitMixBr2: Math.round(((UNIT_MIX_PROFILES[inp.neighborhood] || UNIT_MIX_PROFILES.dtla).br2) * 100),
     };
 }
 
@@ -5244,10 +5320,27 @@ function computeFromAssumptions(useId, inp, assumptions, effects) {
     const params = BUILDING_PARAMS[useId];
     const far = assumptions.far;
     const gsf = Math.round(inp.parcelSize * far);
-    const nsf = Math.round(gsf * params.eff);
-    const stories = Math.max(params.stories, Math.ceil(gsf / (inp.parcelSize * 0.7)));
+
+    // Configurator-aware efficiency & amenity
+    const effPct = (assumptions.efficiencyPct != null ? assumptions.efficiencyPct : Math.round(params.eff * 100)) / 100;
+    const amenityPct = (assumptions.amenityPct || 0) / 100;
+    const nsf = Math.round(gsf * effPct * (1 - amenityPct));
+    const amenitySF = Math.round(gsf * effPct * amenityPct);
+
+    // Configurator-aware setbacks & coverage
+    const setF = assumptions.setbackFront != null ? assumptions.setbackFront : params.setF;
+    const setS = assumptions.setbackSide != null ? assumptions.setbackSide : params.setS;
+    const setR = assumptions.setbackRear != null ? assumptions.setbackRear : params.setS;
+    const frontage = inp.frontage || Math.sqrt(inp.parcelSize * 2);
+    const depth = inp.parcelSize / frontage;
+    const buildableW = Math.max(0, frontage - 2 * setS);
+    const buildableD = Math.max(0, depth - setF - setR);
+    const buildableArea = Math.round(buildableW * buildableD);
+    const covPct = (assumptions.coveragePct != null ? assumptions.coveragePct : 70) / 100;
+    const maxFootprint = Math.min(Math.round(inp.parcelSize * covPct), buildableArea);
+    const stories = Math.max(params.stories, Math.ceil(gsf / Math.max(maxFootprint, 1)));
     const buildingHeight = stories * params.floorH;
-    const buildingFootprint = Math.min(Math.round(inp.parcelSize * 0.7), Math.round(gsf / stories));
+    const buildingFootprint = Math.min(maxFootprint, Math.round(gsf / stories));
 
     const hasUnits = !!params.unitSF;
     const units = hasUnits ? assumptions.unitsOrNSF : null;
@@ -5306,6 +5399,11 @@ function computeFromAssumptions(useId, inp, assumptions, effects) {
         totalDev,
         grossRevenue, opex, noi, capRate, stabilizedValue, yieldOnCost, devMargin,
         params, landValuePSF, revenuePSF, parkingCostPerSpace: assumptions.parkingCostPerSpace,
+        // Design Configurator extras
+        amenitySF, buildableArea,
+        setbacks: { front: setF, side: setS, rear: setR },
+        coveragePct: covPct * 100,
+        efficiencyPct: effPct * 100,
     };
 }
 
@@ -5770,6 +5868,18 @@ function recalcDeepAnalysis() {
         capRatePct: parseFloat(document.getElementById('da-capRatePct').value) || st.assumptions.capRatePct,
         parkingCostPerSpace: parseFloat(document.getElementById('da-parkingCostPerSpace').value) || 0,
     };
+    // Preserve design configurator fields from current assumptions
+    assumptions.coveragePct = st.assumptions.coveragePct != null ? st.assumptions.coveragePct : 70;
+    assumptions.efficiencyPct = st.assumptions.efficiencyPct != null ? st.assumptions.efficiencyPct : Math.round(params.eff * 100);
+    assumptions.setbackFront = st.assumptions.setbackFront != null ? st.assumptions.setbackFront : params.setF;
+    assumptions.setbackSide = st.assumptions.setbackSide != null ? st.assumptions.setbackSide : params.setS;
+    assumptions.setbackRear = st.assumptions.setbackRear != null ? st.assumptions.setbackRear : params.setS;
+    assumptions.amenityPct = st.assumptions.amenityPct || 0;
+    assumptions.parkingType = st.assumptions.parkingType || 'surface';
+    assumptions.unitMixStudio = st.assumptions.unitMixStudio;
+    assumptions.unitMixBr1 = st.assumptions.unitMixBr1;
+    assumptions.unitMixBr2 = st.assumptions.unitMixBr2;
+
     // Site work override for deep analysis
     var daSiteWorkEl = document.getElementById('da-siteWorkPSF');
     if (daSiteWorkEl && daSiteWorkEl.value !== '' && parseFloat(daSiteWorkEl.value) > 0) {
@@ -13099,10 +13209,13 @@ function generateEnhancedSitePlanSVG(useId, inp, budget) {
     var lw = lotW * scale, ld = lotD * scale;
     var ox = (w - lw) / 2, oy = 30;
 
-    var sf = params.setF * scale, ss = params.setS * scale;
+    var setFront = budget.setbacks ? budget.setbacks.front : params.setF;
+    var setSide = budget.setbacks ? budget.setbacks.side : params.setS;
+    var setRear = budget.setbacks ? budget.setbacks.rear : params.setS;
+    var sf = setFront * scale, ss = setSide * scale, sr = setRear * scale;
     var bw = Math.max(30, lw - 2 * ss);
-    var bd = Math.max(30, ld - sf - ss);
-    var bx = ox + ss, by = oy + ss;
+    var bd = Math.max(30, ld - sf - sr);
+    var bx = ox + ss, by = oy + sr;
 
     var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg" style="background:#fafbfc;">';
     svg += '<defs>';
@@ -13114,11 +13227,16 @@ function generateEnhancedSitePlanSVG(useId, inp, budget) {
     svg += '<rect x="' + ox + '" y="' + oy + '" width="' + lw + '" height="' + ld + '" fill="#e8f5e9" stroke="#66bb6a" stroke-width="1.5" rx="2"/>';
 
     // Setback lines (dashed red)
-    svg += '<rect x="' + (ox + ss) + '" y="' + (oy + ss) + '" width="' + (lw - 2 * ss) + '" height="' + (ld - sf - ss) + '" fill="none" stroke="#e53e3e" stroke-width="1" stroke-dasharray="4,3" rx="1"/>';
+    svg += '<rect x="' + (ox + ss) + '" y="' + (oy + sr) + '" width="' + (lw - 2 * ss) + '" height="' + (ld - sf - sr) + '" fill="none" stroke="#e53e3e" stroke-width="1" stroke-dasharray="4,3" rx="1"/>';
     // Setback hatching (front)
     if (sf > 3) {
         svg += '<rect x="' + ox + '" y="' + (oy + ld - sf) + '" width="' + lw + '" height="' + sf + '" fill="url(#ht2)" opacity="0.4"/>';
-        svg += '<text x="' + (ox + lw / 2) + '" y="' + (oy + ld - sf / 2 + 3) + '" text-anchor="middle" font-size="7" fill="#e53e3e" font-weight="600">FRONT SETBACK ' + params.setF + '\'</text>';
+        svg += '<text x="' + (ox + lw / 2) + '" y="' + (oy + ld - sf / 2 + 3) + '" text-anchor="middle" font-size="7" fill="#e53e3e" font-weight="600">FRONT SETBACK ' + setFront + '\'</text>';
+    }
+    // Setback hatching (rear)
+    if (sr > 3) {
+        svg += '<rect x="' + ox + '" y="' + oy + '" width="' + lw + '" height="' + sr + '" fill="url(#ht2)" opacity="0.3"/>';
+        svg += '<text x="' + (ox + lw / 2) + '" y="' + (oy + sr / 2 + 3) + '" text-anchor="middle" font-size="7" fill="#e53e3e" font-weight="600">REAR ' + setRear + '\'</text>';
     }
 
     // Landscaping strips (green)
@@ -13350,23 +13468,287 @@ function generateEnhancedElevationSVG(useId, inp, budget) {
     return svg;
 }
 
-function renderEnhancedSitePlanTab(st) {
+// --- Design Configurator helper functions ---
+
+var dcDebounceTimer = null;
+
+function buildDcSlider(id, label, val, min, max, step, suffix) {
+    suffix = suffix || '';
+    var dec = step < 1 ? (step < 0.1 ? 2 : 1) : 0;
+    var isCurrency = suffix === '$';
+    var dispVal = isCurrency ? '$' + Number(val).toLocaleString() : Number(val).toFixed(dec) + suffix;
+    var h = '<div class="dt-slider-group">';
+    h += '<div class="dt-slider-label"><span>' + label + '</span><span class="dt-val" id="dc-' + id + '-val">' + dispVal + '</span></div>';
+    h += '<div class="dt-slider-row">';
+    h += '<input type="range" id="dc-' + id + '-slider" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '" oninput="syncDcSlider(\'' + id + '\',\'' + suffix + '\')">';
+    h += '<input type="number" id="dc-' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '" oninput="syncDcSliderFromNum(\'' + id + '\',\'' + suffix + '\')">';
+    h += '</div></div>';
+    return h;
+}
+
+function syncDcSlider(id, suffix) {
+    var slider = document.getElementById('dc-' + id + '-slider');
+    var num = document.getElementById('dc-' + id);
+    var valEl = document.getElementById('dc-' + id + '-val');
+    if (slider && num) num.value = slider.value;
+    if (valEl) {
+        var v = parseFloat(slider.value);
+        var dec = parseFloat(slider.step) < 1 ? (parseFloat(slider.step) < 0.1 ? 2 : 1) : 0;
+        valEl.textContent = suffix === '$' ? '$' + v.toLocaleString() : v.toFixed(dec) + suffix;
+    }
+    recalcDesignConfigurator();
+}
+
+function syncDcSliderFromNum(id, suffix) {
+    var slider = document.getElementById('dc-' + id + '-slider');
+    var num = document.getElementById('dc-' + id);
+    var valEl = document.getElementById('dc-' + id + '-val');
+    if (slider && num) slider.value = num.value;
+    if (valEl) {
+        var v = parseFloat(num.value);
+        var dec = parseFloat(num.step) < 1 ? (parseFloat(num.step) < 0.1 ? 2 : 1) : 0;
+        valEl.textContent = suffix === '$' ? '$' + v.toLocaleString() : v.toFixed(dec) + suffix;
+    }
+    recalcDesignConfigurator();
+}
+
+function recalcDesignConfigurator() {
+    var st = deepAnalysisState;
+    if (!st || !st.bestUse || !st.inp) return;
+
+    // Read dc- inputs into assumptions
+    var a = st.assumptions;
+    var el;
+    el = document.getElementById('dc-far'); if (el) a.far = parseFloat(el.value) || a.far;
+    el = document.getElementById('dc-coveragePct'); if (el) a.coveragePct = parseFloat(el.value) || 70;
+    el = document.getElementById('dc-efficiencyPct'); if (el) a.efficiencyPct = parseFloat(el.value) || 80;
+    el = document.getElementById('dc-setbackFront'); if (el) a.setbackFront = parseFloat(el.value) || 0;
+    el = document.getElementById('dc-setbackSide'); if (el) a.setbackSide = parseFloat(el.value) || 0;
+    el = document.getElementById('dc-setbackRear'); if (el) a.setbackRear = parseFloat(el.value) || 0;
+    el = document.getElementById('dc-amenityPct'); if (el) a.amenityPct = parseFloat(el.value) || 0;
+    el = document.getElementById('dc-parkingSpaces'); if (el) a.parkingSpaces = parseInt(el.value) || 0;
+
+    // Parking type
+    el = document.getElementById('dc-parkingType');
+    if (el) {
+        a.parkingType = el.value;
+        var ptCost = { surface: 8000, podium: 40000, subterranean: 65000, mechanical: 35000 };
+        a.parkingCostPerSpace = ptCost[el.value] || 8000;
+    }
+
+    // Unit mix (residential only)
+    var studioEl = document.getElementById('dc-unitMixStudio');
+    var br1El = document.getElementById('dc-unitMixBr1');
+    var br2El = document.getElementById('dc-unitMixBr2');
+    if (studioEl && br1El && br2El) {
+        var sPct = parseFloat(studioEl.value) || 0;
+        var b1Pct = parseFloat(br1El.value) || 0;
+        var b2Pct = parseFloat(br2El.value) || 0;
+        // Cap total at 100
+        if (sPct + b1Pct + b2Pct > 100) {
+            b2Pct = Math.max(0, 100 - sPct - b1Pct);
+            br2El.value = b2Pct;
+            var br2Slider = document.getElementById('dc-unitMixBr2-slider');
+            if (br2Slider) br2Slider.value = b2Pct;
+        }
+        var b3Pct = Math.max(0, 100 - sPct - b1Pct - b2Pct);
+        var b3Display = document.getElementById('dc-unitMixBr3-display');
+        if (b3Display) b3Display.textContent = b3Pct + '%';
+        a.unitMixStudio = sPct;
+        a.unitMixBr1 = b1Pct;
+        a.unitMixBr2 = b2Pct;
+        // Store custom unit mix on st for Tab 12 sync
+        st.customUnitMix = { studio: sPct / 100, br1: b1Pct / 100, br2: b2Pct / 100, br3: b3Pct / 100 };
+    }
+
+    // Recompute immediately for SVGs & KPIs
+    st.computed = computeFromAssumptions(st.bestUse, st.inp, a, st.effects);
+    updateConfiguratorVisuals(st);
+
+    // Debounce full financial re-render
+    clearTimeout(dcDebounceTimer);
+    dcDebounceTimer = setTimeout(function() {
+        renderDeepTabPanels(true);
+        // Re-activate tab 11 (Site Plan & 3D) after re-render
+        var btns = document.querySelectorAll('#deepTabs .deep-tab-btn');
+        for (var i = 0; i < btns.length; i++) {
+            if (btns[i].classList.contains('active')) {
+                switchDeepTab(i);
+                break;
+            }
+        }
+    }, 300);
+}
+
+function updateConfiguratorVisuals(st) {
     var useId = st.bestUse;
     var inp = st.inp;
     var computed = st.computed;
 
-    var buildingCoverage = (computed.gsf / computed.stories / inp.parcelSize * 100).toFixed(1);
-    var parkingSF = (computed.parkingSpaces || 0) * 350;
-    var parkingPct = (computed.stories <= 4 ? Math.min(parkingSF / inp.parcelSize * 100, 30) : 0).toFixed(1);
-    var imperviousPct = (parseFloat(buildingCoverage) + parseFloat(parkingPct) + 5).toFixed(1);
-    var perviousPct = Math.max(0, 100 - parseFloat(imperviousPct)).toFixed(1);
-    var openSpacePct = Math.max(0, 100 - parseFloat(buildingCoverage) - parseFloat(parkingPct) - 5).toFixed(1);
+    // Update SVGs
+    var svgContainer = document.getElementById('dc-svg-container');
+    if (svgContainer) {
+        var svgHtml = '<div>' + generateEnhancedSitePlanSVG(useId, inp, computed) + '</div>';
+        svgHtml += '<div>' + generateEnhancedElevationSVG(useId, inp, computed) + '</div>';
+        svgHtml += '<div>' + generateIsometricSVG(useId, inp, computed) + '</div>';
+        svgHtml += '<div>' + generateFloorPlateSVG(useId, inp, computed) + '</div>';
+        svgContainer.innerHTML = svgHtml;
+    }
+
+    // Update KPIs
+    updateConfiguratorKPIs(computed);
+
+    // Update coverage stats
+    var statsEl = document.getElementById('dc-coverage-stats');
+    if (statsEl) {
+        var buildingCoverage = (computed.buildingFootprint / inp.parcelSize * 100).toFixed(1);
+        var parkingSF = (computed.parkingSpaces || 0) * 350;
+        var parkingPctVal = (computed.stories <= 4 ? Math.min(parkingSF / inp.parcelSize * 100, 30) : 0).toFixed(1);
+        var imperviousPctVal = (parseFloat(buildingCoverage) + parseFloat(parkingPctVal) + 5).toFixed(1);
+        var perviousPctVal = Math.max(0, 100 - parseFloat(imperviousPctVal)).toFixed(1);
+        var openSpacePctVal = Math.max(0, 100 - parseFloat(buildingCoverage) - parseFloat(parkingPctVal) - 5).toFixed(1);
+        var stats = [
+            { label: 'Building Coverage', value: buildingCoverage + '%', color: '#2b6cb0' },
+            { label: 'Parking Area', value: parkingPctVal + '%', color: '#718096' },
+            { label: 'Impervious Total', value: imperviousPctVal + '%', color: '#dd6b20' },
+            { label: 'Pervious / Open', value: perviousPctVal + '%', color: '#48bb78' },
+            { label: 'Open Space', value: openSpacePctVal + '%', color: '#38a169' },
+        ];
+        var sh = '';
+        for (var i = 0; i < stats.length; i++) {
+            var s = stats[i];
+            sh += '<div style="text-align:center;background:#f8fafc;border-radius:8px;padding:0.75rem;border:1px solid var(--border);">';
+            sh += '<div style="font-size:1.4rem;font-weight:700;color:' + s.color + ';">' + s.value + '</div>';
+            sh += '<div style="font-size:0.72rem;color:var(--text-light);">' + s.label + '</div></div>';
+        }
+        statsEl.innerHTML = sh;
+    }
+}
+
+function updateConfiguratorKPIs(computed) {
+    var kpis = [
+        { id: 'dc-kpi-gsf', value: computed.gsf.toLocaleString(), label: 'Gross SF' },
+        { id: 'dc-kpi-stories', value: computed.stories + ' / ' + computed.buildingHeight + ' ft', label: 'Stories / Height' },
+        { id: 'dc-kpi-units', value: computed.units ? computed.units.toLocaleString() : computed.nsf.toLocaleString(), label: computed.units ? 'Units' : 'Net SF' },
+        { id: 'dc-kpi-margin', value: (computed.devMargin * 100).toFixed(1) + '%', label: 'Dev Margin' },
+    ];
+    for (var i = 0; i < kpis.length; i++) {
+        var el = document.getElementById(kpis[i].id);
+        if (el) {
+            el.querySelector('.cfg-kpi-value').textContent = kpis[i].value;
+            if (kpis[i].id === 'dc-kpi-margin') {
+                el.querySelector('.cfg-kpi-value').style.color = computed.devMargin >= 0.15 ? '#276749' : computed.devMargin >= 0.05 ? '#b7791f' : '#c53030';
+            }
+        }
+    }
+}
+
+function resetDesignConfigurator() {
+    var st = deepAnalysisState;
+    if (!st || !st.bestUse || !st.inp) return;
+    var defaults = getDefaultAssumptions(st.bestUse, st.inp, st.effects);
+    // Merge design configurator defaults back
+    st.assumptions.coveragePct = defaults.coveragePct;
+    st.assumptions.efficiencyPct = defaults.efficiencyPct;
+    st.assumptions.setbackFront = defaults.setbackFront;
+    st.assumptions.setbackSide = defaults.setbackSide;
+    st.assumptions.setbackRear = defaults.setbackRear;
+    st.assumptions.amenityPct = defaults.amenityPct;
+    st.assumptions.parkingType = defaults.parkingType;
+    st.assumptions.parkingCostPerSpace = defaults.parkingCostPerSpace;
+    st.assumptions.far = defaults.far;
+    st.assumptions.parkingSpaces = defaults.parkingSpaces;
+    st.assumptions.unitMixStudio = defaults.unitMixStudio;
+    st.assumptions.unitMixBr1 = defaults.unitMixBr1;
+    st.assumptions.unitMixBr2 = defaults.unitMixBr2;
+    delete st.customUnitMix;
+
+    st.computed = computeFromAssumptions(st.bestUse, st.inp, st.assumptions, st.effects);
+    renderDeepTabPanels(true);
+    // Re-activate Site Plan tab
+    var btns = document.querySelectorAll('#deepTabs .deep-tab-btn');
+    for (var i = 0; i < btns.length; i++) {
+        if (btns[i].classList.contains('active')) {
+            switchDeepTab(i);
+            break;
+        }
+    }
+}
+
+function renderEnhancedSitePlanTab(st) {
+    var useId = st.bestUse;
+    var inp = st.inp;
+    var computed = st.computed;
+    var a = st.assumptions;
+    var params = BUILDING_PARAMS[useId];
+    var isResidential = ['sfr','duplex','multifamily_low','multifamily_mid','multifamily_high','mixeduse','senior','adu'].includes(useId);
+    var hasUnits = !!params.unitSF;
 
     var html = '<div class="deep-tab-panel">';
-    html += '<div class="analysis-section"><h3>Site Plan & 3D Massing</h3>';
+    html += '<div class="analysis-section"><h3>Interactive Design Configurator <button class="dt-reset-btn" onclick="resetDesignConfigurator()">Reset Defaults</button></h3>';
 
-    // 2x2 grid of views
-    html += '<div class="rendering-container">';
+    // KPI strip
+    html += '<div class="cfg-kpi-strip">';
+    html += '<div class="cfg-kpi" id="dc-kpi-gsf"><div class="cfg-kpi-value">' + computed.gsf.toLocaleString() + '</div><div class="cfg-kpi-label">Gross SF</div></div>';
+    html += '<div class="cfg-kpi" id="dc-kpi-stories"><div class="cfg-kpi-value">' + computed.stories + ' / ' + computed.buildingHeight + ' ft</div><div class="cfg-kpi-label">Stories / Height</div></div>';
+    html += '<div class="cfg-kpi" id="dc-kpi-units"><div class="cfg-kpi-value">' + (computed.units ? computed.units.toLocaleString() : computed.nsf.toLocaleString()) + '</div><div class="cfg-kpi-label">' + (computed.units ? 'Units' : 'Net SF') + '</div></div>';
+    var marginColor = computed.devMargin >= 0.15 ? '#276749' : computed.devMargin >= 0.05 ? '#b7791f' : '#c53030';
+    html += '<div class="cfg-kpi" id="dc-kpi-margin"><div class="cfg-kpi-value" style="color:' + marginColor + ';">' + (computed.devMargin * 100).toFixed(1) + '%</div><div class="cfg-kpi-label">Dev Margin</div></div>';
+    html += '</div>';
+
+    // Split layout: sliders left, SVGs right
+    html += '<div class="configurator-layout">';
+
+    // --- Left panel: Configurator sliders ---
+    html += '<div class="configurator-panel">';
+
+    // Building Massing
+    html += '<div class="cfg-section-title">Building Massing</div>';
+    html += buildDcSlider('far', 'FAR', a.far, 0.1, 15, 0.1, 'x');
+    html += buildDcSlider('coveragePct', 'Coverage %', a.coveragePct || 70, 20, 95, 1, '%');
+    html += buildDcSlider('efficiencyPct', 'Efficiency %', a.efficiencyPct || Math.round(params.eff * 100), 50, 98, 1, '%');
+
+    // Setbacks
+    html += '<div class="cfg-section-title">Setbacks</div>';
+    html += buildDcSlider('setbackFront', 'Front', a.setbackFront != null ? a.setbackFront : params.setF, 0, 50, 1, ' ft');
+    html += buildDcSlider('setbackSide', 'Side', a.setbackSide != null ? a.setbackSide : params.setS, 0, 30, 1, ' ft');
+    html += buildDcSlider('setbackRear', 'Rear', a.setbackRear != null ? a.setbackRear : params.setS, 0, 50, 1, ' ft');
+
+    // Amenity
+    html += '<div class="cfg-section-title">Amenity</div>';
+    html += buildDcSlider('amenityPct', '% of GSF', a.amenityPct || 0, 0, 20, 1, '%');
+
+    // Parking
+    html += '<div class="cfg-section-title">Parking</div>';
+    html += '<div class="dt-slider-group"><div class="dt-slider-label"><span>Parking Type</span></div>';
+    html += '<select id="dc-parkingType" style="width:100%;padding:4px 6px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.73rem;margin-bottom:4px;" onchange="recalcDesignConfigurator()">';
+    var ptypes = [
+        { val: 'surface', label: 'Surface ($8K/space)' },
+        { val: 'podium', label: 'Podium ($40K/space)' },
+        { val: 'subterranean', label: 'Subterranean ($65K/space)' },
+        { val: 'mechanical', label: 'Mechanical ($35K/space)' },
+    ];
+    for (var pt = 0; pt < ptypes.length; pt++) {
+        html += '<option value="' + ptypes[pt].val + '"' + ((a.parkingType || 'surface') === ptypes[pt].val ? ' selected' : '') + '>' + ptypes[pt].label + '</option>';
+    }
+    html += '</select></div>';
+    html += buildDcSlider('parkingSpaces', 'Spaces', a.parkingSpaces, 0, Math.max(500, a.parkingSpaces * 2), 1, '');
+
+    // Unit Mix (residential only)
+    if (isResidential && hasUnits) {
+        html += '<div class="cfg-section-title">Unit Mix</div>';
+        html += buildDcSlider('unitMixStudio', 'Studio %', a.unitMixStudio || 0, 0, 60, 1, '%');
+        html += buildDcSlider('unitMixBr1', '1-BR %', a.unitMixBr1 || 0, 0, 70, 1, '%');
+        html += buildDcSlider('unitMixBr2', '2-BR %', a.unitMixBr2 || 0, 0, 70, 1, '%');
+        var br3Pct = Math.max(0, 100 - (a.unitMixStudio || 0) - (a.unitMixBr1 || 0) - (a.unitMixBr2 || 0));
+        html += '<div class="cfg-auto-display"><span>3-BR %</span><span class="cfg-auto-val" id="dc-unitMixBr3-display">' + br3Pct + '%</span></div>';
+    }
+
+    html += '</div>'; // end configurator-panel
+
+    // --- Right panel: SVGs + coverage stats ---
+    html += '<div>';
+    html += '<div class="rendering-container" id="dc-svg-container">';
     html += '<div>' + generateEnhancedSitePlanSVG(useId, inp, computed) + '</div>';
     html += '<div>' + generateEnhancedElevationSVG(useId, inp, computed) + '</div>';
     html += '<div>' + generateIsometricSVG(useId, inp, computed) + '</div>';
@@ -13375,13 +13757,20 @@ function renderEnhancedSitePlanTab(st) {
 
     // Site coverage stats
     html += '<h4 style="color:var(--primary);margin:1.5rem 0 0.75rem;">Site Coverage Statistics</h4>';
-    html += '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0.75rem;">';
+    var buildingCoverage = (computed.buildingFootprint / inp.parcelSize * 100).toFixed(1);
+    var parkingSF = (computed.parkingSpaces || 0) * 350;
+    var parkingPct = (computed.stories <= 4 ? Math.min(parkingSF / inp.parcelSize * 100, 30) : 0).toFixed(1);
+    var imperviousPct = (parseFloat(buildingCoverage) + parseFloat(parkingPct) + 5).toFixed(1);
+    var perviousPct = Math.max(0, 100 - parseFloat(imperviousPct)).toFixed(1);
+    var openSpacePct = Math.max(0, 100 - parseFloat(buildingCoverage) - parseFloat(parkingPct) - 5).toFixed(1);
+
+    html += '<div id="dc-coverage-stats" style="display:grid;grid-template-columns:repeat(5,1fr);gap:0.75rem;">';
     var stats = [
         { label: 'Building Coverage', value: buildingCoverage + '%', color: '#2b6cb0' },
         { label: 'Parking Area', value: parkingPct + '%', color: '#718096' },
         { label: 'Impervious Total', value: imperviousPct + '%', color: '#dd6b20' },
         { label: 'Pervious / Open', value: perviousPct + '%', color: '#48bb78' },
-        { label: 'Landscape / Open Space', value: openSpacePct + '%', color: '#38a169' },
+        { label: 'Open Space', value: openSpacePct + '%', color: '#38a169' },
     ];
     for (var i = 0; i < stats.length; i++) {
         var s = stats[i];
@@ -13390,6 +13779,9 @@ function renderEnhancedSitePlanTab(st) {
         html += '<div style="font-size:0.72rem;color:var(--text-light);">' + s.label + '</div></div>';
     }
     html += '</div>';
+
+    html += '</div>'; // end right panel
+    html += '</div>'; // end configurator-layout
 
     html += '</div></div>';
     return html;
