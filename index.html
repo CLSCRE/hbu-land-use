@@ -15259,161 +15259,100 @@ function renderP3StructuringTab(st) {
 // ===================================================================
 //  TAB 21: INCENTIVE COMPARISON MATRIX
 // ===================================================================
-function renderIncentiveMatrixTab(st) {
-    var c = st.computed, a = st.assumptions;
-    var fmt = function(v) { return '$' + Math.round(v).toLocaleString(); };
-    var fmtM = function(v) { return v >= 1e6 ? '$' + (v / 1e6).toFixed(1) + 'M' : fmt(v); };
-    var html = '<div class="deep-tab-panel">';
-    html += '<div class="analysis-section"><h3>Development Incentive Matrix</h3>';
-    html += '<p style="font-size:0.78rem;color:#718096;margin-bottom:1rem;">Comprehensive comparison of all applicable development incentives, tax credits, and financing tools. Identifies eligible programs based on project characteristics and quantifies potential financial impact.</p>';
+// Incentive Matrix state — tracks which programs are selected/applied
+var incentiveMatrixSelections = null; // null = auto (all eligible selected)
 
-    var totalDev = c.totalDev;
-    var noi = c.noi;
-    var units = c.units || 0;
-    var isResidential = !!c.units;
+function getIncentiveDefinitions(st) {
+    var c = st.computed, a = st.assumptions;
+    var totalDev = c.totalDev, noi = c.noi;
+    var units = c.units || 0, isResidential = !!c.units;
     var affordableUnits = units > 0 ? Math.round(units * 0.15) : 0;
     var totalHard = c.totalHard;
-
-    // Incentive definitions
-    var incentives = [
-        {
-            name: 'Transit-Oriented Communities (TOC)',
-            category: 'Zoning',
-            eligible: isResidential,
-            description: 'Density bonus, reduced parking, height increases near transit per LAMC 12.22 A.31',
-            financialImpact: Math.round(totalDev * 0.08),
-            impactType: 'Cost Reduction',
-            requirements: 'Within 1/2 mile of major transit, 8-25% affordable units',
-            timeline: '6-12 months',
-            source: 'https://planning.lacity.gov/plans-policies/transit-oriented-communities-affordable-housing',
-            complexity: 'Medium',
-        },
-        {
-            name: 'Density Bonus (Gov Code §65915)',
-            category: 'Zoning',
-            eligible: isResidential,
-            description: 'Up to 50% density bonus + incentives/concessions for affordable housing',
-            financialImpact: Math.round(noi * 0.35 / (c.capRate || 0.05)),
-            impactType: 'Value Creation',
-            requirements: '5-15% affordable units depending on income level',
-            timeline: '3-6 months',
-            source: 'https://www.hcd.ca.gov/policy-and-research/housing-policy-development/density-bonus',
-            complexity: 'Low',
-        },
-        {
-            name: 'LIHTC (4% / 9%)',
-            category: 'Tax Credit',
-            eligible: isResidential && affordableUnits >= 5,
-            description: '4% credits (as-of-right with bonds) or competitive 9% credits for affordable housing',
-            financialImpact: Math.round(totalHard * affordableUnits / Math.max(units, 1) * 0.30 * 10),
-            impactType: 'Equity Subsidy',
-            requirements: '20% at 50% AMI or 40% at 60% AMI for 30+ years',
-            timeline: '12-24 months (4%) / 18-36 months (9%)',
-            source: 'https://www.treasurer.ca.gov/ctcac/tax.asp',
-            complexity: 'High',
-        },
-        {
-            name: 'Welfare Exemption (RTC §214)',
-            category: 'Tax Exemption',
-            eligible: isResidential && affordableUnits > 0,
-            description: 'Property tax exemption proportional to units ≤80% AMI with nonprofit GP',
-            financialImpact: Math.round(c.stabilizedValue * 0.0125 * (affordableUnits / Math.max(units, 1))),
-            impactType: 'Annual Savings',
-            requirements: 'Nonprofit general partner, units at ≤80% AMI, BOE-267-L filing',
-            timeline: 'Annual (file by Feb 15)',
-            source: 'https://www.boe.ca.gov/proptaxes/welfarevets.htm',
-            complexity: 'Medium',
-        },
-        {
-            name: 'EIFD Tax Increment',
-            category: 'Public Finance',
-            eligible: true,
-            description: 'Enhanced Infrastructure Financing District captures property tax increment for 45 years',
-            financialImpact: Math.round((c.stabilizedValue - c.landCost) * 0.01 * 0.75 * 30),
-            impactType: '30-Yr Revenue',
-            requirements: 'Public infrastructure nexus, participating taxing entities, voter approval if bonds',
-            timeline: '18-36 months (formation)',
-            source: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=201320140SB628',
-            complexity: 'High',
-        },
-        {
-            name: 'Opportunity Zone (IRC §1400Z)',
-            category: 'Tax Deferral',
-            eligible: true,
-            description: 'Capital gains tax deferral and potential exclusion for investments in designated census tracts',
-            financialImpact: Math.round((c.stabilizedValue - totalDev) * 0.20),
-            impactType: 'Tax Savings',
-            requirements: 'Investment in designated OZ census tract, hold 10+ years for full exclusion',
-            timeline: '10-year hold required',
-            source: 'https://www.irs.gov/credits-deductions/businesses/opportunity-zones',
-            complexity: 'Medium',
-        },
-        {
-            name: 'New Markets Tax Credit',
-            category: 'Tax Credit',
-            eligible: !isResidential,
-            description: '39% tax credit over 7 years for investments in low-income communities',
-            financialImpact: Math.round(totalDev * 0.25 * 0.39),
-            impactType: 'Tax Credit',
-            requirements: 'Located in qualifying census tract, CDFI allocation',
-            timeline: '6-18 months',
-            source: 'https://www.cdfifund.gov/programs-training/programs/new-markets-tax-credit',
-            complexity: 'High',
-        },
-        {
-            name: 'Historic Tax Credit (HTC)',
-            category: 'Tax Credit',
-            eligible: (st.inp && st.inp.yearBuilt && st.inp.yearBuilt < 1977),
-            description: '20% federal credit for certified rehabilitation of historic structures',
-            financialImpact: Math.round(totalHard * 0.20),
-            impactType: 'Tax Credit',
-            requirements: 'National Register listing, certified rehabilitation, NPS Parts 1-3',
-            timeline: '12-24 months',
-            source: 'https://www.nps.gov/subjects/taxincentives/index.htm',
-            complexity: 'High',
-        },
-        {
-            name: 'SB 35 Streamlining',
-            category: 'Entitlement',
-            eligible: isResidential,
-            description: 'Ministerial approval (no CEQA) for qualifying projects in non-compliant jurisdictions',
-            financialImpact: Math.round(totalDev * 0.03),
-            impactType: 'Time/Cost Savings',
-            requirements: '10-50% affordable, prevailing wage, objective standards compliance',
-            timeline: '60-90 day approval',
-            source: 'https://www.hcd.ca.gov/planning-and-community-development/housing-open-data-tools/sb-35-determination-summary',
-            complexity: 'Medium',
-        },
-        {
-            name: 'Mills Act (Historic)',
-            category: 'Tax Reduction',
-            eligible: (st.inp && st.inp.yearBuilt && st.inp.yearBuilt < 1977),
-            description: 'Property tax reduction to capitalized income value for designated historic properties',
-            financialImpact: Math.round(c.stabilizedValue * 0.005),
-            impactType: 'Annual Savings',
-            requirements: 'Local historic designation, 10-year maintenance contract',
-            timeline: '3-6 months',
-            source: 'https://ohp.parks.ca.gov/?page_id=21412',
-            complexity: 'Low',
-        },
+    return [
+        { id: 'toc', name: 'Transit-Oriented Communities (TOC)', category: 'Zoning', eligible: isResidential, description: 'Density bonus, reduced parking, height increases near transit per LAMC 12.22 A.31', financialImpact: Math.round(totalDev * 0.08), impactType: 'Cost Reduction', requirements: 'Within 1/2 mile of major transit, 8-25% affordable units', timeline: '6-12 months', source: 'https://planning.lacity.gov/plans-policies/transit-oriented-communities-affordable-housing', complexity: 'Medium' },
+        { id: 'densityBonus', name: 'Density Bonus (Gov Code §65915)', category: 'Zoning', eligible: isResidential, description: 'Up to 50% density bonus + incentives/concessions for affordable housing', financialImpact: Math.round(noi * 0.35 / (c.capRate || 0.05)), impactType: 'Value Creation', requirements: '5-15% affordable units depending on income level', timeline: '3-6 months', source: 'https://www.hcd.ca.gov/policy-and-research/housing-policy-development/density-bonus', complexity: 'Low' },
+        { id: 'lihtc', name: 'LIHTC (4% / 9%)', category: 'Tax Credit', eligible: isResidential && affordableUnits >= 5, description: '4% credits (as-of-right with bonds) or competitive 9% credits', financialImpact: Math.round(totalHard * affordableUnits / Math.max(units, 1) * 0.30 * 10), impactType: 'Equity Subsidy', requirements: '20% at 50% AMI or 40% at 60% AMI for 30+ years', timeline: '12-24 months (4%) / 18-36 months (9%)', source: 'https://www.treasurer.ca.gov/ctcac/tax.asp', complexity: 'High' },
+        { id: 'welfare', name: 'Welfare Exemption (RTC §214)', category: 'Tax Exemption', eligible: isResidential && affordableUnits > 0, description: 'Property tax exemption proportional to units ≤80% AMI with nonprofit GP', financialImpact: Math.round(c.stabilizedValue * 0.0125 * (affordableUnits / Math.max(units, 1))), impactType: 'Annual Savings', requirements: 'Nonprofit general partner, units at ≤80% AMI, BOE-267-L filing', timeline: 'Annual (file by Feb 15)', source: 'https://www.boe.ca.gov/proptaxes/welfarevets.htm', complexity: 'Medium' },
+        { id: 'eifd', name: 'EIFD Tax Increment', category: 'Public Finance', eligible: true, description: 'Enhanced Infrastructure Financing District captures property tax increment for 45 years', financialImpact: Math.round((c.stabilizedValue - c.landCost) * 0.01 * 0.75 * 30), impactType: '30-Yr Revenue', requirements: 'Public infrastructure nexus, participating taxing entities, voter approval if bonds', timeline: '18-36 months (formation)', source: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=201320140SB628', complexity: 'High' },
+        { id: 'oz', name: 'Opportunity Zone (IRC §1400Z)', category: 'Tax Deferral', eligible: true, description: 'Capital gains tax deferral and potential exclusion for investments in designated census tracts', financialImpact: Math.round((c.stabilizedValue - totalDev) * 0.20), impactType: 'Tax Savings', requirements: 'Investment in designated OZ census tract, hold 10+ years', timeline: '10-year hold required', source: 'https://www.irs.gov/credits-deductions/businesses/opportunity-zones', complexity: 'Medium' },
+        { id: 'nmtc', name: 'New Markets Tax Credit', category: 'Tax Credit', eligible: !isResidential, description: '39% tax credit over 7 years for investments in low-income communities', financialImpact: Math.round(totalDev * 0.25 * 0.39), impactType: 'Tax Credit', requirements: 'Located in qualifying census tract, CDFI allocation', timeline: '6-18 months', source: 'https://www.cdfifund.gov/programs-training/programs/new-markets-tax-credit', complexity: 'High' },
+        { id: 'htc', name: 'Historic Tax Credit (HTC)', category: 'Tax Credit', eligible: (st.inp && st.inp.yearBuilt && st.inp.yearBuilt < 1977), description: '20% federal credit for certified rehabilitation of historic structures', financialImpact: Math.round(totalHard * 0.20), impactType: 'Tax Credit', requirements: 'National Register listing, certified rehabilitation, NPS Parts 1-3', timeline: '12-24 months', source: 'https://www.nps.gov/subjects/taxincentives/index.htm', complexity: 'High' },
+        { id: 'sb35', name: 'SB 35 Streamlining', category: 'Entitlement', eligible: isResidential, description: 'Ministerial approval (no CEQA) for qualifying projects', financialImpact: Math.round(totalDev * 0.03), impactType: 'Time/Cost Savings', requirements: '10-50% affordable, prevailing wage, objective standards', timeline: '60-90 day approval', source: 'https://www.hcd.ca.gov/planning-and-community-development/housing-open-data-tools/sb-35-determination-summary', complexity: 'Medium' },
+        { id: 'mills', name: 'Mills Act (Historic)', category: 'Tax Reduction', eligible: (st.inp && st.inp.yearBuilt && st.inp.yearBuilt < 1977), description: 'Property tax reduction to capitalized income value for designated historic properties', financialImpact: Math.round(c.stabilizedValue * 0.005), impactType: 'Annual Savings', requirements: 'Local historic designation, 10-year maintenance contract', timeline: '3-6 months', source: 'https://ohp.parks.ca.gov/?page_id=21412', complexity: 'Low' },
     ];
+}
 
-    // Count eligible incentives and total impact
+function toggleIncentive(id) {
+    if (!incentiveMatrixSelections) {
+        // Initialize from current eligible defaults
+        var st = deepAnalysisState;
+        if (!st) return;
+        var incs = getIncentiveDefinitions(st);
+        incentiveMatrixSelections = {};
+        incs.forEach(function(inc) { incentiveMatrixSelections[inc.id] = inc.eligible; });
+    }
+    incentiveMatrixSelections[id] = !incentiveMatrixSelections[id];
+    recalcIncentiveMatrix();
+}
+
+function selectAllIncentives(mode) {
+    var st = deepAnalysisState;
+    if (!st) return;
+    var incs = getIncentiveDefinitions(st);
+    if (!incentiveMatrixSelections) incentiveMatrixSelections = {};
+    incs.forEach(function(inc) {
+        if (mode === 'all') incentiveMatrixSelections[inc.id] = true;
+        else if (mode === 'eligible') incentiveMatrixSelections[inc.id] = inc.eligible;
+        else incentiveMatrixSelections[inc.id] = false;
+    });
+    recalcIncentiveMatrix();
+}
+
+function recalcIncentiveMatrix() {
+    var container = document.getElementById('incentiveMatrixContent');
+    if (!container) return;
+    container.innerHTML = buildIncentiveMatrixContent();
+}
+
+function isIncentiveSelected(inc) {
+    if (!incentiveMatrixSelections) return inc.eligible;
+    return !!incentiveMatrixSelections[inc.id];
+}
+
+function buildIncentiveMatrixContent() {
+    var st = deepAnalysisState;
+    if (!st) return '';
+    var c = st.computed;
+    var fmt = function(v) { return '$' + Math.round(v).toLocaleString(); };
+    var fmtM = function(v) { return v >= 1e6 ? '$' + (v / 1e6).toFixed(1) + 'M' : fmt(v); };
+    var totalDev = c.totalDev;
+
+    var incentives = getIncentiveDefinitions(st);
+    var selected = incentives.filter(function(i) { return isIncentiveSelected(i); });
     var eligible = incentives.filter(function(i) { return i.eligible; });
-    var totalImpact = eligible.reduce(function(sum, i) { return sum + i.financialImpact; }, 0);
+    var selectedImpact = selected.reduce(function(sum, i) { return sum + i.financialImpact; }, 0);
 
-    // Summary
+    var html = '';
+
+    // Summary cards
     html += '<div class="exec-summary-grid">';
-    html += '<div class="exec-summary-card"><h4>Eligible Programs</h4><div class="exec-metric-lg">' + eligible.length + ' of ' + incentives.length + '</div><div class="exec-metric-sub">Based on project type and location</div></div>';
-    html += '<div class="exec-summary-card"><h4>Est. Combined Impact</h4><div class="exec-metric-lg" style="color:#276749;">' + fmtM(totalImpact) + '</div><div class="exec-metric-sub">Total potential financial benefit</div></div>';
-    html += '<div class="exec-summary-card"><h4>Impact as % of Dev Cost</h4><div class="exec-metric-lg">' + (totalDev > 0 ? (totalImpact / totalDev * 100).toFixed(1) : '0') + '%</div><div class="exec-metric-sub">Incentives / total development cost</div></div>';
-    html += '<div class="exec-summary-card"><h4>Top Incentive</h4><div class="exec-metric-lg" style="font-size:1rem;">' + (eligible.length > 0 ? eligible.sort(function(a, b) { return b.financialImpact - a.financialImpact; })[0].name.split('(')[0].trim() : 'None') + '</div><div class="exec-metric-sub">' + (eligible.length > 0 ? fmtM(eligible[0].financialImpact) + ' est. impact' : '') + '</div></div>';
+    html += '<div class="exec-summary-card"><h4>Applied Programs</h4><div class="exec-metric-lg" style="color:#2b6cb0;">' + selected.length + ' of ' + incentives.length + '</div><div class="exec-metric-sub">' + eligible.length + ' eligible, ' + selected.length + ' selected</div></div>';
+    html += '<div class="exec-summary-card"><h4>Selected Impact</h4><div class="exec-metric-lg" style="color:#276749;">' + fmtM(selectedImpact) + '</div><div class="exec-metric-sub">From applied incentives only</div></div>';
+    html += '<div class="exec-summary-card"><h4>Impact as % of Dev Cost</h4><div class="exec-metric-lg">' + (totalDev > 0 ? (selectedImpact / totalDev * 100).toFixed(1) : '0') + '%</div><div class="exec-metric-sub">Selected incentives / total cost</div></div>';
+    html += '<div class="exec-summary-card"><h4>Top Selected</h4><div class="exec-metric-lg" style="font-size:1rem;">' + (selected.length > 0 ? selected.sort(function(a, b) { return b.financialImpact - a.financialImpact; })[0].name.split('(')[0].trim() : 'None') + '</div><div class="exec-metric-sub">' + (selected.length > 0 ? fmtM(selected[0].financialImpact) + ' est. impact' : 'Select programs below') + '</div></div>';
     html += '</div>';
 
-    // Full comparison matrix
-    html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">Incentive Comparison Matrix</h4>';
+    // Quick select buttons
+    html += '<div style="display:flex;gap:6px;margin-bottom:1rem;">';
+    html += '<button onclick="selectAllIncentives(\'eligible\')" style="padding:4px 12px;font-size:0.72rem;border:1px solid #cbd5e0;border-radius:4px;background:#fff;cursor:pointer;">Eligible Only</button>';
+    html += '<button onclick="selectAllIncentives(\'all\')" style="padding:4px 12px;font-size:0.72rem;border:1px solid #cbd5e0;border-radius:4px;background:#fff;cursor:pointer;">Select All</button>';
+    html += '<button onclick="selectAllIncentives(\'none\')" style="padding:4px 12px;font-size:0.72rem;border:1px solid #cbd5e0;border-radius:4px;background:#fff;cursor:pointer;">Clear All</button>';
+    html += '</div>';
+
+    // Full comparison matrix with checkboxes
     html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.72rem;">';
     html += '<thead><tr style="background:#edf2f7;">';
+    html += '<th style="padding:6px 8px;text-align:center;width:36px;">Apply</th>';
     html += '<th style="padding:6px 8px;text-align:left;">Program</th>';
     html += '<th style="padding:6px 8px;text-align:center;">Category</th>';
     html += '<th style="padding:6px 8px;text-align:center;">Eligible?</th>';
@@ -15424,14 +15363,18 @@ function renderIncentiveMatrixTab(st) {
     html += '<th style="padding:6px 8px;text-align:center;">Timeline</th>';
     html += '</tr></thead><tbody>';
 
-    incentives.forEach(function(inc) {
-        var bg = inc.eligible ? '#f0fff4' : '#fff5f5';
+    // Re-fetch without sort to preserve order
+    var incList = getIncentiveDefinitions(st);
+    incList.forEach(function(inc) {
+        var sel = isIncentiveSelected(inc);
+        var bg = sel ? '#f0fff4' : (inc.eligible ? '#fffff0' : '#f7fafc');
         var complexColor = inc.complexity === 'Low' ? '#38a169' : inc.complexity === 'Medium' ? '#d69e2e' : '#e53e3e';
-        html += '<tr style="background:' + bg + ';border-bottom:1px solid #e2e8f0;">';
+        html += '<tr style="background:' + bg + ';border-bottom:1px solid #e2e8f0;' + (sel ? '' : 'opacity:0.7;') + '">';
+        html += '<td style="padding:6px 8px;text-align:center;"><input type="checkbox" ' + (sel ? 'checked' : '') + ' onchange="toggleIncentive(\'' + inc.id + '\')" style="accent-color:#38a169;cursor:pointer;width:16px;height:16px;"></td>';
         html += '<td style="padding:6px 8px;font-weight:600;"><a href="' + inc.source + '" target="_blank" style="color:#3182ce;text-decoration:none;">' + inc.name + '</a></td>';
         html += '<td style="padding:6px 8px;text-align:center;"><span style="background:#edf2f7;padding:2px 6px;border-radius:4px;font-size:0.68rem;">' + inc.category + '</span></td>';
         html += '<td style="padding:6px 8px;text-align:center;">' + (inc.eligible ? '<span style="color:#38a169;font-weight:700;">✓ Yes</span>' : '<span style="color:#a0aec0;">✗ No</span>') + '</td>';
-        html += '<td style="padding:6px 8px;text-align:right;font-weight:600;color:' + (inc.eligible ? '#276749' : '#a0aec0') + ';">' + (inc.eligible ? fmtM(inc.financialImpact) : '—') + '</td>';
+        html += '<td style="padding:6px 8px;text-align:right;font-weight:600;color:' + (sel ? '#276749' : '#a0aec0') + ';">' + fmtM(inc.financialImpact) + '</td>';
         html += '<td style="padding:6px 8px;text-align:center;font-size:0.68rem;">' + inc.impactType + '</td>';
         html += '<td style="padding:6px 8px;text-align:center;color:' + complexColor + ';font-weight:600;">' + inc.complexity + '</td>';
         html += '<td style="padding:6px 8px;font-size:0.68rem;">' + inc.requirements + '</td>';
@@ -15443,14 +15386,12 @@ function renderIncentiveMatrixTab(st) {
     // Stacking analysis
     html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">Incentive Stacking Analysis</h4>';
     html += '<p style="font-size:0.75rem;color:#718096;margin-bottom:0.75rem;">Many incentives can be combined ("stacked") to maximize total financial benefit. Common stacking combinations for LA transit-oriented projects:</p>';
-
     var stacks = [
         { name: 'Affordable TOD Stack', combo: 'TOC + Density Bonus + SB 35 + Welfare Exemption', suited: 'Multifamily affordable near transit', impact: 'Highest density + tax savings + fast entitlement' },
         { name: 'LIHTC Full Stack', combo: '4% LIHTC + Tax-Exempt Bonds + Welfare Exemption + EIFD', suited: '100% affordable projects', impact: 'Maximum subsidy + ongoing tax relief' },
         { name: 'Mixed-Use Stack', combo: 'TOC + Density Bonus + Opportunity Zone + NMTC', suited: 'Mixed-use in low-income areas', impact: 'Tax deferral + credits + density' },
         { name: 'Adaptive Reuse Stack', combo: 'Historic Tax Credit + Mills Act + Opportunity Zone', suited: 'Pre-1977 buildings in OZ tracts', impact: '20% rehab credit + reduced taxes + gains exclusion' },
     ];
-
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">';
     stacks.forEach(function(s) {
         html += '<div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.75rem;">';
@@ -15463,6 +15404,16 @@ function renderIncentiveMatrixTab(st) {
     html += '</div>';
 
     html += '<div style="font-size:0.72rem;color:#718096;margin-top:1.25rem;">Sources: <a href="https://www.treasurer.ca.gov/ctcac/" target="_blank" style="color:#3182ce;">CTCAC</a> | <a href="https://www.hcd.ca.gov/grants-and-funding" target="_blank" style="color:#3182ce;">HCD Funding</a> | <a href="https://www.irs.gov/credits-deductions/businesses/opportunity-zones" target="_blank" style="color:#3182ce;">IRS Opportunity Zones</a> | <a href="https://www.cdfifund.gov/programs-training/programs/new-markets-tax-credit" target="_blank" style="color:#3182ce;">CDFI NMTC</a></div>';
+    return html;
+}
+
+function renderIncentiveMatrixTab(st) {
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="analysis-section"><h3>Development Incentive Matrix</h3>';
+    html += '<p style="font-size:0.78rem;color:#718096;margin-bottom:1rem;">Select which incentive programs to apply to your analysis. Check/uncheck programs to see their combined financial impact. Only eligible programs are pre-selected by default.</p>';
+    html += '<div id="incentiveMatrixContent">';
+    html += buildIncentiveMatrixContent();
+    html += '</div>';
     html += '</div></div>';
     return html;
 }
