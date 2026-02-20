@@ -8751,7 +8751,16 @@ function analyzeEntitlementPath(useId, inp, effects) {
 
 // --- SKILL 24 DATA: Sensitivity Analysis ---
 
-function runSensitivityAnalysis(useId, inp, assumptions, effects) {
+var sensScenarioDefaults = {
+    bearCostPct: 15, bearRentPct: -15, bearCapBps: 50,
+    bullCostPct: -10, bullRentPct: 15, bullCapBps: -25
+};
+var sensScenario = {
+    bearCostPct: 15, bearRentPct: -15, bearCapBps: 50,
+    bullCostPct: -10, bullRentPct: 15, bullCapBps: -25
+};
+
+function runSensitivityAnalysis(useId, inp, assumptions, effects, scenarioParams) {
     const base = computeFromAssumptions(useId, inp, assumptions, effects);
     const tl = TIMELINE_MONTHS[useId] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
     const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
@@ -8791,18 +8800,19 @@ function runSensitivityAnalysis(useId, inp, assumptions, effects) {
     }
     tornado.sort((a, b) => (b.highMargin - b.lowMargin) - (a.highMargin - a.lowMargin));
 
-    // Bear / Base / Bull scenarios
+    // Bear / Base / Bull scenarios (use custom scenario params if provided)
+    var sp = scenarioParams || sensScenario;
     const bearAssumptions = {
         ...assumptions,
-        buildCostPSF: Math.round(assumptions.buildCostPSF * 1.15),
-        revenuePSF: Math.round(assumptions.revenuePSF * 0.85),
-        capRatePct: parseFloat((assumptions.capRatePct + 0.5).toFixed(1)),
+        buildCostPSF: Math.round(assumptions.buildCostPSF * (1 + sp.bearCostPct / 100)),
+        revenuePSF: Math.round(assumptions.revenuePSF * (1 + sp.bearRentPct / 100)),
+        capRatePct: parseFloat((assumptions.capRatePct + sp.bearCapBps / 100).toFixed(2)),
     };
     const bullAssumptions = {
         ...assumptions,
-        buildCostPSF: Math.round(assumptions.buildCostPSF * 0.90),
-        revenuePSF: Math.round(assumptions.revenuePSF * 1.15),
-        capRatePct: parseFloat((assumptions.capRatePct - 0.25).toFixed(1)),
+        buildCostPSF: Math.round(assumptions.buildCostPSF * (1 + sp.bullCostPct / 100)),
+        revenuePSF: Math.round(assumptions.revenuePSF * (1 + sp.bullRentPct / 100)),
+        capRatePct: parseFloat((assumptions.capRatePct + sp.bullCapBps / 100).toFixed(2)),
     };
 
     const bear = computeFromAssumptions(useId, inp, bearAssumptions, effects);
@@ -9579,18 +9589,11 @@ function renderEntitlementTab(st) {
     return html;
 }
 
-function renderSensitivityTab(st) {
+function buildSensitivityContent(st) {
     const { bestUse, inp, assumptions, effects, computed } = st;
-    const sens = runSensitivityAnalysis(bestUse, inp, assumptions, effects);
+    const sens = runSensitivityAnalysis(bestUse, inp, assumptions, effects, sensScenario);
 
-    const hasUnits = !!BUILDING_PARAMS[bestUse].unitSF;
-
-    let html = `<div class="deep-tab-panel">`;
-
-    // Editable Assumptions Panel
-    html += `<div class="analysis-section">`;
-    html += renderDeepAssumptions(assumptions, hasUnits, bestUse, computed);
-    html += `</div>`;
+    var html = '';
 
     // Pro Forma Summary (reuse existing budget)
     html += `<div class="analysis-section"><h3>Base Case Pro Forma</h3>`;
@@ -9598,6 +9601,8 @@ function renderSensitivityTab(st) {
     html += `</div>`;
 
     // Scenario Table
+    var bearDesc = (sensScenario.bearCostPct >= 0 ? '+' : '') + sensScenario.bearCostPct + '% costs, ' + (sensScenario.bearRentPct >= 0 ? '+' : '') + sensScenario.bearRentPct + '% rents, ' + (sensScenario.bearCapBps >= 0 ? '+' : '') + sensScenario.bearCapBps + 'bps cap';
+    var bullDesc = (sensScenario.bullCostPct >= 0 ? '+' : '') + sensScenario.bullCostPct + '% costs, ' + (sensScenario.bullRentPct >= 0 ? '+' : '') + sensScenario.bullRentPct + '% rents, ' + (sensScenario.bullCapBps >= 0 ? '+' : '') + sensScenario.bullCapBps + 'bps cap';
     html += `<div class="analysis-section"><h3>Bear / Base / Bull Scenarios</h3>`;
     html += `<table class="scenario-table"><thead><tr>
         <th>Metric</th>
@@ -9619,7 +9624,7 @@ function renderSensitivityTab(st) {
         html += `<tr><td>${r[0]}</td><td class="scenario-bear">${r[1]}</td><td class="scenario-base">${r[2]}</td><td class="scenario-bull">${r[3]}</td></tr>`;
     }
     html += `</tbody></table>`;
-    html += `<div style="font-size:0.75rem;color:var(--text-light);margin-top:0.5rem;">Bear: +15% costs, -15% rents, +50bps cap rate | Bull: -10% costs, +15% rents, -25bps cap rate</div>`;
+    html += `<div style="font-size:0.75rem;color:var(--text-light);margin-top:0.5rem;">Bear: ${bearDesc} | Bull: ${bullDesc}</div>`;
     html += `</div>`;
 
     // Tornado Diagram
@@ -9692,6 +9697,89 @@ function renderSensitivityTab(st) {
     html += `</tbody></table></div>`;
     html += `<div style="font-size:0.75rem;color:var(--text-light);margin-top:0.5rem;">Cell values show development margin. Green = profitable, Yellow = marginal, Red = negative. Outlined cell = base case.</div>`;
     html += `</div>`;
+
+    return html;
+}
+
+function sensSliderHtml(id, label, min, max, step, val, unit) {
+    return '<div class="dt-slider-group">' +
+        '<div class="dt-slider-label"><span>' + label + '</span><span class="dt-val" id="' + id + '-val">' + (val >= 0 ? '+' : '') + val + unit + '</span></div>' +
+        '<div class="dt-slider-row">' +
+        '<input type="range" id="' + id + '-slider" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '" oninput="document.getElementById(\'' + id + '\').value=this.value;recalcSensitivity()">' +
+        '<input type="number" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '" style="width:70px;" oninput="document.getElementById(\'' + id + '-slider\').value=this.value;recalcSensitivity()">' +
+        '</div></div>';
+}
+
+function recalcSensitivity() {
+    var fields = ['bearCostPct', 'bearRentPct', 'bearCapBps', 'bullCostPct', 'bullRentPct', 'bullCapBps'];
+    var units = ['%', '%', 'bps', '%', '%', 'bps'];
+    for (var i = 0; i < fields.length; i++) {
+        var el = document.getElementById('sens-' + fields[i]);
+        var slider = document.getElementById('sens-' + fields[i] + '-slider');
+        if (el) {
+            sensScenario[fields[i]] = parseFloat(el.value);
+            if (slider && document.activeElement === el) slider.value = el.value;
+            if (slider && document.activeElement === slider) el.value = slider.value;
+        }
+        var valSpan = document.getElementById('sens-' + fields[i] + '-val');
+        if (valSpan && el) {
+            var v = parseFloat(el.value);
+            valSpan.textContent = (v >= 0 ? '+' : '') + v + units[i];
+        }
+    }
+    var container = document.getElementById('sensitivityContent');
+    if (container && deepAnalysisState) {
+        container.innerHTML = buildSensitivityContent(deepAnalysisState);
+    }
+}
+
+function resetSensitivity() {
+    sensScenario = {
+        bearCostPct: sensScenarioDefaults.bearCostPct,
+        bearRentPct: sensScenarioDefaults.bearRentPct,
+        bearCapBps: sensScenarioDefaults.bearCapBps,
+        bullCostPct: sensScenarioDefaults.bullCostPct,
+        bullRentPct: sensScenarioDefaults.bullRentPct,
+        bullCapBps: sensScenarioDefaults.bullCapBps
+    };
+    var fields = ['bearCostPct', 'bearRentPct', 'bearCapBps', 'bullCostPct', 'bullRentPct', 'bullCapBps'];
+    for (var i = 0; i < fields.length; i++) {
+        var el = document.getElementById('sens-' + fields[i]);
+        var slider = document.getElementById('sens-' + fields[i] + '-slider');
+        if (el) el.value = sensScenarioDefaults[fields[i]];
+        if (slider) slider.value = sensScenarioDefaults[fields[i]];
+    }
+    recalcSensitivity();
+}
+
+function renderSensitivityTab(st) {
+    const { bestUse, inp, assumptions, effects, computed } = st;
+
+    const hasUnits = !!BUILDING_PARAMS[bestUse].unitSF;
+
+    let html = `<div class="deep-tab-panel">`;
+
+    // Editable Assumptions Panel
+    html += `<div class="analysis-section">`;
+    html += renderDeepAssumptions(assumptions, hasUnits, bestUse, computed);
+    html += `</div>`;
+
+    // Scenario Sliders
+    html += `<div class="dt-controls"><div class="dt-controls-title">Bear / Bull Scenario Assumptions <button class="dt-reset-btn" onclick="resetSensitivity()">Reset Defaults</button></div>`;
+    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.25rem 2rem;">`;
+    html += `<div><div style="font-size:0.78rem;font-weight:700;color:#c53030;margin-bottom:0.5rem;">Bear Case</div>`;
+    html += sensSliderHtml('sens-bearCostPct', 'Cost Increase', 0, 30, 1, sensScenario.bearCostPct, '%');
+    html += sensSliderHtml('sens-bearRentPct', 'Rent Change', -30, 0, 1, sensScenario.bearRentPct, '%');
+    html += sensSliderHtml('sens-bearCapBps', 'Cap Rate Shift', 0, 100, 5, sensScenario.bearCapBps, 'bps');
+    html += `</div>`;
+    html += `<div><div style="font-size:0.78rem;font-weight:700;color:#276749;margin-bottom:0.5rem;">Bull Case</div>`;
+    html += sensSliderHtml('sens-bullCostPct', 'Cost Change', -30, 0, 1, sensScenario.bullCostPct, '%');
+    html += sensSliderHtml('sens-bullRentPct', 'Rent Increase', 0, 30, 1, sensScenario.bullRentPct, '%');
+    html += sensSliderHtml('sens-bullCapBps', 'Cap Rate Shift', -100, 0, 5, sensScenario.bullCapBps, 'bps');
+    html += `</div></div></div>`;
+
+    // Dynamic content area
+    html += `<div id="sensitivityContent">${buildSensitivityContent(st)}</div>`;
 
     html += `</div>`;
     return html;
@@ -11061,14 +11149,46 @@ const CALGREEN_REQS = {
 };
 
 const CONSTRUCTION_TYPE_COSTS_PSF = {
-    'V-B': { low: 140, high: 220, label: 'Type V-B (Wood-frame, unprotected)' },
-    'V-A': { low: 170, high: 270, label: 'Type V-A (Wood-frame, 1-hr rated)' },
-    'III-A': { low: 220, high: 350, label: 'Type III-A (Podium/heavy timber)' },
-    'III-B': { low: 200, high: 320, label: 'Type III-B (Non-combustible exterior)' },
-    'II-B': { low: 180, high: 300, label: 'Type II-B (Non-combustible, unprotected)' },
-    'II-A': { low: 220, high: 360, label: 'Type II-A (Non-combustible, 1-hr rated)' },
-    'I-B': { low: 320, high: 500, label: 'Type I-B (Steel/concrete, 2-hr rated)' },
-    'I-A': { low: 400, high: 650, label: 'Type I-A (Steel/concrete, 3-hr rated)' },
+    'V-B': { low: 140, high: 220, label: 'Type V-B (Wood-frame, unprotected)',
+        maxStories: '2-3', duration: '12-16 mo', insuranceClass: 'Frame',
+        structuralNotes: 'Platform framing, no fire protection required',
+        ibcRef: 'IBC Table 601, 602', sprinklerBonus: '+1 story with NFPA 13',
+        typicalUse: 'Garden-style apartments, townhomes' },
+    'V-A': { low: 170, high: 270, label: 'Type V-A (Wood-frame, 1-hr rated)',
+        maxStories: '3-4', duration: '14-18 mo', insuranceClass: 'Frame — Protected',
+        structuralNotes: '1-hr rated assemblies on structural members, fire-retardant treated wood optional',
+        ibcRef: 'IBC Table 601, 602; CBC 2301', sprinklerBonus: '+1 story with NFPA 13R',
+        typicalUse: 'Low-rise apartments, senior living' },
+    'III-A': { low: 220, high: 350, label: 'Type III-A (Podium/heavy timber)',
+        maxStories: '5 (podium to 7)', duration: '18-24 mo', insuranceClass: 'Joisted Masonry — Protected',
+        structuralNotes: 'Wood-frame over Type I concrete podium; 1-hr rated interior, non-combustible exterior walls',
+        ibcRef: 'IBC Table 601, 504.4; LAMC 91.510', sprinklerBonus: '+2 stories with NFPA 13',
+        typicalUse: 'Mid-rise podium apartments, mixed-use' },
+    'III-B': { low: 200, high: 320, label: 'Type III-B (Non-combustible exterior)',
+        maxStories: '3-4', duration: '16-20 mo', insuranceClass: 'Joisted Masonry',
+        structuralNotes: 'Non-combustible exterior walls, wood interior framing, no fire rating on interior',
+        ibcRef: 'IBC Table 601, 602', sprinklerBonus: '+1 story with NFPA 13',
+        typicalUse: 'Low-rise commercial, light industrial' },
+    'II-B': { low: 180, high: 300, label: 'Type II-B (Non-combustible, unprotected)',
+        maxStories: '3-5', duration: '16-20 mo', insuranceClass: 'Non-combustible',
+        structuralNotes: 'Light-gauge steel or non-combustible framing, no fireproofing required',
+        ibcRef: 'IBC Table 601, 602', sprinklerBonus: '+1 story with NFPA 13',
+        typicalUse: 'Warehouses, retail, offices' },
+    'II-A': { low: 220, high: 360, label: 'Type II-A (Non-combustible, 1-hr rated)',
+        maxStories: '5-6', duration: '18-24 mo', insuranceClass: 'Non-combustible — Protected',
+        structuralNotes: 'Non-combustible with 1-hr rated assemblies; steel frame with spray fireproofing or intumescent paint',
+        ibcRef: 'IBC Table 601, 602; ASTM E119', sprinklerBonus: '+1 story with NFPA 13',
+        typicalUse: 'Mid-rise apartments, offices, hotels' },
+    'I-B': { low: 320, high: 500, label: 'Type I-B (Steel/concrete, 2-hr rated)',
+        maxStories: '12+', duration: '24-36 mo', insuranceClass: 'Fire-resistive',
+        structuralNotes: 'Structural steel frame with 2-hr fireproofing or reinforced concrete; moment frames for seismic',
+        ibcRef: 'IBC Table 601, Section 403; AISC 360', sprinklerBonus: 'Unlimited height with NFPA 13',
+        typicalUse: 'High-rise residential, Class A office, hotels' },
+    'I-A': { low: 400, high: 650, label: 'Type I-A (Steel/concrete, 3-hr rated)',
+        maxStories: 'Unlimited', duration: '30-48 mo', insuranceClass: 'Fire-resistive — Superior',
+        structuralNotes: 'Reinforced concrete or steel moment frame with 3-hr fireproofing; highest structural redundancy',
+        ibcRef: 'IBC Table 601, Section 403; ACI 318', sprinklerBonus: 'Unlimited height with NFPA 13',
+        typicalUse: 'Supertall towers, hospitals, essential facilities' },
 };
 
 const FIRE_RATING_BY_TYPE = {
@@ -11372,6 +11492,7 @@ function analyzeConstructionType(useId, inp, computed) {
 
 // Construction tab cost multiplier
 var constructionCostMult = 1.0;
+var constructionTypeOverride = null; // null = auto-detect from IBC
 
 function recalcConstruction() {
     var el = document.getElementById('cc-costMult');
@@ -11391,26 +11512,59 @@ function recalcConstruction() {
 
 function resetConstruction() {
     constructionCostMult = 1.0;
+    constructionTypeOverride = null;
     var slider = document.getElementById('cc-costMult-slider');
     var num = document.getElementById('cc-costMult');
     if (slider) slider.value = 100;
     if (num) num.value = 100;
+    var sel = document.getElementById('cc-typeOverride');
+    if (sel) sel.value = 'auto';
     recalcConstruction();
+}
+
+function onConstructionTypeChange() {
+    var sel = document.getElementById('cc-typeOverride');
+    constructionTypeOverride = (sel && sel.value !== 'auto') ? sel.value : null;
+    recalcConstruction();
+}
+
+function toggleConstructionRow(rowEl) {
+    var detailId = rowEl.getAttribute('data-detail-id');
+    var detailRow = document.getElementById(detailId);
+    if (!detailRow) return;
+    var isVisible = detailRow.style.display !== 'none';
+    // Hide all detail rows first
+    document.querySelectorAll('.ct-detail-row').forEach(function(r) { r.style.display = 'none'; });
+    document.querySelectorAll('.ct-clickable-row').forEach(function(r) { r.classList.remove('ct-row-expanded'); });
+    if (!isVisible) {
+        detailRow.style.display = 'table-row';
+        rowEl.classList.add('ct-row-expanded');
+    }
 }
 
 function buildConstructionContent(st) {
     const { bestUse, inp, computed } = st;
-    const cc = analyzeConstructionType(bestUse, inp, computed);
+    const ccAuto = analyzeConstructionType(bestUse, inp, computed);
+    // If user overrides construction type, recompute cost data for that type
+    var activeType = constructionTypeOverride || ccAuto.constructionType;
+    var activeCostData = CONSTRUCTION_TYPE_COSTS_PSF[activeType] || CONSTRUCTION_TYPE_COSTS_PSF[ccAuto.constructionType];
+    var activeCostPSF = Math.round((activeCostData.low + activeCostData.high) / 2);
+    var activeFireRating = FIRE_RATING_BY_TYPE[activeType] || 0;
+    var activeStructural = STRUCTURAL_SYSTEMS[activeType] || ccAuto.structuralSystem;
+    var isOverridden = constructionTypeOverride && constructionTypeOverride !== ccAuto.constructionType;
+    // Use the auto-computed cc for non-cost fields (occupancy, stories, gsf, code compliance, etc.)
+    var cc = ccAuto;
     var m = constructionCostMult;
 
     var html = '';
     // Construction Type Overview
+    var overrideNote = isOverridden ? '<div style="font-size:0.72rem;color:#b7791f;margin-top:0.25rem;">What-if override — auto-detected: ' + cc.constructionType + '</div>' : '';
     html += `<div class="analysis-section"><h3>IBC Construction Type Classification</h3>
         <div class="exec-summary-grid">
             <div class="exec-summary-card">
                 <h4>Construction Type</h4>
-                <div class="exec-metric-lg">${cc.constructionType}</div>
-                <div class="exec-metric-sub">${cc.constructionTypeDesc}</div>
+                <div class="exec-metric-lg">${activeType}</div>
+                <div class="exec-metric-sub">${activeCostData.label.replace('Type ' + activeType + ' ', '')}${overrideNote}</div>
             </div>
             <div class="exec-summary-card">
                 <h4>Occupancy Group</h4>
@@ -11419,8 +11573,8 @@ function buildConstructionContent(st) {
             </div>
             <div class="exec-summary-card">
                 <h4>Cost Range (per SF)</h4>
-                <div class="exec-metric-lg">${fmt(Math.round(cc.costPSF * m))}<span style="font-size:0.6em;color:var(--text-light)">/SF</span></div>
-                <div class="exec-metric-sub">${fmt(Math.round(cc.costRange.low * m))} – ${fmt(Math.round(cc.costRange.high * m))} range</div>
+                <div class="exec-metric-lg">${fmt(Math.round(activeCostPSF * m))}<span style="font-size:0.6em;color:var(--text-light)">/SF</span></div>
+                <div class="exec-metric-sub">${fmt(Math.round(activeCostData.low * m))} – ${fmt(Math.round(activeCostData.high * m))} range</div>
             </div>
             <div class="exec-summary-card">
                 <h4>Total Code Compliance</h4>
@@ -11432,31 +11586,42 @@ function buildConstructionContent(st) {
 
     html += `<div class="analysis-section"><h3>Structural System</h3>
         <div style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;">
-            <div style="font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:0.35rem;">${cc.structuralSystem}</div>
+            <div style="font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:0.35rem;">${activeStructural}</div>
             <div style="font-size:0.85rem;color:var(--text-light);">
-                Based on ${cc.stories} stories, ${cc.occupancyGroup} occupancy, and IBC ${cc.constructionType} classification.
+                Based on ${cc.stories} stories, ${cc.occupancyGroup} occupancy, and IBC ${activeType} classification.
                 ${cc.stories >= 5 ? 'Podium or steel/concrete framing required above 4 stories of wood-frame construction per IBC limits.' : ''}
                 ${cc.stories >= 8 ? 'High-rise provisions apply (IBC Section 403): standby power, additional stairwell, fire command center.' : ''}
             </div>
         </div>`;
 
-    html += `<h4 style="font-size:0.88rem;color:var(--primary);margin-bottom:0.75rem;">Construction Type Cost Comparison</h4>`;
-    html += `<table class="afford-comparison-table"><thead><tr>
-        <th>Type</th><th>Description</th><th>Cost/SF Range</th><th>Max Stories*</th><th>Fire Rating</th>
+    html += `<h4 style="font-size:0.88rem;color:var(--primary);margin-bottom:0.75rem;">Construction Type Cost Comparison <span style="font-size:0.72rem;color:var(--text-light);font-weight:400;margin-left:0.5rem;">Click row for details</span></h4>`;
+    html += `<table class="afford-comparison-table" style="border-collapse:collapse;"><thead><tr>
+        <th>Type</th><th>Description</th><th>Cost/SF Range</th><th>Max Stories*</th><th>Fire Rating</th><th>Duration</th><th>Typical Use</th>
     </tr></thead><tbody>`;
-    const typeRows = [
-        { type: 'V-B', maxStories: '2-3' },{ type: 'V-A', maxStories: '3-4' },{ type: 'III-A', maxStories: '5 (podium to 7)' },
-        { type: 'II-A', maxStories: '5-6' },{ type: 'I-B', maxStories: '12+' },{ type: 'I-A', maxStories: 'Unlimited' },
-    ];
-    for (const row of typeRows) {
-        const data = CONSTRUCTION_TYPE_COSTS_PSF[row.type];
-        const isActive = row.type === cc.constructionType;
-        const rating = FIRE_RATING_BY_TYPE[row.type] || 0;
-        html += `<tr style="${isActive ? 'background:#f0fff4;font-weight:600;' : ''}">
-            <td>${row.type}${isActive ? ' &#10004;' : ''}</td>
-            <td style="font-size:0.82rem;">${data.label.replace('Type ' + row.type + ' ', '')}</td>
+    const typeRowKeys = ['V-B', 'V-A', 'III-A', 'II-A', 'I-B', 'I-A'];
+    for (var ti = 0; ti < typeRowKeys.length; ti++) {
+        var tKey = typeRowKeys[ti];
+        var data = CONSTRUCTION_TYPE_COSTS_PSF[tKey];
+        var isActive = tKey === activeType;
+        var rating = FIRE_RATING_BY_TYPE[tKey] || 0;
+        var detailId = 'ct-detail-' + ti;
+        html += `<tr class="ct-clickable-row" data-detail-id="${detailId}" onclick="toggleConstructionRow(this)" style="cursor:pointer;${isActive ? 'background:#f0fff4;font-weight:600;' : ''}">
+            <td>${tKey}${isActive ? ' &#10004;' : ''}</td>
+            <td style="font-size:0.82rem;">${data.label.replace('Type ' + tKey + ' ', '')}</td>
             <td>${fmt(Math.round(data.low * m))} – ${fmt(Math.round(data.high * m))}</td>
-            <td>${row.maxStories}</td><td>${rating}-hr</td>
+            <td>${data.maxStories}</td><td>${rating}-hr</td>
+            <td style="font-size:0.82rem;">${data.duration}</td>
+            <td style="font-size:0.82rem;">${data.typicalUse}</td>
+        </tr>`;
+        html += `<tr id="${detailId}" class="ct-detail-row" style="display:none;">
+            <td colspan="7" style="padding:0.75rem 1rem;background:#f7fafc;border-left:3px solid var(--primary);">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem 1.5rem;font-size:0.82rem;">
+                    <div><strong>Structural Notes:</strong> ${data.structuralNotes}</div>
+                    <div><strong>IBC Reference:</strong> ${data.ibcRef}</div>
+                    <div><strong>Insurance Class:</strong> ${data.insuranceClass}</div>
+                    <div><strong>Sprinkler Bonus:</strong> ${data.sprinklerBonus}</div>
+                </div>
+            </td>
         </tr>`;
     }
     html += `</tbody></table>`;
@@ -11465,7 +11630,7 @@ function buildConstructionContent(st) {
 
     html += `<div class="analysis-section"><h3>Fire & Life Safety</h3>
         <div class="exec-summary-grid">
-            <div class="exec-summary-card"><h4>Fire Rating</h4><div class="exec-metric-lg">${cc.fireRating}-hr</div><div class="exec-metric-sub">Structural fire resistance</div></div>
+            <div class="exec-summary-card"><h4>Fire Rating</h4><div class="exec-metric-lg">${activeFireRating}-hr</div><div class="exec-metric-sub">Structural fire resistance</div></div>
             <div class="exec-summary-card"><h4>Sprinklers</h4><div class="exec-metric-lg" style="color:${cc.sprinklerRequired ? '#c53030' : '#276749'}">${cc.sprinklerRequired ? 'Required' : 'Not Required'}</div><div class="exec-metric-sub">${cc.sprinklerRequired ? 'NFPA 13 / 13R throughout' : 'Per local LAFD amendment'}</div></div>
             <div class="exec-summary-card"><h4>Stairwells</h4><div class="exec-metric-lg">${cc.stairwellCount}</div><div class="exec-metric-sub">Required exit stairways</div></div>
             <div class="exec-summary-card"><h4>Elevators</h4><div class="exec-metric-lg">${cc.elevatorCount}</div><div class="exec-metric-sub">${cc.elevatorCount > 0 ? 'Passenger + fire service' : 'Not required (low-rise)'}</div></div>
@@ -11519,14 +11684,30 @@ function buildConstructionContent(st) {
 }
 
 function renderConstructionTab(st) {
+    var ccAuto = analyzeConstructionType(st.bestUse, st.inp, st.computed);
+    var currentType = constructionTypeOverride || ccAuto.constructionType;
+    var typeOptions = ['V-B', 'V-A', 'III-A', 'II-A', 'I-B', 'I-A'];
+    var typeSelectHtml = '<select id="cc-typeOverride" onchange="onConstructionTypeChange()" style="padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.82rem;min-width:160px;">';
+    typeSelectHtml += '<option value="auto"' + (!constructionTypeOverride ? ' selected' : '') + '>Auto (' + ccAuto.constructionType + ')</option>';
+    for (var i = 0; i < typeOptions.length; i++) {
+        var t = typeOptions[i];
+        typeSelectHtml += '<option value="' + t + '"' + (constructionTypeOverride === t ? ' selected' : '') + '>' + t + ' — ' + CONSTRUCTION_TYPE_COSTS_PSF[t].label.replace('Type ' + t + ' ', '') + '</option>';
+    }
+    typeSelectHtml += '</select>';
+
     let html = `<div class="deep-tab-panel">`;
 
-    html += `<div class="dt-controls"><div class="dt-controls-title">Adjust Cost Multiplier <button class="dt-reset-btn" onclick="resetConstruction()">Reset Defaults</button></div>`;
-    html += `<div class="dt-controls-grid"><div class="dt-slider-group">`;
+    html += `<div class="dt-controls"><div class="dt-controls-title">Construction Type & Cost Controls <button class="dt-reset-btn" onclick="resetConstruction()">Reset Defaults</button></div>`;
+    html += `<div class="dt-controls-grid">`;
+    html += `<div class="dt-slider-group">`;
+    html += `<div class="dt-slider-label"><span>What-if Construction Type</span></div>`;
+    html += `<div style="margin-top:0.25rem;">${typeSelectHtml}</div>`;
+    html += `</div>`;
+    html += `<div class="dt-slider-group">`;
     html += `<div class="dt-slider-label"><span>Cost Multiplier (market conditions)</span><span class="dt-val" id="cc-costMult-val">100%</span></div>`;
     html += `<div class="dt-slider-row">`;
-    html += `<input type="range" id="cc-costMult-slider" min="70" max="140" step="5" value="100" oninput="document.getElementById('cc-costMult').value=this.value;recalcConstruction()">`;
-    html += `<input type="number" id="cc-costMult" min="70" max="140" step="5" value="100" oninput="document.getElementById('cc-costMult-slider').value=this.value;recalcConstruction()">`;
+    html += `<input type="range" id="cc-costMult-slider" min="70" max="140" step="5" value="${Math.round(constructionCostMult * 100)}" oninput="document.getElementById('cc-costMult').value=this.value;recalcConstruction()">`;
+    html += `<input type="number" id="cc-costMult" min="70" max="140" step="5" value="${Math.round(constructionCostMult * 100)}" oninput="document.getElementById('cc-costMult-slider').value=this.value;recalcConstruction()">`;
     html += `</div></div></div></div>`;
 
     html += `<div id="constructionContent">${buildConstructionContent(st)}</div>`;
@@ -14936,13 +15117,13 @@ function renderKPIDashboard(st) {
 function recalcKPIDashboard() {
     var st = deepAnalysisState;
     if (!st || !st.computed) return;
-    // Re-render only the KPI tab content
-    var panels = document.querySelectorAll('.deep-tab-panel');
-    if (panels && panels[15]) {
+    // Find the KPI panel by its unique content rather than hardcoded index
+    var kpiPanel = document.querySelector('#kpiGrid')?.closest('.deep-tab-panel');
+    if (kpiPanel) {
         var tempDiv = document.createElement('div');
         tempDiv.innerHTML = renderKPIDashboard(st);
         var newContent = tempDiv.querySelector('.deep-tab-panel');
-        if (newContent) panels[15].innerHTML = newContent.innerHTML;
+        if (newContent) kpiPanel.innerHTML = newContent.innerHTML;
     }
 }
 
