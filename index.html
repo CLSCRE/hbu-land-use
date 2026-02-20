@@ -11224,12 +11224,40 @@ function analyzeConstructionType(useId, inp, computed) {
     };
 }
 
-function renderConstructionTab(st) {
+// Construction tab cost multiplier
+var constructionCostMult = 1.0;
+
+function recalcConstruction() {
+    var el = document.getElementById('cc-costMult');
+    if (el) constructionCostMult = parseFloat(el.value) / 100;
+    var slider = document.getElementById('cc-costMult-slider');
+    var num = document.getElementById('cc-costMult');
+    if (slider && num && document.activeElement === slider) num.value = slider.value;
+    if (slider && num && document.activeElement === num) slider.value = num.value;
+    var valSpan = document.getElementById('cc-costMult-val');
+    if (valSpan && num) valSpan.textContent = parseFloat(num.value).toFixed(0) + '%';
+    var container = document.getElementById('constructionContent');
+    if (container && deepAnalysisState) {
+        var st = deepAnalysisState;
+        container.innerHTML = buildConstructionContent(st);
+    }
+}
+
+function resetConstruction() {
+    constructionCostMult = 1.0;
+    var slider = document.getElementById('cc-costMult-slider');
+    var num = document.getElementById('cc-costMult');
+    if (slider) slider.value = 100;
+    if (num) num.value = 100;
+    recalcConstruction();
+}
+
+function buildConstructionContent(st) {
     const { bestUse, inp, computed } = st;
     const cc = analyzeConstructionType(bestUse, inp, computed);
+    var m = constructionCostMult;
 
-    let html = `<div class="deep-tab-panel">`;
-
+    var html = '';
     // Construction Type Overview
     html += `<div class="analysis-section"><h3>IBC Construction Type Classification</h3>
         <div class="exec-summary-grid">
@@ -11245,18 +11273,17 @@ function renderConstructionTab(st) {
             </div>
             <div class="exec-summary-card">
                 <h4>Cost Range (per SF)</h4>
-                <div class="exec-metric-lg">${fmt(cc.costPSF)}<span style="font-size:0.6em;color:var(--text-light)">/SF</span></div>
-                <div class="exec-metric-sub">${fmt(cc.costRange.low)} – ${fmt(cc.costRange.high)} range</div>
+                <div class="exec-metric-lg">${fmt(Math.round(cc.costPSF * m))}<span style="font-size:0.6em;color:var(--text-light)">/SF</span></div>
+                <div class="exec-metric-sub">${fmt(Math.round(cc.costRange.low * m))} – ${fmt(Math.round(cc.costRange.high * m))} range</div>
             </div>
             <div class="exec-summary-card">
                 <h4>Total Code Compliance</h4>
-                <div class="exec-metric-lg">${formatCompactDollars(cc.totalCodeComplianceCost)}</div>
-                <div class="exec-metric-sub">$${Math.round(cc.totalCodeComplianceCost / (cc.gsf || 1)).toLocaleString()}/SF adder</div>
+                <div class="exec-metric-lg">${formatCompactDollars(Math.round(cc.totalCodeComplianceCost * m))}</div>
+                <div class="exec-metric-sub">$${Math.round(cc.totalCodeComplianceCost * m / (cc.gsf || 1)).toLocaleString()}/SF adder</div>
             </div>
         </div>
     </div>`;
 
-    // Structural System
     html += `<div class="analysis-section"><h3>Structural System</h3>
         <div style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;">
             <div style="font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:0.35rem;">${cc.structuralSystem}</div>
@@ -11267,18 +11294,13 @@ function renderConstructionTab(st) {
             </div>
         </div>`;
 
-    // Construction type comparison matrix
     html += `<h4 style="font-size:0.88rem;color:var(--primary);margin-bottom:0.75rem;">Construction Type Cost Comparison</h4>`;
     html += `<table class="afford-comparison-table"><thead><tr>
         <th>Type</th><th>Description</th><th>Cost/SF Range</th><th>Max Stories*</th><th>Fire Rating</th>
     </tr></thead><tbody>`;
     const typeRows = [
-        { type: 'V-B', maxStories: '2-3', note: '' },
-        { type: 'V-A', maxStories: '3-4', note: '' },
-        { type: 'III-A', maxStories: '5 (podium to 7)', note: '' },
-        { type: 'II-A', maxStories: '5-6', note: '' },
-        { type: 'I-B', maxStories: '12+', note: '' },
-        { type: 'I-A', maxStories: 'Unlimited', note: '' },
+        { type: 'V-B', maxStories: '2-3' },{ type: 'V-A', maxStories: '3-4' },{ type: 'III-A', maxStories: '5 (podium to 7)' },
+        { type: 'II-A', maxStories: '5-6' },{ type: 'I-B', maxStories: '12+' },{ type: 'I-A', maxStories: 'Unlimited' },
     ];
     for (const row of typeRows) {
         const data = CONSTRUCTION_TYPE_COSTS_PSF[row.type];
@@ -11287,152 +11309,81 @@ function renderConstructionTab(st) {
         html += `<tr style="${isActive ? 'background:#f0fff4;font-weight:600;' : ''}">
             <td>${row.type}${isActive ? ' &#10004;' : ''}</td>
             <td style="font-size:0.82rem;">${data.label.replace('Type ' + row.type + ' ', '')}</td>
-            <td>${fmt(data.low)} – ${fmt(data.high)}</td>
-            <td>${row.maxStories}</td>
-            <td>${rating}-hr</td>
+            <td>${fmt(Math.round(data.low * m))} – ${fmt(Math.round(data.high * m))}</td>
+            <td>${row.maxStories}</td><td>${rating}-hr</td>
         </tr>`;
     }
     html += `</tbody></table>`;
-    html += `<div style="font-size:0.75rem;color:var(--text-light);margin-top:0.35rem;">*Max stories with sprinklers and allowable area increases per IBC Table 504.4. Actual limits vary by occupancy.</div>`;
+    html += `<div style="font-size:0.75rem;color:var(--text-light);margin-top:0.35rem;">*Max stories with sprinklers and allowable area increases per IBC Table 504.4.</div>`;
     html += `</div>`;
 
-    // Fire & Life Safety
     html += `<div class="analysis-section"><h3>Fire & Life Safety</h3>
         <div class="exec-summary-grid">
-            <div class="exec-summary-card">
-                <h4>Fire Rating</h4>
-                <div class="exec-metric-lg">${cc.fireRating}-hr</div>
-                <div class="exec-metric-sub">Structural fire resistance</div>
-            </div>
-            <div class="exec-summary-card">
-                <h4>Sprinklers</h4>
-                <div class="exec-metric-lg" style="color:${cc.sprinklerRequired ? '#c53030' : '#276749'}">${cc.sprinklerRequired ? 'Required' : 'Not Required'}</div>
-                <div class="exec-metric-sub">${cc.sprinklerRequired ? 'NFPA 13 / 13R throughout' : 'Per local LAFD amendment'}</div>
-            </div>
-            <div class="exec-summary-card">
-                <h4>Stairwells</h4>
-                <div class="exec-metric-lg">${cc.stairwellCount}</div>
-                <div class="exec-metric-sub">Required exit stairways</div>
-            </div>
-            <div class="exec-summary-card">
-                <h4>Elevators</h4>
-                <div class="exec-metric-lg">${cc.elevatorCount}</div>
-                <div class="exec-metric-sub">${cc.elevatorCount > 0 ? 'Passenger + fire service' : 'Not required (low-rise)'}</div>
-            </div>
-        </div>
-        <div style="background:#fffaf0;border:1px solid #fbd38d;border-radius:8px;padding:0.75rem 1rem;margin-top:0.75rem;font-size:0.85rem;">
-            <strong>LAFD Local Amendments:</strong> Los Angeles requires NFPA 13 sprinklers in all new construction regardless of IBC thresholds (LAMC 94.504.2).
-            ${cc.stories >= 8 ? ' High-rise provisions: fire command center, standby power for elevators/fire pump, voice alarm system, and additional exit stairway.' : ''}
-            ${cc.stories >= 4 ? ' Mid-rise: pressurized stairwells, standpipe system, fire department access on all sides.' : ''}
+            <div class="exec-summary-card"><h4>Fire Rating</h4><div class="exec-metric-lg">${cc.fireRating}-hr</div><div class="exec-metric-sub">Structural fire resistance</div></div>
+            <div class="exec-summary-card"><h4>Sprinklers</h4><div class="exec-metric-lg" style="color:${cc.sprinklerRequired ? '#c53030' : '#276749'}">${cc.sprinklerRequired ? 'Required' : 'Not Required'}</div><div class="exec-metric-sub">${cc.sprinklerRequired ? 'NFPA 13 / 13R throughout' : 'Per local LAFD amendment'}</div></div>
+            <div class="exec-summary-card"><h4>Stairwells</h4><div class="exec-metric-lg">${cc.stairwellCount}</div><div class="exec-metric-sub">Required exit stairways</div></div>
+            <div class="exec-summary-card"><h4>Elevators</h4><div class="exec-metric-lg">${cc.elevatorCount}</div><div class="exec-metric-sub">${cc.elevatorCount > 0 ? 'Passenger + fire service' : 'Not required (low-rise)'}</div></div>
         </div>
     </div>`;
 
-    // ADA Compliance
     html += `<div class="analysis-section"><h3>ADA / Accessibility Compliance</h3>
         <div class="exec-summary-grid">
-            <div class="exec-summary-card">
-                <h4>Adaptable Units (FHA)</h4>
-                <div class="exec-metric-lg">${cc.adaCompliance.adaptablePct}%</div>
-                <div class="exec-metric-sub">${cc.adaCompliance.adaptablePct === 100 ? 'All units on elevator-served floors — FHA adaptable design standard (reinforced walls, accessible route, usable kitchens/baths)' : cc.adaCompliance.adaptablePct > 0 ? 'Ground-floor units only (no elevator) — FHA adaptable design' : 'N/A for this use type'}</div>
-            </div>
-            <div class="exec-summary-card">
-                <h4>Fully Accessible (CBC)</h4>
-                <div class="exec-metric-lg">${cc.adaCompliance.fullyAccessiblePct}% <span style="font-size:0.55em;color:var(--text-light);">(${cc.adaCompliance.fullyAccessibleUnits} units)</span></div>
-                <div class="exec-metric-sub">CBC Ch. 11A: wheelchair-accessible units with roll-in showers, lowered counters, wider doors</div>
-            </div>
-            <div class="exec-summary-card">
-                <h4>Communication Accessible</h4>
-                <div class="exec-metric-lg">2% <span style="font-size:0.55em;color:var(--text-light);">(${cc.adaCompliance.commAccessibleUnits} units)</span></div>
-                <div class="exec-metric-sub">CBC: hearing/vision accessible — visual alarms, doorbell strobes</div>
-            </div>
-            <div class="exec-summary-card">
-                <h4>Accessible Parking</h4>
-                <div class="exec-metric-lg">${cc.adaCompliance.accessibleParking}</div>
-                <div class="exec-metric-sub">of ${computed.parkingSpaces || 0} total spaces (incl. van-accessible)</div>
-            </div>
-        </div>
-        <div style="background:#ebf8ff;border:1px solid #bee3f8;border-radius:8px;padding:0.75rem 1rem;margin-top:0.75rem;font-size:0.82rem;">
-            <strong>Key Distinction:</strong> "Adaptable" (FHA) ≠ "Fully Accessible" (CBC/ADA).
-            <strong>Adaptable</strong> means built with features that <em>can</em> be converted to accessible (reinforced walls for grab bars, blocking for future modifications) — required in <strong>${cc.adaCompliance.adaptablePct}%</strong> of units per Fair Housing Act.
-            <strong>Fully Accessible</strong> means wheelchair-ready from Day 1 (roll-in shower, lowered counters, 36" doors) — required in <strong>${cc.adaCompliance.fullyAccessiblePct}%</strong> of units (${cc.adaCompliance.fullyAccessibleUnits} units) per California Building Code Chapter 11A.
-            Total ADA compliance cost: <strong>${formatCompactDollars(cc.adaCompliance.total)}</strong> (path of travel $1.25/SF + ${cc.adaCompliance.accessibleParking} accessible parking spaces at $2,500 each).
+            <div class="exec-summary-card"><h4>Adaptable Units (FHA)</h4><div class="exec-metric-lg">${cc.adaCompliance.adaptablePct}%</div><div class="exec-metric-sub">${cc.adaCompliance.adaptablePct === 100 ? 'All units on elevator-served floors' : cc.adaCompliance.adaptablePct > 0 ? 'Ground-floor units only' : 'N/A'}</div></div>
+            <div class="exec-summary-card"><h4>Fully Accessible (CBC)</h4><div class="exec-metric-lg">${cc.adaCompliance.fullyAccessiblePct}% (${cc.adaCompliance.fullyAccessibleUnits} units)</div><div class="exec-metric-sub">CBC Ch. 11A: wheelchair-accessible units</div></div>
+            <div class="exec-summary-card"><h4>Communication Accessible</h4><div class="exec-metric-lg">2% (${cc.adaCompliance.commAccessibleUnits} units)</div><div class="exec-metric-sub">CBC: hearing/vision accessible</div></div>
+            <div class="exec-summary-card"><h4>Accessible Parking</h4><div class="exec-metric-lg">${cc.adaCompliance.accessibleParking}</div><div class="exec-metric-sub">of ${computed.parkingSpaces || 0} total spaces</div></div>
         </div>
     </div>`;
 
-    // Title 24 & CALGreen
-    html += `<div class="analysis-section"><h3>Energy & Sustainability Compliance</h3>
+    html += `<div class="analysis-section"><h3>Energy & Sustainability</h3>
         <div class="exec-summary-grid">
-            <div class="exec-summary-card">
-                <h4>Title 24 Energy Cost</h4>
-                <div class="exec-metric-lg">${formatCompactDollars(cc.title24Total)}</div>
-                <div class="exec-metric-sub">$${cc.title24Cost.toFixed(2)}/SF</div>
-            </div>
-            <div class="exec-summary-card">
-                <h4>CALGreen Tier</h4>
-                <div class="exec-metric-lg" style="font-size:1rem;">${cc.calgreenLabel}</div>
-                <div class="exec-metric-sub">${formatCompactDollars(cc.calgreenCost)} compliance cost</div>
-            </div>
-        </div>`;
-    html += `<h4 style="font-size:0.85rem;color:var(--primary);margin:1rem 0 0.5rem;">CALGreen Requirements</h4>`;
-    html += `<ul style="font-size:0.85rem;color:var(--text);margin-left:1.25rem;">`;
-    for (const req of cc.calgreenRequirements) {
-        html += `<li style="margin-bottom:0.25rem;">${req}</li>`;
-    }
-    html += `</ul>`;
-    html += `<div style="font-size:0.82rem;color:var(--text-light);margin-top:0.75rem;">
-        Title 24-2025 requires all-electric new construction in most building types. Solar PV (per Section 150.1(c)14) and battery storage requirements apply to multifamily 3+ stories.
-        LA Green Building Code (LAGBC) adds local amendments above state CALGreen minimums.
+            <div class="exec-summary-card"><h4>Title 24 Energy Cost</h4><div class="exec-metric-lg">${formatCompactDollars(Math.round(cc.title24Total * m))}</div><div class="exec-metric-sub">$${(cc.title24Cost * m).toFixed(2)}/SF</div></div>
+            <div class="exec-summary-card"><h4>CALGreen Tier</h4><div class="exec-metric-lg" style="font-size:1rem;">${cc.calgreenLabel}</div><div class="exec-metric-sub">${formatCompactDollars(Math.round(cc.calgreenCost * m))} compliance cost</div></div>
+        </div>
     </div>`;
-    html += `</div>`;
 
-    // Seismic
     const seismicColor = cc.seismicCategory === 'E' ? '#c53030' : '#b7791f';
     html += `<div class="analysis-section"><h3>Seismic Design</h3>
         <div class="exec-summary-grid">
-            <div class="exec-summary-card">
-                <h4>Seismic Design Category</h4>
-                <div class="exec-metric-lg" style="color:${seismicColor}">SDC ${cc.seismicCategory}</div>
-                <div class="exec-metric-sub">${cc.seismicCategory === 'E' ? 'Near-fault zone — enhanced design' : 'Standard LA seismic zone'}</div>
-            </div>
-            <div class="exec-summary-card">
-                <h4>Seismic Cost Premium</h4>
-                <div class="exec-metric-lg">${(cc.seismicPremium * 100).toFixed(0)}%</div>
-                <div class="exec-metric-sub">${formatCompactDollars(cc.seismicCost)} added to hard costs</div>
-            </div>
-        </div>
-        <div style="background:#fff5f5;border:1px solid #feb2b2;border-radius:8px;padding:0.75rem 1rem;margin-top:0.75rem;font-size:0.85rem;">
-            <strong>LA Seismic Requirements:</strong> ASCE 7-22 governs structural design. ${cc.seismicCategory === 'E' ? 'Near-fault ground motion amplification requires special detailing. ' : ''}
-            ${cc.stories >= 6 ? 'Special moment-resisting frames (SMRF) or shear walls required for buildings above 5 stories in SDC D/E. ' : ''}
-            ${cc.stories >= 3 ? 'Soil report and site-specific seismic hazard analysis recommended. ' : ''}
-            All structures must comply with LAMC Division 91 seismic provisions, which exceed IBC minimums in several categories.
+            <div class="exec-summary-card"><h4>Seismic Design Category</h4><div class="exec-metric-lg" style="color:${seismicColor}">SDC ${cc.seismicCategory}</div><div class="exec-metric-sub">${cc.seismicCategory === 'E' ? 'Near-fault zone' : 'Standard LA seismic zone'}</div></div>
+            <div class="exec-summary-card"><h4>Seismic Cost Premium</h4><div class="exec-metric-lg">${(cc.seismicPremium * 100).toFixed(0)}%</div><div class="exec-metric-sub">${formatCompactDollars(Math.round(cc.seismicCost * m))} added to hard costs</div></div>
         </div>
     </div>`;
 
-    // Summary
     html += `<div class="analysis-section"><h3>Code Compliance Cost Summary</h3>
         <table class="afford-comparison-table"><thead><tr>
             <th>Category</th><th>Cost/SF</th><th>Total</th><th>Notes</th>
         </tr></thead><tbody>
-            <tr><td>Title 24 Energy</td><td>$${cc.title24Cost.toFixed(2)}</td><td>${formatCompactDollars(cc.title24Total)}</td><td>All-electric, solar PV, battery</td></tr>
-            <tr><td>CALGreen</td><td>$${(cc.calgreenCost / (cc.gsf || 1)).toFixed(2)}</td><td>${formatCompactDollars(cc.calgreenCost)}</td><td>${cc.calgreenLabel}</td></tr>
-            <tr><td>Seismic Premium</td><td>—</td><td>${formatCompactDollars(cc.seismicCost)}</td><td>${(cc.seismicPremium * 100).toFixed(0)}% of hard costs (SDC ${cc.seismicCategory})</td></tr>
-            <tr><td>ADA / Accessibility</td><td>—</td><td>${formatCompactDollars(cc.adaCompliance.total)}</td><td>${cc.adaCompliance.accessibleParking} accessible spaces + path of travel</td></tr>
+            <tr><td>Title 24 Energy</td><td>$${(cc.title24Cost * m).toFixed(2)}</td><td>${formatCompactDollars(Math.round(cc.title24Total * m))}</td><td>All-electric, solar PV, battery</td></tr>
+            <tr><td>CALGreen</td><td>$${(cc.calgreenCost * m / (cc.gsf || 1)).toFixed(2)}</td><td>${formatCompactDollars(Math.round(cc.calgreenCost * m))}</td><td>${cc.calgreenLabel}</td></tr>
+            <tr><td>Seismic Premium</td><td>—</td><td>${formatCompactDollars(Math.round(cc.seismicCost * m))}</td><td>${(cc.seismicPremium * 100).toFixed(0)}% of hard costs (SDC ${cc.seismicCategory})</td></tr>
+            <tr><td>ADA / Accessibility</td><td>—</td><td>${formatCompactDollars(Math.round(cc.adaCompliance.total * m))}</td><td>${cc.adaCompliance.accessibleParking} accessible spaces</td></tr>
             <tr style="font-weight:700;border-top:2px solid var(--border);">
-                <td>Total Code Compliance</td><td>$${Math.round(cc.totalCodeComplianceCost / (cc.gsf || 1)).toLocaleString()}</td><td>${formatCompactDollars(cc.totalCodeComplianceCost)}</td><td>${(cc.totalCodeComplianceCost / (computed.totalDev || 1) * 100).toFixed(1)}% of total dev cost</td>
+                <td>Total Code Compliance</td><td>$${Math.round(cc.totalCodeComplianceCost * m / (cc.gsf || 1)).toLocaleString()}</td><td>${formatCompactDollars(Math.round(cc.totalCodeComplianceCost * m))}</td><td>${(cc.totalCodeComplianceCost * m / (computed.totalDev || 1) * 100).toFixed(1)}% of total dev cost</td>
             </tr>
         </tbody></table>
     </div>`;
 
-    // CSI MasterFormat Division Breakdown
     const csiDivisions = computeCSIBreakdown(bestUse, computed, cc.constructionType, cc.stories);
     html += `<div class="analysis-section"><h3>Hard Cost Breakdown by Trade — CSI MasterFormat</h3>`;
-    html += `<p style="font-size:0.78rem;color:var(--text-light);margin-bottom:0.75rem;">Construction cost of <strong>${formatCompactDollars(computed.construction)}</strong> (${computed.gsf.toLocaleString()} GSF &times; $${Math.round(computed.buildCostPSF).toLocaleString()}/SF) allocated across CSI MasterFormat 2020 divisions. Percentages calibrated for <strong>${cc.constructionType}</strong> construction (${cc.constructionTypeDesc}), ${cc.stories}-story ${bestUse.replace(/_/g, ' ')}.</p>`;
+    html += `<p style="font-size:0.78rem;color:var(--text-light);margin-bottom:0.75rem;">Construction cost allocated across CSI MasterFormat 2020 divisions for <strong>${cc.constructionType}</strong> construction.</p>`;
     html += renderCSIBreakdownTable(csiDivisions, computed.construction, computed.gsf, cc.constructionType);
-    html += `<div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:6px;padding:0.6rem 0.8rem;margin-top:0.75rem;font-size:0.72rem;color:#4a5568;">
-        <strong>Note:</strong> Division allocations are estimates based on RSMeans data and LA County market conditions for ${cc.constructionType} construction. Actual trade costs vary by contractor, market conditions, material specifications, and design complexity. This breakdown does not include site work (Div 31-33), which is shown separately in the pro forma. Divisions 31-33 (Earthwork, Exterior Improvements, Utilities) are accounted for in the Site Work & Preparation line item.
-    </div>`;
     html += `</div>`;
+    return html;
+}
 
+function renderConstructionTab(st) {
+    let html = `<div class="deep-tab-panel">`;
+
+    html += `<div class="dt-controls"><div class="dt-controls-title">Adjust Cost Multiplier <button class="dt-reset-btn" onclick="resetConstruction()">Reset Defaults</button></div>`;
+    html += `<div class="dt-controls-grid"><div class="dt-slider-group">`;
+    html += `<div class="dt-slider-label"><span>Cost Multiplier (market conditions)</span><span class="dt-val" id="cc-costMult-val">100%</span></div>`;
+    html += `<div class="dt-slider-row">`;
+    html += `<input type="range" id="cc-costMult-slider" min="70" max="140" step="5" value="100" oninput="document.getElementById('cc-costMult').value=this.value;recalcConstruction()">`;
+    html += `<input type="number" id="cc-costMult" min="70" max="140" step="5" value="100" oninput="document.getElementById('cc-costMult-slider').value=this.value;recalcConstruction()">`;
+    html += `</div></div></div></div>`;
+
+    html += `<div id="constructionContent">${buildConstructionContent(st)}</div>`;
     html += `</div>`;
     return html;
 }
@@ -11951,220 +11902,271 @@ function analyzeInfrastructure(useId, inp, computed) {
     };
 }
 
-function renderInfrastructureTab(st) {
-    const { bestUse, inp, computed } = st;
-    const infra = analyzeInfrastructure(bestUse, inp, computed);
-    const nh = inp.neighborhood;
-    const nhLabel = nh.charAt(0).toUpperCase() + nh.slice(1);
+var infraCostMult = 1.0;
 
-    let html = `<div class="deep-tab-panel">`;
+function recalcInfrastructure() {
+    var el = document.getElementById('infra-costMult');
+    if (el) infraCostMult = parseFloat(el.value) / 100;
+    var slider = document.getElementById('infra-costMult-slider');
+    var num = document.getElementById('infra-costMult');
+    if (slider && num && document.activeElement === slider) num.value = slider.value;
+    if (slider && num && document.activeElement === num) slider.value = num.value;
+    var valSpan = document.getElementById('infra-costMult-val');
+    if (valSpan && num) valSpan.textContent = parseFloat(num.value).toFixed(0) + '%';
+    var container = document.getElementById('infrastructureContent');
+    if (container && deepAnalysisState) container.innerHTML = buildInfrastructureContent();
+}
+
+function resetInfrastructure() {
+    infraCostMult = 1.0;
+    var slider = document.getElementById('infra-costMult-slider');
+    var num = document.getElementById('infra-costMult');
+    if (slider) slider.value = 100;
+    if (num) num.value = 100;
+    recalcInfrastructure();
+}
+
+function buildInfrastructureContent() {
+    var st = deepAnalysisState;
+    if (!st) return '';
+    var bestUse = st.bestUse, inp = st.inp, computed = st.computed;
+    var infra = analyzeInfrastructure(bestUse, inp, computed);
+    var nh = inp.neighborhood;
+    var nhLabel = nh.charAt(0).toUpperCase() + nh.slice(1);
+    var m = infraCostMult;
+
+    var html = '';
 
     // Overview Cards
-    html += `<div class="analysis-section"><h3>Infrastructure & Utility Assessment — ${nhLabel}</h3>
-        <div class="exec-summary-grid">
-            <div class="exec-summary-card">
-                <h4>Total Infrastructure Cost</h4>
-                <div class="exec-metric-lg">${formatCompactDollars(infra.totalInfraCost)}</div>
-                <div class="exec-metric-sub">${(infra.totalInfraCost / (computed.totalDev || 1) * 100).toFixed(1)}% of total dev cost</div>
-            </div>
-            <div class="exec-summary-card">
-                <h4>Utility Upgrade Timeline</h4>
-                <div class="exec-metric-lg">${infra.timeline}<span style="font-size:0.6em;color:var(--text-light)"> months</span></div>
-                <div class="exec-metric-sub">${infra.timeline > 0 ? 'Critical path item — start early' : 'No significant utility delays expected'}</div>
-            </div>
-        </div>
-    </div>`;
+    var totalCostAdj = infra.totalInfraCost * m;
+    html += '<div class="analysis-section"><h3>Infrastructure & Utility Assessment — ' + nhLabel + '</h3>' +
+        '<div class="exec-summary-grid">' +
+            '<div class="exec-summary-card">' +
+                '<h4>Total Infrastructure Cost</h4>' +
+                '<div class="exec-metric-lg">' + formatCompactDollars(totalCostAdj) + '</div>' +
+                '<div class="exec-metric-sub">' + (totalCostAdj / (computed.totalDev || 1) * 100).toFixed(1) + '% of total dev cost</div>' +
+            '</div>' +
+            '<div class="exec-summary-card">' +
+                '<h4>Utility Upgrade Timeline</h4>' +
+                '<div class="exec-metric-lg">' + infra.timeline + '<span style="font-size:0.6em;color:var(--text-light)"> months</span></div>' +
+                '<div class="exec-metric-sub">' + (infra.timeline > 0 ? 'Critical path item — start early' : 'No significant utility delays expected') + '</div>' +
+            '</div>' +
+        '</div>' +
+    '</div>';
 
     // Power
-    const powerColor = infra.power.capacity === 'constrained' ? '#c53030' : infra.power.capacity === 'adequate' ? '#b7791f' : '#276749';
-    const powerBg = infra.power.capacity === 'constrained' ? '#fff5f5' : infra.power.capacity === 'adequate' ? '#fffff0' : '#f0fff4';
-    html += `<div class="analysis-section"><h3>Electrical Power (LADWP)</h3>
-        <div class="exec-summary-grid">
-            <div class="exec-summary-card">
-                <h4>Grid Capacity</h4>
-                <div class="exec-metric-lg" style="color:${powerColor};text-transform:uppercase;">${infra.power.capacity}</div>
-                <div class="exec-metric-sub">LADWP distribution grid status</div>
-            </div>
-            <div class="exec-summary-card">
-                <h4>Transformer Upgrade</h4>
-                <div class="exec-metric-lg">${infra.power.upgradeNeeded ? formatCompactDollars(infra.power.upgradeCost) : 'Not Required'}</div>
-                <div class="exec-metric-sub">${infra.power.upgradeNeeded ? infra.power.transformerTimeline + ' months lead time' : 'Existing service adequate'}</div>
-            </div>
-        </div>
-        <div style="background:${powerBg};border:1px solid var(--border);border-radius:8px;padding:0.75rem 1rem;margin-top:0.75rem;font-size:0.85rem;">
-            ${infra.power.capacity === 'constrained' ? '<strong>Note:</strong> This area has constrained electrical distribution. LADWP may require developer-funded transformer upgrade and/or service lateral extension. Submit LADWP Will-Serve application early — typical lead time is ' + infra.power.transformerTimeline + '+ months for new transformer installation.' : infra.power.capacity === 'adequate' ? '<strong>Note:</strong> Grid capacity is generally adequate but large projects may require panel upgrade or dedicated transformer. Confirm with LADWP load letter.' : '<strong>Note:</strong> Ample grid capacity in this area. Standard utility connection process expected.'}
-        </div>
-    </div>`;
+    var powerColor = infra.power.capacity === 'constrained' ? '#c53030' : infra.power.capacity === 'adequate' ? '#b7791f' : '#276749';
+    var powerBg = infra.power.capacity === 'constrained' ? '#fff5f5' : infra.power.capacity === 'adequate' ? '#fffff0' : '#f0fff4';
+    var powerUpgCost = infra.power.upgradeNeeded ? formatCompactDollars(infra.power.upgradeCost * m) : 'Not Required';
+    html += '<div class="analysis-section"><h3>Electrical Power (LADWP)</h3>' +
+        '<div class="exec-summary-grid">' +
+            '<div class="exec-summary-card">' +
+                '<h4>Grid Capacity</h4>' +
+                '<div class="exec-metric-lg" style="color:' + powerColor + ';text-transform:uppercase;">' + infra.power.capacity + '</div>' +
+                '<div class="exec-metric-sub">LADWP distribution grid status</div>' +
+            '</div>' +
+            '<div class="exec-summary-card">' +
+                '<h4>Transformer Upgrade</h4>' +
+                '<div class="exec-metric-lg">' + powerUpgCost + '</div>' +
+                '<div class="exec-metric-sub">' + (infra.power.upgradeNeeded ? infra.power.transformerTimeline + ' months lead time' : 'Existing service adequate') + '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div style="background:' + powerBg + ';border:1px solid var(--border);border-radius:8px;padding:0.75rem 1rem;margin-top:0.75rem;font-size:0.85rem;">' +
+            (infra.power.capacity === 'constrained' ? '<strong>Note:</strong> This area has constrained electrical distribution. LADWP may require developer-funded transformer upgrade and/or service lateral extension. Submit LADWP Will-Serve application early — typical lead time is ' + infra.power.transformerTimeline + '+ months for new transformer installation.' : infra.power.capacity === 'adequate' ? '<strong>Note:</strong> Grid capacity is generally adequate but large projects may require panel upgrade or dedicated transformer. Confirm with LADWP load letter.' : '<strong>Note:</strong> Ample grid capacity in this area. Standard utility connection process expected.') +
+        '</div>' +
+    '</div>';
 
     // Sewer
-    html += `<div class="analysis-section"><h3>Sewer (LASAN)</h3>
-        <div class="exec-summary-grid">
-            <div class="exec-summary-card">
-                <h4>Daily Sewer Flow</h4>
-                <div class="exec-metric-lg">${infra.sewer.dailyFlow.toLocaleString()}<span style="font-size:0.6em;color:var(--text-light)"> GPD</span></div>
-                <div class="exec-metric-sub">${infra.sewer.capacity}</div>
-            </div>
-            <div class="exec-summary-card">
-                <h4>S-Permit</h4>
-                <div class="exec-metric-lg" style="color:${infra.sewer.sPermitRequired ? '#c53030' : '#276749'}">${infra.sewer.sPermitRequired ? 'Required' : 'Not Required'}</div>
-                <div class="exec-metric-sub">${infra.sewer.sPermitRequired ? formatCompactDollars(infra.sewer.upgradeCost) + ' est. upgrade cost' : 'Under 10,000 GPD threshold'}</div>
-            </div>
-        </div>
-        ${infra.sewer.sPermitRequired ? '<div style="background:#fff5f5;border:1px solid #feb2b2;border-radius:8px;padding:0.75rem 1rem;margin-top:0.75rem;font-size:0.85rem;"><strong>S-Permit Required:</strong> Sewer generation exceeds 10,000 GPD threshold. LASAN S-permit process takes 3-6 months. Developer may be required to fund sewer main extension or upsizing. Sewer Capacity Availability Request (SCAR) required before plan check.</div>' : ''}
-    </div>`;
+    var sewerUpgCost = infra.sewer.sPermitRequired ? formatCompactDollars(infra.sewer.upgradeCost * m) : '';
+    html += '<div class="analysis-section"><h3>Sewer (LASAN)</h3>' +
+        '<div class="exec-summary-grid">' +
+            '<div class="exec-summary-card">' +
+                '<h4>Daily Sewer Flow</h4>' +
+                '<div class="exec-metric-lg">' + infra.sewer.dailyFlow.toLocaleString() + '<span style="font-size:0.6em;color:var(--text-light)"> GPD</span></div>' +
+                '<div class="exec-metric-sub">' + infra.sewer.capacity + '</div>' +
+            '</div>' +
+            '<div class="exec-summary-card">' +
+                '<h4>S-Permit</h4>' +
+                '<div class="exec-metric-lg" style="color:' + (infra.sewer.sPermitRequired ? '#c53030' : '#276749') + '">' + (infra.sewer.sPermitRequired ? 'Required' : 'Not Required') + '</div>' +
+                '<div class="exec-metric-sub">' + (infra.sewer.sPermitRequired ? sewerUpgCost + ' est. upgrade cost' : 'Under 10,000 GPD threshold') + '</div>' +
+            '</div>' +
+        '</div>' +
+        (infra.sewer.sPermitRequired ? '<div style="background:#fff5f5;border:1px solid #feb2b2;border-radius:8px;padding:0.75rem 1rem;margin-top:0.75rem;font-size:0.85rem;"><strong>S-Permit Required:</strong> Sewer generation exceeds 10,000 GPD threshold. LASAN S-permit process takes 3-6 months. Developer may be required to fund sewer main extension or upsizing. Sewer Capacity Availability Request (SCAR) required before plan check.</div>' : '') +
+    '</div>';
 
     // Water
-    html += `<div class="analysis-section"><h3>Water Service (LADWP)</h3>
-        <div class="exec-summary-grid">
-            <div class="exec-summary-card">
-                <h4>Daily Water Demand</h4>
-                <div class="exec-metric-lg">${infra.water.dailyDemand.toLocaleString()}<span style="font-size:0.6em;color:var(--text-light)"> GPD</span></div>
-            </div>
-            <div class="exec-summary-card">
-                <h4>Will-Serve Letter</h4>
-                <div class="exec-metric-lg" style="color:${infra.water.willServeRequired ? '#b7791f' : '#276749'}">${infra.water.willServeRequired ? 'Required' : 'Standard'}</div>
-                <div class="exec-metric-sub">${infra.water.willServeRequired ? 'Large project — LADWP Will-Serve letter needed' : 'Standard connection application'}</div>
-            </div>
-        </div>
-    </div>`;
+    html += '<div class="analysis-section"><h3>Water Service (LADWP)</h3>' +
+        '<div class="exec-summary-grid">' +
+            '<div class="exec-summary-card">' +
+                '<h4>Daily Water Demand</h4>' +
+                '<div class="exec-metric-lg">' + infra.water.dailyDemand.toLocaleString() + '<span style="font-size:0.6em;color:var(--text-light)"> GPD</span></div>' +
+            '</div>' +
+            '<div class="exec-summary-card">' +
+                '<h4>Will-Serve Letter</h4>' +
+                '<div class="exec-metric-lg" style="color:' + (infra.water.willServeRequired ? '#b7791f' : '#276749') + '">' + (infra.water.willServeRequired ? 'Required' : 'Standard') + '</div>' +
+                '<div class="exec-metric-sub">' + (infra.water.willServeRequired ? 'Large project — LADWP Will-Serve letter needed' : 'Standard connection application') + '</div>' +
+            '</div>' +
+        '</div>' +
+    '</div>';
 
     // Stormwater / LID
-    html += `<div class="analysis-section"><h3>Stormwater & Low Impact Development (LID)</h3>
-        <div class="exec-summary-grid">
-            <div class="exec-summary-card">
-                <h4>Impervious Area</h4>
-                <div class="exec-metric-lg">${infra.stormwater.impervArea.toLocaleString()}<span style="font-size:0.6em;color:var(--text-light)"> SF</span></div>
-                <div class="exec-metric-sub">85% of parcel (post-development)</div>
-            </div>
-            <div class="exec-summary-card">
-                <h4>Retention Volume</h4>
-                <div class="exec-metric-lg">${infra.stormwater.retentionVolume.toLocaleString()}<span style="font-size:0.6em;color:var(--text-light)"> CF</span></div>
-                <div class="exec-metric-sub">3/4" design storm capture</div>
-            </div>
-            <div class="exec-summary-card">
-                <h4>Recommended BMP</h4>
-                <div class="exec-metric-lg" style="font-size:0.95rem;">${infra.stormwater.lidType}</div>
-                <div class="exec-metric-sub">${LID_REQUIREMENTS.bmpTypes[infra.stormwater.lidType] ? LID_REQUIREMENTS.bmpTypes[infra.stormwater.lidType].applicability : ''}</div>
-            </div>
-            <div class="exec-summary-card">
-                <h4>LID/BMP Cost</h4>
-                <div class="exec-metric-lg">${formatCompactDollars(infra.stormwater.bmpCost)}</div>
-                <div class="exec-metric-sub">$${LID_REQUIREMENTS.bmpCostPerCuFt}/CF retention</div>
-            </div>
-        </div>`;
-    html += `<h4 style="font-size:0.85rem;color:var(--primary);margin:1rem 0 0.5rem;">BMP Options</h4>`;
-    html += `<table class="afford-comparison-table"><thead><tr>
-        <th>BMP Type</th><th>Cost/SF</th><th>Applicability</th>
-    </tr></thead><tbody>`;
-    for (const [name, data] of Object.entries(LID_REQUIREMENTS.bmpTypes)) {
-        const isSelected = name === infra.stormwater.lidType;
-        html += `<tr style="${isSelected ? 'background:#f0fff4;font-weight:600;' : ''}">
-            <td>${name}${isSelected ? ' &#10004;' : ''}</td>
-            <td>$${data.costPSF}/SF</td>
-            <td style="font-size:0.82rem;">${data.applicability}</td>
-        </tr>`;
+    html += '<div class="analysis-section"><h3>Stormwater & Low Impact Development (LID)</h3>' +
+        '<div class="exec-summary-grid">' +
+            '<div class="exec-summary-card">' +
+                '<h4>Impervious Area</h4>' +
+                '<div class="exec-metric-lg">' + infra.stormwater.impervArea.toLocaleString() + '<span style="font-size:0.6em;color:var(--text-light)"> SF</span></div>' +
+                '<div class="exec-metric-sub">85% of parcel (post-development)</div>' +
+            '</div>' +
+            '<div class="exec-summary-card">' +
+                '<h4>Retention Volume</h4>' +
+                '<div class="exec-metric-lg">' + infra.stormwater.retentionVolume.toLocaleString() + '<span style="font-size:0.6em;color:var(--text-light)"> CF</span></div>' +
+                '<div class="exec-metric-sub">3/4" design storm capture</div>' +
+            '</div>' +
+            '<div class="exec-summary-card">' +
+                '<h4>Recommended BMP</h4>' +
+                '<div class="exec-metric-lg" style="font-size:0.95rem;">' + infra.stormwater.lidType + '</div>' +
+                '<div class="exec-metric-sub">' + (LID_REQUIREMENTS.bmpTypes[infra.stormwater.lidType] ? LID_REQUIREMENTS.bmpTypes[infra.stormwater.lidType].applicability : '') + '</div>' +
+            '</div>' +
+            '<div class="exec-summary-card">' +
+                '<h4>LID/BMP Cost</h4>' +
+                '<div class="exec-metric-lg">' + formatCompactDollars(infra.stormwater.bmpCost * m) + '</div>' +
+                '<div class="exec-metric-sub">$' + LID_REQUIREMENTS.bmpCostPerCuFt + '/CF retention</div>' +
+            '</div>' +
+        '</div>';
+    html += '<h4 style="font-size:0.85rem;color:var(--primary);margin:1rem 0 0.5rem;">BMP Options</h4>';
+    html += '<table class="afford-comparison-table"><thead><tr>' +
+        '<th>BMP Type</th><th>Cost/SF</th><th>Applicability</th>' +
+    '</tr></thead><tbody>';
+    var bmpEntries = Object.entries(LID_REQUIREMENTS.bmpTypes);
+    for (var bi = 0; bi < bmpEntries.length; bi++) {
+        var bmpName = bmpEntries[bi][0], bmpData = bmpEntries[bi][1];
+        var isSelected = bmpName === infra.stormwater.lidType;
+        html += '<tr style="' + (isSelected ? 'background:#f0fff4;font-weight:600;' : '') + '">' +
+            '<td>' + bmpName + (isSelected ? ' &#10004;' : '') + '</td>' +
+            '<td>$' + bmpData.costPSF + '/SF</td>' +
+            '<td style="font-size:0.82rem;">' + bmpData.applicability + '</td>' +
+        '</tr>';
     }
-    html += `</tbody></table>`;
-    html += `<div style="font-size:0.82rem;color:var(--text-light);margin-top:0.5rem;">
-        LA LID Ordinance (Ord. 181,899) requires on-site retention/treatment of the 3/4-inch, 24-hour design storm from all impervious surfaces. Projects disturbing &ge;500 SF of impervious area must comply.
-    </div>`;
-    html += `</div>`;
+    html += '</tbody></table>';
+    html += '<div style="font-size:0.82rem;color:var(--text-light);margin-top:0.5rem;">' +
+        'LA LID Ordinance (Ord. 181,899) requires on-site retention/treatment of the 3/4-inch, 24-hour design storm from all impervious surfaces. Projects disturbing &ge;500 SF of impervious area must comply.' +
+    '</div>';
+    html += '</div>';
 
     // Fire Flow
-    html += `<div class="analysis-section"><h3>Fire Flow (LAFD)</h3>
-        <div class="exec-summary-grid">
-            <div class="exec-summary-card">
-                <h4>Required Fire Flow</h4>
-                <div class="exec-metric-lg">${infra.fireFlow.requiredGPM.toLocaleString()}<span style="font-size:0.6em;color:var(--text-light)"> GPM</span></div>
-                <div class="exec-metric-sub">${infra.fireFlow.duration}-hour duration</div>
-            </div>
-            <div class="exec-summary-card">
-                <h4>Fire Hydrants</h4>
-                <div class="exec-metric-lg">${infra.fireFlow.hydrantCount}</div>
-                <div class="exec-metric-sub">Within 400 ft of building</div>
-            </div>
-            <div class="exec-summary-card">
-                <h4>Upgrade Cost</h4>
-                <div class="exec-metric-lg">${infra.fireFlow.upgradeCost > 0 ? formatCompactDollars(infra.fireFlow.upgradeCost) : 'None'}</div>
-                <div class="exec-metric-sub">${infra.fireFlow.upgradeCost > 0 ? 'Water main or hydrant upgrade' : 'Existing infrastructure adequate'}</div>
-            </div>
-        </div>
-    </div>`;
+    html += '<div class="analysis-section"><h3>Fire Flow (LAFD)</h3>' +
+        '<div class="exec-summary-grid">' +
+            '<div class="exec-summary-card">' +
+                '<h4>Required Fire Flow</h4>' +
+                '<div class="exec-metric-lg">' + infra.fireFlow.requiredGPM.toLocaleString() + '<span style="font-size:0.6em;color:var(--text-light)"> GPM</span></div>' +
+                '<div class="exec-metric-sub">' + infra.fireFlow.duration + '-hour duration</div>' +
+            '</div>' +
+            '<div class="exec-summary-card">' +
+                '<h4>Fire Hydrants</h4>' +
+                '<div class="exec-metric-lg">' + infra.fireFlow.hydrantCount + '</div>' +
+                '<div class="exec-metric-sub">Within 400 ft of building</div>' +
+            '</div>' +
+            '<div class="exec-summary-card">' +
+                '<h4>Upgrade Cost</h4>' +
+                '<div class="exec-metric-lg">' + (infra.fireFlow.upgradeCost > 0 ? formatCompactDollars(infra.fireFlow.upgradeCost * m) : 'None') + '</div>' +
+                '<div class="exec-metric-sub">' + (infra.fireFlow.upgradeCost > 0 ? 'Water main or hydrant upgrade' : 'Existing infrastructure adequate') + '</div>' +
+            '</div>' +
+        '</div>' +
+    '</div>';
 
     // EV Charging
-    html += `<div class="analysis-section"><h3>EV Charging (CalGreen + LA Local Code)</h3>
-        <div class="exec-summary-grid">
-            <div class="exec-summary-card">
-                <h4>Total Parking</h4>
-                <div class="exec-metric-lg">${infra.evCharging.totalSpaces}</div>
-                <div class="exec-metric-sub">project spaces</div>
-            </div>
-            <div class="exec-summary-card">
-                <h4>EV-Ready (Full Circuit)</h4>
-                <div class="exec-metric-lg">${infra.evCharging.requiredEVSpaces}</div>
-                <div class="exec-metric-sub">Level 2 chargers installed</div>
-            </div>
-            <div class="exec-summary-card">
-                <h4>EV Conduit (Raceway)</h4>
-                <div class="exec-metric-lg">${infra.evCharging.conduitSpaces}</div>
-                <div class="exec-metric-sub">Spaces with conduit for future EVSE</div>
-            </div>
-            <div class="exec-summary-card">
-                <h4>EV Infrastructure Cost</h4>
-                <div class="exec-metric-lg">${formatCompactDollars(infra.evCharging.cost)}</div>
-                <div class="exec-metric-sub">${infra.evCharging.level2Count} L2 + ${infra.evCharging.dcfcCount} DCFC</div>
-            </div>
-        </div>
-        <div style="background:#ebf8ff;border:1px solid #90cdf4;border-radius:8px;padding:0.75rem 1rem;margin-top:0.75rem;font-size:0.85rem;">
-            <strong>LA Local Amendment (2025):</strong> City of LA requires 100% of residential parking spaces to have EV charging raceway/conduit (exceeds state CalGreen minimum). 10% must have full EV-capable circuits. Commercial projects: 40% conduit, 6% full circuit. Budget for panel capacity and transformer sizing accordingly.
-        </div>
-    </div>`;
+    html += '<div class="analysis-section"><h3>EV Charging (CalGreen + LA Local Code)</h3>' +
+        '<div class="exec-summary-grid">' +
+            '<div class="exec-summary-card">' +
+                '<h4>Total Parking</h4>' +
+                '<div class="exec-metric-lg">' + infra.evCharging.totalSpaces + '</div>' +
+                '<div class="exec-metric-sub">project spaces</div>' +
+            '</div>' +
+            '<div class="exec-summary-card">' +
+                '<h4>EV-Ready (Full Circuit)</h4>' +
+                '<div class="exec-metric-lg">' + infra.evCharging.requiredEVSpaces + '</div>' +
+                '<div class="exec-metric-sub">Level 2 chargers installed</div>' +
+            '</div>' +
+            '<div class="exec-summary-card">' +
+                '<h4>EV Conduit (Raceway)</h4>' +
+                '<div class="exec-metric-lg">' + infra.evCharging.conduitSpaces + '</div>' +
+                '<div class="exec-metric-sub">Spaces with conduit for future EVSE</div>' +
+            '</div>' +
+            '<div class="exec-summary-card">' +
+                '<h4>EV Infrastructure Cost</h4>' +
+                '<div class="exec-metric-lg">' + formatCompactDollars(infra.evCharging.cost * m) + '</div>' +
+                '<div class="exec-metric-sub">' + infra.evCharging.level2Count + ' L2 + ' + infra.evCharging.dcfcCount + ' DCFC</div>' +
+            '</div>' +
+        '</div>' +
+        '<div style="background:#ebf8ff;border:1px solid #90cdf4;border-radius:8px;padding:0.75rem 1rem;margin-top:0.75rem;font-size:0.85rem;">' +
+            '<strong>LA Local Amendment (2025):</strong> City of LA requires 100% of residential parking spaces to have EV charging raceway/conduit (exceeds state CalGreen minimum). 10% must have full EV-capable circuits. Commercial projects: 40% conduit, 6% full circuit. Budget for panel capacity and transformer sizing accordingly.' +
+        '</div>' +
+    '</div>';
 
     // Cost Summary
-    html += `<div class="analysis-section"><h3>Infrastructure Cost Summary</h3>
-        <table class="afford-comparison-table"><thead><tr>
-            <th>Category</th><th>Cost</th><th>Timeline</th><th>Notes</th>
-        </tr></thead><tbody>
-            <tr>
-                <td>Electrical (LADWP)</td>
-                <td>${infra.power.upgradeNeeded ? formatCompactDollars(infra.power.upgradeCost) : '$0'}</td>
-                <td>${infra.power.transformerTimeline > 0 ? infra.power.transformerTimeline + ' months' : '—'}</td>
-                <td style="font-size:0.82rem;">${infra.power.upgradeNeeded ? 'Transformer upgrade required' : 'Standard service connection'}</td>
-            </tr>
-            <tr>
-                <td>Sewer (LASAN)</td>
-                <td>${infra.sewer.sPermitRequired ? formatCompactDollars(infra.sewer.upgradeCost) : '$0'}</td>
-                <td>${infra.sewer.sPermitRequired ? '4-6 months' : '—'}</td>
-                <td style="font-size:0.82rem;">${infra.sewer.sPermitRequired ? 'S-permit + possible main upgrade' : 'Standard connection'}</td>
-            </tr>
-            <tr>
-                <td>Stormwater / LID</td>
-                <td>${formatCompactDollars(infra.stormwater.bmpCost)}</td>
-                <td>—</td>
-                <td style="font-size:0.82rem;">${infra.stormwater.lidType}</td>
-            </tr>
-            <tr>
-                <td>Fire Flow (LAFD)</td>
-                <td>${infra.fireFlow.upgradeCost > 0 ? formatCompactDollars(infra.fireFlow.upgradeCost) : '$0'}</td>
-                <td>${infra.fireFlow.upgradeCost > 0 ? '3-4 months' : '—'}</td>
-                <td style="font-size:0.82rem;">${infra.fireFlow.requiredGPM.toLocaleString()} GPM required</td>
-            </tr>
-            <tr>
-                <td>EV Charging</td>
-                <td>${formatCompactDollars(infra.evCharging.cost)}</td>
-                <td>—</td>
-                <td style="font-size:0.82rem;">${infra.evCharging.level2Count} L2 + ${infra.evCharging.dcfcCount} DCFC + ${infra.evCharging.conduitSpaces} conduit</td>
-            </tr>
-            <tr style="font-weight:700;border-top:2px solid var(--border);">
-                <td>Total Infrastructure</td>
-                <td>${formatCompactDollars(infra.totalInfraCost)}</td>
-                <td>${infra.timeline > 0 ? infra.timeline + ' months max' : 'Concurrent'}</td>
-                <td style="font-size:0.82rem;">${(infra.totalInfraCost / (computed.totalDev || 1) * 100).toFixed(1)}% of total dev cost</td>
-            </tr>
-        </tbody></table>
-    </div>`;
+    var pCost = infra.power.upgradeNeeded ? formatCompactDollars(infra.power.upgradeCost * m) : '$0';
+    var sCost = infra.sewer.sPermitRequired ? formatCompactDollars(infra.sewer.upgradeCost * m) : '$0';
+    var swCost = formatCompactDollars(infra.stormwater.bmpCost * m);
+    var ffCost = infra.fireFlow.upgradeCost > 0 ? formatCompactDollars(infra.fireFlow.upgradeCost * m) : '$0';
+    var evCost = formatCompactDollars(infra.evCharging.cost * m);
 
-    html += `</div>`;
+    html += '<div class="analysis-section"><h3>Infrastructure Cost Summary</h3>' +
+        '<table class="afford-comparison-table"><thead><tr>' +
+            '<th>Category</th><th>Cost</th><th>Timeline</th><th>Notes</th>' +
+        '</tr></thead><tbody>' +
+            '<tr>' +
+                '<td>Electrical (LADWP)</td>' +
+                '<td>' + pCost + '</td>' +
+                '<td>' + (infra.power.transformerTimeline > 0 ? infra.power.transformerTimeline + ' months' : '—') + '</td>' +
+                '<td style="font-size:0.82rem;">' + (infra.power.upgradeNeeded ? 'Transformer upgrade required' : 'Standard service connection') + '</td>' +
+            '</tr>' +
+            '<tr>' +
+                '<td>Sewer (LASAN)</td>' +
+                '<td>' + sCost + '</td>' +
+                '<td>' + (infra.sewer.sPermitRequired ? '4-6 months' : '—') + '</td>' +
+                '<td style="font-size:0.82rem;">' + (infra.sewer.sPermitRequired ? 'S-permit + possible main upgrade' : 'Standard connection') + '</td>' +
+            '</tr>' +
+            '<tr>' +
+                '<td>Stormwater / LID</td>' +
+                '<td>' + swCost + '</td>' +
+                '<td>—</td>' +
+                '<td style="font-size:0.82rem;">' + infra.stormwater.lidType + '</td>' +
+            '</tr>' +
+            '<tr>' +
+                '<td>Fire Flow (LAFD)</td>' +
+                '<td>' + ffCost + '</td>' +
+                '<td>' + (infra.fireFlow.upgradeCost > 0 ? '3-4 months' : '—') + '</td>' +
+                '<td style="font-size:0.82rem;">' + infra.fireFlow.requiredGPM.toLocaleString() + ' GPM required</td>' +
+            '</tr>' +
+            '<tr>' +
+                '<td>EV Charging</td>' +
+                '<td>' + evCost + '</td>' +
+                '<td>—</td>' +
+                '<td style="font-size:0.82rem;">' + infra.evCharging.level2Count + ' L2 + ' + infra.evCharging.dcfcCount + ' DCFC + ' + infra.evCharging.conduitSpaces + ' conduit</td>' +
+            '</tr>' +
+            '<tr style="font-weight:700;border-top:2px solid var(--border);">' +
+                '<td>Total Infrastructure</td>' +
+                '<td>' + formatCompactDollars(totalCostAdj) + '</td>' +
+                '<td>' + (infra.timeline > 0 ? infra.timeline + ' months max' : 'Concurrent') + '</td>' +
+                '<td style="font-size:0.82rem;">' + (totalCostAdj / (computed.totalDev || 1) * 100).toFixed(1) + '% of total dev cost</td>' +
+            '</tr>' +
+        '</tbody></table>' +
+    '</div>';
+
+    return html;
+}
+
+function renderInfrastructureTab(st) {
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="dt-controls"><div class="dt-controls-title">Adjust Cost Estimates <button class="dt-reset-btn" onclick="resetInfrastructure()">Reset Defaults</button></div>';
+    html += '<div class="dt-controls-grid"><div class="dt-slider-group">';
+    html += '<div class="dt-slider-label"><span>Infrastructure Cost Multiplier</span><span class="dt-val" id="infra-costMult-val">100%</span></div>';
+    html += '<div class="dt-slider-row">';
+    html += '<input type="range" id="infra-costMult-slider" min="50" max="200" step="10" value="100" oninput="document.getElementById(\'infra-costMult\').value=this.value;recalcInfrastructure()">';
+    html += '<input type="number" id="infra-costMult" min="50" max="200" step="10" value="100" oninput="document.getElementById(\'infra-costMult-slider\').value=this.value;recalcInfrastructure()">';
+    html += '</div></div></div></div>';
+    html += '<div id="infrastructureContent">' + buildInfrastructureContent() + '</div>';
+    html += '</div>';
     return html;
 }
 
@@ -12579,9 +12581,37 @@ function analyzeEnvironmental(useId, inp, computed) {
     };
 }
 
-function renderEnvironmentalTab(st) {
+// Environmental tab cost multiplier
+var envCostMult = 1.0;
+
+function recalcEnvironmental() {
+    var el = document.getElementById('env-costMult');
+    if (el) envCostMult = parseFloat(el.value) / 100;
+    var slider = document.getElementById('env-costMult-slider');
+    var num = document.getElementById('env-costMult');
+    if (slider && num && document.activeElement === slider) num.value = slider.value;
+    if (slider && num && document.activeElement === num) slider.value = num.value;
+    var valSpan = document.getElementById('env-costMult-val');
+    if (valSpan && num) valSpan.textContent = parseFloat(num.value).toFixed(0) + '%';
+    var container = document.getElementById('environmentalContent');
+    if (container && deepAnalysisState) container.innerHTML = buildEnvironmentalContent();
+}
+
+function resetEnvironmental() {
+    envCostMult = 1.0;
+    var slider = document.getElementById('env-costMult-slider');
+    var num = document.getElementById('env-costMult');
+    if (slider) slider.value = 100;
+    if (num) num.value = 100;
+    recalcEnvironmental();
+}
+
+function buildEnvironmentalContent() {
+    var st = deepAnalysisState;
+    if (!st) return '';
     var inp = st.inp;
     var env = analyzeEnvironmental(st.bestUse, inp, st.computed);
+    var m = envCostMult;
 
     function riskColor(level) {
         if (level === 'high') return '#c53030';
@@ -12594,19 +12624,16 @@ function renderEnvironmentalTab(st) {
         return '#f0fff4';
     }
 
-    var html = '<div class="deep-tab-panel">';
+    var html = '';
     html += '<div class="analysis-section"><h3>Environmental Constraints Summary</h3>';
-
-    // Risk cards
     var risks = [
         { label: 'Flood Zone', level: env.floodZone === 'none' ? 'low' : (env.floodZone === 'low' ? 'moderate' : 'high'), detail: env.floodData.label + ' | Insurance: ' + fmt(env.floodInsurance) + '/yr' },
         { label: 'Soil / Foundation', level: env.soilData.expansive || env.soilData.settlement === 'high' ? 'moderate' : 'low', detail: env.soilData.label + ' | Bearing: ' + env.soilData.bearing.toLocaleString() + ' psf' },
-        { label: 'Liquefaction', level: env.liquefactionRisk, detail: 'Risk: ' + env.liquefactionRisk + ' | Mitigation: ' + formatCompactDollars(env.liquefactionCost) },
-        { label: 'Landslide', level: env.landslideRisk, detail: 'Risk: ' + env.landslideRisk + ' | Mitigation: ' + formatCompactDollars(env.landslideCost) },
-        { label: 'Fault Proximity', level: env.faultRisk, detail: (inp.constFault ? 'Within Alquist-Priolo zone' : 'Outside mapped fault zone') + ' | Cost: ' + formatCompactDollars(env.faultCost) },
-        { label: 'Remediation', level: env.remediationRisk, detail: 'Contamination risk: ' + env.remediationRisk + ' | Est: ' + formatCompactDollars(env.remediationCost) },
+        { label: 'Liquefaction', level: env.liquefactionRisk, detail: 'Risk: ' + env.liquefactionRisk + ' | Mitigation: ' + formatCompactDollars(Math.round(env.liquefactionCost * m)) },
+        { label: 'Landslide', level: env.landslideRisk, detail: 'Risk: ' + env.landslideRisk + ' | Mitigation: ' + formatCompactDollars(Math.round(env.landslideCost * m)) },
+        { label: 'Fault Proximity', level: env.faultRisk, detail: (inp.constFault ? 'Within Alquist-Priolo zone' : 'Outside mapped fault zone') + ' | Cost: ' + formatCompactDollars(Math.round(env.faultCost * m)) },
+        { label: 'Remediation', level: env.remediationRisk, detail: 'Contamination risk: ' + env.remediationRisk + ' | Est: ' + formatCompactDollars(Math.round(env.remediationCost * m)) },
     ];
-
     html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:0.75rem;">';
     for (var i = 0; i < risks.length; i++) {
         var r = risks[i];
@@ -12617,14 +12644,13 @@ function renderEnvironmentalTab(st) {
     }
     html += '</div></div>';
 
-    // Impervious coverage chart
-    html += '<div class="analysis-section"><h3>Impervious Coverage Analysis</h3>';
     var impPct = Math.round(env.imperviousPct * 100);
     var bldgPct = Math.round(env.buildingCoverage * 100);
     var parkPct = Math.round(env.surfaceParkingPct * 100);
     var openPct = Math.round(env.perviousPct * 100);
     var overLimit = env.imperviousPct > STORMWATER_REQS.maxImperviousPct;
 
+    html += '<div class="analysis-section"><h3>Impervious Coverage Analysis</h3>';
     html += '<div style="display:flex;height:32px;border-radius:8px;overflow:hidden;margin-bottom:0.75rem;">';
     html += '<div style="width:' + bldgPct + '%;background:#2b6cb0;display:flex;align-items:center;justify-content:center;color:white;font-size:0.7rem;font-weight:600;">Bldg ' + bldgPct + '%</div>';
     html += '<div style="width:' + parkPct + '%;background:#718096;display:flex;align-items:center;justify-content:center;color:white;font-size:0.7rem;font-weight:600;">' + (parkPct > 5 ? 'Pkg ' + parkPct + '%' : '') + '</div>';
@@ -12634,26 +12660,34 @@ function renderEnvironmentalTab(st) {
     html += '<p style="font-size:0.82rem;color:var(--text-light);">Total impervious: <strong style="color:' + (overLimit ? '#c53030' : '#276749') + ';">' + impPct + '%</strong> (code limit: ' + Math.round(STORMWATER_REQS.maxImperviousPct * 100) + '%) ' + (overLimit ? '<span style="color:#c53030;font-weight:700;">EXCEEDS LIMIT</span>' : '<span style="color:#276749;">COMPLIANT</span>') + '</p>';
     html += '</div>';
 
-    // Stormwater compliance
     html += '<div class="analysis-section"><h3>Stormwater / LID Compliance</h3>';
-    html += '<p style="font-size:0.82rem;color:var(--text-light);margin-bottom:1rem;">LA County MS4 Permit requires Low Impact Development (LID) for all new construction. Site must manage 85th percentile storm on-site.</p>';
-
     html += '<table class="budget-table"><tr class="section-header"><td colspan="3">Stormwater Infrastructure</td></tr>';
     html += '<tr><th style="text-align:left;">Component</th><th>Size</th><th>Cost</th></tr>';
-    html += '<tr><td>Bioswale / Rain Garden</td><td class="dim">' + env.stormwater.bioswaleArea.toLocaleString() + ' SF</td><td>' + fmt(env.stormwater.bioswaleCost) + '</td></tr>';
-    html += '<tr><td>Underground Detention</td><td class="dim">' + env.stormwater.detentionVolume.toLocaleString() + ' CF</td><td>' + fmt(env.stormwater.detentionCost) + '</td></tr>';
-    html += '<tr><td>Permeable Paving</td><td class="dim">' + env.stormwater.permPavingArea.toLocaleString() + ' SF</td><td>' + fmt(env.stormwater.permPavingCost) + '</td></tr>';
-    html += '<tr><td>Dry Wells</td><td class="dim">' + env.stormwater.dryWells + ' units</td><td>' + fmt(env.stormwater.dryWellCost) + '</td></tr>';
-    html += '<tr class="subtotal"><td colspan="2">Total Stormwater</td><td>' + fmt(env.stormwater.totalCost) + '</td></tr>';
+    html += '<tr><td>Bioswale / Rain Garden</td><td class="dim">' + env.stormwater.bioswaleArea.toLocaleString() + ' SF</td><td>' + fmt(Math.round(env.stormwater.bioswaleCost * m)) + '</td></tr>';
+    html += '<tr><td>Underground Detention</td><td class="dim">' + env.stormwater.detentionVolume.toLocaleString() + ' CF</td><td>' + fmt(Math.round(env.stormwater.detentionCost * m)) + '</td></tr>';
+    html += '<tr><td>Permeable Paving</td><td class="dim">' + env.stormwater.permPavingArea.toLocaleString() + ' SF</td><td>' + fmt(Math.round(env.stormwater.permPavingCost * m)) + '</td></tr>';
+    html += '<tr><td>Dry Wells</td><td class="dim">' + env.stormwater.dryWells + ' units</td><td>' + fmt(Math.round(env.stormwater.dryWellCost * m)) + '</td></tr>';
+    html += '<tr class="subtotal"><td colspan="2">Total Stormwater</td><td>' + fmt(Math.round(env.stormwater.totalCost * m)) + '</td></tr>';
     html += '</table></div>';
 
-    // Total environmental cost
     html += '<div class="analysis-section"><h3>Total Environmental Cost Impact</h3>';
     html += '<div class="exec-summary-grid">';
-    html += '<div class="exec-summary-card"><h4>Total Environmental Costs</h4><div class="exec-metric-lg">' + formatCompactDollars(env.totalCost) + '</div><div class="exec-metric-sub">' + (env.totalCost / st.computed.totalDev * 100).toFixed(1) + '% of total development cost</div></div>';
+    html += '<div class="exec-summary-card"><h4>Total Environmental Costs</h4><div class="exec-metric-lg">' + formatCompactDollars(Math.round(env.totalCost * m)) + '</div><div class="exec-metric-sub">' + (env.totalCost * m / st.computed.totalDev * 100).toFixed(1) + '% of total development cost</div></div>';
     html += '<div class="exec-summary-card"><h4>Annual Flood Insurance</h4><div class="exec-metric-lg">' + fmt(env.floodInsurance) + '</div><div class="exec-metric-sub">' + env.floodData.label + '</div></div>';
     html += '</div></div>';
+    return html;
+}
 
+function renderEnvironmentalTab(st) {
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="dt-controls"><div class="dt-controls-title">Adjust Cost Estimates <button class="dt-reset-btn" onclick="resetEnvironmental()">Reset Defaults</button></div>';
+    html += '<div class="dt-controls-grid"><div class="dt-slider-group">';
+    html += '<div class="dt-slider-label"><span>Environmental Cost Multiplier</span><span class="dt-val" id="env-costMult-val">100%</span></div>';
+    html += '<div class="dt-slider-row">';
+    html += '<input type="range" id="env-costMult-slider" min="50" max="200" step="10" value="100" oninput="document.getElementById(\'env-costMult\').value=this.value;recalcEnvironmental()">';
+    html += '<input type="number" id="env-costMult" min="50" max="200" step="10" value="100" oninput="document.getElementById(\'env-costMult-slider\').value=this.value;recalcEnvironmental()">';
+    html += '</div></div></div></div>';
+    html += '<div id="environmentalContent">' + buildEnvironmentalContent() + '</div>';
     html += '</div>';
     return html;
 }
@@ -12856,19 +12890,97 @@ function generateParkingLayoutSVG(strategy, totalSpaces) {
     return svg;
 }
 
-function renderParkingTab(st) {
+// Parking dynamic controls
+var PARKING_COST_DEFAULTS = {
+    surfaceCost: 8500, podiumCost: 42000, subCost: 72000, mechCost: 35000,
+    leasablePct: 15, compactPct: 15
+};
+var parkingOverrides = null;
+
+function getParkingParams() {
+    var d = PARKING_COST_DEFAULTS, o = parkingOverrides || {};
+    var r = {};
+    Object.keys(d).forEach(function(k) { r[k] = o[k] != null ? o[k] : d[k]; });
+    return r;
+}
+
+function buildPkSlider(id, label, val, min, max, step, suffix) {
+    suffix = suffix || '';
+    var dec = step < 1 ? 1 : 0;
+    var isCurrency = suffix === '$';
+    var h = '<div class="dt-slider-group">';
+    h += '<div class="dt-slider-label"><span>' + label + '</span><span class="dt-val" id="pk-' + id + '-val">' + (isCurrency ? '$' + val.toLocaleString() : val.toFixed(dec) + suffix) + '</span></div>';
+    h += '<div class="dt-slider-row">';
+    h += '<input type="range" id="pk-' + id + '-slider" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '" oninput="document.getElementById(\'pk-' + id + '\').value=this.value;recalcParking()">';
+    h += '<input type="number" id="pk-' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '" oninput="document.getElementById(\'pk-' + id + '-slider\').value=this.value;recalcParking()">';
+    h += '</div></div>';
+    return h;
+}
+
+function recalcParking() {
+    if (!parkingOverrides) parkingOverrides = {};
+    Object.keys(PARKING_COST_DEFAULTS).forEach(function(f) {
+        var el = document.getElementById('pk-' + f);
+        if (el) parkingOverrides[f] = parseFloat(el.value);
+    });
+    Object.keys(PARKING_COST_DEFAULTS).forEach(function(f) {
+        var slider = document.getElementById('pk-' + f + '-slider');
+        var num = document.getElementById('pk-' + f);
+        if (slider && num && document.activeElement === slider) num.value = slider.value;
+        if (slider && num && document.activeElement === num) slider.value = num.value;
+        var valSpan = document.getElementById('pk-' + f + '-val');
+        if (valSpan && num) {
+            var v = parseFloat(num.value);
+            var isCost = ['surfaceCost','podiumCost','subCost','mechCost'].indexOf(f) >= 0;
+            valSpan.textContent = isCost ? '$' + Math.round(v).toLocaleString() : v.toFixed(0) + '%';
+        }
+    });
+    var container = document.getElementById('parkingContent');
+    if (container) container.innerHTML = buildParkingContent();
+}
+
+function resetParking() {
+    parkingOverrides = null;
+    Object.keys(PARKING_COST_DEFAULTS).forEach(function(f) {
+        var slider = document.getElementById('pk-' + f + '-slider');
+        var num = document.getElementById('pk-' + f);
+        if (slider) slider.value = PARKING_COST_DEFAULTS[f];
+        if (num) num.value = PARKING_COST_DEFAULTS[f];
+    });
+    recalcParking();
+}
+
+function buildParkingContent() {
+    var st = deepAnalysisState;
+    if (!st) return '';
+    var pp = getParkingParams();
+
+    // Override cost per space temporarily
+    var origSurface = PARKING_DESIGN_PARAMS.surface.costPerSpace;
+    var origPodium = PARKING_DESIGN_PARAMS.podium.costPerSpace;
+    var origSub = PARKING_DESIGN_PARAMS.subterranean.costPerSpace;
+    var origMech = PARKING_DESIGN_PARAMS.mechanical.costPerSpace;
+    PARKING_DESIGN_PARAMS.surface.costPerSpace = pp.surfaceCost;
+    PARKING_DESIGN_PARAMS.podium.costPerSpace = pp.podiumCost;
+    PARKING_DESIGN_PARAMS.subterranean.costPerSpace = pp.subCost;
+    PARKING_DESIGN_PARAMS.mechanical.costPerSpace = pp.mechCost;
+
     var pkg = analyzeParkingDesign(st.bestUse, st.inp, st.computed);
+    pkg.revenueSpaces = Math.round(pkg.totalSpaces * (pp.leasablePct / 100));
+    pkg.annualParkingRevenue = pkg.revenueSpaces * pkg.revenuePerSpace * 12;
 
-    var html = '<div class="deep-tab-panel">';
-    html += '<div class="analysis-section"><h3>Parking Design & Layout Analysis</h3>';
+    // Restore
+    PARKING_DESIGN_PARAMS.surface.costPerSpace = origSurface;
+    PARKING_DESIGN_PARAMS.podium.costPerSpace = origPodium;
+    PARKING_DESIGN_PARAMS.subterranean.costPerSpace = origSub;
+    PARKING_DESIGN_PARAMS.mechanical.costPerSpace = origMech;
 
-    // Space breakdown
+    var html = '';
     html += '<div class="exec-summary-grid">';
     html += '<div class="exec-summary-card"><h4>Total Spaces Required</h4><div class="exec-metric-lg">' + pkg.totalSpaces + '</div><div class="exec-metric-sub">Standard: ' + pkg.spacesByType.standard + ' | Compact: ' + pkg.spacesByType.compact + ' | ADA: ' + pkg.spacesByType.ada + ' | EV: ' + pkg.spacesByType.ev + '</div></div>';
     html += '<div class="exec-summary-card"><h4>Recommended Strategy</h4><div class="exec-metric-lg" style="font-size:1.2rem;">' + pkg.strategies.find(function(s) { return s.type === pkg.bestStrategy; }).name + '</div><div class="exec-metric-sub">Best fit for ' + st.computed.stories + '-story ' + (LAND_USES.find(function(u) { return u.id === st.bestUse; }) || {}).name + '</div></div>';
     html += '</div>';
 
-    // Strategy comparison table
     html += '<h4 style="color:var(--primary);margin:1.25rem 0 0.75rem;">Strategy Comparison</h4>';
     html += '<div style="overflow-x:auto;"><table class="budget-table">';
     html += '<tr><th style="text-align:left;">Strategy</th><th>Cost/Space</th><th>Total Cost</th><th>SF/Space</th><th>Total SF</th><th>Viable?</th></tr>';
@@ -12886,7 +12998,6 @@ function renderParkingTab(st) {
     }
     html += '</table></div>';
 
-    // Layout SVGs (2x2 grid)
     html += '<h4 style="color:var(--primary);margin:1.5rem 0 0.75rem;">Layout Diagrams</h4>';
     html += '<div class="rendering-container">';
     for (var j = 0; j < pkg.strategies.length; j++) {
@@ -12894,7 +13005,6 @@ function renderParkingTab(st) {
     }
     html += '</div>';
 
-    // Pros and cons
     html += '<h4 style="color:var(--primary);margin:1.5rem 0 0.75rem;">Pros & Cons</h4>';
     html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0.75rem;">';
     for (var k = 0; k < pkg.strategies.length; k++) {
@@ -12905,12 +13015,11 @@ function renderParkingTab(st) {
         html += '<div style="font-size:0.78rem;"><strong style="color:#276749;">Pros:</strong><ul style="margin:0.25rem 0 0.5rem 1rem;">';
         for (var p = 0; p < st2.pros.length; p++) { html += '<li>' + st2.pros[p] + '</li>'; }
         html += '</ul><strong style="color:#c53030;">Cons:</strong><ul style="margin:0.25rem 0 0 1rem;">';
-        for (var c = 0; c < st2.cons.length; c++) { html += '<li>' + st2.cons[c] + '</li>'; }
+        for (var cc = 0; cc < st2.cons.length; cc++) { html += '<li>' + st2.cons[cc] + '</li>'; }
         html += '</ul></div></div>';
     }
     html += '</div>';
 
-    // Revenue analysis
     html += '</div><div class="analysis-section"><h3>Parking Revenue Analysis</h3>';
     html += '<div class="exec-summary-grid">';
     html += '<div class="exec-summary-card"><h4>Monthly Rate (Market)</h4><div class="exec-metric-lg">' + fmt(pkg.revenuePerSpace) + '<span style="font-size:0.7rem;font-weight:400;color:var(--text-light);">/space/mo</span></div><div class="exec-metric-sub">Neighborhood: ' + st.inp.neighborhood + '</div></div>';
@@ -12918,8 +13027,26 @@ function renderParkingTab(st) {
     html += '<div class="exec-summary-card"><h4>Annual Parking Revenue</h4><div class="exec-metric-lg">' + formatCompactDollars(pkg.annualParkingRevenue) + '</div><div class="exec-metric-sub">' + fmt(pkg.annualParkingRevenue / 12) + '/month</div></div>';
     html += '<div class="exec-summary-card"><h4>Revenue vs Cost</h4><div class="exec-metric-lg">' + (pkg.annualParkingRevenue / (pkg.strategies.find(function(ss) { return ss.type === pkg.bestStrategy; }).cost || 1) * 100).toFixed(1) + '%</div><div class="exec-metric-sub">Annual yield on parking investment</div></div>';
     html += '</div></div>';
+    return html;
+}
 
-    html += '</div>';
+function renderParkingTab(st) {
+    var pp = getParkingParams();
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="analysis-section"><h3>Parking Design & Layout Analysis</h3>';
+
+    html += '<div class="dt-controls"><div class="dt-controls-title">Adjust Parking Costs <button class="dt-reset-btn" onclick="resetParking()">Reset Defaults</button></div>';
+    html += '<div class="dt-controls-grid">';
+    html += buildPkSlider('surfaceCost', 'Surface Cost/Space', pp.surfaceCost, 3000, 15000, 500, '$');
+    html += buildPkSlider('podiumCost', 'Podium Cost/Space', pp.podiumCost, 25000, 65000, 1000, '$');
+    html += buildPkSlider('subCost', 'Subterranean Cost/Space', pp.subCost, 45000, 100000, 1000, '$');
+    html += buildPkSlider('mechCost', 'Mechanical Cost/Space', pp.mechCost, 20000, 55000, 1000, '$');
+    html += buildPkSlider('leasablePct', 'Leasable Spaces %', pp.leasablePct, 5, 40, 5, '%');
+    html += buildPkSlider('compactPct', 'Compact Spaces %', pp.compactPct, 0, 30, 5, '%');
+    html += '</div></div>';
+
+    html += '<div id="parkingContent">' + buildParkingContent() + '</div>';
+    html += '</div></div>';
     return html;
 }
 
@@ -14807,70 +14934,131 @@ function resetDevTimeline() {
     recalcDevTimeline();
 }
 
-function renderPublicFinanceTab(st) {
+// Public Finance dynamic controls
+var PUBLIC_FINANCE_DEFAULTS = {
+    cityShare: 16, countyShare: 26, schoolShare: 45, specialDistShare: 13,
+    captureRate: 75, avGrowth: 2.0, bondRate: 4.5, bondTerm: 30, bondCoverage: 1.25
+};
+var publicFinanceOverrides = null;
+
+function getPublicFinanceParams() {
+    var d = PUBLIC_FINANCE_DEFAULTS, o = publicFinanceOverrides || {};
+    return {
+        cityShare:       (o.cityShare       != null ? o.cityShare       : d.cityShare) / 100,
+        countyShare:     (o.countyShare     != null ? o.countyShare     : d.countyShare) / 100,
+        schoolShare:     (o.schoolShare     != null ? o.schoolShare     : d.schoolShare) / 100,
+        specialDistShare:(o.specialDistShare!= null ? o.specialDistShare: d.specialDistShare) / 100,
+        captureRate:     (o.captureRate     != null ? o.captureRate     : d.captureRate) / 100,
+        avGrowth:        (o.avGrowth        != null ? o.avGrowth        : d.avGrowth) / 100,
+        bondRate:        (o.bondRate        != null ? o.bondRate        : d.bondRate) / 100,
+        bondTerm:         o.bondTerm        != null ? o.bondTerm        : d.bondTerm,
+        bondCoverage:    (o.bondCoverage    != null ? o.bondCoverage    : d.bondCoverage),
+    };
+}
+
+function buildPFSlider(id, label, val, min, max, step, suffix) {
+    suffix = suffix || '%';
+    var dec = step < 1 ? (step < 0.1 ? 2 : 1) : 0;
+    var h = '<div class="dt-slider-group">';
+    h += '<div class="dt-slider-label"><span>' + label + '</span><span class="dt-val" id="pf-' + id + '-val">' + val.toFixed(dec) + suffix + '</span></div>';
+    h += '<div class="dt-slider-row">';
+    h += '<input type="range" id="pf-' + id + '-slider" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '" oninput="document.getElementById(\'pf-' + id + '\').value=this.value;recalcPublicFinance()">';
+    h += '<input type="number" id="pf-' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '" oninput="document.getElementById(\'pf-' + id + '-slider\').value=this.value;recalcPublicFinance()">';
+    h += '</div></div>';
+    return h;
+}
+
+function recalcPublicFinance() {
+    if (!publicFinanceOverrides) publicFinanceOverrides = {};
+    var fields = ['cityShare','countyShare','schoolShare','specialDistShare','captureRate','avGrowth','bondRate','bondTerm','bondCoverage'];
+    fields.forEach(function(f) {
+        var el = document.getElementById('pf-' + f);
+        if (el) publicFinanceOverrides[f] = parseFloat(el.value);
+    });
+    fields.forEach(function(f) {
+        var slider = document.getElementById('pf-' + f + '-slider');
+        var num = document.getElementById('pf-' + f);
+        if (slider && num && document.activeElement === slider) num.value = slider.value;
+        if (slider && num && document.activeElement === num) slider.value = num.value;
+        var valSpan = document.getElementById('pf-' + f + '-val');
+        if (valSpan && num) {
+            var dec = (f === 'bondCoverage') ? 2 : (f === 'bondTerm' ? 0 : 1);
+            var suffix = (f === 'bondTerm') ? ' yr' : (f === 'bondCoverage' ? 'x' : '%');
+            valSpan.textContent = parseFloat(num.value).toFixed(dec) + suffix;
+        }
+    });
+    var container = document.getElementById('publicFinanceContent');
+    if (container) container.innerHTML = buildPublicFinanceContent();
+}
+
+function resetPublicFinance() {
+    publicFinanceOverrides = null;
+    var d = PUBLIC_FINANCE_DEFAULTS;
+    Object.keys(d).forEach(function(f) {
+        var slider = document.getElementById('pf-' + f + '-slider');
+        var num = document.getElementById('pf-' + f);
+        if (slider) slider.value = d[f];
+        if (num) num.value = d[f];
+    });
+    recalcPublicFinance();
+}
+
+function buildPublicFinanceContent() {
+    var st = deepAnalysisState;
+    if (!st) return '';
     var computed = st.computed, inp = st.inp, prop = st.prop;
+    var pf = getPublicFinanceParams();
     var assessedValue = computed.totalDev;
     var baseYearAV = (prop.landVal || 0) + (prop.impVal || 0);
     var newAV = assessedValue;
     var increment = Math.max(0, newAV - baseYearAV);
-    var annualTaxIncrement = increment * EIFD_PARAMS.propertyTaxRate;
+    var annualTaxIncrement = increment * 0.01; // Prop 13 base levy always 1%
 
-    // Participating shares (schools cannot participate in EIFD)
-    var cityIncrement = annualTaxIncrement * EIFD_PARAMS.cityShare;
-    var countyIncrement = annualTaxIncrement * EIFD_PARAMS.countyShare;
-    var specialIncrement = annualTaxIncrement * EIFD_PARAMS.specialDistShare;
-    var capturableIncrement = (cityIncrement + countyIncrement + specialIncrement) * EIFD_PARAMS.eifCaptureRate;
-    var schoolIncrement = annualTaxIncrement * EIFD_PARAMS.schoolShare;
+    var cityIncrement = annualTaxIncrement * pf.cityShare;
+    var countyIncrement = annualTaxIncrement * pf.countyShare;
+    var specialIncrement = annualTaxIncrement * pf.specialDistShare;
+    var capturableIncrement = (cityIncrement + countyIncrement + specialIncrement) * pf.captureRate;
+    var schoolIncrement = annualTaxIncrement * pf.schoolShare;
 
-    // 30-year projections (2% annual AV growth)
     var projections = [];
     var cumulative = 0;
     for (var yr = 1; yr <= 30; yr++) {
-        var yrAV = increment * Math.pow(1.02, yr);
-        var yrTax = yrAV * EIFD_PARAMS.propertyTaxRate;
-        var yrCapture = (yrTax * (EIFD_PARAMS.cityShare + EIFD_PARAMS.countyShare + EIFD_PARAMS.specialDistShare)) * EIFD_PARAMS.eifCaptureRate;
+        var yrAV = increment * Math.pow(1 + pf.avGrowth, yr);
+        var yrTax = yrAV * 0.01;
+        var yrCapture = (yrTax * (pf.cityShare + pf.countyShare + pf.specialDistShare)) * pf.captureRate;
         cumulative += yrCapture;
         if (yr === 1 || yr === 5 || yr === 10 || yr === 15 || yr === 20 || yr === 30) {
             projections.push({ year: yr, annualCapture: Math.round(yrCapture), cumulative: Math.round(cumulative) });
         }
     }
 
-    // Bond capacity
     var avgAnnualCapture = cumulative / 30;
-    var bondCapacity = Math.round(avgAnnualCapture / EIFD_PARAMS.bondCoverage / (EIFD_PARAMS.bondRate + (1 / EIFD_PARAMS.bondTerm)));
+    var bondCapacity = Math.round(avgAnnualCapture / pf.bondCoverage / (pf.bondRate + (1 / pf.bondTerm)));
 
-    var html = '<div class="deep-tab-panel">';
-
-    html += '<div class="analysis-section"><h3>Public Finance — Tax Increment Districts</h3>';
-    html += '<p style="font-size:0.82rem;color:var(--text-light);margin-bottom:1rem;">Analysis of Enhanced Infrastructure Financing Districts (EIFDs), Community Revitalization & Investment Authorities (CRIAs), and Climate Resilience Districts (CRDs) for this development.</p>';
-
-    // Key metrics
+    var html = '';
     html += '<div class="exec-summary-grid">';
     html += '<div class="exec-summary-card"><h4>Assessed Value Increment</h4><div class="exec-metric-lg">' + formatCompactDollars(increment) + '</div><div class="exec-metric-sub">New AV: ' + formatCompactDollars(newAV) + ' — Base: ' + formatCompactDollars(baseYearAV) + '</div></div>';
     html += '<div class="exec-summary-card"><h4>Annual Tax Increment (Yr 1)</h4><div class="exec-metric-lg">' + fmt(Math.round(annualTaxIncrement)) + '</div><div class="exec-metric-sub">1.0% base levy on ' + formatCompactDollars(increment) + ' increment</div></div>';
-    html += '<div class="exec-summary-card"><h4>Capturable by EIFD (Yr 1)</h4><div class="exec-metric-lg" style="color:#276749;">' + fmt(Math.round(capturableIncrement)) + '</div><div class="exec-metric-sub">75% of city + county + special dist shares</div></div>';
-    html += '<div class="exec-summary-card"><h4>Est. Bond Capacity</h4><div class="exec-metric-lg" style="color:var(--primary);">' + formatCompactDollars(bondCapacity) + '</div><div class="exec-metric-sub">' + EIFD_PARAMS.bondTerm + '-yr term at ' + (EIFD_PARAMS.bondRate * 100).toFixed(1) + '%, ' + EIFD_PARAMS.bondCoverage + 'x DSCR</div></div>';
+    html += '<div class="exec-summary-card"><h4>Capturable by EIFD (Yr 1)</h4><div class="exec-metric-lg" style="color:#276749;">' + fmt(Math.round(capturableIncrement)) + '</div><div class="exec-metric-sub">' + (pf.captureRate * 100).toFixed(0) + '% of city + county + special dist shares</div></div>';
+    html += '<div class="exec-summary-card"><h4>Est. Bond Capacity</h4><div class="exec-metric-lg" style="color:var(--primary);">' + formatCompactDollars(bondCapacity) + '</div><div class="exec-metric-sub">' + pf.bondTerm + '-yr term at ' + (pf.bondRate * 100).toFixed(1) + '%, ' + pf.bondCoverage.toFixed(2) + 'x DSCR</div></div>';
     html += '</div>';
 
-    // Tax increment allocation breakdown
     html += '<h4 style="font-size:0.85rem;color:var(--text);margin:1.25rem 0 0.5rem;">Tax Increment Allocation (Year 1)</h4>';
     html += '<table class="afford-comparison-table"><thead><tr><th>Entity</th><th>Share</th><th>Annual Amount</th><th>EIFD Eligible?</th></tr></thead><tbody>';
-    html += '<tr><td>City General Fund</td><td>' + (EIFD_PARAMS.cityShare * 100).toFixed(0) + '%</td><td>' + fmt(Math.round(cityIncrement)) + '</td><td style="color:#276749;">Yes</td></tr>';
-    html += '<tr><td>County</td><td>' + (EIFD_PARAMS.countyShare * 100).toFixed(0) + '%</td><td>' + fmt(Math.round(countyIncrement)) + '</td><td style="color:#276749;">Yes (with consent)</td></tr>';
-    html += '<tr><td>Schools (ERAF)</td><td>' + (EIFD_PARAMS.schoolShare * 100).toFixed(0) + '%</td><td>' + fmt(Math.round(schoolIncrement)) + '</td><td style="color:#c53030;">No — protected</td></tr>';
-    html += '<tr><td>Special Districts</td><td>' + (EIFD_PARAMS.specialDistShare * 100).toFixed(0) + '%</td><td>' + fmt(Math.round(specialIncrement)) + '</td><td style="color:#276749;">Yes (with consent)</td></tr>';
+    html += '<tr><td>City General Fund</td><td>' + (pf.cityShare * 100).toFixed(0) + '%</td><td>' + fmt(Math.round(cityIncrement)) + '</td><td style="color:#276749;">Yes</td></tr>';
+    html += '<tr><td>County</td><td>' + (pf.countyShare * 100).toFixed(0) + '%</td><td>' + fmt(Math.round(countyIncrement)) + '</td><td style="color:#276749;">Yes (with consent)</td></tr>';
+    html += '<tr><td>Schools (ERAF)</td><td>' + (pf.schoolShare * 100).toFixed(0) + '%</td><td>' + fmt(Math.round(schoolIncrement)) + '</td><td style="color:#c53030;">No — protected</td></tr>';
+    html += '<tr><td>Special Districts</td><td>' + (pf.specialDistShare * 100).toFixed(0) + '%</td><td>' + fmt(Math.round(specialIncrement)) + '</td><td style="color:#276749;">Yes (with consent)</td></tr>';
     html += '<tr class="total-row"><td>Total Capturable</td><td></td><td>' + fmt(Math.round(capturableIncrement)) + '</td><td></td></tr>';
     html += '</tbody></table>';
 
-    // 30-year projection
-    html += '<h4 style="font-size:0.85rem;color:var(--text);margin:1.25rem 0 0.5rem;">30-Year Tax Increment Projection (2% annual AV growth)</h4>';
+    html += '<h4 style="font-size:0.85rem;color:var(--text);margin:1.25rem 0 0.5rem;">30-Year Tax Increment Projection (' + (pf.avGrowth * 100).toFixed(1) + '% annual AV growth)</h4>';
     html += '<table class="afford-comparison-table"><thead><tr><th>Year</th><th>Annual Capture</th><th>Cumulative</th></tr></thead><tbody>';
     for (var p = 0; p < projections.length; p++) {
         html += '<tr><td>Year ' + projections[p].year + '</td><td>' + fmt(projections[p].annualCapture) + '</td><td>' + formatCompactDollars(projections[p].cumulative) + '</td></tr>';
     }
     html += '</tbody></table>';
 
-    // District Types Comparison
     html += '<h4 style="font-size:0.85rem;color:var(--text);margin:1.25rem 0 0.5rem;">District Type Comparison</h4>';
     html += '<table class="afford-comparison-table"><thead><tr><th>Feature</th><th>EIFD (SB 628)</th><th>CRIA (AB 2)</th><th>CRD (SB 852)</th></tr></thead><tbody>';
     html += '<tr><td>Formation</td><td>City/County resolution</td><td>City/County resolution</td><td>City/County/Special Dist</td></tr>';
@@ -14881,7 +15069,6 @@ function renderPublicFinanceTab(st) {
     html += '<tr><td>Best For</td><td>Infrastructure, transit</td><td>Blight/affordable housing</td><td>Climate resilience projects</td></tr>';
     html += '</tbody></table>';
 
-    // Formation cost/benefit
     html += '<div style="background:#f0fff4;border:1px solid #c6f6d5;border-radius:8px;padding:0.75rem 1rem;margin-top:1rem;">';
     html += '<h5 style="font-size:0.82rem;color:#276749;margin-bottom:0.4rem;">Formation Cost vs. Benefit</h5>';
     html += '<div style="font-size:0.78rem;color:var(--text);line-height:1.6;">';
@@ -14891,11 +15078,36 @@ function renderPublicFinanceTab(st) {
     html += '<strong>30-year total capture:</strong> ' + formatCompactDollars(Math.round(cumulative));
     html += '</div></div>';
 
-    // Sources
     html += '<div style="font-size:0.72rem;color:#718096;margin-top:0.75rem;"><strong>Sources:</strong> ';
     var srcLinks = Object.values(EIFD_PARAMS.sources).map(function(s) { return '<a href="' + s.url + '" target="_blank" style="color:#3182ce;">' + s.label + '</a>'; }).join(' | ');
     html += srcLinks + '</div>';
+    return html;
+}
 
+function renderPublicFinanceTab(st) {
+    var d = PUBLIC_FINANCE_DEFAULTS;
+    var p = publicFinanceOverrides || {};
+    var gv = function(f) { return p[f] != null ? p[f] : d[f]; };
+
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="analysis-section"><h3>Public Finance — Tax Increment Districts</h3>';
+    html += '<p style="font-size:0.82rem;color:var(--text-light);margin-bottom:1rem;">Analysis of Enhanced Infrastructure Financing Districts (EIFDs), Community Revitalization & Investment Authorities (CRIAs), and Climate Resilience Districts (CRDs) for this development.</p>';
+
+    // Controls
+    html += '<div class="dt-controls"><div class="dt-controls-title">Adjust Assumptions <button class="dt-reset-btn" onclick="resetPublicFinance()">Reset Defaults</button></div>';
+    html += '<div class="dt-controls-grid">';
+    html += buildPFSlider('cityShare', 'City Share', gv('cityShare'), 5, 30, 1);
+    html += buildPFSlider('countyShare', 'County Share', gv('countyShare'), 10, 40, 1);
+    html += buildPFSlider('schoolShare', 'School Share', gv('schoolShare'), 30, 55, 1);
+    html += buildPFSlider('specialDistShare', 'Special Dist Share', gv('specialDistShare'), 5, 25, 1);
+    html += buildPFSlider('captureRate', 'EIFD Capture Rate', gv('captureRate'), 50, 100, 5);
+    html += buildPFSlider('avGrowth', 'AV Growth Rate', gv('avGrowth'), 0.5, 5.0, 0.5);
+    html += buildPFSlider('bondRate', 'Bond Interest Rate', gv('bondRate'), 3.0, 7.0, 0.25);
+    html += buildPFSlider('bondTerm', 'Bond Term', gv('bondTerm'), 15, 45, 5, ' yr');
+    html += buildPFSlider('bondCoverage', 'Bond DSCR', gv('bondCoverage'), 1.0, 1.5, 0.05, 'x');
+    html += '</div></div>';
+
+    html += '<div id="publicFinanceContent">' + buildPublicFinanceContent() + '</div>';
     html += '</div></div>';
     return html;
 }
@@ -14926,85 +15138,158 @@ var FISCAL_IMPACT_RATES = {
     personsPerCommSF: 0.004,         // 1 person per 250 SF commercial
 };
 
-function renderFiscalImpactTab(st) {
-    var computed = st.computed, inp = st.inp, prop = st.prop, bestUse = st.bestUse;
-    var fr = FISCAL_IMPACT_RATES;
+// Fiscal Impact dynamic controls
+var FISCAL_IMPACT_DEFAULTS = {
+    cityTaxShare: 16, utilityTaxRate: 9, personsPerUnit: 2.3,
+    parkFee: 1500, schoolFee: 4.79, trafficFee: 3200,
+    policePerCapita: 680, firePerCapita: 420, publicWorksPerCapita: 290,
+    parksPerCapita: 180, adminPerCapita: 150
+};
+var fiscalImpactOverrides = null;
+
+function getFiscalParams() {
+    var d = FISCAL_IMPACT_DEFAULTS, o = fiscalImpactOverrides || {};
+    var r = {};
+    Object.keys(d).forEach(function(k) { r[k] = o[k] != null ? o[k] : d[k]; });
+    return r;
+}
+
+function buildFISlider(id, label, val, min, max, step, suffix) {
+    suffix = suffix || '';
+    var dec = step < 1 ? (step < 0.01 ? 2 : 1) : 0;
+    var h = '<div class="dt-slider-group">';
+    h += '<div class="dt-slider-label"><span>' + label + '</span><span class="dt-val" id="fi-' + id + '-val">' + (suffix === '$' ? '$' + val.toFixed(dec) : val.toFixed(dec) + suffix) + '</span></div>';
+    h += '<div class="dt-slider-row">';
+    h += '<input type="range" id="fi-' + id + '-slider" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '" oninput="document.getElementById(\'fi-' + id + '\').value=this.value;recalcFiscalImpact()">';
+    h += '<input type="number" id="fi-' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '" oninput="document.getElementById(\'fi-' + id + '-slider\').value=this.value;recalcFiscalImpact()">';
+    h += '</div></div>';
+    return h;
+}
+
+function recalcFiscalImpact() {
+    if (!fiscalImpactOverrides) fiscalImpactOverrides = {};
+    var fields = Object.keys(FISCAL_IMPACT_DEFAULTS);
+    fields.forEach(function(f) {
+        var el = document.getElementById('fi-' + f);
+        if (el) fiscalImpactOverrides[f] = parseFloat(el.value);
+    });
+    fields.forEach(function(f) {
+        var slider = document.getElementById('fi-' + f + '-slider');
+        var num = document.getElementById('fi-' + f);
+        if (slider && num && document.activeElement === slider) num.value = slider.value;
+        if (slider && num && document.activeElement === num) slider.value = num.value;
+        var valSpan = document.getElementById('fi-' + f + '-val');
+        if (valSpan && num) {
+            var v = parseFloat(num.value);
+            var isCurrency = ['parkFee','trafficFee','policePerCapita','firePerCapita','publicWorksPerCapita','parksPerCapita','adminPerCapita'].indexOf(f) >= 0;
+            var dec = (f === 'schoolFee' || f === 'personsPerUnit') ? 1 : 0;
+            valSpan.textContent = isCurrency ? '$' + v.toFixed(dec) : v.toFixed(dec) + (f === 'personsPerUnit' ? '' : '%');
+        }
+    });
+    var container = document.getElementById('fiscalImpactContent');
+    if (container) container.innerHTML = buildFiscalImpactContent();
+}
+
+function resetFiscalImpact() {
+    fiscalImpactOverrides = null;
+    var d = FISCAL_IMPACT_DEFAULTS;
+    Object.keys(d).forEach(function(f) {
+        var slider = document.getElementById('fi-' + f + '-slider');
+        var num = document.getElementById('fi-' + f);
+        if (slider) slider.value = d[f];
+        if (num) num.value = d[f];
+    });
+    recalcFiscalImpact();
+}
+
+function buildFiscalImpactContent() {
+    var st = deepAnalysisState;
+    if (!st) return '';
+    var computed = st.computed, bestUse = st.bestUse;
+    var fp = getFiscalParams();
     var isResidential = ['sfr','duplex','multifamily_low','multifamily_mid','multifamily_high','mixeduse','senior','adu'].includes(bestUse);
     var units = computed.units || 0;
     var gsf = computed.gsf || 0;
 
-    // REVENUE TO CITY
     var assessedValue = computed.totalDev;
-    var annualPropTax = assessedValue * 0.01 * fr.propertyTaxCityShare;
-
-    // Sales tax (estimate for retail/mixed-use ground floor)
+    var annualPropTax = assessedValue * 0.01 * (fp.cityTaxShare / 100);
     var retailSF = bestUse === 'retail' ? gsf : (bestUse === 'mixeduse' ? Math.round(gsf * 0.15) : 0);
-    var estRetailSalesPerSF = 350; // conservative
-    var annualSalesTax = retailSF * estRetailSalesPerSF * fr.salesTaxLocal;
-
-    // Utility tax
+    var estRetailSalesPerSF = 350;
+    var annualSalesTax = retailSF * estRetailSalesPerSF * 0.01;
     var annualUtilityTax = isResidential
-        ? units * fr.avgUtilityPerUnit * fr.utilityTaxRate
-        : gsf * fr.avgUtilityPerSF * fr.utilityTaxRate;
+        ? units * 2400 * (fp.utilityTaxRate / 100)
+        : gsf * 3.20 * (fp.utilityTaxRate / 100);
+    var annualBizLicense = !isResidential ? computed.grossRevenue * 0.00153 : 0;
 
-    // Business license (commercial only)
-    var annualBizLicense = !isResidential ? computed.grossRevenue * fr.businessLicenseFee : 0;
-
-    // One-time fees
-    var parkFees = units * fr.parkFee;
-    var schoolFees = gsf * fr.schoolFee;
-    var trafficFees = units * fr.trafficFee;
+    var parkFees = units * fp.parkFee;
+    var schoolFees = gsf * fp.schoolFee;
+    var trafficFees = units * fp.trafficFee;
     var totalOneTimeFees = parkFees + schoolFees + trafficFees;
-
     var totalAnnualRevenue = annualPropTax + annualSalesTax + annualUtilityTax + annualBizLicense;
 
-    // SERVICE COSTS TO CITY
-    var newPopulation = isResidential ? units * fr.personsPerUnit : Math.round(gsf * fr.personsPerCommSF);
-    var policeCost = newPopulation * fr.policePerCapita;
-    var fireCost = newPopulation * fr.firePerCapita;
-    var publicWorksCost = newPopulation * fr.publicWorksPerCapita;
-    var parksCost = newPopulation * fr.parksPerCapita;
-    var adminCost = newPopulation * fr.adminPerCapita;
+    var newPopulation = isResidential ? units * fp.personsPerUnit : Math.round(gsf * 0.004);
+    var policeCost = newPopulation * fp.policePerCapita;
+    var fireCost = newPopulation * fp.firePerCapita;
+    var publicWorksCost = newPopulation * fp.publicWorksPerCapita;
+    var parksCost = newPopulation * fp.parksPerCapita;
+    var adminCost = newPopulation * fp.adminPerCapita;
     var totalAnnualCost = policeCost + fireCost + publicWorksCost + parksCost + adminCost;
-
     var netFiscalImpact = totalAnnualRevenue - totalAnnualCost;
     var isPositive = netFiscalImpact >= 0;
 
-    var html = '<div class="deep-tab-panel">';
-    html += '<div class="analysis-section"><h3>Fiscal Impact Analysis</h3>';
-    html += '<p style="font-size:0.82rem;color:var(--text-light);margin-bottom:1rem;">Estimated annual impact on city general fund: recurring tax revenue generated vs. municipal service costs incurred by this development.</p>';
-
-    // Net impact headline
+    var html = '';
     html += '<div class="exec-summary-grid">';
     html += '<div class="exec-summary-card"><h4>Annual Revenue to City</h4><div class="exec-metric-lg" style="color:#276749;">' + fmt(Math.round(totalAnnualRevenue)) + '</div><div class="exec-metric-sub">Property tax + utility tax + sales tax + fees</div></div>';
-    html += '<div class="exec-summary-card"><h4>Annual Service Cost</h4><div class="exec-metric-lg" style="color:#c53030;">' + fmt(Math.round(totalAnnualCost)) + '</div><div class="exec-metric-sub">Police, fire, public works, parks, admin for ' + newPopulation + ' new residents</div></div>';
+    html += '<div class="exec-summary-card"><h4>Annual Service Cost</h4><div class="exec-metric-lg" style="color:#c53030;">' + fmt(Math.round(totalAnnualCost)) + '</div><div class="exec-metric-sub">Police, fire, public works, parks, admin for ' + Math.round(newPopulation) + ' new residents</div></div>';
     html += '<div class="exec-summary-card"><h4>Net Fiscal Impact</h4><div class="exec-metric-lg" style="color:' + (isPositive ? '#276749' : '#c53030') + ';">' + (isPositive ? '+' : '') + fmt(Math.round(netFiscalImpact)) + '/yr</div><div class="exec-metric-sub">' + (isPositive ? 'Net positive — project generates surplus revenue for city' : 'Net negative — project costs city more than it generates') + '</div></div>';
-    html += '<div class="exec-summary-card"><h4>One-Time Impact Fees</h4><div class="exec-metric-lg">' + formatCompactDollars(totalOneTimeFees) + '</div><div class="exec-metric-sub">Park: ' + fmt(parkFees) + ' | School: ' + fmt(schoolFees) + ' | Traffic: ' + fmt(trafficFees) + '</div></div>';
+    html += '<div class="exec-summary-card"><h4>One-Time Impact Fees</h4><div class="exec-metric-lg">' + formatCompactDollars(totalOneTimeFees) + '</div><div class="exec-metric-sub">Park: ' + fmt(parkFees) + ' | School: ' + fmt(Math.round(schoolFees)) + ' | Traffic: ' + fmt(trafficFees) + '</div></div>';
     html += '</div>';
 
-    // Revenue breakdown
     html += '<h4 style="font-size:0.85rem;color:var(--text);margin:1.25rem 0 0.5rem;">Recurring Annual Revenue to City</h4>';
     html += '<table class="afford-comparison-table"><thead><tr><th>Source</th><th>Rate/Basis</th><th>Annual Revenue</th></tr></thead><tbody>';
-    html += '<tr><td>Property Tax (City Share)</td><td>' + (fr.propertyTaxCityShare * 100).toFixed(0) + '% of 1% levy on ' + formatCompactDollars(assessedValue) + '</td><td>' + fmt(Math.round(annualPropTax)) + '</td></tr>';
+    html += '<tr><td>Property Tax (City Share)</td><td>' + fp.cityTaxShare + '% of 1% levy on ' + formatCompactDollars(assessedValue) + '</td><td>' + fmt(Math.round(annualPropTax)) + '</td></tr>';
     if (annualSalesTax > 0) html += '<tr><td>Sales Tax (Local)</td><td>1% on est. ' + formatCompactDollars(retailSF * estRetailSalesPerSF) + ' retail sales</td><td>' + fmt(Math.round(annualSalesTax)) + '</td></tr>';
-    html += '<tr><td>Utility Users Tax</td><td>' + (fr.utilityTaxRate * 100).toFixed(0) + '% on ' + (isResidential ? units + ' units' : gsf.toLocaleString() + ' SF') + '</td><td>' + fmt(Math.round(annualUtilityTax)) + '</td></tr>';
+    html += '<tr><td>Utility Users Tax</td><td>' + fp.utilityTaxRate + '% on ' + (isResidential ? units + ' units' : gsf.toLocaleString() + ' SF') + '</td><td>' + fmt(Math.round(annualUtilityTax)) + '</td></tr>';
     if (annualBizLicense > 0) html += '<tr><td>Business License Fee</td><td>$1.53 per $1,000 gross receipts</td><td>' + fmt(Math.round(annualBizLicense)) + '</td></tr>';
     html += '<tr class="total-row"><td>Total Annual Revenue</td><td></td><td>' + fmt(Math.round(totalAnnualRevenue)) + '</td></tr>';
     html += '</tbody></table>';
 
-    // Cost breakdown
-    html += '<h4 style="font-size:0.85rem;color:var(--text);margin:1.25rem 0 0.5rem;">Annual Municipal Service Costs (' + newPopulation + ' new residents/workers)</h4>';
+    html += '<h4 style="font-size:0.85rem;color:var(--text);margin:1.25rem 0 0.5rem;">Annual Municipal Service Costs (' + Math.round(newPopulation) + ' new residents/workers)</h4>';
     html += '<table class="afford-comparison-table"><thead><tr><th>Department</th><th>Cost/Capita</th><th>Annual Cost</th></tr></thead><tbody>';
-    html += '<tr><td>Police</td><td>' + fmt(fr.policePerCapita) + '</td><td>' + fmt(Math.round(policeCost)) + '</td></tr>';
-    html += '<tr><td>Fire & EMS</td><td>' + fmt(fr.firePerCapita) + '</td><td>' + fmt(Math.round(fireCost)) + '</td></tr>';
-    html += '<tr><td>Public Works</td><td>' + fmt(fr.publicWorksPerCapita) + '</td><td>' + fmt(Math.round(publicWorksCost)) + '</td></tr>';
-    html += '<tr><td>Parks & Recreation</td><td>' + fmt(fr.parksPerCapita) + '</td><td>' + fmt(Math.round(parksCost)) + '</td></tr>';
-    html += '<tr><td>General Admin</td><td>' + fmt(fr.adminPerCapita) + '</td><td>' + fmt(Math.round(adminCost)) + '</td></tr>';
+    html += '<tr><td>Police</td><td>' + fmt(fp.policePerCapita) + '</td><td>' + fmt(Math.round(policeCost)) + '</td></tr>';
+    html += '<tr><td>Fire & EMS</td><td>' + fmt(fp.firePerCapita) + '</td><td>' + fmt(Math.round(fireCost)) + '</td></tr>';
+    html += '<tr><td>Public Works</td><td>' + fmt(fp.publicWorksPerCapita) + '</td><td>' + fmt(Math.round(publicWorksCost)) + '</td></tr>';
+    html += '<tr><td>Parks & Recreation</td><td>' + fmt(fp.parksPerCapita) + '</td><td>' + fmt(Math.round(parksCost)) + '</td></tr>';
+    html += '<tr><td>General Admin</td><td>' + fmt(fp.adminPerCapita) + '</td><td>' + fmt(Math.round(adminCost)) + '</td></tr>';
     html += '<tr class="total-row"><td>Total Annual Cost</td><td></td><td>' + fmt(Math.round(totalAnnualCost)) + '</td></tr>';
     html += '</tbody></table>';
 
     html += '<div style="font-size:0.72rem;color:#718096;margin-top:0.75rem;">Service cost estimates based on LA City budget per-capita allocations. Property tax shares based on typical LA County Tax Rate Area distributions. Actual rates vary by specific TRA — verify at <a href="https://auditor.lacounty.gov/tax-rate-area-lookup/" target="_blank" style="color:#3182ce;">LA County Auditor</a>.</div>';
+    return html;
+}
 
+function renderFiscalImpactTab(st) {
+    var fp = getFiscalParams();
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="analysis-section"><h3>Fiscal Impact Analysis</h3>';
+    html += '<p style="font-size:0.82rem;color:var(--text-light);margin-bottom:1rem;">Estimated annual impact on city general fund: recurring tax revenue generated vs. municipal service costs incurred by this development.</p>';
+
+    html += '<div class="dt-controls"><div class="dt-controls-title">Adjust Assumptions <button class="dt-reset-btn" onclick="resetFiscalImpact()">Reset Defaults</button></div>';
+    html += '<div class="dt-controls-grid">';
+    html += buildFISlider('cityTaxShare', 'City Property Tax Share', fp.cityTaxShare, 8, 25, 1, '%');
+    html += buildFISlider('utilityTaxRate', 'Utility Users Tax Rate', fp.utilityTaxRate, 5, 12, 1, '%');
+    html += buildFISlider('personsPerUnit', 'Persons Per Unit', fp.personsPerUnit, 1.5, 4.0, 0.1, '');
+    html += buildFISlider('parkFee', 'Park Fee (per unit)', fp.parkFee, 500, 5000, 100, '$');
+    html += buildFISlider('schoolFee', 'School Fee (per SF)', fp.schoolFee, 2.0, 8.0, 0.5, '$');
+    html += buildFISlider('trafficFee', 'Traffic Fee (per unit)', fp.trafficFee, 1000, 8000, 200, '$');
+    html += buildFISlider('policePerCapita', 'Police Cost/Capita', fp.policePerCapita, 300, 1200, 20, '$');
+    html += buildFISlider('firePerCapita', 'Fire/EMS Cost/Capita', fp.firePerCapita, 200, 800, 20, '$');
+    html += buildFISlider('publicWorksPerCapita', 'Public Works/Capita', fp.publicWorksPerCapita, 100, 600, 20, '$');
+    html += buildFISlider('parksPerCapita', 'Parks Cost/Capita', fp.parksPerCapita, 50, 400, 10, '$');
+    html += buildFISlider('adminPerCapita', 'Admin Cost/Capita', fp.adminPerCapita, 50, 400, 10, '$');
+    html += '</div></div>';
+
+    html += '<div id="fiscalImpactContent">' + buildFiscalImpactContent() + '</div>';
     html += '</div></div>';
     return html;
 }
@@ -15135,33 +15420,82 @@ function renderRHNATab(st) {
 // ===================================================================
 //  TAB 20: PUBLIC-PRIVATE PARTNERSHIP (P3) STRUCTURING
 // ===================================================================
-function renderP3StructuringTab(st) {
-    var c = st.computed, a = st.assumptions;
+var P3_DEFAULTS = {
+    debtRate: 6.5, glEquity: 30, jvEquity: 25, jvDebt: 65, fsEquity: 30, fsDebt: 65,
+    mdEquity: 20, mdPublic: 15, mdDebt: 60, publicReturnRate: 4.0
+};
+var p3Overrides = null;
+
+function getP3Params() {
+    var d = P3_DEFAULTS, o = p3Overrides || {};
+    var r = {};
+    Object.keys(d).forEach(function(k) { r[k] = o[k] != null ? o[k] : d[k]; });
+    return r;
+}
+
+function buildP3Slider(id, label, val, min, max, step) {
+    var dec = step < 1 ? 1 : 0;
+    var h = '<div class="dt-slider-group">';
+    h += '<div class="dt-slider-label"><span>' + label + '</span><span class="dt-val" id="p3-' + id + '-val">' + val.toFixed(dec) + '%</span></div>';
+    h += '<div class="dt-slider-row">';
+    h += '<input type="range" id="p3-' + id + '-slider" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '" oninput="document.getElementById(\'p3-' + id + '\').value=this.value;recalcP3()">';
+    h += '<input type="number" id="p3-' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '" oninput="document.getElementById(\'p3-' + id + '-slider\').value=this.value;recalcP3()">';
+    h += '</div></div>';
+    return h;
+}
+
+function recalcP3() {
+    if (!p3Overrides) p3Overrides = {};
+    Object.keys(P3_DEFAULTS).forEach(function(f) {
+        var el = document.getElementById('p3-' + f);
+        if (el) p3Overrides[f] = parseFloat(el.value);
+    });
+    Object.keys(P3_DEFAULTS).forEach(function(f) {
+        var slider = document.getElementById('p3-' + f + '-slider');
+        var num = document.getElementById('p3-' + f);
+        if (slider && num && document.activeElement === slider) num.value = slider.value;
+        if (slider && num && document.activeElement === num) slider.value = num.value;
+        var valSpan = document.getElementById('p3-' + f + '-val');
+        if (valSpan && num) valSpan.textContent = parseFloat(num.value).toFixed(P3_DEFAULTS[f] % 1 ? 1 : 0) + '%';
+    });
+    var container = document.getElementById('p3Content');
+    if (container) container.innerHTML = buildP3Content();
+}
+
+function resetP3() {
+    p3Overrides = null;
+    Object.keys(P3_DEFAULTS).forEach(function(f) {
+        var slider = document.getElementById('p3-' + f + '-slider');
+        var num = document.getElementById('p3-' + f);
+        if (slider) slider.value = P3_DEFAULTS[f];
+        if (num) num.value = P3_DEFAULTS[f];
+    });
+    recalcP3();
+}
+
+function buildP3Content() {
+    var st = deepAnalysisState;
+    if (!st) return '';
+    var c = st.computed;
     var fmt = function(v) { return '$' + Math.round(v).toLocaleString(); };
     var fmtM = function(v) { return v >= 1e6 ? '$' + (v / 1e6).toFixed(1) + 'M' : fmt(v); };
-    var html = '<div class="deep-tab-panel">';
-    html += '<div class="analysis-section"><h3>Public/Private Partnership Structuring</h3>';
-    html += '<p style="font-size:0.78rem;color:#718096;margin-bottom:1rem;">Evaluate deal structures for public-private transactions. Compare ground lease, joint venture, fee simple disposition, and master developer frameworks to identify optimal risk-adjusted returns.</p>';
+    var pp = getP3Params();
 
     var totalDev = c.totalDev;
     var noi = c.noi;
     var stabilized = c.stabilizedValue;
-    var devMargin = c.devMargin;
     var landCost = c.landCost;
     var landPct = totalDev > 0 ? landCost / totalDev : 0;
 
-    // P3 Structure Definitions
     var structures = [
         {
             name: 'Ground Lease (Public Land)',
             desc: 'Public agency retains land ownership; developer leases for 55-99 years. Eliminates land acquisition cost.',
-            devEquity: Math.round(totalDev * 0.30 - landCost),
+            devEquity: Math.round(totalDev * (pp.glEquity / 100) - landCost),
             publicContrib: landCost,
-            debtAmount: Math.round((totalDev - landCost) * 0.70),
-            devReturn: 0,
-            publicReturn: 0,
-            riskLevel: 'Medium',
-            riskColor: '#d69e2e',
+            debtAmount: Math.round((totalDev - landCost) * (1 - pp.glEquity / 100)),
+            devReturn: 0, publicReturn: 0,
+            riskLevel: 'Medium', riskColor: '#d69e2e',
             timeline: '18-36 months (negotiation) + construction',
             pros: ['No land acquisition cost', 'Lower equity requirement', 'Long-term control', 'Public agency retains asset'],
             cons: ['Lease reversion risk', 'Lender restrictions on leasehold', 'Rent escalation exposure', 'Complex subordination terms'],
@@ -15169,13 +15503,11 @@ function renderP3StructuringTab(st) {
         {
             name: 'Joint Venture (Public/Private)',
             desc: 'Public entity contributes land or incentives; private developer contributes capital and expertise. Profit sharing.',
-            devEquity: Math.round(totalDev * 0.25),
+            devEquity: Math.round(totalDev * (pp.jvEquity / 100)),
             publicContrib: Math.round(landCost + totalDev * 0.05),
-            debtAmount: Math.round(totalDev * 0.65),
-            devReturn: 0,
-            publicReturn: 0,
-            riskLevel: 'Medium-High',
-            riskColor: '#e53e3e',
+            debtAmount: Math.round(totalDev * (pp.jvDebt / 100)),
+            devReturn: 0, publicReturn: 0,
+            riskLevel: 'Medium-High', riskColor: '#e53e3e',
             timeline: '12-24 months (structuring) + construction',
             pros: ['Shared risk', 'Public incentive alignment', 'Community benefit integration', 'Flexible structures'],
             cons: ['Complex governance', 'Slower decision-making', 'Political risk', 'Profit sharing reduces returns'],
@@ -15183,13 +15515,11 @@ function renderP3StructuringTab(st) {
         {
             name: 'Fee Simple Disposition',
             desc: 'Public agency sells land to developer at market or below-market price with development conditions.',
-            devEquity: Math.round(totalDev * 0.30),
+            devEquity: Math.round(totalDev * (pp.fsEquity / 100)),
             publicContrib: Math.round(landCost * 0.20),
-            debtAmount: Math.round(totalDev * 0.65),
-            devReturn: 0,
-            publicReturn: 0,
-            riskLevel: 'Low-Medium',
-            riskColor: '#38a169',
+            debtAmount: Math.round(totalDev * (pp.fsDebt / 100)),
+            devReturn: 0, publicReturn: 0,
+            riskLevel: 'Low-Medium', riskColor: '#38a169',
             timeline: '6-18 months (RFP/selection) + construction',
             pros: ['Full ownership', 'Simpler financing', 'Clear exit strategy', 'No ongoing public involvement'],
             cons: ['Higher capital requirement', 'Surplus land requirements', 'Community opposition risk', 'DA conditions'],
@@ -15197,31 +15527,27 @@ function renderP3StructuringTab(st) {
         {
             name: 'Master Developer Agreement',
             desc: 'Developer controls phased development of larger site with public infrastructure obligations and community benefits.',
-            devEquity: Math.round(totalDev * 0.20),
-            publicContrib: Math.round(totalDev * 0.15),
-            debtAmount: Math.round(totalDev * 0.60),
-            devReturn: 0,
-            publicReturn: 0,
-            riskLevel: 'High',
-            riskColor: '#e53e3e',
+            devEquity: Math.round(totalDev * (pp.mdEquity / 100)),
+            publicContrib: Math.round(totalDev * (pp.mdPublic / 100)),
+            debtAmount: Math.round(totalDev * (pp.mdDebt / 100)),
+            devReturn: 0, publicReturn: 0,
+            riskLevel: 'High', riskColor: '#e53e3e',
             timeline: '24-48 months (entitlements) + phased construction',
             pros: ['Large-scale control', 'Phased risk', 'Value creation across phases', 'Infrastructure cost sharing'],
             cons: ['Long timeline', 'High upfront costs', 'Entitlement risk', 'Market cycle exposure'],
         }
     ];
 
-    // Calculate returns for each structure
     structures.forEach(function(s) {
-        var devCost = totalDev - s.publicContrib;
-        var debtService = Math.round(s.debtAmount * 0.065);
+        var debtService = Math.round(s.debtAmount * (pp.debtRate / 100));
         var devNOI = noi - debtService;
         s.devReturn = s.devEquity > 0 ? devNOI / s.devEquity : 0;
-        s.publicReturn = s.publicContrib > 0 ? (s.publicContrib * 0.04 + noi * 0.10) / s.publicContrib : 0;
+        s.publicReturn = s.publicContrib > 0 ? (s.publicContrib * (pp.publicReturnRate / 100) + noi * 0.10) / s.publicContrib : 0;
         s.devIRR = s.devEquity > 0 ? (stabilized - s.debtAmount - s.publicContrib) / s.devEquity / 5 : 0;
         s.equityMultiple = s.devEquity > 0 ? (stabilized - s.debtAmount) / s.devEquity : 0;
     });
 
-    // Summary cards
+    var html = '';
     html += '<div class="exec-summary-grid">';
     html += '<div class="exec-summary-card"><h4>Project Value</h4><div class="exec-metric-lg">' + fmtM(stabilized) + '</div><div class="exec-metric-sub">Stabilized value at ' + (c.capRate * 100).toFixed(1) + '% cap</div></div>';
     html += '<div class="exec-summary-card"><h4>Total Dev Cost</h4><div class="exec-metric-lg">' + fmtM(totalDev) + '</div><div class="exec-metric-sub">Land + Hard + Soft costs</div></div>';
@@ -15229,7 +15555,6 @@ function renderP3StructuringTab(st) {
     html += '<div class="exec-summary-card"><h4>Annual NOI</h4><div class="exec-metric-lg">' + fmtM(noi) + '</div><div class="exec-metric-sub">' + (c.yieldOnCost * 100).toFixed(1) + '% yield on cost</div></div>';
     html += '</div>';
 
-    // Structure comparison table
     html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">Deal Structure Comparison</h4>';
     html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.75rem;">';
     html += '<thead><tr style="background:#edf2f7;"><th style="padding:8px;text-align:left;">Structure</th><th style="padding:8px;text-align:right;">Dev Equity</th><th style="padding:8px;text-align:right;">Public Contrib</th><th style="padding:8px;text-align:right;">Debt</th><th style="padding:8px;text-align:right;">Cash-on-Cash</th><th style="padding:8px;text-align:right;">Equity Multiple</th><th style="padding:8px;text-align:center;">Risk</th></tr></thead><tbody>';
@@ -15246,7 +15571,6 @@ function renderP3StructuringTab(st) {
     });
     html += '</tbody></table></div>';
 
-    // Detailed structure cards
     html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">Structure Details</h4>';
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">';
     structures.forEach(function(s) {
@@ -15264,7 +15588,6 @@ function renderP3StructuringTab(st) {
     });
     html += '</div>';
 
-    // Capital stack visualization
     html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">Capital Stack by Structure</h4>';
     html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;">';
     structures.forEach(function(s) {
@@ -15282,8 +15605,31 @@ function renderP3StructuringTab(st) {
     });
     html += '</div>';
 
-    // Sources
     html += '<div style="font-size:0.72rem;color:#718096;margin-top:1.25rem;">Source: <a href="https://www.kosmont.com/services/public-private-partnerships" target="_blank" style="color:#3182ce;">Kosmont P3 Advisory</a> | <a href="https://www.cacities.org/Resources-Documents/Member-Engagement/Professional-Departments/City-Attorneys/Library/2018/Spring-2018/5-2018-Spring-Public-Private-Partnerships.aspx" target="_blank" style="color:#3182ce;">CA League of Cities P3 Guide</a> | <a href="https://www.hcd.ca.gov/grants-and-funding" target="_blank" style="color:#3182ce;">HCD Funding Programs</a></div>';
+    return html;
+}
+
+function renderP3StructuringTab(st) {
+    var pp = getP3Params();
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="analysis-section"><h3>Public/Private Partnership Structuring</h3>';
+    html += '<p style="font-size:0.78rem;color:#718096;margin-bottom:1rem;">Evaluate deal structures for public-private transactions. Compare ground lease, joint venture, fee simple disposition, and master developer frameworks to identify optimal risk-adjusted returns.</p>';
+
+    html += '<div class="dt-controls"><div class="dt-controls-title">Adjust Capital Structure <button class="dt-reset-btn" onclick="resetP3()">Reset Defaults</button></div>';
+    html += '<div class="dt-controls-grid">';
+    html += buildP3Slider('debtRate', 'Debt Interest Rate', pp.debtRate, 4.0, 9.0, 0.25);
+    html += buildP3Slider('publicReturnRate', 'Public Return Rate', pp.publicReturnRate, 2.0, 8.0, 0.5);
+    html += buildP3Slider('glEquity', 'Ground Lease: Dev Equity', pp.glEquity, 15, 45, 5);
+    html += buildP3Slider('jvEquity', 'JV: Dev Equity', pp.jvEquity, 10, 40, 5);
+    html += buildP3Slider('jvDebt', 'JV: Senior Debt', pp.jvDebt, 50, 80, 5);
+    html += buildP3Slider('fsEquity', 'Fee Simple: Dev Equity', pp.fsEquity, 15, 45, 5);
+    html += buildP3Slider('fsDebt', 'Fee Simple: Senior Debt', pp.fsDebt, 50, 80, 5);
+    html += buildP3Slider('mdEquity', 'Master Dev: Dev Equity', pp.mdEquity, 10, 35, 5);
+    html += buildP3Slider('mdPublic', 'Master Dev: Public Contrib', pp.mdPublic, 5, 30, 5);
+    html += buildP3Slider('mdDebt', 'Master Dev: Senior Debt', pp.mdDebt, 45, 75, 5);
+    html += '</div></div>';
+
+    html += '<div id="p3Content">' + buildP3Content() + '</div>';
     html += '</div></div>';
     return html;
 }
@@ -15453,25 +15799,89 @@ function renderIncentiveMatrixTab(st) {
 // ===================================================================
 //  TAB 22: DEVELOPMENT AGREEMENT TERM SHEET
 // ===================================================================
-function renderDevAgreementTab(st) {
-    var c = st.computed, a = st.assumptions;
+// Dev Agreement dynamic controls
+var DA_DEFAULTS = {
+    vestingYears: 15, affordablePct: 15, communityBenefitPct: 2.0,
+    impactFeePct: 3.5, parkDedicationPct: 5, annualReviewPct: 0.05,
+    commenceMonths: 24
+};
+var daOverrides = null;
+
+function getDAParams() {
+    var d = DA_DEFAULTS, o = daOverrides || {};
+    var r = {};
+    Object.keys(d).forEach(function(k) { r[k] = o[k] != null ? o[k] : d[k]; });
+    return r;
+}
+
+function buildDASlider(id, label, val, min, max, step, suffix) {
+    suffix = suffix || '%';
+    var dec = step < 1 ? (step < 0.01 ? 2 : 1) : 0;
+    var h = '<div class="dt-slider-group">';
+    h += '<div class="dt-slider-label"><span>' + label + '</span><span class="dt-val" id="da2-' + id + '-val">' + val.toFixed(dec) + suffix + '</span></div>';
+    h += '<div class="dt-slider-row">';
+    h += '<input type="range" id="da2-' + id + '-slider" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '" oninput="document.getElementById(\'da2-' + id + '\').value=this.value;recalcDevAgreement()">';
+    h += '<input type="number" id="da2-' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '" oninput="document.getElementById(\'da2-' + id + '-slider\').value=this.value;recalcDevAgreement()">';
+    h += '</div></div>';
+    return h;
+}
+
+function recalcDevAgreement() {
+    if (!daOverrides) daOverrides = {};
+    Object.keys(DA_DEFAULTS).forEach(function(f) {
+        var el = document.getElementById('da2-' + f);
+        if (el) daOverrides[f] = parseFloat(el.value);
+    });
+    Object.keys(DA_DEFAULTS).forEach(function(f) {
+        var slider = document.getElementById('da2-' + f + '-slider');
+        var num = document.getElementById('da2-' + f);
+        if (slider && num && document.activeElement === slider) num.value = slider.value;
+        if (slider && num && document.activeElement === num) slider.value = num.value;
+        var valSpan = document.getElementById('da2-' + f + '-val');
+        if (valSpan && num) {
+            var v = parseFloat(num.value);
+            var isYr = (f === 'vestingYears' || f === 'commenceMonths');
+            var suffix = isYr ? (f === 'vestingYears' ? ' yr' : ' mo') : '%';
+            var dec = DA_DEFAULTS[f] % 1 ? (DA_DEFAULTS[f] < 0.1 ? 2 : 1) : 0;
+            valSpan.textContent = v.toFixed(dec) + suffix;
+        }
+    });
+    var container = document.getElementById('devAgreementContent');
+    if (container) container.innerHTML = buildDevAgreementContent();
+}
+
+function resetDevAgreement() {
+    daOverrides = null;
+    Object.keys(DA_DEFAULTS).forEach(function(f) {
+        var slider = document.getElementById('da2-' + f + '-slider');
+        var num = document.getElementById('da2-' + f);
+        if (slider) slider.value = DA_DEFAULTS[f];
+        if (num) num.value = DA_DEFAULTS[f];
+    });
+    recalcDevAgreement();
+}
+
+function buildDevAgreementContent() {
+    var st = deepAnalysisState;
+    if (!st) return '';
+    var c = st.computed;
     var fmt = function(v) { return '$' + Math.round(v).toLocaleString(); };
     var fmtM = function(v) { return v >= 1e6 ? '$' + (v / 1e6).toFixed(1) + 'M' : fmt(v); };
-    var html = '<div class="deep-tab-panel">';
-    html += '<div class="analysis-section"><h3>Development Agreement Key Terms</h3>';
-    html += '<p style="font-size:0.78rem;color:#718096;margin-bottom:1rem;">Framework for negotiating a Development Agreement (DA) with the local jurisdiction. DAs vest development rights and provide certainty on fees, standards, and community benefits in exchange for public commitments.</p>';
+    var dp = getDAParams();
 
     var totalDev = c.totalDev;
     var units = c.units || 0;
     var isResidential = !!c.units;
-    var affordUnits = Math.round(units * 0.15);
-    var parkDedication = Math.round((st.inp ? st.inp.parcelSize : 10000) * 0.05);
-    var impactFees = Math.round(totalDev * 0.035);
-    var communityBenefitBudget = Math.round(totalDev * 0.02);
+    var affordUnits = Math.round(units * (dp.affordablePct / 100));
+    var parkDedication = Math.round((st.inp ? st.inp.parcelSize : 10000) * (dp.parkDedicationPct / 100));
+    var impactFees = Math.round(totalDev * (dp.impactFeePct / 100));
+    var communityBenefitBudget = Math.round(totalDev * (dp.communityBenefitPct / 100));
+
+    var html = '';
 
     // Key terms
     var terms = [
-        { term: 'Vesting Period', value: '15 years', desc: 'Term during which project is vested against changes in law. Standard range: 10-20 years. Longer terms for phased projects.' },
+        { term: 'Vesting Period', value: dp.vestingYears + ' years', desc: 'Term during which project is vested against changes in law. Standard range: 10-20 years. Longer terms for phased projects.' },
         { term: 'Permitted Uses', value: st.bestUse ? (LAND_USES.find(function(u) { return u.id === st.bestUse; }) || {}).name || 'Mixed-Use' : 'Mixed-Use', desc: 'All uses permitted under the DA, including primary and ancillary uses as defined in project approvals.' },
         { term: 'Maximum Density', value: units > 0 ? units + ' units' : c.nsf.toLocaleString() + ' NSF', desc: 'Maximum development intensity vested by the DA. May include phase-specific caps.' },
         { term: 'Maximum Height', value: c.buildingHeight + ' ft / ' + c.stories + ' stories', desc: 'Building height as approved in project entitlements. Height may vary by phase or building.' },
@@ -15480,20 +15890,18 @@ function renderDevAgreementTab(st) {
         { term: 'Affordable Housing', value: affordUnits + ' units (' + (units > 0 ? Math.round(affordUnits / units * 100) : 0) + '%)', desc: 'Affordable units or in-lieu fee per inclusionary housing ordinance. Income targeting as specified.' },
         { term: 'Impact Fees', value: fmt(impactFees), desc: 'Total development impact fees (park, school, traffic, art, linkage). May be frozen at DA execution date.' },
         { term: 'Community Benefits', value: fmt(communityBenefitBudget), desc: 'Developer-funded community benefits package: local hire, public improvements, community space, etc.' },
-        { term: 'Annual Review Fee', value: fmt(Math.round(totalDev * 0.0005)), desc: 'Annual fee to city for DA compliance monitoring and review. Typically 0.025-0.10% of project value.' },
-        { term: 'Construction Commencement', value: '24 months from DA effective date', desc: 'Deadline to commence substantial construction. Extensions available for force majeure.' },
+        { term: 'Annual Review Fee', value: fmt(Math.round(totalDev * (dp.annualReviewPct / 100))), desc: 'Annual fee to city for DA compliance monitoring and review.' },
+        { term: 'Construction Commencement', value: dp.commenceMonths + ' months from DA effective date', desc: 'Deadline to commence substantial construction. Extensions available for force majeure.' },
         { term: 'Phasing', value: c.gsf > 200000 ? '2-3 phases over 5-7 years' : 'Single phase', desc: 'Construction phasing plan with milestones and deadlines per phase.' },
     ];
 
-    // Summary
     html += '<div class="exec-summary-grid">';
     html += '<div class="exec-summary-card"><h4>Project Value</h4><div class="exec-metric-lg">' + fmtM(c.stabilizedValue) + '</div><div class="exec-metric-sub">Vested at stabilization</div></div>';
-    html += '<div class="exec-summary-card"><h4>Community Benefits</h4><div class="exec-metric-lg">' + fmtM(communityBenefitBudget) + '</div><div class="exec-metric-sub">~2% of total dev cost</div></div>';
+    html += '<div class="exec-summary-card"><h4>Community Benefits</h4><div class="exec-metric-lg">' + fmtM(communityBenefitBudget) + '</div><div class="exec-metric-sub">~' + dp.communityBenefitPct.toFixed(1) + '% of total dev cost</div></div>';
     html += '<div class="exec-summary-card"><h4>Impact Fees</h4><div class="exec-metric-lg">' + fmtM(impactFees) + '</div><div class="exec-metric-sub">Frozen at DA execution</div></div>';
-    html += '<div class="exec-summary-card"><h4>Vesting Period</h4><div class="exec-metric-lg">15 Years</div><div class="exec-metric-sub">Protection against law changes</div></div>';
+    html += '<div class="exec-summary-card"><h4>Vesting Period</h4><div class="exec-metric-lg">' + dp.vestingYears + ' Years</div><div class="exec-metric-sub">Protection against law changes</div></div>';
     html += '</div>';
 
-    // Term sheet table
     html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">DA Term Sheet</h4>';
     html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.75rem;">';
     html += '<thead><tr style="background:#edf2f7;"><th style="padding:8px;text-align:left;width:25%;">Term</th><th style="padding:8px;text-align:left;width:20%;">Value</th><th style="padding:8px;text-align:left;">Description</th></tr></thead><tbody>';
@@ -15506,8 +15914,6 @@ function renderDevAgreementTab(st) {
     });
     html += '</tbody></table></div>';
 
-    // Community benefits breakdown
-    html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">Community Benefits Package</h4>';
     var benefits = [
         { item: 'Local Hire Program', pct: 30, value: Math.round(communityBenefitBudget * 0.30), desc: '30% local hire requirement for construction and permanent jobs' },
         { item: 'Public Open Space / Park', pct: 20, value: Math.round(communityBenefitBudget * 0.20), desc: parkDedication.toLocaleString() + ' SF park dedication or in-lieu fee' },
@@ -15517,6 +15923,7 @@ function renderDevAgreementTab(st) {
         { item: 'Sustainability Measures', pct: 5, value: Math.round(communityBenefitBudget * 0.05), desc: 'EV charging, solar, green building certifications beyond code minimum' },
     ];
 
+    html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">Community Benefits Package</h4>';
     html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.75rem;">';
     html += '<thead><tr style="background:#f0fff4;"><th style="padding:6px 8px;text-align:left;">Benefit</th><th style="padding:6px 8px;text-align:right;">Est. Value</th><th style="padding:6px 8px;text-align:center;">% of Package</th><th style="padding:6px 8px;text-align:left;">Description</th></tr></thead><tbody>';
     benefits.forEach(function(b) {
@@ -15529,8 +15936,6 @@ function renderDevAgreementTab(st) {
     });
     html += '</tbody></table></div>';
 
-    // DA process timeline
-    html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">DA Approval Process</h4>';
     var steps = [
         { step: 1, name: 'Pre-Application Conference', duration: '1-2 months', desc: 'Meet with Planning Dept to discuss DA scope, community benefits, and key terms' },
         { step: 2, name: 'DA Application Filing', duration: '1 month', desc: 'File formal DA application with term sheet, community benefits plan, and environmental review' },
@@ -15541,6 +15946,7 @@ function renderDevAgreementTab(st) {
         { step: 7, name: 'DA Recordation', duration: '1 month', desc: 'Record DA against property. Vesting rights commence upon recordation.' },
     ];
 
+    html += '<h4 style="font-size:0.88rem;color:var(--text);margin:1.5rem 0 0.75rem;">DA Approval Process</h4>';
     html += '<div style="display:flex;flex-direction:column;gap:0.5rem;">';
     steps.forEach(function(s) {
         html += '<div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem;background:#f7fafc;border-radius:6px;">';
@@ -15552,6 +15958,27 @@ function renderDevAgreementTab(st) {
     html += '</div>';
 
     html += '<div style="font-size:0.72rem;color:#718096;margin-top:1.25rem;">Source: <a href="https://planning.lacity.gov/development-services/development-agreements" target="_blank" style="color:#3182ce;">LA City Planning — Development Agreements</a> | <a href="https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=65864.&lawCode=GOV" target="_blank" style="color:#3182ce;">Gov. Code §65864-65869.5</a> | <a href="https://www.kosmont.com/services/development-agreements" target="_blank" style="color:#3182ce;">Kosmont DA Advisory</a></div>';
+    return html;
+}
+
+function renderDevAgreementTab(st) {
+    var dp = getDAParams();
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="analysis-section"><h3>Development Agreement Key Terms</h3>';
+    html += '<p style="font-size:0.78rem;color:#718096;margin-bottom:1rem;">Framework for negotiating a Development Agreement (DA) with the local jurisdiction. DAs vest development rights and provide certainty on fees, standards, and community benefits in exchange for public commitments.</p>';
+
+    html += '<div class="dt-controls"><div class="dt-controls-title">Adjust DA Terms <button class="dt-reset-btn" onclick="resetDevAgreement()">Reset Defaults</button></div>';
+    html += '<div class="dt-controls-grid">';
+    html += buildDASlider('vestingYears', 'Vesting Period', dp.vestingYears, 5, 25, 1, ' yr');
+    html += buildDASlider('affordablePct', 'Affordable Housing %', dp.affordablePct, 0, 40, 1);
+    html += buildDASlider('communityBenefitPct', 'Community Benefits % of Dev Cost', dp.communityBenefitPct, 0.5, 5.0, 0.5);
+    html += buildDASlider('impactFeePct', 'Impact Fees % of Dev Cost', dp.impactFeePct, 1.0, 7.0, 0.5);
+    html += buildDASlider('parkDedicationPct', 'Park Dedication % of Site', dp.parkDedicationPct, 2, 15, 1);
+    html += buildDASlider('annualReviewPct', 'Annual Review Fee %', dp.annualReviewPct, 0.01, 0.10, 0.01);
+    html += buildDASlider('commenceMonths', 'Construction Start Deadline', dp.commenceMonths, 12, 48, 6, ' mo');
+    html += '</div></div>';
+
+    html += '<div id="devAgreementContent">' + buildDevAgreementContent() + '</div>';
     html += '</div></div>';
     return html;
 }
