@@ -2722,6 +2722,7 @@
             <button class="deep-tab-btn" onclick="switchDeepTab(23)">Asset Strategy</button>
             <button class="deep-tab-btn" onclick="switchDeepTab(24)">10-Yr Cash Flow</button>
             <button class="deep-tab-btn" onclick="switchDeepTab(25)">Dev Timeline</button>
+            <button class="deep-tab-btn" onclick="switchDeepTab(26)">Investor Module</button>
         </div>
         <div id="deepTabPanels"></div>
     </div>
@@ -8923,7 +8924,8 @@ function renderDeepTabPanels(skipTab0) {
         html += renderKPIDashboard(st);
         html += renderExportTab(st);
         [renderPublicFinanceTab, renderFiscalImpactTab, renderRHNATab, renderP3StructuringTab,
-         renderIncentiveMatrixTab, renderDevAgreementTab, renderAssetStrategyTab, renderCashFlowModelTab, renderDevTimelineTab
+         renderIncentiveMatrixTab, renderDevAgreementTab, renderAssetStrategyTab, renderCashFlowModelTab, renderDevTimelineTab,
+         renderInvestorModuleTab
         ].forEach(function(fn) {
             try { html += fn(st); } catch(e) {
                 console.error('Error in tab render:', e);
@@ -9002,6 +9004,7 @@ function renderDeepTabPanels(skipTab0) {
         { name: 'Asset Strategy', fn: renderAssetStrategyTab },
         { name: '10-Yr Cash Flow', fn: renderCashFlowModelTab },
         { name: 'Dev Timeline', fn: renderDevTimelineTab },
+        { name: 'Investor Module', fn: renderInvestorModuleTab },
     ];
     newTabRenderers.forEach(function(t) {
         try {
@@ -15506,6 +15509,656 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
+
+// ============================================================
+//  TAB 26: INVESTOR MODULE — GP/LP Capital Stack & Waterfall
+// ============================================================
+
+function calcIRR(cashFlows, guess) {
+    // Newton-Raphson IRR calculation
+    // cashFlows[0] = negative (equity invested), cashFlows[1..n] = distributions
+    if (!cashFlows || cashFlows.length < 2) return 0;
+    var rate = guess || 0.10;
+    for (var iter = 0; iter < 200; iter++) {
+        var npv = 0, dnpv = 0;
+        for (var i = 0; i < cashFlows.length; i++) {
+            var denom = Math.pow(1 + rate, i);
+            if (denom === 0) break;
+            npv += cashFlows[i] / denom;
+            dnpv -= i * cashFlows[i] / Math.pow(1 + rate, i + 1);
+        }
+        if (Math.abs(dnpv) < 1e-12) break;
+        var newRate = rate - npv / dnpv;
+        if (Math.abs(newRate - rate) < 1e-8) return newRate;
+        rate = newRate;
+        if (rate < -0.99) rate = -0.5;
+        if (rate > 10) rate = 2;
+    }
+    return rate;
+}
+
+function getInvestorCashFlowData(c) {
+    // Recompute 10-year cash flow data from computed state, reading CF tab inputs if available
+    var revGrowth = parseFloat((document.getElementById('cf-revGrowth') || {}).value) / 100 || 0.03;
+    var expGrowth = parseFloat((document.getElementById('cf-expGrowth') || {}).value) / 100 || 0.025;
+    var vacancyRate = parseFloat((document.getElementById('cf-vacancy') || {}).value) / 100 || 0.05;
+    var capexRate = parseFloat((document.getElementById('cf-capex') || {}).value) / 100 || 0.03;
+    var mgmtRate = parseFloat((document.getElementById('cf-mgmt') || {}).value) / 100 || 0.04;
+
+    var baseRevenue = c.grossRevenue;
+    var baseOpex = c.opex;
+    var years = [];
+    for (var yr = 1; yr <= 10; yr++) {
+        var gpRevenue = Math.round(baseRevenue * Math.pow(1 + revGrowth, yr));
+        var vacancy = Math.round(gpRevenue * vacancyRate);
+        var egi = gpRevenue - vacancy;
+        var mgmtFee = Math.round(egi * mgmtRate);
+        var opex = Math.round(baseOpex * Math.pow(1 + expGrowth, yr));
+        var capex = Math.round(gpRevenue * capexRate);
+        var totalExpenses = opex + mgmtFee + capex;
+        var noi = egi - totalExpenses;
+        years.push({ year: yr, noi: noi, egi: egi });
+    }
+    return years;
+}
+
+function buildCapitalStack(c) {
+    var totalDev = c.totalDev;
+    var seniorLTV = parseFloat((document.getElementById('inv-seniorLTV') || {}).value) / 100 || 0.65;
+    var seniorRate = parseFloat((document.getElementById('inv-seniorRate') || {}).value) / 100 || 0.065;
+    var seniorAmort = parseInt((document.getElementById('inv-seniorAmort') || {}).value) || 30;
+    var seniorIO = parseInt((document.getElementById('inv-seniorIO') || {}).value) || 0;
+
+    var hasMezz = document.getElementById('inv-mezzToggle') && document.getElementById('inv-mezzToggle').checked;
+    var mezzAmt = hasMezz ? (parseFloat((document.getElementById('inv-mezzAmt') || {}).value) || 0) : 0;
+    var mezzRate = hasMezz ? (parseFloat((document.getElementById('inv-mezzRate') || {}).value) / 100 || 0.12) : 0;
+
+    var seniorLoan = Math.round(totalDev * seniorLTV);
+    var totalEquity = totalDev - seniorLoan - mezzAmt;
+    if (totalEquity < 0) totalEquity = 0;
+
+    var gpPct = parseFloat((document.getElementById('inv-gpPct') || {}).value) / 100 || 0.10;
+    var gpEquity = Math.round(totalEquity * gpPct);
+    var lpEquity = totalEquity - gpEquity;
+
+    // Amortizing debt service calculation
+    var monthlyRate = seniorRate / 12;
+    var nPayments = seniorAmort * 12;
+    var monthlyPayment = monthlyRate > 0 ? seniorLoan * (monthlyRate * Math.pow(1 + monthlyRate, nPayments)) / (Math.pow(1 + monthlyRate, nPayments) - 1) : seniorLoan / nPayments;
+    var annualDS = Math.round(monthlyPayment * 12);
+    var ioDS = Math.round(seniorLoan * seniorRate);
+
+    return {
+        totalDev: totalDev,
+        seniorLoan: seniorLoan,
+        seniorLTV: seniorLTV,
+        seniorRate: seniorRate,
+        seniorAmort: seniorAmort,
+        seniorIO: seniorIO,
+        annualDS: annualDS,
+        ioDS: ioDS,
+        mezzAmt: mezzAmt,
+        mezzRate: mezzRate,
+        hasMezz: hasMezz,
+        totalEquity: totalEquity,
+        gpPct: gpPct,
+        gpEquity: gpEquity,
+        lpEquity: lpEquity,
+    };
+}
+
+function getDefaultWaterfallTiers() {
+    return [
+        { name: 'Return of Capital', hurdle: 0, lpPct: 100, gpPct: 0, isROC: true },
+        { name: 'Preferred Return', hurdle: 8, lpPct: 100, gpPct: 0 },
+        { name: 'First Promote', hurdle: 12, lpPct: 80, gpPct: 20 },
+        { name: 'Second Promote', hurdle: 18, lpPct: 60, gpPct: 40 },
+        { name: 'Above Hurdle', hurdle: 99, lpPct: 50, gpPct: 50 },
+    ];
+}
+
+var investorWaterfallTiers = null;
+
+function getWaterfallTiers() {
+    if (!investorWaterfallTiers) investorWaterfallTiers = getDefaultWaterfallTiers();
+    // Read from DOM if inputs exist
+    for (var i = 0; i < investorWaterfallTiers.length; i++) {
+        var hEl = document.getElementById('wf-hurdle-' + i);
+        var lpEl = document.getElementById('wf-lp-' + i);
+        var gpEl = document.getElementById('wf-gp-' + i);
+        if (hEl) investorWaterfallTiers[i].hurdle = parseFloat(hEl.value) || 0;
+        if (lpEl) investorWaterfallTiers[i].lpPct = parseFloat(lpEl.value) || 0;
+        if (gpEl) investorWaterfallTiers[i].gpPct = parseFloat(gpEl.value) || 0;
+    }
+    return investorWaterfallTiers;
+}
+
+function computeWaterfall(years, cap, tiers, exitYear) {
+    // Distribute annual operating CF and exit proceeds through waterfall
+    var lpEquity = cap.lpEquity;
+    var lpCapitalAccount = lpEquity; // outstanding unreturned capital
+    var lpCumDist = 0, gpCumDist = 0;
+    var result = [];
+
+    for (var yr = 1; yr <= 10; yr++) {
+        var yrData = years[yr - 1];
+        var ds = yr <= cap.seniorIO ? cap.ioDS : cap.annualDS;
+        var mezzDS = cap.hasMezz ? Math.round(cap.mezzAmt * cap.mezzRate) : 0;
+        var cfAfterDS = yrData.noi - ds - mezzDS;
+        var isExit = (yr === exitYear);
+        var exitCap = parseFloat((document.getElementById('inv-exitCap') || {}).value) / 100 || 0.05;
+        var exitValue = isExit ? Math.round(yrData.noi / exitCap) : 0;
+        var dispCost = isExit ? Math.round(exitValue * 0.025) : 0;
+        // Remaining loan balance (simplified: IO periods don't reduce principal, amortizing does slightly)
+        var loanBal = cap.seniorLoan; // simplified for IO-heavy short holds
+        var netSaleProceeds = isExit ? (exitValue - dispCost - loanBal - cap.mezzAmt) : 0;
+
+        var distributable = cfAfterDS + (isExit ? netSaleProceeds : 0);
+        if (distributable < 0) distributable = 0;
+
+        var lpDist = 0, gpDist = 0;
+        var remaining = distributable;
+
+        for (var t = 0; t < tiers.length && remaining > 0; t++) {
+            var tier = tiers[t];
+            var lpShare = tier.lpPct / 100;
+            var gpShare = tier.gpPct / 100;
+
+            if (tier.isROC) {
+                // Return of capital: distribute until LP capital account = 0
+                var rocNeeded = lpCapitalAccount;
+                if (rocNeeded <= 0) continue;
+                var rocDist = Math.min(remaining, rocNeeded);
+                lpDist += rocDist;
+                remaining -= rocDist;
+                continue;
+            }
+
+            // Check if current IRR hurdle is already met
+            // Build hypothetical LP cash flows to test
+            var testLPFlows = [-lpEquity];
+            for (var py = 0; py < yr - 1; py++) {
+                testLPFlows.push(result[py] ? result[py].lpDist : 0);
+            }
+            testLPFlows.push(lpCumDist + lpDist + remaining * lpShare);
+            var testIRR = calcIRR(testLPFlows) * 100;
+
+            if (testIRR <= tier.hurdle || t === tiers.length - 1) {
+                // Still in this tier — distribute at this tier's split
+                var lpAmt = Math.round(remaining * lpShare);
+                var gpAmt = remaining - lpAmt;
+                lpDist += lpAmt;
+                gpDist += gpAmt;
+                remaining = 0;
+            } else {
+                // Hurdle exceeded, move to next tier
+                continue;
+            }
+        }
+
+        lpCapitalAccount = Math.max(0, lpCapitalAccount - lpDist);
+        lpCumDist += lpDist;
+        gpCumDist += gpDist;
+
+        result.push({
+            year: yr,
+            noi: yrData.noi,
+            debtService: ds + mezzDS,
+            cfAfterDS: cfAfterDS,
+            exitProceeds: isExit ? netSaleProceeds : 0,
+            totalDistributable: cfAfterDS + (isExit ? netSaleProceeds : 0),
+            lpDist: lpDist,
+            gpDist: gpDist,
+            lpCumDist: lpCumDist,
+            gpCumDist: gpCumDist,
+            isExit: isExit,
+        });
+
+        if (isExit) break;
+    }
+
+    // Compute LP and GP IRR
+    var lpFlows = [-lpEquity];
+    var gpFlows = [-cap.gpEquity];
+    var dealFlows = [-(cap.totalEquity)];
+    for (var i = 0; i < result.length; i++) {
+        lpFlows.push(result[i].lpDist);
+        gpFlows.push(result[i].gpDist);
+        dealFlows.push(result[i].lpDist + result[i].gpDist);
+    }
+
+    return {
+        years: result,
+        lpIRR: calcIRR(lpFlows),
+        gpIRR: cap.gpEquity > 0 ? calcIRR(gpFlows) : 0,
+        dealIRR: calcIRR(dealFlows),
+        lpMultiple: lpEquity > 0 ? lpCumDist / lpEquity : 0,
+        gpMultiple: cap.gpEquity > 0 ? gpCumDist / cap.gpEquity : 0,
+        dealMultiple: cap.totalEquity > 0 ? (lpCumDist + gpCumDist) / cap.totalEquity : 0,
+        lpTotalDist: lpCumDist,
+        gpTotalDist: gpCumDist,
+        gpPromote: gpCumDist - (cap.totalEquity > 0 ? (lpCumDist + gpCumDist) * cap.gpPct : 0),
+    };
+}
+
+function renderInvestorModuleTab(st) {
+    var c = st.computed, a = st.assumptions;
+    var fmt = function(v) { return '$' + Math.round(v).toLocaleString(); };
+    var fmtM = function(v) { return v >= 1e6 ? '$' + (v / 1e6).toFixed(2) + 'M' : fmt(v); };
+    var pct = function(v) { return (v * 100).toFixed(1) + '%'; };
+
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="analysis-section">';
+    html += '<h3>Investor Module — GP/LP Capital Stack & Waterfall</h3>';
+    html += '<p style="font-size:0.78rem;color:#718096;margin-bottom:1rem;">Model GP/LP equity structures, preferred returns, and promote waterfalls. Produce investor-ready return summaries for capital raising.</p>';
+
+    // ── SECTION 1: Capital Stack Editor ──
+    html += '<div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;margin-bottom:1.25rem;">';
+    html += '<h4 style="font-size:0.85rem;margin:0 0 0.75rem;color:#2d3748;">Capital Stack</h4>';
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem;margin-bottom:1rem;">';
+
+    html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">Senior Debt LTV</label><input type="number" id="inv-seniorLTV" value="65" step="5" min="0" max="85" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcInvestorModule()"> <span style="font-size:0.65rem;color:#a0aec0;">%</span></div>';
+    html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">Senior Rate</label><input type="number" id="inv-seniorRate" value="6.5" step="0.25" min="3" max="12" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcInvestorModule()"> <span style="font-size:0.65rem;color:#a0aec0;">%</span></div>';
+    html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">Amortization</label><input type="number" id="inv-seniorAmort" value="30" step="5" min="10" max="40" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcInvestorModule()"> <span style="font-size:0.65rem;color:#a0aec0;">years</span></div>';
+    html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">IO Period</label><input type="number" id="inv-seniorIO" value="2" step="1" min="0" max="10" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcInvestorModule()"> <span style="font-size:0.65rem;color:#a0aec0;">years</span></div>';
+
+    html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">GP Equity %</label><input type="number" id="inv-gpPct" value="10" step="1" min="1" max="50" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcInvestorModule()"> <span style="font-size:0.65rem;color:#a0aec0;">% of equity</span></div>';
+    html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">Exit Cap Rate</label><input type="number" id="inv-exitCap" value="' + ((c.capRate || 0.05) * 100 + 0.25).toFixed(2) + '" step="0.25" min="2" max="12" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcInvestorModule()"> <span style="font-size:0.65rem;color:#a0aec0;">%</span></div>';
+    html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">Exit Year</label><select id="inv-exitYear" style="width:100%;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" onchange="recalcInvestorModule()"><option value="3">Year 3</option><option value="5" selected>Year 5</option><option value="7">Year 7</option><option value="10">Year 10</option></select></div>';
+
+    // Mezz toggle
+    html += '<div style="display:flex;align-items:center;gap:0.5rem;padding-top:0.8rem;"><label style="font-size:0.7rem;color:#718096;">Mezz/Pref Equity</label><input type="checkbox" id="inv-mezzToggle" onchange="recalcInvestorModule();document.getElementById(\'inv-mezzInputs\').style.display=this.checked?\'flex\':\'none\';"></div>';
+    html += '</div>';
+
+    // Mezz inputs (hidden by default)
+    html += '<div id="inv-mezzInputs" style="display:none;gap:0.75rem;margin-bottom:0.75rem;">';
+    html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">Mezz Amount</label><input type="number" id="inv-mezzAmt" value="0" step="100000" min="0" style="width:140px;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcInvestorModule()"></div>';
+    html += '<div><label style="font-size:0.7rem;color:#718096;display:block;">Mezz Rate</label><input type="number" id="inv-mezzRate" value="12" step="0.5" min="5" max="25" style="width:100px;padding:4px 8px;border:1px solid #cbd5e0;border-radius:4px;font-size:0.78rem;" oninput="recalcInvestorModule()"> <span style="font-size:0.65rem;color:#a0aec0;">%</span></div>';
+    html += '</div>';
+
+    // Capital stack visual bar (rendered dynamically)
+    html += '<div id="inv-capStackBar"></div>';
+    html += '</div>';
+
+    // ── SECTION 2: Waterfall Structure ──
+    html += '<div style="background:#fffff0;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;margin-bottom:1.25rem;">';
+    html += '<h4 style="font-size:0.85rem;margin:0 0 0.75rem;color:#2d3748;">Waterfall Structure <span style="font-size:0.7rem;color:#718096;font-weight:400;">(editable tiers)</span></h4>';
+    html += '<div id="inv-waterfallEditor"></div>';
+    html += '<div style="margin-top:0.5rem;"><button onclick="addWaterfallTier()" style="font-size:0.7rem;padding:3px 10px;border:1px solid #cbd5e0;border-radius:4px;background:#fff;cursor:pointer;margin-right:0.5rem;">+ Add Tier</button><button onclick="resetWaterfallTiers()" style="font-size:0.7rem;padding:3px 10px;border:1px solid #cbd5e0;border-radius:4px;background:#fff;cursor:pointer;">Reset to Default</button></div>';
+    html += '</div>';
+
+    // ── SECTION 3: Year-by-Year GP/LP Cash Flow (dynamic) ──
+    html += '<div id="inv-waterfallTable" style="margin-bottom:1.25rem;"></div>';
+
+    // ── SECTION 4: Return Summary Cards (dynamic) ──
+    html += '<div id="inv-returnSummary" style="margin-bottom:1.25rem;"></div>';
+
+    // ── SECTION 5: Debt Scenario Comparison (dynamic) ──
+    html += '<div id="inv-debtScenarios" style="margin-bottom:1.25rem;"></div>';
+
+    // ── SECTION 6: Generate Investor Summary Button ──
+    html += '<div style="text-align:center;margin:1.5rem 0;"><button onclick="generateInvestorSummary()" style="padding:10px 28px;background:linear-gradient(135deg,#2b6cb0,#3182ce);color:#fff;border:none;border-radius:6px;font-size:0.85rem;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(49,130,206,0.3);">Generate Investor Summary</button></div>';
+
+    html += '</div></div>';
+
+    // Schedule initial render after DOM insert
+    setTimeout(function() { recalcInvestorModule(); }, 50);
+
+    return html;
+}
+
+function recalcInvestorModule() {
+    var st = deepAnalysisState;
+    if (!st) return;
+    var c = st.computed;
+    var fmt = function(v) { return '$' + Math.round(v).toLocaleString(); };
+    var fmtM = function(v) { return v >= 1e6 ? '$' + (v / 1e6).toFixed(2) + 'M' : fmt(v); };
+    var pct = function(v) { return isFinite(v) ? (v * 100).toFixed(1) + '%' : 'N/A'; };
+
+    var cap = buildCapitalStack(c);
+    var tiers = getWaterfallTiers();
+    var exitYear = parseInt((document.getElementById('inv-exitYear') || {}).value) || 5;
+    var years = getInvestorCashFlowData(c);
+    var wf = computeWaterfall(years, cap, tiers, exitYear);
+
+    // ── Capital Stack Bar ──
+    var barEl = document.getElementById('inv-capStackBar');
+    if (barEl) {
+        var total = cap.totalDev || 1;
+        var debtPct = (cap.seniorLoan / total * 100).toFixed(1);
+        var mezzPct = (cap.mezzAmt / total * 100).toFixed(1);
+        var gpPct = (cap.gpEquity / total * 100).toFixed(1);
+        var lpPct = (cap.lpEquity / total * 100).toFixed(1);
+
+        var bh = '';
+        bh += '<div style="display:flex;height:32px;border-radius:6px;overflow:hidden;margin-bottom:0.5rem;font-size:0.65rem;font-weight:600;color:#fff;">';
+        if (cap.seniorLoan > 0) bh += '<div style="width:' + debtPct + '%;background:#e53e3e;display:flex;align-items:center;justify-content:center;min-width:40px;" title="Senior Debt: ' + fmtM(cap.seniorLoan) + '">Debt ' + debtPct + '%</div>';
+        if (cap.mezzAmt > 0) bh += '<div style="width:' + mezzPct + '%;background:#ed8936;display:flex;align-items:center;justify-content:center;min-width:40px;" title="Mezz: ' + fmtM(cap.mezzAmt) + '">Mezz ' + mezzPct + '%</div>';
+        if (cap.gpEquity > 0) bh += '<div style="width:' + gpPct + '%;background:#38a169;display:flex;align-items:center;justify-content:center;min-width:40px;" title="GP Equity: ' + fmtM(cap.gpEquity) + '">GP ' + gpPct + '%</div>';
+        if (cap.lpEquity > 0) bh += '<div style="width:' + lpPct + '%;background:#3182ce;display:flex;align-items:center;justify-content:center;min-width:40px;" title="LP Equity: ' + fmtM(cap.lpEquity) + '">LP ' + lpPct + '%</div>';
+        bh += '</div>';
+
+        bh += '<div style="display:flex;gap:1rem;flex-wrap:wrap;font-size:0.72rem;">';
+        bh += '<div><span style="display:inline-block;width:10px;height:10px;background:#e53e3e;border-radius:2px;margin-right:4px;"></span>Senior Debt: <strong>' + fmtM(cap.seniorLoan) + '</strong> (' + debtPct + '%) @ ' + (cap.seniorRate * 100).toFixed(1) + '% | DS: ' + fmtM(cap.annualDS) + '/yr</div>';
+        if (cap.hasMezz && cap.mezzAmt > 0) bh += '<div><span style="display:inline-block;width:10px;height:10px;background:#ed8936;border-radius:2px;margin-right:4px;"></span>Mezz/Pref: <strong>' + fmtM(cap.mezzAmt) + '</strong> (' + mezzPct + '%) @ ' + (cap.mezzRate * 100).toFixed(1) + '%</div>';
+        bh += '<div><span style="display:inline-block;width:10px;height:10px;background:#38a169;border-radius:2px;margin-right:4px;"></span>GP Equity: <strong>' + fmtM(cap.gpEquity) + '</strong> (' + gpPct + '% of total)</div>';
+        bh += '<div><span style="display:inline-block;width:10px;height:10px;background:#3182ce;border-radius:2px;margin-right:4px;"></span>LP Equity: <strong>' + fmtM(cap.lpEquity) + '</strong> (' + lpPct + '% of total)</div>';
+        bh += '</div>';
+        barEl.innerHTML = bh;
+    }
+
+    // ── Waterfall Editor ──
+    var wfEdEl = document.getElementById('inv-waterfallEditor');
+    if (wfEdEl) {
+        var wh = '<table style="width:100%;border-collapse:collapse;font-size:0.72rem;">';
+        wh += '<thead><tr style="background:#fefcbf;"><th style="padding:5px 8px;text-align:left;">Tier</th><th style="padding:5px 8px;text-align:left;">Description</th><th style="padding:5px 8px;text-align:center;">IRR Hurdle (%)</th><th style="padding:5px 8px;text-align:center;">LP %</th><th style="padding:5px 8px;text-align:center;">GP %</th><th style="padding:5px 8px;text-align:center;"></th></tr></thead><tbody>';
+        for (var i = 0; i < tiers.length; i++) {
+            var t = tiers[i];
+            wh += '<tr style="border-bottom:1px solid #e2e8f0;">';
+            wh += '<td style="padding:5px 8px;font-weight:600;">' + (i + 1) + '</td>';
+            wh += '<td style="padding:5px 8px;">' + t.name + '</td>';
+            if (t.isROC) {
+                wh += '<td style="padding:5px 8px;text-align:center;color:#718096;">1.0x Capital</td>';
+            } else {
+                wh += '<td style="padding:5px 8px;text-align:center;"><input type="number" id="wf-hurdle-' + i + '" value="' + t.hurdle + '" step="1" min="0" max="99" style="width:55px;padding:2px 6px;border:1px solid #cbd5e0;border-radius:3px;text-align:center;font-size:0.72rem;" oninput="recalcInvestorModule()">%</td>';
+            }
+            wh += '<td style="padding:5px 8px;text-align:center;"><input type="number" id="wf-lp-' + i + '" value="' + t.lpPct + '" step="5" min="0" max="100" style="width:55px;padding:2px 6px;border:1px solid #cbd5e0;border-radius:3px;text-align:center;font-size:0.72rem;" oninput="recalcInvestorModule()">%</td>';
+            wh += '<td style="padding:5px 8px;text-align:center;"><input type="number" id="wf-gp-' + i + '" value="' + t.gpPct + '" step="5" min="0" max="100" style="width:55px;padding:2px 6px;border:1px solid #cbd5e0;border-radius:3px;text-align:center;font-size:0.72rem;" oninput="recalcInvestorModule()">%</td>';
+            wh += '<td style="padding:5px 8px;text-align:center;">' + (tiers.length > 2 ? '<button onclick="removeWaterfallTier(' + i + ')" style="font-size:0.65rem;color:#c53030;border:none;background:none;cursor:pointer;" title="Remove tier">&#x2715;</button>' : '') + '</td>';
+            wh += '</tr>';
+        }
+        wh += '</tbody></table>';
+        wfEdEl.innerHTML = wh;
+    }
+
+    // ── Year-by-Year Waterfall Table ──
+    var wtEl = document.getElementById('inv-waterfallTable');
+    if (wtEl) {
+        var th = '<h4 style="font-size:0.85rem;margin:0 0 0.5rem;color:#2d3748;">Year-by-Year GP/LP Cash Flow Distribution</h4>';
+        th += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.70rem;white-space:nowrap;">';
+        th += '<thead><tr style="background:#edf2f7;">';
+        th += '<th style="padding:5px 8px;text-align:center;">Year</th>';
+        th += '<th style="padding:5px 8px;text-align:right;">NOI</th>';
+        th += '<th style="padding:5px 8px;text-align:right;">Debt Service</th>';
+        th += '<th style="padding:5px 8px;text-align:right;">CF After DS</th>';
+        th += '<th style="padding:5px 8px;text-align:right;">Exit Proceeds</th>';
+        th += '<th style="padding:5px 8px;text-align:right;font-weight:700;">Total Dist.</th>';
+        th += '<th style="padding:5px 8px;text-align:right;color:#3182ce;">LP Dist.</th>';
+        th += '<th style="padding:5px 8px;text-align:right;color:#38a169;">GP Dist.</th>';
+        th += '<th style="padding:5px 8px;text-align:right;color:#3182ce;">LP Cumul.</th>';
+        th += '<th style="padding:5px 8px;text-align:right;color:#38a169;">GP Cumul.</th>';
+        th += '</tr></thead><tbody>';
+
+        // Year 0 row (equity investment)
+        th += '<tr style="background:#fff8f0;border-bottom:1px solid #e2e8f0;font-weight:600;">';
+        th += '<td style="padding:5px 8px;text-align:center;">0</td>';
+        th += '<td colspan="4" style="padding:5px 8px;text-align:right;color:#718096;">Equity Invested</td>';
+        th += '<td style="padding:5px 8px;text-align:right;">(' + fmtM(cap.totalEquity) + ')</td>';
+        th += '<td style="padding:5px 8px;text-align:right;color:#3182ce;">(' + fmtM(cap.lpEquity) + ')</td>';
+        th += '<td style="padding:5px 8px;text-align:right;color:#38a169;">(' + fmtM(cap.gpEquity) + ')</td>';
+        th += '<td style="padding:5px 8px;text-align:right;">—</td>';
+        th += '<td style="padding:5px 8px;text-align:right;">—</td>';
+        th += '</tr>';
+
+        for (var i = 0; i < wf.years.length; i++) {
+            var y = wf.years[i];
+            var bg = y.isExit ? '#f0fff4' : (y.year % 2 === 0 ? '#f7fafc' : '#fff');
+            th += '<tr style="background:' + bg + ';border-bottom:1px solid #e2e8f0;' + (y.isExit ? 'font-weight:600;' : '') + '">';
+            th += '<td style="padding:5px 8px;text-align:center;">' + y.year + (y.isExit ? ' (Exit)' : '') + '</td>';
+            th += '<td style="padding:5px 8px;text-align:right;">' + fmt(y.noi) + '</td>';
+            th += '<td style="padding:5px 8px;text-align:right;">(' + fmt(y.debtService) + ')</td>';
+            th += '<td style="padding:5px 8px;text-align:right;">' + fmt(y.cfAfterDS) + '</td>';
+            th += '<td style="padding:5px 8px;text-align:right;">' + (y.exitProceeds > 0 ? fmtM(y.exitProceeds) : '—') + '</td>';
+            th += '<td style="padding:5px 8px;text-align:right;font-weight:700;">' + fmtM(y.lpDist + y.gpDist) + '</td>';
+            th += '<td style="padding:5px 8px;text-align:right;color:#3182ce;">' + fmtM(y.lpDist) + '</td>';
+            th += '<td style="padding:5px 8px;text-align:right;color:#38a169;">' + fmtM(y.gpDist) + '</td>';
+            th += '<td style="padding:5px 8px;text-align:right;color:#3182ce;">' + fmtM(y.lpCumDist) + '</td>';
+            th += '<td style="padding:5px 8px;text-align:right;color:#38a169;">' + fmtM(y.gpCumDist) + '</td>';
+            th += '</tr>';
+        }
+        th += '</tbody></table></div>';
+        wtEl.innerHTML = th;
+    }
+
+    // ── Return Summary Cards ──
+    var rsEl = document.getElementById('inv-returnSummary');
+    if (rsEl) {
+        var y1cfads = wf.years.length > 0 ? wf.years[0].cfAfterDS : 0;
+        var y1coc = cap.totalEquity > 0 ? y1cfads / cap.totalEquity : 0;
+
+        var rh = '<h4 style="font-size:0.85rem;margin:0 0 0.75rem;color:#2d3748;">Return Summary</h4>';
+        rh += '<div class="exec-summary-grid" style="grid-template-columns:repeat(3,1fr);">';
+
+        // LP Card
+        rh += '<div style="background:#ebf8ff;border:1px solid #bee3f8;border-radius:8px;padding:1rem;">';
+        rh += '<h4 style="font-size:0.8rem;color:#2b6cb0;margin:0 0 0.5rem;">LP Returns</h4>';
+        rh += '<div style="font-size:1.3rem;font-weight:700;color:#2b6cb0;">' + pct(wf.lpIRR) + ' IRR</div>';
+        rh += '<div style="font-size:0.75rem;color:#4a5568;margin-top:0.3rem;">' + wf.lpMultiple.toFixed(2) + 'x Equity Multiple</div>';
+        rh += '<div style="font-size:0.75rem;color:#4a5568;">Year 1 CoC: ' + pct(y1coc) + '</div>';
+        rh += '<div style="font-size:0.75rem;color:#4a5568;">Total Distributions: ' + fmtM(wf.lpTotalDist) + '</div>';
+        rh += '<div style="font-size:0.68rem;color:#718096;margin-top:0.3rem;">On ' + fmtM(cap.lpEquity) + ' invested</div>';
+        rh += '</div>';
+
+        // GP Card
+        rh += '<div style="background:#f0fff4;border:1px solid #c6f6d5;border-radius:8px;padding:1rem;">';
+        rh += '<h4 style="font-size:0.8rem;color:#276749;margin:0 0 0.5rem;">GP Returns</h4>';
+        rh += '<div style="font-size:1.3rem;font-weight:700;color:#276749;">' + pct(wf.gpIRR) + ' IRR</div>';
+        rh += '<div style="font-size:0.75rem;color:#4a5568;margin-top:0.3rem;">' + wf.gpMultiple.toFixed(2) + 'x Equity Multiple</div>';
+        rh += '<div style="font-size:0.75rem;color:#4a5568;">Promote Earned: ' + fmtM(Math.max(0, wf.gpPromote)) + '</div>';
+        rh += '<div style="font-size:0.75rem;color:#4a5568;">Total Distributions: ' + fmtM(wf.gpTotalDist) + '</div>';
+        rh += '<div style="font-size:0.68rem;color:#718096;margin-top:0.3rem;">On ' + fmtM(cap.gpEquity) + ' invested</div>';
+        rh += '</div>';
+
+        // Deal-Level Card
+        rh += '<div style="background:#faf5ff;border:1px solid #e9d8fd;border-radius:8px;padding:1rem;">';
+        rh += '<h4 style="font-size:0.8rem;color:#553c9a;margin:0 0 0.5rem;">Deal-Level</h4>';
+        rh += '<div style="font-size:1.3rem;font-weight:700;color:#553c9a;">' + pct(wf.dealIRR) + ' IRR</div>';
+        rh += '<div style="font-size:0.75rem;color:#4a5568;margin-top:0.3rem;">' + wf.dealMultiple.toFixed(2) + 'x Equity Multiple</div>';
+        rh += '<div style="font-size:0.75rem;color:#4a5568;">Total Profit: ' + fmtM(wf.lpTotalDist + wf.gpTotalDist - cap.totalEquity) + '</div>';
+        rh += '<div style="font-size:0.75rem;color:#4a5568;">Total Equity: ' + fmtM(cap.totalEquity) + '</div>';
+        rh += '<div style="font-size:0.68rem;color:#718096;margin-top:0.3rem;">Exit Year ' + exitYear + ' | Cap ' + ((parseFloat((document.getElementById('inv-exitCap') || {}).value) || 5)).toFixed(1) + '%</div>';
+        rh += '</div>';
+
+        rh += '</div>';
+        rsEl.innerHTML = rh;
+    }
+
+    // ── Debt Scenario Comparison ──
+    var dsEl = document.getElementById('inv-debtScenarios');
+    if (dsEl) {
+        var scenarios = [
+            { label: 'Conservative', ltv: 0.60, rate: 0.060, color: '#38a169' },
+            { label: 'Base', ltv: 0.70, rate: 0.065, color: '#3182ce' },
+            { label: 'Aggressive', ltv: 0.75, rate: 0.075, color: '#e53e3e' },
+        ];
+
+        var dh = '<h4 style="font-size:0.85rem;margin:0 0 0.75rem;color:#2d3748;">Debt Scenario Comparison</h4>';
+        dh += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">';
+
+        for (var s = 0; s < scenarios.length; s++) {
+            var sc = scenarios[s];
+            var scLoan = Math.round(c.totalDev * sc.ltv);
+            var scEquity = c.totalDev - scLoan;
+            var scGP = Math.round(scEquity * cap.gpPct);
+            var scLP = scEquity - scGP;
+            var scMR = sc.rate / 12;
+            var scNP = 30 * 12;
+            var scMP = scMR > 0 ? scLoan * (scMR * Math.pow(1 + scMR, scNP)) / (Math.pow(1 + scMR, scNP) - 1) : scLoan / scNP;
+            var scDS = Math.round(scMP * 12);
+            var scCap = { seniorLoan: scLoan, seniorRate: sc.rate, seniorLTV: sc.ltv, seniorAmort: 30, seniorIO: cap.seniorIO, annualDS: scDS, ioDS: Math.round(scLoan * sc.rate), mezzAmt: 0, mezzRate: 0, hasMezz: false, totalEquity: scEquity, gpPct: cap.gpPct, gpEquity: scGP, lpEquity: scLP, totalDev: c.totalDev };
+            var scWF = computeWaterfall(years, scCap, tiers, exitYear);
+            var scDSCR = years[0] && scDS > 0 ? years[0].noi / scDS : 999;
+
+            dh += '<div style="background:#fff;border:2px solid ' + sc.color + ';border-radius:8px;padding:1rem;">';
+            dh += '<h4 style="font-size:0.82rem;color:' + sc.color + ';margin:0 0 0.5rem;">' + sc.label + '</h4>';
+            dh += '<div style="font-size:0.72rem;color:#4a5568;">';
+            dh += '<div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span>LTV:</span><strong>' + (sc.ltv * 100) + '%</strong></div>';
+            dh += '<div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span>Loan:</span><strong>' + fmtM(scLoan) + '</strong></div>';
+            dh += '<div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span>Rate:</span><strong>' + (sc.rate * 100).toFixed(1) + '%</strong></div>';
+            dh += '<div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span>Annual DS:</span><strong>' + fmtM(scDS) + '</strong></div>';
+            dh += '<div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span>DSCR:</span><strong style="color:' + (scDSCR >= 1.25 ? '#276749' : scDSCR >= 1.0 ? '#d69e2e' : '#c53030') + ';">' + scDSCR.toFixed(2) + 'x</strong></div>';
+            dh += '<div style="border-top:1px solid #e2e8f0;margin:6px 0;padding-top:6px;">';
+            dh += '<div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span>LP IRR:</span><strong style="color:#2b6cb0;">' + pct(scWF.lpIRR) + '</strong></div>';
+            dh += '<div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span>LP Multiple:</span><strong>' + scWF.lpMultiple.toFixed(2) + 'x</strong></div>';
+            dh += '<div style="display:flex;justify-content:space-between;"><span>GP Promote:</span><strong style="color:#276749;">' + fmtM(Math.max(0, scWF.gpPromote)) + '</strong></div>';
+            dh += '</div></div></div>';
+        }
+        dh += '</div>';
+        dsEl.innerHTML = dh;
+    }
+}
+
+function addWaterfallTier() {
+    var tiers = getWaterfallTiers();
+    var lastHurdle = tiers.length > 0 ? tiers[tiers.length - 1].hurdle : 10;
+    tiers.push({ name: 'Custom Tier', hurdle: Math.min(lastHurdle + 5, 99), lpPct: 50, gpPct: 50 });
+    investorWaterfallTiers = tiers;
+    recalcInvestorModule();
+}
+
+function removeWaterfallTier(idx) {
+    var tiers = getWaterfallTiers();
+    if (tiers.length <= 2) return;
+    tiers.splice(idx, 1);
+    investorWaterfallTiers = tiers;
+    recalcInvestorModule();
+}
+
+function resetWaterfallTiers() {
+    investorWaterfallTiers = getDefaultWaterfallTiers();
+    recalcInvestorModule();
+}
+
+function generateInvestorSummary() {
+    var st = deepAnalysisState;
+    if (!st) return;
+    var c = st.computed, prop = st.prop;
+    var fmt = function(v) { return '$' + Math.round(v).toLocaleString(); };
+    var fmtM = function(v) { return v >= 1e6 ? '$' + (v / 1e6).toFixed(2) + 'M' : fmt(v); };
+    var pct = function(v) { return isFinite(v) ? (v * 100).toFixed(1) + '%' : 'N/A'; };
+
+    var cap = buildCapitalStack(c);
+    var tiers = getWaterfallTiers();
+    var exitYear = parseInt((document.getElementById('inv-exitYear') || {}).value) || 5;
+    var years = getInvestorCashFlowData(c);
+    var wf = computeWaterfall(years, cap, tiers, exitYear);
+    var addr = prop ? (prop.address || prop.formattedAddress || 'Subject Property') : 'Subject Property';
+    var useLabel = st.bestUse ? (st.bestUse.replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); })) : 'Development';
+
+    var w = window.open('', '_blank');
+    if (!w) { alert('Please allow popups to generate the investor summary.'); return; }
+
+    var h = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Investment Memorandum — ' + addr + '</title>';
+    h += '<style>';
+    h += 'body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; max-width: 900px; margin: 0 auto; padding: 40px; color: #2d3748; line-height: 1.5; }';
+    h += 'h1 { font-size: 1.6rem; color: #1a365d; border-bottom: 3px solid #2b6cb0; padding-bottom: 8px; margin-bottom: 4px; }';
+    h += '.subtitle { font-size: 0.85rem; color: #718096; margin-bottom: 2rem; }';
+    h += 'h2 { font-size: 1.1rem; color: #2b6cb0; margin-top: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }';
+    h += 'table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin: 0.5rem 0 1rem; }';
+    h += 'th { background: #edf2f7; padding: 6px 10px; text-align: left; font-weight: 600; }';
+    h += 'td { padding: 5px 10px; border-bottom: 1px solid #e2e8f0; }';
+    h += '.metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1rem 0; }';
+    h += '.metric-card { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; text-align: center; }';
+    h += '.metric-card h4 { font-size: 0.75rem; color: #718096; margin: 0 0 0.3rem; }';
+    h += '.metric-card .val { font-size: 1.4rem; font-weight: 700; }';
+    h += '.metric-card .sub { font-size: 0.72rem; color: #718096; }';
+    h += '.cap-bar { display: flex; height: 28px; border-radius: 6px; overflow: hidden; margin: 0.75rem 0; font-size: 0.65rem; font-weight: 600; color: #fff; }';
+    h += '.disclaimer { font-size: 0.68rem; color: #a0aec0; margin-top: 2rem; border-top: 1px solid #e2e8f0; padding-top: 1rem; }';
+    h += '@media print { body { padding: 20px; } .no-print { display: none; } }';
+    h += '</style></head><body>';
+
+    // Header
+    h += '<h1>Investment Memorandum</h1>';
+    h += '<div class="subtitle">' + addr + ' | ' + useLabel + ' | Prepared ' + new Date().toLocaleDateString() + '</div>';
+
+    // Project Overview
+    h += '<h2>Project Overview</h2>';
+    h += '<table>';
+    h += '<tr><td style="width:35%;font-weight:600;">Property Address</td><td>' + addr + '</td></tr>';
+    h += '<tr><td style="font-weight:600;">Proposed Use</td><td>' + useLabel + '</td></tr>';
+    if (c.units) h += '<tr><td style="font-weight:600;">Unit Count</td><td>' + c.units + ' units</td></tr>';
+    h += '<tr><td style="font-weight:600;">Gross SF</td><td>' + c.gsf.toLocaleString() + ' SF</td></tr>';
+    h += '<tr><td style="font-weight:600;">Total Development Cost</td><td>' + fmtM(c.totalDev) + '</td></tr>';
+    h += '<tr><td style="font-weight:600;">Stabilized NOI</td><td>' + fmtM(c.noi) + '</td></tr>';
+    h += '<tr><td style="font-weight:600;">Stabilized Value</td><td>' + fmtM(c.stabilizedValue) + '</td></tr>';
+    h += '</table>';
+
+    // Capital Stack
+    h += '<h2>Capital Structure</h2>';
+    var total = cap.totalDev || 1;
+    h += '<div class="cap-bar">';
+    if (cap.seniorLoan > 0) h += '<div style="width:' + (cap.seniorLoan / total * 100).toFixed(1) + '%;background:#e53e3e;display:flex;align-items:center;justify-content:center;">Debt ' + (cap.seniorLoan / total * 100).toFixed(0) + '%</div>';
+    if (cap.mezzAmt > 0) h += '<div style="width:' + (cap.mezzAmt / total * 100).toFixed(1) + '%;background:#ed8936;display:flex;align-items:center;justify-content:center;">Mezz ' + (cap.mezzAmt / total * 100).toFixed(0) + '%</div>';
+    if (cap.gpEquity > 0) h += '<div style="width:' + (cap.gpEquity / total * 100).toFixed(1) + '%;background:#38a169;display:flex;align-items:center;justify-content:center;">GP ' + (cap.gpEquity / total * 100).toFixed(0) + '%</div>';
+    if (cap.lpEquity > 0) h += '<div style="width:' + (cap.lpEquity / total * 100).toFixed(1) + '%;background:#3182ce;display:flex;align-items:center;justify-content:center;">LP ' + (cap.lpEquity / total * 100).toFixed(0) + '%</div>';
+    h += '</div>';
+    h += '<table>';
+    h += '<tr><th>Component</th><th style="text-align:right;">Amount</th><th style="text-align:right;">% of Total</th><th>Terms</th></tr>';
+    h += '<tr><td>Senior Debt</td><td style="text-align:right;">' + fmtM(cap.seniorLoan) + '</td><td style="text-align:right;">' + (cap.seniorLoan / total * 100).toFixed(1) + '%</td><td>' + (cap.seniorRate * 100).toFixed(1) + '% / ' + cap.seniorAmort + '-yr amort / ' + cap.seniorIO + '-yr IO</td></tr>';
+    if (cap.hasMezz && cap.mezzAmt > 0) h += '<tr><td>Mezzanine / Pref Equity</td><td style="text-align:right;">' + fmtM(cap.mezzAmt) + '</td><td style="text-align:right;">' + (cap.mezzAmt / total * 100).toFixed(1) + '%</td><td>' + (cap.mezzRate * 100).toFixed(1) + '% coupon</td></tr>';
+    h += '<tr><td>GP Equity</td><td style="text-align:right;">' + fmtM(cap.gpEquity) + '</td><td style="text-align:right;">' + (cap.gpEquity / total * 100).toFixed(1) + '%</td><td>' + (cap.gpPct * 100).toFixed(0) + '% of equity</td></tr>';
+    h += '<tr style="font-weight:600;"><td>LP Equity (Required)</td><td style="text-align:right;">' + fmtM(cap.lpEquity) + '</td><td style="text-align:right;">' + (cap.lpEquity / total * 100).toFixed(1) + '%</td><td>' + ((1 - cap.gpPct) * 100).toFixed(0) + '% of equity</td></tr>';
+    h += '</table>';
+
+    // Waterfall Structure
+    h += '<h2>Distribution Waterfall</h2>';
+    h += '<table>';
+    h += '<tr><th>Tier</th><th>Description</th><th style="text-align:center;">IRR Hurdle</th><th style="text-align:center;">LP Share</th><th style="text-align:center;">GP Share</th></tr>';
+    for (var i = 0; i < tiers.length; i++) {
+        var t = tiers[i];
+        h += '<tr><td>' + (i + 1) + '</td><td>' + t.name + '</td><td style="text-align:center;">' + (t.isROC ? '1.0x Capital' : t.hurdle + '%') + '</td><td style="text-align:center;">' + t.lpPct + '%</td><td style="text-align:center;">' + t.gpPct + '%</td></tr>';
+    }
+    h += '</table>';
+
+    // Return Summary
+    h += '<h2>Projected Returns (Year ' + exitYear + ' Exit)</h2>';
+    h += '<div class="metric-grid">';
+    h += '<div class="metric-card"><h4>LP IRR</h4><div class="val" style="color:#2b6cb0;">' + pct(wf.lpIRR) + '</div><div class="sub">' + wf.lpMultiple.toFixed(2) + 'x Multiple</div></div>';
+    h += '<div class="metric-card"><h4>LP Total Distributions</h4><div class="val">' + fmtM(wf.lpTotalDist) + '</div><div class="sub">On ' + fmtM(cap.lpEquity) + ' invested</div></div>';
+    h += '<div class="metric-card"><h4>Deal IRR</h4><div class="val" style="color:#553c9a;">' + pct(wf.dealIRR) + '</div><div class="sub">' + wf.dealMultiple.toFixed(2) + 'x Multiple</div></div>';
+    h += '</div>';
+
+    // Cash Flow Table
+    h += '<h2>Annual Cash Flow & Distributions</h2>';
+    h += '<table>';
+    h += '<tr><th>Year</th><th style="text-align:right;">NOI</th><th style="text-align:right;">Debt Service</th><th style="text-align:right;">CF After DS</th><th style="text-align:right;">Exit Proceeds</th><th style="text-align:right;">LP Dist.</th><th style="text-align:right;">GP Dist.</th></tr>';
+    h += '<tr style="background:#fff8f0;font-weight:600;"><td>0</td><td colspan="3" style="text-align:right;">Equity Invested</td><td style="text-align:right;">—</td><td style="text-align:right;">(' + fmtM(cap.lpEquity) + ')</td><td style="text-align:right;">(' + fmtM(cap.gpEquity) + ')</td></tr>';
+    for (var i = 0; i < wf.years.length; i++) {
+        var y = wf.years[i];
+        h += '<tr' + (y.isExit ? ' style="font-weight:600;background:#f0fff4;"' : '') + '>';
+        h += '<td>' + y.year + (y.isExit ? ' (Exit)' : '') + '</td>';
+        h += '<td style="text-align:right;">' + fmt(y.noi) + '</td>';
+        h += '<td style="text-align:right;">(' + fmt(y.debtService) + ')</td>';
+        h += '<td style="text-align:right;">' + fmt(y.cfAfterDS) + '</td>';
+        h += '<td style="text-align:right;">' + (y.exitProceeds > 0 ? fmtM(y.exitProceeds) : '—') + '</td>';
+        h += '<td style="text-align:right;">' + fmtM(y.lpDist) + '</td>';
+        h += '<td style="text-align:right;">' + fmtM(y.gpDist) + '</td>';
+        h += '</tr>';
+    }
+    h += '</table>';
+
+    // Risk Factors
+    h += '<h2>Key Risk Factors & Mitigants</h2>';
+    h += '<table>';
+    h += '<tr><th style="width:40%;">Risk Factor</th><th>Mitigant</th></tr>';
+    h += '<tr><td>Construction cost overruns</td><td>7% hard cost contingency built into budget; GMP contract recommended</td></tr>';
+    h += '<tr><td>Lease-up / absorption risk</td><td>Conservative vacancy assumptions; project located in high-demand corridor</td></tr>';
+    h += '<tr><td>Interest rate risk</td><td>IO period provides cash flow cushion; rate lock at construction close</td></tr>';
+    h += '<tr><td>Entitlement / approval delays</td><td>SB 79 by-right streamlining eliminates discretionary review risk</td></tr>';
+    h += '<tr><td>Market cap rate expansion</td><td>Exit cap rate projected ' + ((parseFloat((document.getElementById('inv-exitCap') || {}).value) || 5)).toFixed(0) + ' bps above entry; sensitivity tested</td></tr>';
+    h += '</table>';
+
+    h += '<div class="disclaimer">This Investment Memorandum is prepared for informational purposes only and does not constitute an offer to sell or solicitation of an offer to buy any securities. Projected returns are estimates based on assumptions that may not materialize. Past performance is not indicative of future results. Investors should conduct their own due diligence.</div>';
+    h += '<div class="disclaimer" style="margin-top:0.5rem;">Generated by CLS CRE HBU Land Use Analysis Tool | ' + new Date().toLocaleDateString() + '</div>';
+
+    h += '<div class="no-print" style="text-align:center;margin-top:2rem;"><button onclick="window.print()" style="padding:10px 24px;background:#2b6cb0;color:#fff;border:none;border-radius:6px;font-size:0.85rem;cursor:pointer;">Print / Save as PDF</button></div>';
+
+    h += '</body></html>';
+
+    w.document.write(h);
+    w.document.close();
+}
+
 </script>
 
 </body>
