@@ -4868,6 +4868,25 @@ function toggleExcludedUses() {
 //  DETAILED ANALYSIS MODAL
 // ============================================================
 
+// --- Debounce utility for heavy recalc functions ---
+// Wraps a function so rapid successive calls only execute after a pause.
+// Used on all slider/input recalc handlers to prevent excessive recomputation.
+function _debounce(fn, delay) {
+    var timer = null;
+    return function() {
+        var ctx = this, args = arguments;
+        clearTimeout(timer);
+        timer = setTimeout(function() { fn.apply(ctx, args); }, delay);
+    };
+}
+// Self-debouncing wrapper: replaces a global function with a debounced version.
+// The function still syncs slider display values immediately, but delays heavy DOM work.
+var _recalcTimers = {};
+function _debouncedCall(name, fn, delay) {
+    clearTimeout(_recalcTimers[name]);
+    _recalcTimers[name] = setTimeout(fn, delay);
+}
+
 function fmt(n) {
     return '$' + Math.round(n).toLocaleString();
 }
@@ -5719,6 +5738,9 @@ function renderSVGs(useId, inp, computed) {
 }
 
 function recalcAnalysis() {
+    _debouncedCall('analysis', _recalcAnalysisImpl, 200);
+}
+function _recalcAnalysisImpl() {
     const st = analysisState;
     if (!st.useId || !st.inp) return;
 
@@ -5891,17 +5913,17 @@ function recalcDeepAnalysis() {
     }
 
     st.assumptions = assumptions;
-    st.computed = computeFromAssumptions(st.bestUse, st.inp, assumptions, st.effects);
 
-    // Re-render tabs 1–16, preserving tab 0
-    renderDeepTabPanels(true);
-
-    // Re-apply active tab visibility
-    var activeBtn = document.querySelector('#deepTabs .deep-tab-btn.active');
-    if (activeBtn) {
-        var activeIdx = Array.from(document.querySelectorAll('#deepTabs .deep-tab-btn')).indexOf(activeBtn);
-        if (activeIdx >= 0) switchDeepTab(activeIdx);
-    }
+    // Debounced: heavy recomputation + full tab re-render
+    _debouncedCall('deepAnalysis', function() {
+        st.computed = computeFromAssumptions(st.bestUse, st.inp, st.assumptions, st.effects);
+        renderDeepTabPanels(true);
+        var activeBtn = document.querySelector('#deepTabs .deep-tab-btn.active');
+        if (activeBtn) {
+            var activeIdx = Array.from(document.querySelectorAll('#deepTabs .deep-tab-btn')).indexOf(activeBtn);
+            if (activeIdx >= 0) switchDeepTab(activeIdx);
+        }
+    }, 200);
 }
 
 function openAnalysis(resultIndex) {
@@ -8766,11 +8788,15 @@ function runSensitivityAnalysis(useId, inp, assumptions, effects, scenarioParams
     const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
     const baseIRR = approxIRR(base.devMargin, totalMo);
 
-    // Define sensitivity variables
+    // Define sensitivity variables — cost/rent/cap ranges adapt to Bear/Bull slider values
+    var sp = scenarioParams || sensScenario;
+    var costSwing = Math.max(Math.abs(sp.bearCostPct), Math.abs(sp.bullCostPct)) / 100 || 0.15;
+    var rentSwing = Math.max(Math.abs(sp.bearRentPct), Math.abs(sp.bullRentPct)) / 100 || 0.20;
+    var capSwing = Math.max(Math.abs(sp.bearCapBps), Math.abs(sp.bullCapBps)) / 100 || 0.75;
     const variables = [
-        { key: 'buildCostPSF', label: 'Construction Cost', low: -0.15, high: 0.15, unit: '$/SF' },
-        { key: 'revenuePSF', label: 'Market Rents', low: -0.20, high: 0.20, unit: '$/SF/yr' },
-        { key: 'capRatePct', label: 'Cap Rate', lowAbs: -0.75, highAbs: 0.75, unit: '%' },
+        { key: 'buildCostPSF', label: 'Construction Cost', low: -costSwing, high: costSwing, unit: '$/SF' },
+        { key: 'revenuePSF', label: 'Market Rents', low: -rentSwing, high: rentSwing, unit: '$/SF/yr' },
+        { key: 'capRatePct', label: 'Cap Rate', lowAbs: -capSwing, highAbs: capSwing, unit: '%' },
         { key: 'landValuePSF', label: 'Land Cost', low: -0.20, high: 0.20, unit: '$/SF' },
         { key: 'parkingSpaces', label: 'Parking Spaces', low: -0.30, high: 0.30, unit: 'spaces' },
     ];
@@ -9711,6 +9737,7 @@ function sensSliderHtml(id, label, min, max, step, val, unit) {
 }
 
 function recalcSensitivity() {
+    // Immediate: sync slider values and display labels
     var fields = ['bearCostPct', 'bearRentPct', 'bearCapBps', 'bullCostPct', 'bullRentPct', 'bullCapBps'];
     var units = ['%', '%', 'bps', '%', '%', 'bps'];
     for (var i = 0; i < fields.length; i++) {
@@ -9727,10 +9754,13 @@ function recalcSensitivity() {
             valSpan.textContent = (v >= 0 ? '+' : '') + v + units[i];
         }
     }
-    var container = document.getElementById('sensitivityContent');
-    if (container && deepAnalysisState) {
-        container.innerHTML = buildSensitivityContent(deepAnalysisState);
-    }
+    // Debounced: heavy recomputation
+    _debouncedCall('sensitivity', function() {
+        var container = document.getElementById('sensitivityContent');
+        if (container && deepAnalysisState) {
+            container.innerHTML = buildSensitivityContent(deepAnalysisState);
+        }
+    }, 180);
 }
 
 function resetSensitivity() {
@@ -10998,6 +11028,10 @@ function renderUnitMixTab(st) {
 
 function recalcUnitMix() {
     if (!deepAnalysisState) return;
+    _debouncedCall('unitMix', _recalcUnitMixImpl, 150);
+}
+function _recalcUnitMixImpl() {
+    if (!deepAnalysisState) return;
     var st = deepAnalysisState;
     // Read edited unit counts
     var studioEl = document.getElementById('umix-studio');
@@ -11495,6 +11529,7 @@ var constructionCostMult = 1.0;
 var constructionTypeOverride = null; // null = auto-detect from IBC
 
 function recalcConstruction() {
+    // Immediate: sync slider display
     var el = document.getElementById('cc-costMult');
     if (el) constructionCostMult = parseFloat(el.value) / 100;
     var slider = document.getElementById('cc-costMult-slider');
@@ -11503,11 +11538,13 @@ function recalcConstruction() {
     if (slider && num && document.activeElement === num) slider.value = num.value;
     var valSpan = document.getElementById('cc-costMult-val');
     if (valSpan && num) valSpan.textContent = parseFloat(num.value).toFixed(0) + '%';
-    var container = document.getElementById('constructionContent');
-    if (container && deepAnalysisState) {
-        var st = deepAnalysisState;
-        container.innerHTML = buildConstructionContent(st);
-    }
+    // Debounced: heavy content rebuild
+    _debouncedCall('construction', function() {
+        var container = document.getElementById('constructionContent');
+        if (container && deepAnalysisState) {
+            container.innerHTML = buildConstructionContent(deepAnalysisState);
+        }
+    }, 150);
 }
 
 function resetConstruction() {
@@ -11675,10 +11712,10 @@ function buildConstructionContent(st) {
         </tbody></table>
     </div>`;
 
-    const csiDivisions = computeCSIBreakdown(bestUse, computed, cc.constructionType, cc.stories);
+    const csiDivisions = computeCSIBreakdown(bestUse, computed, activeType, cc.stories);
     html += `<div class="analysis-section"><h3>Hard Cost Breakdown by Trade — CSI MasterFormat</h3>`;
-    html += `<p style="font-size:0.78rem;color:var(--text-light);margin-bottom:0.75rem;">Construction cost allocated across CSI MasterFormat 2020 divisions for <strong>${cc.constructionType}</strong> construction.</p>`;
-    html += renderCSIBreakdownTable(csiDivisions, computed.construction, computed.gsf, cc.constructionType);
+    html += `<p style="font-size:0.78rem;color:var(--text-light);margin-bottom:0.75rem;">Construction cost allocated across CSI MasterFormat 2020 divisions for <strong>${activeType}</strong> construction.</p>`;
+    html += renderCSIBreakdownTable(csiDivisions, computed.construction, computed.gsf, activeType);
     html += `</div>`;
     return html;
 }
@@ -12240,8 +12277,10 @@ function recalcInfrastructure() {
     if (slider && num && document.activeElement === num) slider.value = num.value;
     var valSpan = document.getElementById('infra-costMult-val');
     if (valSpan && num) valSpan.textContent = parseFloat(num.value).toFixed(0) + '%';
-    var container = document.getElementById('infrastructureContent');
-    if (container && deepAnalysisState) container.innerHTML = buildInfrastructureContent();
+    _debouncedCall('infrastructure', function() {
+        var container = document.getElementById('infrastructureContent');
+        if (container && deepAnalysisState) container.innerHTML = buildInfrastructureContent();
+    }, 150);
 }
 
 function resetInfrastructure() {
@@ -12533,12 +12572,14 @@ function recalcEarthwork() {
         var el = document.getElementById(fields[k]);
         if (el) EARTHWORK_COSTS[k] = parseFloat(el.value) || EARTHWORK_COSTS_DEFAULT[k];
     });
-    var st = deepAnalysisState;
-    if (!st) return;
-    var container = document.getElementById('earthworkContent');
-    if (!container) return;
-    var ew = analyzeEarthwork(st.bestUse, st.inp, st.computed);
-    container.innerHTML = buildEarthworkContent(ew, st.inp);
+    _debouncedCall('earthwork', function() {
+        var st = deepAnalysisState;
+        if (!st) return;
+        var container = document.getElementById('earthworkContent');
+        if (!container) return;
+        var ew = analyzeEarthwork(st.bestUse, st.inp, st.computed);
+        container.innerHTML = buildEarthworkContent(ew, st.inp);
+    }, 150);
 }
 function resetEarthwork() {
     EARTHWORK_COSTS = Object.assign({}, EARTHWORK_COSTS_DEFAULT);
@@ -12920,8 +12961,10 @@ function recalcEnvironmental() {
     if (slider && num && document.activeElement === num) slider.value = num.value;
     var valSpan = document.getElementById('env-costMult-val');
     if (valSpan && num) valSpan.textContent = parseFloat(num.value).toFixed(0) + '%';
-    var container = document.getElementById('environmentalContent');
-    if (container && deepAnalysisState) container.innerHTML = buildEnvironmentalContent();
+    _debouncedCall('environmental', function() {
+        var container = document.getElementById('environmentalContent');
+        if (container && deepAnalysisState) container.innerHTML = buildEnvironmentalContent();
+    }, 150);
 }
 
 function resetEnvironmental() {
@@ -13262,8 +13305,10 @@ function recalcParking() {
             valSpan.textContent = isCost ? '$' + Math.round(v).toLocaleString() : v.toFixed(0) + '%';
         }
     });
-    var container = document.getElementById('parkingContent');
-    if (container) container.innerHTML = buildParkingContent();
+    _debouncedCall('parking', function() {
+        var container = document.getElementById('parkingContent');
+        if (container) container.innerHTML = buildParkingContent();
+    }, 150);
 }
 
 function resetParking() {
@@ -14943,11 +14988,13 @@ function buildCashFlowTable(c) {
 }
 
 function recalcCashFlow() {
-    var st = deepAnalysisState;
-    if (!st) return;
-    var container = document.getElementById('cfTableContainer');
-    if (!container) return;
-    container.innerHTML = buildCashFlowTable(st.computed);
+    _debouncedCall('cashFlow', function() {
+        var st = deepAnalysisState;
+        if (!st) return;
+        var container = document.getElementById('cfTableContainer');
+        if (!container) return;
+        container.innerHTML = buildCashFlowTable(st.computed);
+    }, 180);
 }
 
 // ============================================================
@@ -15596,8 +15643,10 @@ function recalcPublicFinance() {
             valSpan.textContent = parseFloat(num.value).toFixed(dec) + suffix;
         }
     });
-    var container = document.getElementById('publicFinanceContent');
-    if (container) container.innerHTML = buildPublicFinanceContent();
+    _debouncedCall('publicFinance', function() {
+        var container = document.getElementById('publicFinanceContent');
+        if (container) container.innerHTML = buildPublicFinanceContent();
+    }, 150);
 }
 
 function resetPublicFinance() {
@@ -15795,8 +15844,10 @@ function recalcFiscalImpact() {
             valSpan.textContent = isCurrency ? '$' + v.toFixed(dec) : v.toFixed(dec) + (f === 'personsPerUnit' ? '' : '%');
         }
     });
-    var container = document.getElementById('fiscalImpactContent');
-    if (container) container.innerHTML = buildFiscalImpactContent();
+    _debouncedCall('fiscalImpact', function() {
+        var container = document.getElementById('fiscalImpactContent');
+        if (container) container.innerHTML = buildFiscalImpactContent();
+    }, 150);
 }
 
 function resetFiscalImpact() {
@@ -16067,8 +16118,10 @@ function recalcP3() {
         var valSpan = document.getElementById('p3-' + f + '-val');
         if (valSpan && num) valSpan.textContent = parseFloat(num.value).toFixed(P3_DEFAULTS[f] % 1 ? 1 : 0) + '%';
     });
-    var container = document.getElementById('p3Content');
-    if (container) container.innerHTML = buildP3Content();
+    _debouncedCall('p3', function() {
+        var container = document.getElementById('p3Content');
+        if (container) container.innerHTML = buildP3Content();
+    }, 150);
 }
 
 function resetP3() {
@@ -16455,8 +16508,10 @@ function recalcDevAgreement() {
             valSpan.textContent = v.toFixed(dec) + suffix;
         }
     });
-    var container = document.getElementById('devAgreementContent');
-    if (container) container.innerHTML = buildDevAgreementContent();
+    _debouncedCall('devAgreement', function() {
+        var container = document.getElementById('devAgreementContent');
+        if (container) container.innerHTML = buildDevAgreementContent();
+    }, 150);
 }
 
 function resetDevAgreement() {
@@ -16634,9 +16689,11 @@ function recalcAssetStrategy() {
         var valSpan = document.getElementById('as-' + f + '-val');
         if (valSpan && num) valSpan.textContent = parseFloat(num.value).toFixed(f === 'capRateCompress' ? 2 : 1) + '%';
     });
-    // Re-render content only
-    var container = document.getElementById('assetStrategyContent');
-    if (container) container.innerHTML = buildAssetStrategyContent();
+    // Re-render content only (debounced)
+    _debouncedCall('assetStrategy', function() {
+        var container = document.getElementById('assetStrategyContent');
+        if (container) container.innerHTML = buildAssetStrategyContent();
+    }, 150);
 }
 
 function resetAssetStrategy() {
@@ -17170,6 +17227,9 @@ function renderInvestorModuleTab(st) {
 }
 
 function recalcInvestorModule() {
+    _debouncedCall('investor', _recalcInvestorModuleImpl, 200);
+}
+function _recalcInvestorModuleImpl() {
     var st = deepAnalysisState;
     if (!st) return;
     var c = st.computed;
