@@ -3,30 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HBU Land Use Tool — Know Every LA Parcel's Development Potential | CLS CRE</title>
+    <title>Land to Yield — Know Every LA Parcel's Development Potential</title>
     <meta name="description" content="Instantly score highest-and-best-use for any LA County parcel. SB 79 analysis, 27-tab deep feasibility, pro forma modeling — all in one tool.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #1a365d;
-            --primary-light: #2b6cb0;
-            --accent: #e8a838;
-            --accent-dark: #c77e1a;
-            --bg: #f7f8fc;
+            --primary: #0d9488;
+            --primary-dark: #0f766e;
+            --primary-light: #14b8a6;
+            --accent: #0ea5e9;
+            --bg: #f8fafc;
             --white: #ffffff;
-            --text: #2d3748;
-            --text-light: #718096;
+            --text: #1e293b;
+            --text-dark: #0f172a;
+            --text-light: #64748b;
             --border: #e2e8f0;
             --radius: 12px;
-            --shadow: 0 4px 24px rgba(26,54,93,0.08);
-            --shadow-lg: 0 12px 48px rgba(26,54,93,0.12);
+            --shadow: 0 4px 24px rgba(13,148,136,0.08);
+            --shadow-lg: 0 12px 48px rgba(13,148,136,0.12);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         html { scroll-behavior: smooth; }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             color: var(--text);
             background: var(--bg);
             line-height: 1.6;
@@ -46,26 +49,33 @@
             height: 64px;
         }
         .nav-brand {
-            font-weight: 700; font-size: 1.15rem; color: var(--primary);
-            text-decoration: none; display: flex; align-items: center; gap: .5rem;
+            font-weight: 800; font-size: 1.2rem; color: var(--primary-dark);
+            text-decoration: none; display: flex; flex-direction: column; line-height: 1.2;
         }
-        .nav-brand span { color: var(--accent-dark); }
+        .nav-brand .brand-sub {
+            font-size: 0.65rem; font-weight: 500; color: var(--text-light);
+            letter-spacing: 0.02em;
+        }
+        .nav-brand .brand-sub a {
+            color: var(--text-light); text-decoration: none;
+        }
+        .nav-brand .brand-sub a:hover { color: var(--primary); }
         .nav-links { display: flex; align-items: center; gap: 2rem; list-style: none; }
         .nav-links a {
             text-decoration: none; color: var(--text); font-size: .9rem; font-weight: 500;
             transition: color .2s;
         }
-        .nav-links a:hover { color: var(--primary-light); }
+        .nav-links a:hover { color: var(--primary); }
         .btn {
             display: inline-block; padding: .6rem 1.4rem; border-radius: 8px;
             font-weight: 600; font-size: .9rem; text-decoration: none;
             transition: all .2s; cursor: pointer; border: none;
         }
         .btn-primary {
-            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
-            color: var(--primary); box-shadow: 0 2px 8px rgba(232,168,56,0.3);
+            background: var(--primary); color: var(--white);
+            box-shadow: 0 2px 8px rgba(13,148,136,0.3);
         }
-        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(232,168,56,0.4); }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(13,148,136,0.4); }
         .btn-outline {
             background: transparent; color: var(--primary);
             border: 2px solid var(--primary);
@@ -78,63 +88,93 @@
             flex-direction: column; gap: 5px; padding: 4px;
         }
         .hamburger span {
-            display: block; width: 24px; height: 2px; background: var(--primary);
+            display: block; width: 24px; height: 2px; background: var(--primary-dark);
             transition: all .3s;
         }
 
         /* ── HERO ── */
         .hero {
-            padding: 9rem 2rem 5rem;
-            background: linear-gradient(170deg, var(--primary) 0%, var(--primary-light) 60%, #3182ce 100%);
-            color: var(--white); text-align: center;
+            padding: 0; min-height: 100vh;
             position: relative; overflow: hidden;
-        }
-        .hero::before {
-            content: ''; position: absolute; inset: 0;
-            background: radial-gradient(circle at 30% 70%, rgba(232,168,56,0.08) 0%, transparent 60%),
-                        radial-gradient(circle at 70% 30%, rgba(255,255,255,0.05) 0%, transparent 50%);
-        }
-        .hero-inner { max-width: 800px; margin: 0 auto; position: relative; z-index: 1; }
-        .hero h1 {
-            font-size: 3rem; font-weight: 800; line-height: 1.15;
-            margin-bottom: 1.25rem;
-        }
-        .hero h1 em { font-style: normal; color: var(--accent); }
-        .hero p.sub {
-            font-size: 1.2rem; color: rgba(255,255,255,0.85);
-            max-width: 600px; margin: 0 auto 2.5rem; line-height: 1.7;
-        }
-        .hero-ctas { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
-        .hero-ctas .btn-primary { font-size: 1.05rem; padding: .9rem 2.2rem; }
-        .hero-ctas .btn-ghost {
-            background: rgba(255,255,255,0.12); color: var(--white);
-            border: 1px solid rgba(255,255,255,0.3); padding: .9rem 2.2rem;
-            font-size: 1.05rem; border-radius: 10px; font-weight: 600;
-            text-decoration: none; transition: all .2s;
-        }
-        .hero-ctas .btn-ghost:hover { background: rgba(255,255,255,0.2); }
-
-        .hero-screenshot {
-            max-width: 900px; margin: 3.5rem auto 0;
-            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 16px; height: 420px;
             display: flex; align-items: center; justify-content: center;
-            color: rgba(255,255,255,0.4); font-size: .95rem;
         }
+        .hero-bg {
+            position: absolute; inset: 0;
+            background: url('https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1920&q=80') center/cover no-repeat;
+        }
+        .hero-bg::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(15,23,42,0.75) 0%, rgba(13,148,136,0.6) 100%);
+        }
+        .hero-inner {
+            max-width: 1000px; margin: 0 auto; position: relative; z-index: 1;
+            text-align: center; padding: 8rem 2rem 5rem; color: var(--white);
+        }
+        .hero h1 {
+            font-size: 3.2rem; font-weight: 800; line-height: 1.15;
+            margin-bottom: 1rem;
+        }
+        .hero h1 em { font-style: normal; color: var(--primary-light); }
+        .hero p.sub {
+            font-size: 1.15rem; color: rgba(255,255,255,0.85);
+            max-width: 620px; margin: 0 auto 3rem; line-height: 1.7;
+        }
+
+        /* Portal Cards */
+        .portal-cards {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+            max-width: 700px; margin: 0 auto 2.5rem;
+        }
+        .portal-card {
+            background: rgba(255,255,255,0.1); backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 16px; padding: 2rem 1.5rem;
+            text-decoration: none; color: var(--white);
+            transition: all .3s; cursor: pointer;
+        }
+        .portal-card:hover {
+            background: rgba(255,255,255,0.18);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+        }
+        .portal-icon {
+            font-size: 2.5rem; margin-bottom: 1rem;
+        }
+        .portal-card h3 {
+            font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem;
+        }
+        .portal-card p {
+            font-size: 0.88rem; color: rgba(255,255,255,0.75); line-height: 1.5;
+        }
+        .portal-arrow {
+            display: inline-block; margin-top: 1rem; font-size: 0.85rem;
+            font-weight: 600; color: var(--primary-light);
+            transition: transform .2s;
+        }
+        .portal-card:hover .portal-arrow { transform: translateX(4px); }
+
+        .hero-links {
+            display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
+        }
+        .hero-links a {
+            color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.9rem;
+            font-weight: 500; transition: color .2s;
+        }
+        .hero-links a:hover { color: var(--white); }
 
         /* ── SECTIONS ── */
         section { padding: 5rem 2rem; }
         .section-inner { max-width: 1100px; margin: 0 auto; }
         .section-header { text-align: center; margin-bottom: 3.5rem; }
         .section-header h2 {
-            font-size: 2.2rem; color: var(--primary); font-weight: 700;
+            font-size: 2.2rem; color: var(--text-dark); font-weight: 700;
             margin-bottom: .75rem;
         }
         .section-header p { color: var(--text-light); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
         .section-label {
             display: inline-block; font-size: .75rem; font-weight: 700;
             text-transform: uppercase; letter-spacing: .1em;
-            color: var(--accent-dark); margin-bottom: .75rem;
+            color: var(--primary); margin-bottom: .75rem;
         }
 
         /* ── PAIN POINTS ── */
@@ -150,9 +190,9 @@
             width: 56px; height: 56px; border-radius: 14px;
             display: flex; align-items: center; justify-content: center;
             margin: 0 auto 1.25rem; font-size: 1.5rem;
-            background: linear-gradient(135deg, rgba(26,54,93,0.06), rgba(26,54,93,0.12));
+            background: linear-gradient(135deg, rgba(13,148,136,0.08), rgba(13,148,136,0.15));
         }
-        .pain-card h3 { font-size: 1.1rem; color: var(--primary); margin-bottom: .5rem; }
+        .pain-card h3 { font-size: 1.1rem; color: var(--text-dark); margin-bottom: .5rem; }
         .pain-card p { color: var(--text-light); font-size: .9rem; line-height: 1.6; }
 
         /* ── FEATURES ── */
@@ -166,10 +206,10 @@
             width: 48px; height: 48px; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
             margin-bottom: 1.25rem; font-size: 1.3rem;
-            background: linear-gradient(135deg, var(--accent), rgba(232,168,56,0.3));
-            color: var(--primary);
+            background: linear-gradient(135deg, var(--primary), rgba(13,148,136,0.3));
+            color: var(--white);
         }
-        .feature-card h3 { font-size: 1.05rem; color: var(--primary); margin-bottom: .5rem; }
+        .feature-card h3 { font-size: 1.05rem; color: var(--text-dark); margin-bottom: .5rem; }
         .feature-card p { color: var(--text-light); font-size: .88rem; line-height: 1.6; }
 
         /* ── HOW IT WORKS ── */
@@ -182,7 +222,7 @@
             display: flex; align-items: center; justify-content: center;
             margin: 0 auto 1.25rem;
         }
-        .step h3 { font-size: 1.1rem; color: var(--primary); margin-bottom: .5rem; }
+        .step h3 { font-size: 1.1rem; color: var(--text-dark); margin-bottom: .5rem; }
         .step p { color: var(--text-light); font-size: .9rem; margin-bottom: 1.25rem; }
         .step-screenshot {
             background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
@@ -191,15 +231,21 @@
         }
 
         /* ── PRICING ── */
-        .pricing { background: linear-gradient(170deg, var(--primary) 0%, var(--primary-light) 100%); color: var(--white); }
+        .pricing {
+            background: linear-gradient(170deg, var(--primary-dark) 0%, var(--primary) 50%, var(--primary-light) 100%);
+            color: var(--white);
+        }
         .pricing .section-header h2 { color: var(--white); }
         .pricing .section-header p { color: rgba(255,255,255,0.75); }
+        .pricing .section-label { color: rgba(255,255,255,0.6); }
 
         .founding-banner {
-            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
-            color: var(--primary); font-weight: 700; text-align: center;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(8px);
+            color: var(--white); font-weight: 700; text-align: center;
             padding: .85rem 1.5rem; border-radius: 10px;
             max-width: 600px; margin: 0 auto 3rem; font-size: 1rem;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; align-items: start; }
@@ -210,18 +256,18 @@
         }
         .price-card.featured {
             transform: scale(1.05);
-            border: 3px solid var(--accent);
+            border: 3px solid var(--primary-light);
         }
         .price-badge {
             position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
-            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
-            color: var(--primary); font-size: .75rem; font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white); font-size: .75rem; font-weight: 700;
             padding: .35rem 1rem; border-radius: 20px; text-transform: uppercase;
             letter-spacing: .05em;
         }
-        .price-card h3 { font-size: 1.2rem; color: var(--primary); margin-bottom: .25rem; }
+        .price-card h3 { font-size: 1.2rem; color: var(--text-dark); margin-bottom: .25rem; }
         .price-card .price {
-            font-size: 2.8rem; font-weight: 800; color: var(--primary);
+            font-size: 2.8rem; font-weight: 800; color: var(--primary-dark);
             margin: .75rem 0 .25rem;
         }
         .price-card .price span { font-size: 1rem; font-weight: 400; color: var(--text-light); }
@@ -232,7 +278,7 @@
             display: flex; align-items: flex-start; gap: .5rem;
         }
         .price-features li::before {
-            content: '✓'; color: #38a169; font-weight: 700; flex-shrink: 0;
+            content: '\2713'; color: var(--primary); font-weight: 700; flex-shrink: 0;
         }
         .price-card .btn { width: 100%; text-align: center; }
 
@@ -240,7 +286,7 @@
             text-align: center; margin-top: 2rem; color: rgba(255,255,255,0.8);
             font-size: .95rem;
         }
-        .per-report strong { color: var(--accent); }
+        .per-report strong { color: var(--primary-light); }
 
         /* ── FAQ ── */
         .faq { background: var(--white); }
@@ -249,16 +295,16 @@
             border-bottom: 1px solid var(--border); padding: 1.25rem 0;
         }
         .faq-q {
-            font-weight: 600; color: var(--primary); cursor: pointer;
+            font-weight: 600; color: var(--text-dark); cursor: pointer;
             display: flex; justify-content: space-between; align-items: center;
             font-size: 1rem; background: none; border: none; width: 100%;
             text-align: left; font-family: inherit; padding: 0;
         }
         .faq-q::after {
-            content: '+'; font-size: 1.4rem; color: var(--accent-dark);
+            content: '+'; font-size: 1.4rem; color: var(--primary);
             transition: transform .2s; flex-shrink: 0; margin-left: 1rem;
         }
-        .faq-item.open .faq-q::after { content: '−'; }
+        .faq-item.open .faq-q::after { content: '\2212'; }
         .faq-a {
             max-height: 0; overflow: hidden; transition: max-height .3s ease, padding .3s ease;
             color: var(--text-light); font-size: .92rem; line-height: 1.7;
@@ -267,24 +313,26 @@
 
         /* ── FOOTER ── */
         .footer {
-            background: var(--primary); color: rgba(255,255,255,0.7);
+            background: var(--text-dark); color: rgba(255,255,255,0.7);
             padding: 3rem 2rem; text-align: center;
         }
         .footer-inner { max-width: 1100px; margin: 0 auto; }
         .footer-links { display: flex; gap: 2rem; justify-content: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
         .footer-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: .9rem; }
-        .footer-links a:hover { color: var(--accent); }
+        .footer-links a:hover { color: var(--primary-light); }
         .footer p { font-size: .85rem; }
+        .footer a { color: var(--primary-light); text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
 
         /* ── RESPONSIVE ── */
         @media (max-width: 900px) {
             .pain-grid, .features-grid, .pricing-grid, .steps {
                 grid-template-columns: 1fr;
             }
+            .portal-cards { grid-template-columns: 1fr; max-width: 400px; }
             .price-card.featured { transform: none; }
             .hero h1 { font-size: 2.2rem; }
             .hero p.sub { font-size: 1.05rem; }
-            .hero-screenshot { height: 260px; }
             .section-header h2 { font-size: 1.8rem; }
         }
 
@@ -297,7 +345,7 @@
             }
             .nav-links.open { display: flex; }
             .hamburger { display: flex; }
-            .hero { padding: 7rem 1.5rem 3rem; }
+            .hero-inner { padding: 7rem 1.5rem 3rem; }
             .hero h1 { font-size: 1.8rem; }
             section { padding: 3.5rem 1.5rem; }
         }
@@ -308,7 +356,10 @@
 <!-- ── NAV ── -->
 <nav class="nav">
     <div class="nav-inner">
-        <a href="#" class="nav-brand">CLS CRE <span>Brokerage</span></a>
+        <a href="#" class="nav-brand">
+            Land to Yield
+            <span class="brand-sub">by <a href="https://commerciallendingsolutions.ai" target="_blank" rel="noopener">Commercial Lending Solutions</a></span>
+        </a>
         <ul class="nav-links" id="navLinks">
             <li><a href="#features">Features</a></li>
             <li><a href="#pricing">Pricing</a></li>
@@ -323,14 +374,30 @@
 
 <!-- ── HERO ── -->
 <section class="hero">
+    <div class="hero-bg"></div>
     <div class="hero-inner">
         <h1>Know Every LA Parcel's Development Potential in <em>60 Seconds</em></h1>
         <p class="sub">Stop spending days on zoning research, legislation lookups, and manual pro formas. Get instant highest-and-best-use scoring for any parcel in LA County.</p>
-        <div class="hero-ctas">
-            <a href="#pricing" class="btn btn-primary btn-lg">Start Free Trial</a>
-            <a href="#how" class="btn-ghost">See How It Works ↓</a>
+
+        <div class="portal-cards">
+            <a href="agent.html" class="portal-card">
+                <div class="portal-icon">🏠</div>
+                <h3>I'm a Real Estate Agent</h3>
+                <p>Discover hidden development value in any property. Get a clean, shareable report for your homeowners.</p>
+                <span class="portal-arrow">Get Started &rarr;</span>
+            </a>
+            <a href="app.html" class="portal-card">
+                <div class="portal-icon">🏗️</div>
+                <h3>I'm a Developer</h3>
+                <p>Full feasibility analysis with 27-tab deep dive, pro forma modeling, and investor-ready reports.</p>
+                <span class="portal-arrow">Launch Tool &rarr;</span>
+            </a>
         </div>
-        <div class="hero-screenshot">[ Product screenshot — add later ]</div>
+
+        <div class="hero-links">
+            <a href="#pricing">View Pricing &darr;</a>
+            <a href="#how">See How It Works &darr;</a>
+        </div>
     </div>
 </section>
 
@@ -440,7 +507,7 @@
 <section class="pricing" id="pricing">
     <div class="section-inner">
         <div class="section-header">
-            <div class="section-label" style="color:var(--accent)">Pricing</div>
+            <div class="section-label">Pricing</div>
             <h2>Simple, Transparent Pricing</h2>
             <p>Choose the plan that fits your deal flow. Cancel anytime.</p>
         </div>
@@ -555,10 +622,11 @@
             <a href="privacy.html">Privacy Policy</a>
             <a href="terms.html">Terms of Service</a>
             <a href="mailto:contact@landtoyield.com">Contact</a>
-            <a href="app.html">Launch Tool</a>
+            <a href="app.html">Developer Portal</a>
+            <a href="agent.html">Agent Portal</a>
         </div>
-        <p>&copy; 2025 CLS CRE Brokerage. All rights reserved.</p>
-        <p style="margin-top:.5rem; font-size:.8rem;">Powered by CLS CRE</p>
+        <p>&copy; 2025 Land to Yield. All rights reserved.</p>
+        <p style="margin-top:.5rem; font-size:.8rem;">A product by <a href="https://commerciallendingsolutions.ai" target="_blank" rel="noopener">Commercial Lending Solutions</a></p>
     </div>
 </footer>
 
@@ -583,9 +651,7 @@
         btn.addEventListener('click', function() {
             var item = this.parentElement;
             var wasOpen = item.classList.contains('open');
-            // Close all
             document.querySelectorAll('.faq-item').forEach(function(i) { i.classList.remove('open'); });
-            // Toggle clicked
             if (!wasOpen) item.classList.add('open');
         });
     });
