@@ -2313,9 +2313,11 @@
     <div class="auth-box">
         <h2>CLS CRE Brokerage</h2>
         <p>HBU Land Use Calculator</p>
-        <input type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter')checkAuth();">
+        <input type="password" id="authPassword" placeholder="Access Code" onkeydown="if(event.key==='Enter')checkAuth();">
         <button type="button" class="auth-btn" onclick="checkAuth()">Enter</button>
         <div class="auth-error" id="authError"></div>
+        <div style="margin-top:0.75rem;font-size:0.75rem;color:#a0aec0;">Enter the access code from your subscription email</div>
+        <div style="margin-top:0.75rem;"><a href="index.html#pricing" style="color:#667eea;font-size:0.8rem;text-decoration:none;">Don't have a code? Subscribe here &rarr;</a></div>
         <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v4.2</div>
     </div>
 </div>
@@ -2930,31 +2932,56 @@
 // ============================================================
 //  AUTH GATE
 // ============================================================
-const AUTH_HASH = '08c5d8c40ac5bd96091f704d10989da4e7b65c5ee36be18b618848c4e91a22af';
+// Master admin password hash (original password still works)
+const ADMIN_HASH = '08c5d8c40ac5bd96091f704d10989da4e7b65c5ee36be18b618848c4e91a22af';
+
+// Subscriber access-code hashes — add SHA-256 hashes here after generating with generateCodeHash()
+const VALID_CODES = [
+    // 'sha256hashOfCode1',
+    // 'sha256hashOfCode2',
+];
+
 async function sha256(str) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
+
 async function checkAuth() {
-    const pw = document.getElementById('authPassword').value;
-    const hash = await sha256(pw);
-    if (hash === AUTH_HASH) {
-        sessionStorage.setItem('hbu_auth', '1');
+    const code = document.getElementById('authPassword').value;
+    const hash = await sha256(code);
+    if (hash === ADMIN_HASH || VALID_CODES.includes(hash)) {
+        localStorage.setItem('hbu_auth_hash', hash);
         const overlay = document.getElementById('authOverlay');
         overlay.classList.add('fade-out');
         setTimeout(() => overlay.remove(), 500);
     } else {
-        document.getElementById('authError').textContent = 'Incorrect password. Please try again.';
+        document.getElementById('authError').textContent = 'Invalid access code. Please try again.';
         document.getElementById('authPassword').value = '';
         document.getElementById('authPassword').focus();
     }
 }
+
+// Auto-authenticate on load if stored hash is still valid
 (function() {
-    if (sessionStorage.getItem('hbu_auth') === '1') {
+    const storedHash = localStorage.getItem('hbu_auth_hash');
+    if (storedHash && (storedHash === ADMIN_HASH || VALID_CODES.includes(storedHash))) {
         const overlay = document.getElementById('authOverlay');
         if (overlay) overlay.remove();
+    } else {
+        // Clear invalid/revoked hash
+        localStorage.removeItem('hbu_auth_hash');
     }
 })();
+
+// Utility: run in browser console to generate a hash for a new access code
+// Usage: generateCodeHash('YOUR-CODE-HERE')
+async function generateCodeHash(code) {
+    const hash = await sha256(code);
+    console.log('Code:', code);
+    console.log('Hash:', hash);
+    console.log('Add this to VALID_CODES array:', "'" + hash + "',");
+    return hash;
+}
 
 // ============================================================
 //  ADDRESS LOOKUP ENGINE
