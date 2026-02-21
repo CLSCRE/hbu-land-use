@@ -933,6 +933,255 @@
         @media print { .map-section { display: none !important; } }
         @media (max-width: 768px) { #sb79Map { height: 350px; } }
 
+        /* ===== Tab Bar ===== */
+        .tab-bar {
+            display: flex; justify-content: center; background: #fff;
+            border-bottom: 2px solid var(--border); position: sticky; top: 0; z-index: 50;
+        }
+        .tab-btn {
+            flex: 1; max-width: 220px; padding: 0.85rem 1rem; font-size: 0.88rem; font-weight: 700;
+            color: var(--text-light); background: transparent; border: none;
+            border-bottom: 3px solid transparent; cursor: pointer;
+            transition: color 0.2s, border-color 0.2s, background 0.2s; font-family: 'Inter', sans-serif;
+        }
+        .tab-btn:hover { color: var(--primary); background: #f0fdfa; }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary-light); background: #fff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        @media print { .tab-bar { display: none !important; } }
+        @media (max-width: 600px) { .tab-btn { font-size: 0.72rem; padding: 0.65rem 0.4rem; } }
+
+        /* ===== Analysis Modal ===== */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); z-index: 1000; overflow-y: auto; padding: 2rem 1rem;
+        }
+        .modal-content {
+            max-width: 1000px; margin: 0 auto; background: white;
+            border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); position: relative;
+        }
+        .modal-top-bar {
+            position: sticky; top: 0; display: flex; justify-content: flex-end; gap: 0.5rem;
+            padding: 0.75rem 1rem; background: rgba(255,255,255,0.95);
+            border-radius: 16px 16px 0 0; z-index: 10; backdrop-filter: blur(6px);
+        }
+        .modal-close {
+            width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border);
+            background: #f7fafc; font-size: 1.3rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; color: var(--text-light);
+        }
+        .modal-close:hover { background: #edf2f7; }
+        .modal-print-btn {
+            padding: 0.45rem 1.25rem; font-size: 0.85rem; font-weight: 700;
+            color: white; background: var(--primary-light); border: none; border-radius: 8px; cursor: pointer;
+        }
+        .modal-print-btn:hover { background: var(--primary); }
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; padding: 1.75rem 2rem;
+        }
+        .modal-header h2 { font-size: 1.4rem; margin-bottom: 0.25rem; }
+        .modal-header p { font-size: 0.88rem; opacity: 0.85; }
+        .modal-body { padding: 2rem; }
+        .analysis-section { margin-bottom: 2rem; }
+        .analysis-section h3 {
+            color: var(--primary); border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem; margin-bottom: 1rem; font-size: 1rem;
+        }
+        .program-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }
+        @media (max-width: 600px) { .program-grid { grid-template-columns: repeat(2, 1fr); } }
+        .program-item { text-align: center; padding: 0.85rem; background: #f0fdfa; border-radius: 8px; }
+        .program-item .program-value { font-size: 1.3rem; font-weight: 700; color: var(--primary); }
+        .program-item .program-label { font-size: 0.75rem; color: var(--text-light); margin-top: 0.15rem; }
+        .rendering-container { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        @media (max-width: 700px) { .rendering-container { grid-template-columns: 1fr; } }
+        .rendering-container svg { width: 100%; height: auto; border: 1px solid var(--border); border-radius: 8px; }
+        .assumptions-panel { background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 10px; padding: 1rem 1.25rem; }
+        .assumptions-panel h4 { font-size: 0.88rem; color: var(--primary); margin-bottom: 0.75rem; }
+        .assumptions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.6rem; }
+        .assumption-field label { font-size: 0.72rem; font-weight: 600; color: var(--text-light); display: block; margin-bottom: 0.15rem; }
+        .assumption-input {
+            width: 100%; padding: 0.4rem 0.5rem; border: 1px solid var(--border);
+            border-radius: 6px; font-size: 0.85rem; font-family: 'Inter', sans-serif;
+        }
+        .assumption-input:focus { outline: none; border-color: var(--primary-light); box-shadow: 0 0 0 2px rgba(13,148,136,0.12); }
+        .returns-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
+        @media (max-width: 700px) { .returns-grid { grid-template-columns: repeat(2, 1fr); } }
+        .return-card { text-align: center; padding: 1rem; background: #f0fdfa; border-radius: 8px; }
+        .return-card .return-value { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+        .return-card .return-label { font-size: 0.78rem; color: var(--text-light); margin-top: 0.15rem; }
+        .timeline-bar { display: flex; border-radius: 8px; overflow: hidden; height: 36px; margin-bottom: 0.5rem; }
+        .timeline-segment { display: flex; align-items: center; justify-content: center; color: white; font-size: 0.7rem; font-weight: 600; text-align: center; line-height: 1.2; }
+        .timeline-legend { font-size: 0.78rem; color: var(--text-light); text-align: center; }
+        .risk-card { background: #fffaf0; border-left: 3px solid #ed8936; border-radius: 0 8px 8px 0; padding: 0.75rem 1rem; margin-bottom: 0.5rem; }
+        .risk-card strong { color: #c05621; font-size: 0.88rem; display: block; margin-bottom: 0.2rem; }
+        .risk-card p { color: var(--text-light); font-size: 0.82rem; margin: 0; }
+        @media print {
+            body.printing-analysis * { visibility: hidden; }
+            body.printing-analysis .modal-overlay, body.printing-analysis .modal-overlay * { visibility: visible; }
+            body.printing-analysis .modal-overlay { position: absolute; top: 0; left: 0; padding: 0; background: white; }
+            body.printing-analysis .modal-top-bar { display: none; }
+            body.printing-analysis .modal-content { box-shadow: none; }
+        }
+
+        /* ===== Finder CSS ===== */
+        .finder-section { margin-top: 1.5rem; padding: 1.25rem; border-radius: 10px; background: var(--card); border: 1.5px solid var(--border); }
+        .finder-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+        .finder-field label { font-size: 0.78rem; font-weight: 600; color: var(--text-light); margin-bottom: 0.2rem; display: block; }
+        .finder-field select, .finder-field input {
+            width: 100%; padding: 0.5rem 0.6rem; border: 1.5px solid var(--border); border-radius: 6px; font-size: 0.88rem;
+        }
+        .finder-field select:focus, .finder-field input:focus {
+            outline: none; border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(13,148,136,0.12);
+        }
+        .finder-radios { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .finder-radios label { font-size: 0.82rem; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 0.25rem; cursor: pointer; }
+        .finder-checks { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .finder-checks label { font-size: 0.82rem; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 0.25rem; cursor: pointer; }
+        .finder-btn-search {
+            padding: 0.65rem 2rem; font-size: 0.95rem; font-weight: 700;
+            color: white; background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            border: none; border-radius: 8px; cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 2px 8px rgba(13,148,136,0.25);
+            font-family: 'Inter', sans-serif;
+        }
+        .finder-btn-search:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(13,148,136,0.35); }
+        .finder-btn-search:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .finder-progress { display: none; margin: 1rem 0; }
+        .finder-progress.active { display: block; }
+        .finder-progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+        .finder-progress-fill { height: 100%; background: var(--primary-light); border-radius: 3px; transition: width 0.3s; width: 0; }
+        .finder-progress-text { font-size: 0.78rem; color: var(--text-light); margin-top: 0.35rem; }
+        .finder-table-wrapper { overflow-x: auto; margin-top: 1rem; }
+        .finder-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+        .finder-table th {
+            background: var(--primary); color: white; padding: 0.5rem 0.6rem;
+            text-align: left; font-weight: 600; cursor: pointer; white-space: nowrap; user-select: none;
+        }
+        .finder-table th:first-child { border-radius: 8px 0 0 0; }
+        .finder-table th:last-child { border-radius: 0 8px 0 0; }
+        .finder-table th:hover { background: var(--primary-light); }
+        .finder-table th.sort-asc::after { content: ' \u25B2'; font-size: 0.7rem; }
+        .finder-table th.sort-desc::after { content: ' \u25BC'; font-size: 0.7rem; }
+        .finder-table td { padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--border); }
+        .finder-table tr:nth-child(even) { background: #f8fafc; }
+        .finder-table tr:hover { background: #f0fdfa; cursor: pointer; }
+        .finder-table tr.highlighted { background: #ccfbf1 !important; }
+        .imp-ratio-hot { color: #e53e3e; font-weight: 700; }
+        .imp-ratio-warm { color: #dd6b20; font-weight: 600; }
+        .imp-ratio-cool { color: #38a169; }
+        .finder-btn-export {
+            margin-top: 0.75rem; padding: 0.5rem 1.25rem; font-size: 0.85rem; font-weight: 600;
+            color: var(--primary); background: #f0fdfa; border: 1.5px solid #99f6e4;
+            border-radius: 8px; cursor: pointer; transition: background 0.15s;
+        }
+        .finder-btn-export:hover { background: #ccfbf1; }
+        .finder-no-results { text-align: center; padding: 2rem 1rem; color: var(--text-light); font-size: 0.92rem; }
+        .finder-error { background: #fff5f5; border: 1px solid #fc8181; border-radius: 8px; padding: 1rem; color: #c53030; font-size: 0.88rem; margin-top: 1rem; }
+        .finder-summary { font-size: 0.85rem; color: var(--text-light); margin-top: 0.5rem; }
+        .prop-links a { font-weight: 700; font-size: 0.78rem; color: var(--primary); text-decoration: none; }
+        .prop-links a:hover { text-decoration: underline; }
+        .selection-bar {
+            position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 0.75rem;
+            background: #f0fdfa; border: 1.5px solid #99f6e4; border-radius: 8px;
+            padding: 0.5rem 1rem; margin-bottom: 0.75rem; font-size: 0.88rem; font-weight: 600; color: var(--primary);
+        }
+        .saved-list-panel {
+            background: var(--card); border-radius: 12px; padding: 1.75rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 2rem; border-left: 4px solid var(--success);
+        }
+        .saved-list-panel h2 { font-size: 1.1rem; color: #065f46; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1rem; }
+        .saved-list-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
+        .saved-list-header span { font-size: 0.88rem; color: var(--text-light); font-weight: 600; }
+        .saved-list-actions { display: flex; gap: 0.5rem; }
+        .saved-btn { padding: 0.4rem 1rem; font-size: 0.82rem; font-weight: 600; border-radius: 6px; cursor: pointer; border: 1.5px solid; transition: background 0.15s; }
+        .saved-btn-export { color: #065f46; background: #ecfdf5; border-color: #6ee7b7; }
+        .saved-btn-export:hover { background: #d1fae5; }
+        .saved-btn-clear { color: #c53030; background: #fff5f5; border-color: #fc8181; }
+        .saved-btn-clear:hover { background: #fed7d7; }
+        .saved-btn-remove { background: none; border: none; color: #c53030; cursor: pointer; font-size: 0.85rem; padding: 0.2rem 0.4rem; }
+        .saved-btn-remove:hover { text-decoration: underline; }
+
+        /* Pipeline legend */
+        .pipeline-legend { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem; padding: 0.75rem 1rem; background: #f0fdfa; border-radius: 8px; font-size: 0.78rem; }
+        .pipeline-legend-item { display: flex; align-items: center; gap: 0.3rem; }
+        .pipeline-legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .pipeline-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; color: white; }
+        .pipeline-badge.submitted { background: #d69e2e; }
+        .pipeline-badge.plan_check { background: #dd6b20; }
+        .pipeline-badge.issued { background: #3182ce; }
+        .pipeline-badge.inspection { background: #38a169; }
+        .pipeline-badge.finaled { background: #718096; }
+        .pipeline-badge.coo { background: #276749; }
+        .pipeline-val-high { color: #e53e3e; font-weight: 700; }
+        .pipeline-val-mid { color: #dd6b20; font-weight: 600; }
+        .pipeline-overlay-btn {
+            position: absolute; top: 10px; right: 10px; z-index: 10;
+            padding: 6px 14px; font-size: 0.78rem; font-weight: 600;
+            background: white; border: 1.5px solid var(--primary-light); color: var(--primary);
+            border-radius: 6px; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        .pipeline-overlay-btn.active { background: var(--primary); color: white; }
+
+        /* ===== One-Pager Modal ===== */
+        .onepager-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); z-index: 1100; overflow-y: auto; padding: 1rem;
+        }
+        .onepager-content {
+            max-width: 800px; margin: 0 auto; background: white;
+            border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden;
+        }
+        .onepager-hero {
+            background: linear-gradient(135deg, #0f766e, #0d9488, #14b8a6);
+            color: white; padding: 2rem 2.5rem; text-align: center;
+        }
+        .onepager-hero h2 { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.25rem; }
+        .onepager-hero .address { font-size: 1rem; opacity: 0.85; margin-bottom: 1.5rem; }
+        .value-trio { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; }
+        .value-box { text-align: center; }
+        .value-box .val-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.75; }
+        .value-box .val-amount { font-size: 2rem; font-weight: 800; }
+        .value-box .val-amount.uplift { color: #fde68a; }
+        .value-arrow { font-size: 2rem; display: flex; align-items: center; opacity: 0.6; }
+        .onepager-body { padding: 2rem 2.5rem; }
+        .onepager-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem; }
+        @media (max-width: 600px) { .onepager-grid { grid-template-columns: 1fr; } }
+        .onepager-section h4 { font-size: 0.88rem; color: var(--primary); margin-bottom: 0.75rem; border-bottom: 2px solid var(--border); padding-bottom: 0.35rem; }
+        .onepager-metric { display: flex; justify-content: space-between; padding: 0.35rem 0; border-bottom: 1px solid #f1f5f9; font-size: 0.82rem; }
+        .onepager-metric .m-label { color: var(--text-light); }
+        .onepager-metric .m-value { font-weight: 700; color: var(--text); }
+        .ease-meter { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+        .ease-meter-bar { flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+        .ease-meter-fill { height: 100%; border-radius: 4px; }
+        .onepager-sb79 { background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; }
+        .onepager-legislation { margin-bottom: 1.5rem; }
+        .onepager-legislation .leg-pills { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+        .onepager-legislation .leg-pill { background: #f0fdfa; border: 1px solid #99f6e4; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.72rem; font-weight: 600; color: var(--primary); }
+        .onepager-branding { text-align: center; padding: 1rem 0; border-top: 1px solid var(--border); margin-top: 1rem; }
+        .onepager-branding .agent-name { font-size: 0.92rem; font-weight: 700; color: var(--primary); }
+        .onepager-disclaimer { font-size: 0.68rem; color: #94a3b8; text-align: center; padding: 0.75rem 1.5rem; border-top: 1px solid var(--border); }
+        .onepager-topbar {
+            display: flex; justify-content: flex-end; gap: 0.5rem; padding: 0.75rem 1rem;
+            background: rgba(255,255,255,0.95); border-radius: 16px 16px 0 0; backdrop-filter: blur(6px);
+        }
+        @media print {
+            body.printing-onepager * { visibility: hidden; }
+            body.printing-onepager .onepager-overlay, body.printing-onepager .onepager-overlay * { visibility: visible; }
+            body.printing-onepager .onepager-overlay { position: absolute; top: 0; left: 0; padding: 0; background: white; }
+            body.printing-onepager .onepager-topbar { display: none; }
+            body.printing-onepager .onepager-content { box-shadow: none; max-width: 100%; }
+        }
+
+        /* ===== My Sites Tab ===== */
+        .sites-score-badge {
+            display: inline-block; font-size: 0.78rem; font-weight: 700; padding: 0.2rem 0.6rem;
+            border-radius: 10px; color: white;
+        }
+        .sites-score-badge.high { background: #059669; }
+        .sites-score-badge.medium { background: #d69e2e; }
+        .sites-score-badge.low-medium { background: #ea580c; }
+        .sites-score-badge.low { background: #dc2626; }
+
         /* Auth Overlay */
         #authOverlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -1184,6 +1433,15 @@
     </div>
 </header>
 
+<div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('Calculator')">HBU Calculator</button>
+    <button class="tab-btn" onclick="switchTab('Finder')">SB 79 Finder</button>
+    <button class="tab-btn" onclick="switchTab('Pipeline')">Pipeline</button>
+    <button class="tab-btn" onclick="switchTab('Contacts')">Contacts</button>
+    <button class="tab-btn" onclick="switchTab('Sites')">My Sites</button>
+</div>
+
+<div id="tabCalculator" class="tab-content active">
 <div class="container">
     <div class="intro-box">
         <h3>How It Works</h3>
@@ -1429,6 +1687,320 @@
             <div class="sb79-eligibility" id="sb79Eligibility" style="display:none;"></div>
         </div>
     </div>
+</div>
+</div><!-- /tabCalculator -->
+
+<!-- ===== SB 79 FINDER TAB ===== -->
+<div id="tabFinder" class="tab-content">
+<div class="container">
+    <div class="intro-box" style="border-left-color:#805ad5;">
+        <h3>SB 79 Opportunity Finder</h3>
+        <p><strong>SB 79</strong> (effective July 1, 2026) overrides local zoning near qualifying transit stations, allowing up to <strong>95ft height, 160 du/acre, and 4.5 FAR</strong> for Tier 1 heavy rail and <strong>85ft, 140 du/acre, 4.0 FAR</strong> for Tier 2 light rail/Metrolink. Select a transit station below (or click one on the map) and set filters to find underbuilt parcels that SB 79 unlocks for higher-density development.</p>
+    </div>
+
+    <div id="finderMapContainer" style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
+        <div style="text-align:center;margin-bottom:1rem;">
+            <h2 style="font-size:1.3rem;color:var(--primary);margin-bottom:0.25rem;">LA Metro Transit Stations</h2>
+            <p style="font-size:0.88rem;color:var(--text-light);">Click any station to select it, then configure filters and search for opportunities</p>
+        </div>
+        <div id="finderMap" style="width:100%;height:500px;border-radius:10px;border:1.5px solid var(--border);z-index:1;"></div>
+        <div class="map-legend" id="finderMapLegend"></div>
+    </div>
+
+    <div style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
+        <h2 style="font-size:1.1rem;color:var(--primary);border-bottom:2px solid var(--border);padding-bottom:0.5rem;margin-bottom:1.25rem;">Search Filters</h2>
+        <div class="finder-controls">
+            <div class="finder-field" style="grid-column: span 2;">
+                <label>Transit Station</label>
+                <select id="finderStation2"></select>
+            </div>
+            <div class="finder-field">
+                <label>Search Radius (select one or more)</label>
+                <div class="finder-checks">
+                    <label><input type="checkbox" class="finderRadius2" value="200"> Adjacent (200ft)</label>
+                    <label><input type="checkbox" class="finderRadius2" value="1320"> Inner (1/4 mi)</label>
+                    <label><input type="checkbox" class="finderRadius2" value="2640" checked> Outer (1/2 mi)</label>
+                </div>
+            </div>
+            <div class="finder-field">
+                <label>Use Type</label>
+                <div class="finder-checks">
+                    <label><input type="checkbox" class="finderUseType2" value="Residential" checked> Residential</label>
+                    <label><input type="checkbox" class="finderUseType2" value="Commercial" checked> Commercial</label>
+                    <label><input type="checkbox" class="finderUseType2" value="Industrial"> Industrial</label>
+                    <label><input type="checkbox" class="finderUseType2" value="Vacant" checked> Vacant</label>
+                </div>
+            </div>
+            <div class="finder-field">
+                <label>Min Lot Size (sq ft)</label>
+                <input type="number" id="finderMinLot2" value="2500" min="0" step="500">
+            </div>
+            <div class="finder-field">
+                <label>Max Lot Size (sq ft)</label>
+                <input type="number" id="finderMaxLot2" value="100000" min="0" step="500">
+            </div>
+        </div>
+        <button type="button" class="finder-btn-search" id="finderSearchBtn2" onclick="runStandaloneSearch()">Find Opportunities</button>
+        <div class="finder-progress" id="finderProgress2">
+            <div class="finder-progress-bar"><div class="finder-progress-fill" id="finderProgressFill2"></div></div>
+            <div class="finder-progress-text" id="finderProgressText2">Querying parcels...</div>
+        </div>
+        <div id="finderResultsArea2"></div>
+    </div>
+
+    <div id="savedListPanel" class="saved-list-panel" style="display:none;">
+        <h2>Saved Properties</h2>
+        <div class="saved-list-header">
+            <span id="savedListCount">0 properties</span>
+            <div class="saved-list-actions">
+                <button type="button" class="saved-btn" onclick="combineContiguousParcels()" style="background:#805ad5;color:#fff;" id="combineBtn" title="Select 2-4 contiguous parcels to combine">Combine Parcels</button>
+                <button type="button" class="saved-btn saved-btn-export" onclick="exportSavedCSV()">Export to Excel</button>
+                <button type="button" class="saved-btn saved-btn-clear" onclick="clearSavedList()">Clear All</button>
+            </div>
+        </div>
+        <div class="finder-table-wrapper">
+            <table class="finder-table" id="savedListTable">
+                <thead><tr>
+                    <th style="cursor:default;width:30px;"><input type="checkbox" id="savedSelectAll" onclick="toggleSavedSelectAll()" title="Select for combining"></th>
+                    <th style="cursor:default;">Address</th>
+                    <th style="cursor:default;">APN</th>
+                    <th style="cursor:default;">Lot Size</th>
+                    <th style="cursor:default;">Zone</th>
+                    <th style="cursor:default;">Links</th>
+                    <th style="cursor:default;"></th>
+                </tr></thead>
+                <tbody id="savedListBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div><!-- /tabFinder -->
+
+<!-- ===== PIPELINE TAB ===== -->
+<div id="tabPipeline" class="tab-content">
+<div class="container">
+    <div class="intro-box" style="border-left-color:#3182ce;">
+        <h3>Development Pipeline</h3>
+        <p>Search <strong>active LA City building permits</strong> near any address. Results are color-coded by pipeline stage — from initial submission through Certificate of Occupancy. Use this to evaluate the competitive development landscape around any site. Data sourced from LA City Open Data (updated daily).</p>
+    </div>
+
+    <div id="pipelineMapContainer" style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
+        <div style="text-align:center;margin-bottom:1rem;">
+            <h2 style="font-size:1.3rem;color:var(--primary);margin-bottom:0.25rem;">Permit Activity Map</h2>
+            <p style="font-size:0.88rem;color:var(--text-light);" id="pipelineMapStatus">Enter an address or click the map to set a search center</p>
+        </div>
+        <div id="pipelineMap" style="width:100%;height:500px;border-radius:10px;border:1.5px solid var(--border);z-index:1;"></div>
+        <div class="pipeline-legend" id="pipelineLegend"></div>
+    </div>
+
+    <div style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
+        <h2 style="font-size:1.1rem;color:var(--primary);border-bottom:2px solid var(--border);padding-bottom:0.5rem;margin-bottom:1.25rem;">Search Filters</h2>
+        <div class="finder-controls">
+            <div class="finder-field" style="grid-column: span 2;">
+                <label>Address</label>
+                <div style="display:flex;gap:0.5rem;">
+                    <input type="text" id="pipelineAddress" placeholder="e.g. 6801 Hollywood Blvd, Los Angeles, CA" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();geocodePipelineAddress();}">
+                    <button type="button" class="btn-lookup" onclick="geocodePipelineAddress()" style="white-space:nowrap;">Locate</button>
+                </div>
+            </div>
+            <div class="finder-field">
+                <label>Search Radius</label>
+                <div class="finder-radios">
+                    <label><input type="radio" name="pipelineRadius" value="0.25"> 1/4 mi</label>
+                    <label><input type="radio" name="pipelineRadius" value="0.5" checked> 1/2 mi</label>
+                    <label><input type="radio" name="pipelineRadius" value="1"> 1 mi</label>
+                </div>
+            </div>
+            <div class="finder-field">
+                <label>Permit Type</label>
+                <div class="finder-checks">
+                    <label><input type="checkbox" class="pipelinePermitType" value="bldg" checked> Building</label>
+                    <label><input type="checkbox" class="pipelinePermitType" value="grading"> Grading</label>
+                    <label><input type="checkbox" class="pipelinePermitType" value="elec"> Electrical</label>
+                    <label><input type="checkbox" class="pipelinePermitType" value="plumb"> Plumbing</label>
+                    <label><input type="checkbox" class="pipelinePermitType" value="mech"> Mechanical</label>
+                </div>
+            </div>
+            <div class="finder-field">
+                <label>Pipeline Stage</label>
+                <div class="finder-checks">
+                    <label><input type="checkbox" class="pipelineStage" value="submitted" checked> Submitted</label>
+                    <label><input type="checkbox" class="pipelineStage" value="plan_check" checked> Plan Check</label>
+                    <label><input type="checkbox" class="pipelineStage" value="issued" checked> Issued</label>
+                    <label><input type="checkbox" class="pipelineStage" value="inspection" checked> Under Inspection</label>
+                    <label><input type="checkbox" class="pipelineStage" value="finaled" checked> Finaled</label>
+                    <label><input type="checkbox" class="pipelineStage" value="coo" checked> Cert of Occ</label>
+                </div>
+            </div>
+            <div class="finder-field">
+                <label>Min Valuation ($)</label>
+                <input type="number" id="pipelineMinVal" placeholder="e.g. 500000" min="0" step="10000">
+            </div>
+            <div class="finder-field">
+                <label>Date From</label>
+                <input type="date" id="pipelineDateFrom">
+            </div>
+            <div class="finder-field">
+                <label>Date To</label>
+                <input type="date" id="pipelineDateTo">
+            </div>
+        </div>
+        <div style="display:flex;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;">
+            <button type="button" class="btn-lookup" onclick="runPipelineSearch()" style="padding:0.6rem 1.5rem;">Search Permits</button>
+            <button type="button" class="btn-lookup" onclick="clearPipelineSearch()" style="padding:0.6rem 1.5rem;background:#fff;color:var(--primary);border:1.5px solid var(--primary-light);">Clear</button>
+            <button type="button" class="btn-lookup" onclick="exportPipelineCSV()" id="pipelineExportBtn" style="padding:0.6rem 1.5rem;background:#f0fff4;color:#276749;border:1.5px solid #9ae6b4;display:none;">Export CSV</button>
+        </div>
+        <div class="finder-progress" id="pipelineProgress">
+            <div class="finder-progress-bar"><div class="finder-progress-fill" id="pipelineProgressFill"></div></div>
+            <div class="finder-progress-text" id="pipelineProgressText">Searching permits...</div>
+        </div>
+    </div>
+
+    <div id="pipelineResultsArea" style="display:none;">
+        <div style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+                <h2 style="font-size:1.1rem;color:var(--primary);margin:0;" id="pipelineResultsTitle">Results</h2>
+                <span style="font-size:0.82rem;color:var(--text-light);" id="pipelineResultsSummary"></span>
+                <div style="display:flex;gap:0.5rem;">
+                    <button type="button" class="btn-lookup" onclick="savePipelineSelected()" id="pipelineSaveBtn" style="display:none;font-size:0.78rem;padding:6px 14px;">Save Selected</button>
+                </div>
+            </div>
+            <div class="finder-table-wrapper">
+                <table class="finder-table" id="pipelineTable">
+                    <thead><tr>
+                        <th style="width:30px;cursor:default;"><input type="checkbox" id="pipelineSelectAll" onclick="togglePipelineSelectAll()" title="Select all"></th>
+                        <th data-col="address" onclick="setPipelineSort('address')">Address</th>
+                        <th data-col="permit_nbr" onclick="setPipelineSort('permit_nbr')">Permit #</th>
+                        <th data-col="permit_type" onclick="setPipelineSort('permit_type')">Type</th>
+                        <th data-col="stage" onclick="setPipelineSort('stage')">Stage</th>
+                        <th data-col="valuation" onclick="setPipelineSort('valuation')">Valuation</th>
+                        <th data-col="date" onclick="setPipelineSort('date')">Date</th>
+                        <th data-col="zone" onclick="setPipelineSort('zone')">Zone</th>
+                        <th style="cursor:default;">Details</th>
+                    </tr></thead>
+                    <tbody id="pipelineTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="pipelineSavedPanel" style="display:none;background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-top:2rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+            <h2 style="font-size:1.1rem;color:#805ad5;margin:0;">Saved Pipeline Sites</h2>
+            <span style="font-size:0.82rem;color:var(--text-light);" id="pipelineSavedCount">0 sites</span>
+            <div style="display:flex;gap:0.5rem;">
+                <button type="button" class="btn-lookup" onclick="exportPipelineSavedCSV()" style="font-size:0.78rem;padding:6px 14px;">Export CSV</button>
+                <button type="button" class="btn-lookup" onclick="clearPipelineSaved()" style="font-size:0.78rem;padding:6px 14px;background:#e53e3e;">Clear</button>
+            </div>
+        </div>
+        <div class="finder-table-wrapper">
+            <table class="finder-table">
+                <thead><tr>
+                    <th>Address</th><th>Permit #</th><th>Type</th><th>Stage</th><th>Valuation</th><th>Description</th><th>Action</th>
+                </tr></thead>
+                <tbody id="pipelineSavedBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div><!-- /tabPipeline -->
+
+<!-- ===== CONTACTS TAB ===== -->
+<div id="tabContacts" class="tab-content">
+<div class="container">
+    <div class="intro-box" style="border-left-color:#805ad5;">
+        <h3>Contacts Directory</h3>
+        <p>Your <strong>one-stop shop</strong> for all development-related contacts in Los Angeles County. Planning departments, city officials, architects, engineers, contractors, lenders, and consultants. Filter by category or search by name.</p>
+    </div>
+
+    <div style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.25rem;">
+            <input type="text" id="contactSearch" placeholder="Search contacts..." style="flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:0.85rem;" oninput="filterContacts()">
+            <select id="contactCategory" style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:0.85rem;" onchange="filterContacts()">
+                <option value="">All Categories</option>
+                <option value="planning">Planning Departments</option>
+                <option value="building">Building & Safety</option>
+                <option value="housing">Housing Agencies</option>
+                <option value="architect">Architects</option>
+                <option value="engineer">Engineers</option>
+                <option value="gc">General Contractors</option>
+                <option value="lender">Lenders & Finance</option>
+                <option value="legal">Legal / Land Use</option>
+                <option value="consultant">Consultants</option>
+                <option value="utility">Utilities</option>
+            </select>
+        </div>
+        <div id="contactsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem;"></div>
+    </div>
+</div>
+</div><!-- /tabContacts -->
+
+<!-- ===== MY SITES TAB ===== -->
+<div id="tabSites" class="tab-content">
+<div class="container">
+    <div class="intro-box" style="border-left-color:#059669;">
+        <h3>My Sites</h3>
+        <p>Every property you analyze is automatically saved here, ranked by <strong>Attractiveness Score</strong> — a composite of value uplift potential, development margin, and ease of build. Use this dashboard to prioritize which sites to pursue first, and generate a Listing One-Pager for any property.</p>
+    </div>
+
+    <div id="sitesMapContainer" style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
+        <div style="text-align:center;margin-bottom:1rem;">
+            <h2 style="font-size:1.3rem;color:var(--primary);margin-bottom:0.25rem;">My Analyzed Properties</h2>
+            <p style="font-size:0.88rem;color:var(--text-light);">Color-coded by attractiveness: <span style="color:#059669;font-weight:600;">Green</span> = High, <span style="color:#d69e2e;font-weight:600;">Gold</span> = Medium, <span style="color:#ea580c;font-weight:600;">Orange</span> = Low-Medium, <span style="color:#dc2626;font-weight:600;">Red</span> = Low</p>
+        </div>
+        <div id="sitesMap" style="width:100%;height:450px;border-radius:10px;border:1.5px solid var(--border);z-index:1;"></div>
+    </div>
+
+    <div style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+            <h2 style="font-size:1.1rem;color:var(--primary);margin:0;">Saved Properties</h2>
+            <span style="font-size:0.82rem;color:var(--text-light);" id="sitesCount">0 properties</span>
+            <button type="button" class="btn-lookup" onclick="clearAgentSites()" style="font-size:0.78rem;padding:6px 14px;background:#e53e3e;color:white;">Clear All Sites</button>
+        </div>
+        <div class="finder-table-wrapper">
+            <table class="finder-table" id="sitesTable">
+                <thead><tr>
+                    <th data-col="score" onclick="sortAgentSites('score')" style="cursor:pointer;">Score</th>
+                    <th data-col="address" onclick="sortAgentSites('address')" style="cursor:pointer;">Address</th>
+                    <th data-col="bestUse" onclick="sortAgentSites('bestUse')" style="cursor:pointer;">Best Use</th>
+                    <th data-col="lotSize" onclick="sortAgentSites('lotSize')" style="cursor:pointer;">Lot Size</th>
+                    <th data-col="asIsValue" onclick="sortAgentSites('asIsValue')" style="cursor:pointer;">As-Is Value</th>
+                    <th data-col="devValue" onclick="sortAgentSites('devValue')" style="cursor:pointer;">Dev Value</th>
+                    <th data-col="uplift" onclick="sortAgentSites('uplift')" style="cursor:pointer;">Uplift</th>
+                    <th data-col="margin" onclick="sortAgentSites('margin')" style="cursor:pointer;">Margin</th>
+                    <th data-col="ease" onclick="sortAgentSites('ease')" style="cursor:pointer;">Ease</th>
+                    <th data-col="date" onclick="sortAgentSites('date')" style="cursor:pointer;">Date</th>
+                    <th style="cursor:default;">Action</th>
+                </tr></thead>
+                <tbody id="sitesTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div><!-- /tabSites -->
+
+<!-- ===== Analysis Detail Modal ===== -->
+<div class="modal-overlay" id="analysisModal" style="display:none;" onclick="if(event.target===this)closeAnalysis();">
+    <div class="modal-content">
+        <div class="modal-top-bar">
+            <button type="button" class="modal-print-btn" onclick="printAnalysis()">Print / PDF</button>
+            <button type="button" class="modal-close" onclick="closeAnalysis()">&times;</button>
+        </div>
+        <div class="modal-header">
+            <h2 id="modalTitle"></h2>
+            <p id="modalSubtitle"></p>
+        </div>
+        <div class="modal-body" id="modalBody"></div>
+    </div>
+</div>
+
+<!-- ===== Listing One-Pager Modal ===== -->
+<div class="onepager-overlay" id="onepagerModal" style="display:none;" onclick="if(event.target===this)closeOnePager();">
+    <div class="onepager-topbar">
+        <button type="button" class="modal-print-btn" onclick="printOnePager()">Print / PDF</button>
+        <button type="button" class="modal-close" onclick="closeOnePager()">&times;</button>
+    </div>
+    <div class="onepager-content" id="onepagerContent"></div>
 </div>
 
 <footer>
@@ -3071,6 +3643,9 @@ function calculateHBU() {
     // Render
     renderResults(results, inp);
 
+    // Auto-save to My Sites
+    saveToAgentSites(results, inp);
+
     // SB 79 Map — show if we have geocoded coordinates
     if (window.lastGeocode && typeof L !== 'undefined') {
         const { lat, lon } = window.lastGeocode;
@@ -3129,8 +3704,8 @@ function renderResults(results, inp) {
 
         const card = document.createElement('div');
         card.className = `result-card ${rankClasses[i]}`;
-        // No click action in agent portal
-        // No deep analysis in agent portal
+        card.style.cursor = 'pointer';
+        card.onclick = function(e) { if (e.target.closest('button')) return; openAnalysis(i); };
         card.innerHTML = `
             <div class="rank-banner">
                 <span class="rank-num">#${i + 1}</span>
@@ -3165,7 +3740,10 @@ function renderResults(results, inp) {
 
                 <div class="rationale">${RATIONALE[r.id] || ''}</div>
                 ${legBadges}
-                
+                <div style="display:flex;gap:0.5rem;margin-top:0.75rem;">
+                    <button type="button" class="btn-lookup" style="font-size:0.78rem;padding:6px 14px;" onclick="openAnalysis(${i})">View Detail</button>
+                    <button type="button" class="btn-lookup" style="font-size:0.78rem;padding:6px 14px;background:#0f766e;" onclick="openListingOnePager(${i})">Listing One-Pager</button>
+                </div>
             </div>
         `;
         cardsDiv.appendChild(card);
@@ -3188,7 +3766,7 @@ function renderResults(results, inp) {
         const aduCard = document.createElement('div');
         aduCard.className = 'result-card';
         aduCard.style.cssText = 'cursor:pointer;border-left:4px solid #48bb78;margin-top:1rem;';
-        // No deep analysis in agent portal
+        aduCard.onclick = function(e) { if (e.target.closest('button')) return; openAnalysis(aduIdx); };
         aduCard.innerHTML = `
             <div class="rank-banner" style="background:linear-gradient(135deg,#276749,#48bb78);color:white;">
                 <span class="rank-num" style="background:rgba(255,255,255,0.25);color:white;">ADU</span>
@@ -3222,7 +3800,10 @@ function renderResults(results, inp) {
                 ${aduMetrics}
                 <div class="rationale">${RATIONALE['adu'] || ''}</div>
                 ${aduLeg}
-                
+                <div style="display:flex;gap:0.5rem;margin-top:0.75rem;">
+                    <button type="button" class="btn-lookup" style="font-size:0.78rem;padding:6px 14px;" onclick="openAnalysis(${aduIdx})">View Detail</button>
+                    <button type="button" class="btn-lookup" style="font-size:0.78rem;padding:6px 14px;background:#0f766e;" onclick="openListingOnePager(${aduIdx})">Listing One-Pager</button>
+                </div>
             </div>
         `;
         cardsDiv.appendChild(aduCard);
@@ -4001,6 +4582,1260 @@ function renderSB79Eligibility(eligibility) {
             <div class="sb79-stat"><div class="stat-label">Effective Date</div><div class="stat-value">Jul 2026</div></div>
         </div>
     `;
+}
+
+// ============================================================
+//  UNIT MIX PROFILES
+// ============================================================
+const UNIT_MIX_PROFILES = {
+    dtla:         { studio: 0.30, br1: 0.40, br2: 0.25, br3: 0.05 },
+    hollywood:    { studio: 0.25, br1: 0.40, br2: 0.28, br3: 0.07 },
+    koreatown:    { studio: 0.22, br1: 0.38, br2: 0.30, br3: 0.10 },
+    westside:     { studio: 0.15, br1: 0.35, br2: 0.35, br3: 0.15 },
+    santamonica:  { studio: 0.18, br1: 0.37, br2: 0.32, br3: 0.13 },
+    beverly:      { studio: 0.12, br1: 0.30, br2: 0.38, br3: 0.20 },
+    midcity:      { studio: 0.20, br1: 0.38, br2: 0.30, br3: 0.12 },
+    southla:      { studio: 0.10, br1: 0.28, br2: 0.38, br3: 0.24 },
+    valleyeast:   { studio: 0.10, br1: 0.30, br2: 0.35, br3: 0.25 },
+    valleywest:   { studio: 0.12, br1: 0.30, br2: 0.35, br3: 0.23 },
+    silverlake:   { studio: 0.22, br1: 0.40, br2: 0.28, br3: 0.10 },
+    highland:     { studio: 0.15, br1: 0.35, br2: 0.32, br3: 0.18 },
+    venice:       { studio: 0.18, br1: 0.38, br2: 0.32, br3: 0.12 },
+    culver:       { studio: 0.18, br1: 0.38, br2: 0.30, br3: 0.14 },
+    exposition:   { studio: 0.20, br1: 0.35, br2: 0.30, br3: 0.15 },
+    southbay:     { studio: 0.10, br1: 0.28, br2: 0.38, br3: 0.24 },
+    harbor:       { studio: 0.08, br1: 0.25, br2: 0.40, br3: 0.27 },
+    boyleheights: { studio: 0.10, br1: 0.30, br2: 0.35, br3: 0.25 },
+};
+
+// ============================================================
+//  CSI DIVISIONS + BREAKDOWN
+// ============================================================
+const CSI_DIVISIONS = [
+    { div: '01', name: 'General Requirements', basePct: 0.08 },
+    { div: '02', name: 'Existing Conditions', basePct: 0.02 },
+    { div: '03', name: 'Concrete', basePct: 0.10 },
+    { div: '04', name: 'Masonry', basePct: 0.02 },
+    { div: '05', name: 'Metals', basePct: 0.08 },
+    { div: '06', name: 'Wood, Plastics & Composites', basePct: 0.10 },
+    { div: '07', name: 'Thermal & Moisture Protection', basePct: 0.06 },
+    { div: '08', name: 'Openings', basePct: 0.06 },
+    { div: '09', name: 'Finishes', basePct: 0.12 },
+    { div: '10', name: 'Specialties', basePct: 0.02 },
+    { div: '11', name: 'Equipment', basePct: 0.02 },
+    { div: '12', name: 'Furnishings', basePct: 0.01 },
+    { div: '13', name: 'Special Construction', basePct: 0.01 },
+    { div: '14', name: 'Conveying Equipment', basePct: 0.03 },
+    { div: '21', name: 'Fire Suppression', basePct: 0.03 },
+    { div: '22', name: 'Plumbing', basePct: 0.06 },
+    { div: '23', name: 'HVAC', basePct: 0.08 },
+    { div: '26', name: 'Electrical', basePct: 0.08 },
+    { div: '27', name: 'Communications', basePct: 0.01 },
+    { div: '28', name: 'Electronic Safety & Security', basePct: 0.01 },
+];
+
+function computeCSIBreakdown(useId, computed, constructionType, stories) {
+    var totalConstruction = computed.construction || 0;
+    var gsf = computed.gsf || 1;
+    var divisions = [];
+    for (var i = 0; i < CSI_DIVISIONS.length; i++) {
+        var d = CSI_DIVISIONS[i];
+        var pct = d.basePct;
+        if (constructionType === 'I-A' || constructionType === 'I-B') {
+            if (d.div === '03') pct = 0.18; if (d.div === '05') pct = 0.14;
+            if (d.div === '06') pct = 0.02; if (d.div === '07') pct = 0.07;
+            if (d.div === '14') pct = 0.05; if (d.div === '01') pct = 0.10;
+        } else if (constructionType === 'II-A' || constructionType === 'II-B') {
+            if (d.div === '03') pct = 0.14; if (d.div === '05') pct = 0.12; if (d.div === '06') pct = 0.04;
+        } else if (constructionType === 'III-A') {
+            if (d.div === '03') pct = 0.12; if (d.div === '06') pct = 0.11;
+        } else if (constructionType === 'V-A' || constructionType === 'V-B') {
+            if (d.div === '03') pct = 0.06; if (d.div === '05') pct = 0.04; if (d.div === '06') pct = 0.16;
+        }
+        if (stories >= 8) {
+            if (d.div === '14') pct = Math.max(pct, 0.05);
+            if (d.div === '21') pct = Math.max(pct, 0.04);
+            if (d.div === '23') pct = Math.max(pct, 0.09);
+        }
+        if (stories <= 3 && d.div === '14') pct = 0;
+        if (useId === 'hotel') { if (d.div === '09') pct = 0.14; if (d.div === '11') pct = 0.04; if (d.div === '12') pct = 0.03; }
+        if (useId === 'office') { if (d.div === '23') pct = 0.10; if (d.div === '26') pct = 0.10; if (d.div === '09') pct = 0.10; }
+        if (useId === 'retail' || useId === 'mixeduse') { if (d.div === '08') pct = 0.08; }
+        if (useId === 'industrial' || useId === 'warehouse') { if (d.div === '09') pct = 0.04; if (d.div === '03') pct = 0.15; if (d.div === '05') pct = 0.18; if (d.div === '06') pct = 0.01; }
+        if (useId === 'senior') { if (d.div === '14') pct = Math.max(pct, 0.04); if (d.div === '11') pct = 0.03; }
+        var cost = Math.round(totalConstruction * pct);
+        divisions.push({ div: d.div, name: d.name, pct: pct, cost: cost, costPSF: cost / gsf });
+    }
+    var allocatedTotal = divisions.reduce(function(s, d) { return s + d.cost; }, 0);
+    if (allocatedTotal > 0 && Math.abs(allocatedTotal - totalConstruction) > 100) {
+        var scale = totalConstruction / allocatedTotal;
+        for (var j = 0; j < divisions.length; j++) {
+            divisions[j].cost = Math.round(divisions[j].cost * scale);
+            divisions[j].pct = divisions[j].pct * scale;
+            divisions[j].costPSF = divisions[j].cost / gsf;
+        }
+    }
+    return divisions;
+}
+
+// ============================================================
+//  RISKS HTML GENERATOR
+// ============================================================
+function generateRisksHTML(useId, inp) {
+    const risks = [];
+    if (inp.constFlood) risks.push({ t: 'Flood Zone', d: 'Site is in a flood zone. Flood insurance required, ground-floor design constraints, potential FEMA elevation requirements.' });
+    if (inp.constHillside) risks.push({ t: 'Hillside Ordinance', d: 'Hillside development restrictions limit grading, height, and density. Extended entitlement timeline expected.' });
+    if (inp.constHistoric) risks.push({ t: 'Historic Overlay', d: 'Historic preservation review required. May limit demolition, facade changes, and building height.' });
+    if (inp.constFault) risks.push({ t: 'Fault Zone', d: 'Alquist-Priolo fault zone — geotechnical study required. Structural reinforcement may increase costs 10-20%.' });
+    if (inp.constCoastal) risks.push({ t: 'Coastal Zone', d: 'California Coastal Commission review required. Height, view corridor, and public access conditions likely.' });
+    if (inp.siteCondition === 'brownfield') risks.push({ t: 'Environmental Contamination', d: 'Phase II ESA recommended. Remediation costs could range from $50K to $500K+ depending on contamination type.' });
+    if (inp.siteCondition === 'demolition') risks.push({ t: 'Demolition Required', d: 'Existing structure requires demolition. Asbestos/lead survey required. Demo costs included in budget.' });
+    if (inp.utilities === 'partial') risks.push({ t: 'Utility Upgrades Needed', d: 'Utility infrastructure requires upgrades. Coordinate with LADWP and LASAN. May add $50-200K.' });
+    if (inp.utilities === 'none') risks.push({ t: 'No Utilities Available', d: 'Significant utility extension required. May add $200K-$1M+ and 6-12 months to timeline.' });
+    if (inp.topography === 'steep') risks.push({ t: 'Steep Topography', d: 'Significant grading and retaining walls required. May add 15-30% to foundation costs.' });
+    if (['multifamily_high', 'hotel'].includes(useId)) risks.push({ t: 'Construction Cost Escalation', d: 'High-rise construction is sensitive to material/labor cost changes. Lock in GMP contract early.' });
+    if (useId === 'retail') risks.push({ t: 'Retail Market Uncertainty', d: 'Evolving retail landscape. Consider flexible ground-floor design for alternative uses.' });
+    if (useId === 'office') risks.push({ t: 'Office Demand Shift', d: 'Remote work trends have shifted office demand. Consider amenity-rich design and flexible leases.' });
+    risks.push({ t: 'Entitlement Risk', d: 'LA entitlement timelines are subject to CEQA review, community opposition, and council discretion. Budget for delays.' });
+    risks.push({ t: 'Interest Rate Sensitivity', d: 'Construction and permanent financing costs fluctuate. Model scenarios at current rate +/- 100 bps.' });
+    let html = '<div class="analysis-section"><h3>Key Risks &amp; Considerations</h3>';
+    html += risks.map(r => `<div class="risk-card"><strong>${r.t}</strong><p>${r.d}</p></div>`).join('');
+    html += '</div>';
+    return html;
+}
+
+// ============================================================
+//  EDITABLE ANALYSIS MODAL — STATE, COMPUTE, RENDER
+// ============================================================
+
+let analysisState = { resultIndex: null, useId: null, inp: null, effects: null, legislation: null, assumptions: null };
+
+function getDefaultAssumptions(useId, inp, effects) {
+    const params = BUILDING_PARAMS[useId];
+    const baseFAR = FAR_TYPICAL[useId] || 1.0;
+    let far = baseFAR;
+    if (effects) { far = baseFAR * (1 + effects.densityBonus); if (effects.minFAR > 0) far = Math.max(far, effects.minFAR); }
+    const gsf = Math.round(inp.parcelSize * far);
+    const nsf = Math.round(gsf * params.eff);
+    const hasUnits = !!params.unitSF;
+    const unitsOrNSF = hasUnits ? Math.max(1, Math.floor(nsf / params.unitSF)) : nsf;
+    const baseParkRatio = params.parkRatio || 0;
+    const parkReduction = effects ? effects.parkingReduction : 0;
+    let parkingSpaces;
+    if (useId === 'parking') { parkingSpaces = Math.round(gsf / 350); }
+    else if (hasUnits) { parkingSpaces = Math.max(0, Math.ceil(unitsOrNSF * baseParkRatio * (1 - parkReduction))); }
+    else { parkingSpaces = Math.max(0, Math.ceil(gsf / 1000 * baseParkRatio * (1 - parkReduction))); }
+    let buildCostPSF = BUILD_COST_PSF[useId] || 300;
+    if (effects && effects.parkingReduction > 0) { buildCostPSF = Math.round(buildCostPSF * (1 - effects.parkingReduction * 0.18)); }
+    const rentMult = NEIGHBORHOOD_RENT_MULT[inp.neighborhood] || 1.0;
+    var swBreakdown = calcSiteWorkBreakdown(useId, inp, gsf);
+    var siteWorkTotalPSF = inp.parcelSize > 0 ? Math.round(swBreakdown.total / inp.parcelSize) : 18;
+    return {
+        far: parseFloat(far.toFixed(2)), unitsOrNSF, parkingSpaces,
+        buildCostPSF: Math.round(buildCostPSF),
+        landValuePSF: LAND_VALUE_PSF[inp.neighborhood] || 150,
+        revenuePSF: Math.round((REVENUE_PSF[useId] || 30) * rentMult),
+        opexPct: Math.round(params.opex * 100),
+        capRatePct: parseFloat((params.cap * 100).toFixed(1)),
+        parkingCostPerSpace: PARKING_COST_MAP[useId] || 35000,
+        siteWorkPSF: siteWorkTotalPSF, siteWorkTotal: swBreakdown.total, siteWorkOverride: null,
+        parcelSize: inp.parcelSize || 10000,
+        coveragePct: 70, efficiencyPct: Math.round(params.eff * 100),
+        setbackFront: params.setF, setbackSide: params.setS, setbackRear: params.setS,
+        amenityPct: 0, parkingType: 'surface',
+        unitMixStudio: Math.round(((UNIT_MIX_PROFILES[inp.neighborhood] || UNIT_MIX_PROFILES.dtla).studio) * 100),
+        unitMixBr1: Math.round(((UNIT_MIX_PROFILES[inp.neighborhood] || UNIT_MIX_PROFILES.dtla).br1) * 100),
+        unitMixBr2: Math.round(((UNIT_MIX_PROFILES[inp.neighborhood] || UNIT_MIX_PROFILES.dtla).br2) * 100),
+    };
+}
+
+function computeFromAssumptions(useId, inp, assumptions, effects) {
+    const params = BUILDING_PARAMS[useId];
+    const far = assumptions.far;
+    const gsf = Math.round(inp.parcelSize * far);
+    const effPct = (assumptions.efficiencyPct != null ? assumptions.efficiencyPct : Math.round(params.eff * 100)) / 100;
+    const amenityPct = (assumptions.amenityPct || 0) / 100;
+    const nsf = Math.round(gsf * effPct * (1 - amenityPct));
+    const amenitySF = Math.round(gsf * effPct * amenityPct);
+    const setF = assumptions.setbackFront != null ? assumptions.setbackFront : params.setF;
+    const setS = assumptions.setbackSide != null ? assumptions.setbackSide : params.setS;
+    const setR = assumptions.setbackRear != null ? assumptions.setbackRear : params.setS;
+    const frontage = inp.frontage || Math.sqrt(inp.parcelSize * 2);
+    const depth = inp.parcelSize / frontage;
+    const buildableW = Math.max(0, frontage - 2 * setS);
+    const buildableD = Math.max(0, depth - setF - setR);
+    const buildableArea = Math.round(buildableW * buildableD);
+    const covPct = (assumptions.coveragePct != null ? assumptions.coveragePct : 70) / 100;
+    const maxFootprint = Math.min(Math.round(inp.parcelSize * covPct), buildableArea);
+    const stories = Math.max(params.stories, Math.ceil(gsf / Math.max(maxFootprint, 1)));
+    const buildingHeight = stories * params.floorH;
+    const buildingFootprint = Math.min(maxFootprint, Math.round(gsf / stories));
+    const hasUnits = !!params.unitSF;
+    const units = hasUnits ? assumptions.unitsOrNSF : null;
+    const revenueNSF = hasUnits ? assumptions.unitsOrNSF * params.unitSF : assumptions.unitsOrNSF;
+    const parkingSpaces = assumptions.parkingSpaces;
+    const landValuePSF = assumptions.landValuePSF;
+    const landCost = useId === 'adu' ? 0 : inp.parcelSize * landValuePSF;
+    let siteWorkBreakdown;
+    if (assumptions.siteWorkOverride !== undefined && assumptions.siteWorkOverride !== null) {
+        siteWorkBreakdown = { total: assumptions.siteWorkOverride, grading: 0, utilities: 0, erosion: 0, soilPrep: 0, clearing: 0, isOverride: true };
+    } else { siteWorkBreakdown = calcSiteWorkBreakdown(useId, inp, gsf, assumptions.siteWorkRates); }
+    const siteWork = siteWorkBreakdown.total;
+    const demolition = (inp.siteCondition === 'demolition' && useId !== 'adu') ? inp.parcelSize * 12 : 0;
+    const buildCostPSF = assumptions.buildCostPSF;
+    const construction = gsf * buildCostPSF;
+    const parkingCost = parkingSpaces * assumptions.parkingCostPerSpace;
+    const landscaping = Math.round(construction * 0.04);
+    const hardContingency = Math.round((siteWork + demolition + construction + parkingCost + landscaping) * 0.07);
+    const totalHard = siteWork + demolition + construction + parkingCost + landscaping + hardContingency;
+    const archEng = Math.round(totalHard * 0.08);
+    const permits = Math.round(totalHard * 0.05);
+    const legal = Math.round(totalHard * 0.02);
+    const financing = Math.round((landCost + totalHard) * 0.045);
+    const revenuePSF = assumptions.revenuePSF;
+    const marketing = Math.round(revenueNSF * revenuePSF * 0.02);
+    const devFee = Math.round((totalHard + archEng + permits) * 0.04);
+    const softCostMult = effects && effects.softCostReduction > 0 ? (1 - effects.softCostReduction * 0.20) : 1;
+    const totalSoft = Math.round((archEng + permits + legal + financing + marketing + devFee) * softCostMult);
+    const totalDev = landCost + totalHard + totalSoft;
+    const grossRevenue = revenueNSF * revenuePSF;
+    const opexRate = assumptions.opexPct / 100;
+    const opex = Math.round(grossRevenue * opexRate);
+    const noi = grossRevenue - opex;
+    const capRate = assumptions.capRatePct / 100;
+    const stabilizedValue = capRate > 0 ? Math.round(noi / capRate) : 0;
+    const yieldOnCost = totalDev > 0 ? noi / totalDev : 0;
+    const devMargin = totalDev > 0 ? (stabilizedValue - totalDev) / totalDev : 0;
+    return {
+        gsf, nsf, revenueNSF, stories, buildingHeight, buildingFootprint, units, parkingSpaces, far,
+        landCost, siteWork, siteWorkBreakdown, demolition, construction, buildCostPSF, parkingCost, landscaping, hardContingency, totalHard,
+        archEng, permits, legal, financing, marketing, devFee, totalSoft, totalDev,
+        grossRevenue, opex, noi, capRate, stabilizedValue, yieldOnCost, devMargin,
+        params, landValuePSF, revenuePSF, parkingCostPerSpace: assumptions.parkingCostPerSpace,
+        amenitySF, buildableArea, setbacks: { front: setF, side: setS, rear: setR },
+        coveragePct: covPct * 100, efficiencyPct: effPct * 100,
+    };
+}
+
+function renderProgramDisplay(computed) {
+    return `<div class="program-grid">
+        <div class="program-item"><div class="program-value">${computed.stories}</div><div class="program-label">Stories / ${computed.buildingHeight} ft</div></div>
+        <div class="program-item"><div class="program-value">${computed.gsf.toLocaleString()}</div><div class="program-label">Gross SF</div></div>
+        ${computed.units
+            ? `<div class="program-item"><div class="program-value">${computed.units}</div><div class="program-label">Units</div></div>`
+            : `<div class="program-item"><div class="program-value">${computed.nsf.toLocaleString()}</div><div class="program-label">Net Leasable SF</div></div>`}
+        <div class="program-item"><div class="program-value">${computed.parkingSpaces}</div><div class="program-label">Parking Spaces</div></div>
+    </div>`;
+}
+
+function renderAssumptions(assumptions, hasUnits) {
+    return `<div class="assumptions-panel"><h4>Key Assumptions (editable)</h4><div class="assumptions-grid">
+        <div class="assumption-field"><label>FAR</label><input type="number" class="assumption-input" id="a-far" step="0.1" min="0.1" max="20" value="${assumptions.far}" oninput="recalcAnalysis()"></div>
+        <div class="assumption-field"><label>${hasUnits ? 'Units' : 'Net Leasable SF'}</label><input type="number" class="assumption-input" id="a-unitsOrNSF" step="1" min="1" value="${assumptions.unitsOrNSF}" oninput="recalcAnalysis()"></div>
+        <div class="assumption-field"><label>Parking Spaces</label><input type="number" class="assumption-input" id="a-parkingSpaces" step="1" min="0" value="${assumptions.parkingSpaces}" oninput="recalcAnalysis()"></div>
+        <div class="assumption-field"><label>Build Cost $/SF</label><input type="number" class="assumption-input" id="a-buildCostPSF" step="5" min="10" value="${assumptions.buildCostPSF}" oninput="recalcAnalysis()"></div>
+        <div class="assumption-field"><label>Land Value $/SF</label><input type="number" class="assumption-input" id="a-landValuePSF" step="5" min="1" value="${assumptions.landValuePSF}" oninput="recalcAnalysis()"></div>
+        <div class="assumption-field"><label>Revenue $/SF</label><input type="number" class="assumption-input" id="a-revenuePSF" step="1" min="1" value="${assumptions.revenuePSF}" oninput="recalcAnalysis()"></div>
+        <div class="assumption-field"><label>OpEx %</label><input type="number" class="assumption-input" id="a-opexPct" step="1" min="0" max="100" value="${assumptions.opexPct}" oninput="recalcAnalysis()"></div>
+        <div class="assumption-field"><label>Cap Rate %</label><input type="number" class="assumption-input" id="a-capRatePct" step="0.1" min="0.1" max="20" value="${assumptions.capRatePct}" oninput="recalcAnalysis()"></div>
+        <div class="assumption-field"><label>Parking $/Space</label><input type="number" class="assumption-input" id="a-parkingCostPerSpace" step="1000" min="0" value="${assumptions.parkingCostPerSpace}" oninput="recalcAnalysis()"></div>
+        <div class="assumption-field"><label>Site Work $/SF <span style="font-size:0.6rem;color:#a0aec0;">(of lot)</span></label><input type="number" class="assumption-input" id="a-siteWorkPSF" step="1" min="0" max="100" value="${assumptions.siteWorkPSF || Math.round(assumptions.siteWorkTotal / (assumptions.parcelSize || 10000))}" oninput="recalcAnalysis()" placeholder="auto"><span style="font-size:0.6rem;color:#a0aec0;">blank = auto-calc</span></div>
+    </div></div>`;
+}
+
+function renderSiteWorkBreakdownInline(computed, inp) {
+    var sw = computed.siteWorkBreakdown;
+    if (!sw) return '<em style="color:#a0aec0;">No breakdown available</em>';
+    var lot = inp.parcelSize || 10000;
+    var f = function(v) { return '$' + Math.round(v).toLocaleString(); };
+    var r = sw.rates || {};
+    var html = '<div style="font-size:0.75rem;">';
+    html += '<div style="font-weight:600;color:#2b6cb0;margin-bottom:0.4rem;">Site Work Sub-Components (' + lot.toLocaleString() + ' SF lot)</div>';
+    html += '<table style="width:100%;font-size:0.72rem;border-collapse:collapse;"><thead><tr style="background:#edf2f7;"><th style="text-align:left;padding:3px 8px;">Component</th><th style="padding:3px 8px;">Rate</th><th style="padding:3px 8px;">Cost</th></tr></thead><tbody>';
+    html += '<tr><td style="padding:3px 8px;">Clearing</td><td style="padding:3px 8px;text-align:center;">$' + (r.clearing || 0).toFixed(2) + '</td><td style="padding:3px 8px;text-align:center;">' + f(sw.clearing) + '</td></tr>';
+    html += '<tr><td style="padding:3px 8px;">Grading</td><td style="padding:3px 8px;text-align:center;">$' + (r.grading || 0).toFixed(2) + '</td><td style="padding:3px 8px;text-align:center;">' + f(sw.grading) + '</td></tr>';
+    html += '<tr><td style="padding:3px 8px;">Soil Prep</td><td style="padding:3px 8px;text-align:center;">$' + (r.soilPrep || 0).toFixed(2) + '</td><td style="padding:3px 8px;text-align:center;">' + f(sw.soilPrep) + '</td></tr>';
+    html += '<tr><td style="padding:3px 8px;">Utilities</td><td style="padding:3px 8px;text-align:center;">$' + (r.utilities || 0).toFixed(2) + '</td><td style="padding:3px 8px;text-align:center;">' + f(sw.utilities) + '</td></tr>';
+    html += '<tr><td style="padding:3px 8px;">Erosion</td><td style="padding:3px 8px;text-align:center;">$' + (r.erosion || 0).toFixed(2) + '</td><td style="padding:3px 8px;text-align:center;">' + f(sw.erosion) + '</td></tr>';
+    html += '<tr style="font-weight:600;border-top:2px solid #cbd5e0;"><td style="padding:4px 8px;">Total</td><td></td><td style="padding:4px 8px;text-align:center;">' + f(sw.total) + '</td></tr>';
+    html += '</tbody></table></div>';
+    return html;
+}
+
+function renderCSIBreakdownInBudget(computed, inp) {
+    var stories = computed.stories || 1;
+    var constructionType = 'V-A';
+    if (stories >= 10) constructionType = 'I-A';
+    else if (stories >= 7) constructionType = 'I-B';
+    else if (stories >= 5) constructionType = 'III-A';
+    else if (stories >= 4) constructionType = 'II-A';
+    var useId = (analysisState && analysisState.useId) || 'multifamily_mid';
+    var divisions = computeCSIBreakdown(useId, computed, constructionType, stories);
+    var f = function(v) { return '$' + Math.round(v).toLocaleString(); };
+    var html = '<div style="font-size:0.75rem;"><div style="font-weight:600;color:#553c9a;margin-bottom:0.4rem;">CSI Division Breakdown — ' + constructionType + '</div>';
+    html += '<table style="width:100%;font-size:0.72rem;border-collapse:collapse;"><thead><tr style="background:#f0e6ff;"><th style="padding:3px 6px;text-align:left;">Div</th><th style="padding:3px 6px;text-align:left;">Trade</th><th style="padding:3px 6px;text-align:right;">%</th><th style="padding:3px 6px;text-align:right;">$/SF</th><th style="padding:3px 6px;text-align:right;">Cost</th></tr></thead><tbody>';
+    for (var i = 0; i < divisions.length; i++) {
+        var d = divisions[i]; if (d.cost <= 0) continue;
+        html += '<tr style="background:' + (i % 2 === 0 ? '#fff' : '#faf5ff') + ';"><td style="padding:2px 6px;color:#718096;">' + d.div + '</td><td style="padding:2px 6px;">' + d.name + '</td><td style="padding:2px 6px;text-align:right;">' + (d.pct * 100).toFixed(1) + '%</td><td style="padding:2px 6px;text-align:right;">$' + Math.round(d.costPSF) + '</td><td style="padding:2px 6px;text-align:right;">' + f(d.cost) + '</td></tr>';
+    }
+    html += '</tbody></table></div>';
+    return html;
+}
+
+function renderBudgetTable(computed, inp) {
+    const gsf = computed.gsf || 1;
+    const units = computed.units;
+    const hasUnits = units && units > 0;
+    const perGSF = (v) => `$${Math.round(v / gsf).toLocaleString()}`;
+    const perUnit = (v) => hasUnits ? `$${Math.round(v / units).toLocaleString()}` : '—';
+    const pct = (v) => computed.totalDev > 0 ? `${(v / computed.totalDev * 100).toFixed(1)}%` : '';
+    return `<table class="budget-table">
+        <thead><tr><th>Line Item</th><th>Total</th><th>$/GSF</th><th>${hasUnits ? '$/Unit' : '$/NSF'}</th><th>% of Total</th></tr></thead>
+        <tbody>
+        <tr class="section-header"><td colspan="5">LAND ACQUISITION</td></tr>
+        <tr><td>Land Cost (${inp.parcelSize.toLocaleString()} SF &times; $${computed.landValuePSF.toLocaleString()}/SF)</td><td>${fmt(computed.landCost)}</td><td class="dim">${perGSF(computed.landCost)}</td><td class="dim">${hasUnits ? perUnit(computed.landCost) : '$' + Math.round(computed.landCost / (computed.nsf || 1)).toLocaleString()}</td><td class="pct-col">${pct(computed.landCost)}</td></tr>
+        <tr class="section-header"><td colspan="5">HARD COSTS</td></tr>
+        <tr style="cursor:pointer;" onclick="var el=document.getElementById('siteWorkDetail');el.style.display=el.style.display==='none'?'table-row':'none';"><td><strong>Site Work</strong> <span style="font-size:0.65rem;color:#4299e1;">&#9660; breakdown</span></td><td>${fmt(computed.siteWork)}</td><td class="dim">${perGSF(computed.siteWork)}</td><td class="dim">${hasUnits ? perUnit(computed.siteWork) : '$' + Math.round(computed.siteWork / (computed.nsf || 1)).toLocaleString()}</td><td class="pct-col">${pct(computed.siteWork)}</td></tr>
+        <tr id="siteWorkDetail" style="display:none;"><td colspan="5" style="padding:0.5rem 1rem;background:#f7fafc;border-left:3px solid #4299e1;">${renderSiteWorkBreakdownInline(computed, inp)}</td></tr>
+        ${computed.demolition > 0 ? `<tr><td>Demolition</td><td>${fmt(computed.demolition)}</td><td class="dim">${perGSF(computed.demolition)}</td><td class="dim">${hasUnits ? perUnit(computed.demolition) : '$' + Math.round(computed.demolition / (computed.nsf || 1)).toLocaleString()}</td><td class="pct-col">${pct(computed.demolition)}</td></tr>` : ''}
+        <tr style="cursor:pointer;" onclick="var el=document.getElementById('csiDetail');if(el)el.style.display=el.style.display==='none'?'table-row':'none';"><td><strong>Building Construction</strong> (${computed.gsf.toLocaleString()} GSF &times; $${Math.round(computed.buildCostPSF).toLocaleString()}/SF) <span style="font-size:0.65rem;color:#4299e1;">&#9660; CSI</span></td><td>${fmt(computed.construction)}</td><td class="dim">$${Math.round(computed.buildCostPSF).toLocaleString()}</td><td class="dim">${hasUnits ? perUnit(computed.construction) : '$' + Math.round(computed.construction / (computed.nsf || 1)).toLocaleString()}</td><td class="pct-col">${pct(computed.construction)}</td></tr>
+        <tr id="csiDetail" style="display:none;"><td colspan="5" style="padding:0.5rem 0.75rem;background:#f7fafc;border-left:3px solid #805ad5;">${renderCSIBreakdownInBudget(computed, inp)}</td></tr>
+        <tr><td>Parking (${computed.parkingSpaces} spaces &times; $${(computed.parkingCostPerSpace || 0).toLocaleString()})</td><td>${fmt(computed.parkingCost)}</td><td class="dim">${perGSF(computed.parkingCost)}</td><td class="dim">${hasUnits ? perUnit(computed.parkingCost) : '$' + Math.round(computed.parkingCost / (computed.nsf || 1)).toLocaleString()}</td><td class="pct-col">${pct(computed.parkingCost)}</td></tr>
+        <tr><td>Landscaping (4%)</td><td>${fmt(computed.landscaping)}</td><td class="dim">${perGSF(computed.landscaping)}</td><td class="dim">${hasUnits ? perUnit(computed.landscaping) : '$' + Math.round(computed.landscaping / (computed.nsf || 1)).toLocaleString()}</td><td class="pct-col">${pct(computed.landscaping)}</td></tr>
+        <tr><td>Hard Contingency (7%)</td><td>${fmt(computed.hardContingency)}</td><td class="dim">${perGSF(computed.hardContingency)}</td><td class="dim">${hasUnits ? perUnit(computed.hardContingency) : '$' + Math.round(computed.hardContingency / (computed.nsf || 1)).toLocaleString()}</td><td class="pct-col">${pct(computed.hardContingency)}</td></tr>
+        <tr class="subtotal"><td>Subtotal Hard</td><td>${fmt(computed.totalHard)}</td><td>${perGSF(computed.totalHard)}</td><td>${hasUnits ? perUnit(computed.totalHard) : '$' + Math.round(computed.totalHard / (computed.nsf || 1)).toLocaleString()}</td><td class="pct-col">${pct(computed.totalHard)}</td></tr>
+        <tr class="section-header"><td colspan="5">SOFT COSTS</td></tr>
+        <tr><td>Architecture &amp; Engineering (8%)</td><td>${fmt(computed.archEng)}</td><td class="dim">${perGSF(computed.archEng)}</td><td class="dim">${hasUnits ? perUnit(computed.archEng) : '$' + Math.round(computed.archEng / (computed.nsf || 1)).toLocaleString()}</td><td class="pct-col">${pct(computed.archEng)}</td></tr>
+        <tr><td>Permits &amp; Fees (5%)</td><td>${fmt(computed.permits)}</td><td class="dim">${perGSF(computed.permits)}</td><td class="dim">${hasUnits ? perUnit(computed.permits) : '$' + Math.round(computed.permits / (computed.nsf || 1)).toLocaleString()}</td><td class="pct-col">${pct(computed.permits)}</td></tr>
+        <tr><td>Legal (2%)</td><td>${fmt(computed.legal)}</td><td class="dim">${perGSF(computed.legal)}</td><td class="dim">${hasUnits ? perUnit(computed.legal) : '$' + Math.round(computed.legal / (computed.nsf || 1)).toLocaleString()}</td><td class="pct-col">${pct(computed.legal)}</td></tr>
+        <tr><td>Financing (4.5%)</td><td>${fmt(computed.financing)}</td><td class="dim">${perGSF(computed.financing)}</td><td class="dim">${hasUnits ? perUnit(computed.financing) : '$' + Math.round(computed.financing / (computed.nsf || 1)).toLocaleString()}</td><td class="pct-col">${pct(computed.financing)}</td></tr>
+        <tr><td>Marketing (2%)</td><td>${fmt(computed.marketing)}</td><td class="dim">${perGSF(computed.marketing)}</td><td class="dim">${hasUnits ? perUnit(computed.marketing) : '$' + Math.round(computed.marketing / (computed.nsf || 1)).toLocaleString()}</td><td class="pct-col">${pct(computed.marketing)}</td></tr>
+        <tr><td>Developer Fee (4%)</td><td>${fmt(computed.devFee)}</td><td class="dim">${perGSF(computed.devFee)}</td><td class="dim">${hasUnits ? perUnit(computed.devFee) : '$' + Math.round(computed.devFee / (computed.nsf || 1)).toLocaleString()}</td><td class="pct-col">${pct(computed.devFee)}</td></tr>
+        <tr class="subtotal"><td>Subtotal Soft</td><td>${fmt(computed.totalSoft)}</td><td>${perGSF(computed.totalSoft)}</td><td>${hasUnits ? perUnit(computed.totalSoft) : '$' + Math.round(computed.totalSoft / (computed.nsf || 1)).toLocaleString()}</td><td class="pct-col">${pct(computed.totalSoft)}</td></tr>
+        <tr class="grand-total"><td>TOTAL DEVELOPMENT COST</td><td>${fmt(computed.totalDev)}</td><td>${perGSF(computed.totalDev)}</td><td>${hasUnits ? perUnit(computed.totalDev) : '$' + Math.round(computed.totalDev / (computed.nsf || 1)).toLocaleString()}</td><td>100%</td></tr>
+        </tbody></table>`;
+}
+
+function renderReturnsSection(computed) {
+    const spread = ((computed.yieldOnCost - computed.capRate) * 100).toFixed(0);
+    const spreadLabel = spread >= 0 ? `+${spread} bps` : `${spread} bps`;
+    const spreadColor = spread >= 150 ? '#276749' : spread >= 0 ? '#b7791f' : '#c53030';
+    const marginColor = computed.devMargin >= 0.15 ? '#276749' : computed.devMargin >= 0 ? '#b7791f' : '#c53030';
+    const hasUnits = computed.units && computed.units > 0;
+    const perUnit = (v) => hasUnits ? `$${Math.round(v / computed.units).toLocaleString()}/unit` : '';
+    const perNSF = (v) => `$${(v / (computed.revenueNSF || computed.nsf || 1)).toFixed(2)}/SF`;
+    return `<div class="returns-grid">
+        <div class="return-card"><div class="return-value">${(computed.yieldOnCost * 100).toFixed(1)}%</div><div class="return-label">Yield on Cost</div></div>
+        <div class="return-card"><div class="return-value">${(computed.capRate * 100).toFixed(1)}%</div><div class="return-label">Market Cap Rate</div></div>
+        <div class="return-card"><div class="return-value" style="color:${spreadColor}">${spreadLabel}</div><div class="return-label">Dev Spread</div></div>
+        <div class="return-card"><div class="return-value" style="color:${marginColor}">${(computed.devMargin * 100).toFixed(0)}%</div><div class="return-label">Dev Margin</div></div>
+    </div>
+    <table class="budget-table">
+        <thead><tr><th>Revenue &amp; Returns</th><th>Annual</th><th>${hasUnits ? '$/Unit' : '$/NSF'}</th></tr></thead>
+        <tbody>
+        <tr><td>Gross Revenue</td><td>${fmt(computed.grossRevenue)}</td><td class="dim">${hasUnits ? perUnit(computed.grossRevenue) : perNSF(computed.grossRevenue)}</td></tr>
+        <tr><td>Less: OpEx</td><td>(${fmt(computed.opex)})</td><td class="dim">${hasUnits ? '(' + perUnit(computed.opex) + ')' : '(' + perNSF(computed.opex) + ')'}</td></tr>
+        <tr class="subtotal"><td>NOI</td><td>${fmt(computed.noi)}</td><td>${hasUnits ? perUnit(computed.noi) : perNSF(computed.noi)}</td></tr>
+        <tr><td>Stabilized Value</td><td>${fmt(computed.stabilizedValue)}</td><td class="dim">${hasUnits ? '$' + Math.round(computed.stabilizedValue / computed.units).toLocaleString() + '/unit' : '$' + Math.round(computed.stabilizedValue / (computed.gsf || 1)).toLocaleString() + '/GSF'}</td></tr>
+        <tr><td>Total Dev Cost</td><td>${fmt(computed.totalDev)}</td><td class="dim">${hasUnits ? '$' + Math.round(computed.totalDev / computed.units).toLocaleString() + '/unit' : '$' + Math.round(computed.totalDev / (computed.gsf || 1)).toLocaleString() + '/GSF'}</td></tr>
+        <tr class="subtotal"><td>Profit / (Loss)</td><td><strong style="color:${marginColor}">${fmt(computed.stabilizedValue - computed.totalDev)}</strong></td><td><strong style="color:${marginColor}">${(computed.devMargin * 100).toFixed(0)}%</strong></td></tr>
+        </tbody></table>`;
+}
+
+function renderSVGs(useId, inp, computed) {
+    return `${generateSitePlanSVG(useId, inp, computed)}${generateElevationSVG(useId, inp, computed)}`;
+}
+
+function recalcAnalysis() { _debouncedCall('analysis', _recalcAnalysisImpl, 200); }
+function _recalcAnalysisImpl() {
+    const st = analysisState;
+    if (!st.useId || !st.inp) return;
+    const assumptions = {
+        far: parseFloat(document.getElementById('a-far').value) || st.assumptions.far,
+        unitsOrNSF: parseInt(document.getElementById('a-unitsOrNSF').value) || st.assumptions.unitsOrNSF,
+        parkingSpaces: parseInt(document.getElementById('a-parkingSpaces').value) || 0,
+        buildCostPSF: parseFloat(document.getElementById('a-buildCostPSF').value) || st.assumptions.buildCostPSF,
+        landValuePSF: parseFloat(document.getElementById('a-landValuePSF').value) || st.assumptions.landValuePSF,
+        revenuePSF: parseFloat(document.getElementById('a-revenuePSF').value) || st.assumptions.revenuePSF,
+        opexPct: parseFloat(document.getElementById('a-opexPct').value) || 0,
+        capRatePct: parseFloat(document.getElementById('a-capRatePct').value) || st.assumptions.capRatePct,
+        parkingCostPerSpace: parseFloat(document.getElementById('a-parkingCostPerSpace').value) || 0,
+    };
+    var siteWorkEl = document.getElementById('a-siteWorkPSF');
+    if (siteWorkEl && siteWorkEl.value !== '' && parseFloat(siteWorkEl.value) > 0) {
+        assumptions.siteWorkOverride = Math.round(parseFloat(siteWorkEl.value) * (st.inp.parcelSize || 10000));
+    } else { assumptions.siteWorkOverride = null; }
+    st.assumptions = assumptions;
+    const computed = computeFromAssumptions(st.useId, st.inp, assumptions, st.effects);
+    const progEl = document.getElementById('sect-program'); if (progEl) progEl.innerHTML = renderProgramDisplay(computed);
+    const budgetEl = document.getElementById('sect-budget'); if (budgetEl) budgetEl.innerHTML = renderBudgetTable(computed, st.inp);
+    const returnsEl = document.getElementById('sect-returns'); if (returnsEl) returnsEl.innerHTML = renderReturnsSection(computed);
+    const svgEl = document.getElementById('sect-svg'); if (svgEl) svgEl.innerHTML = renderSVGs(st.useId, st.inp, computed);
+}
+
+function openAnalysis(resultIndex) {
+    if (!lastResults || !lastInputs) return;
+    const r = lastResults[resultIndex];
+    const inp = lastInputs;
+    const effects = stackLegislationEffects(r.legislation || []);
+    const hasUnits = !!BUILDING_PARAMS[r.id].unitSF;
+    const assumptions = getDefaultAssumptions(r.id, inp, effects);
+    analysisState = { resultIndex, useId: r.id, inp, effects, legislation: r.legislation || [], assumptions };
+    const computed = computeFromAssumptions(r.id, inp, assumptions, effects);
+    const tl = TIMELINE_MONTHS[r.id] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
+    const totalMonths = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
+    const neighborhoodText = document.getElementById('neighborhood').selectedOptions[0].text;
+    document.getElementById('modalTitle').textContent = `${r.icon} ${r.name}`;
+    document.getElementById('modalSubtitle').textContent = `Detailed Analysis  |  ${inp.parcelSize.toLocaleString()} SF  |  ${inp.zoning}  |  ${neighborhoodText}`;
+    let html = '';
+    html += `<div class="analysis-section"><h3>Building Program</h3><div id="sect-program">${renderProgramDisplay(computed)}</div></div>`;
+    html += `<div class="analysis-section">${renderAssumptions(assumptions, hasUnits)}</div>`;
+    html += `<div class="analysis-section"><h3>Conceptual Massing</h3><div class="rendering-container" id="sect-svg">${renderSVGs(r.id, inp, computed)}</div></div>`;
+    html += `<div class="analysis-section"><h3>Development Pro Forma</h3><div id="sect-budget">${renderBudgetTable(computed, inp)}</div></div>`;
+    html += `<div class="analysis-section"><h3>Revenue &amp; Returns</h3><div id="sect-returns">${renderReturnsSection(computed)}</div></div>`;
+    html += `<div class="analysis-section"><h3>Timeline — ${totalMonths} Months</h3>
+    <div class="timeline-bar">
+        <div class="timeline-segment" style="flex:${tl.entitlement};background:#805ad5;">Entitle<br>${tl.entitlement}mo</div>
+        <div class="timeline-segment" style="flex:${tl.design};background:#3182ce;">Design<br>${tl.design}mo</div>
+        <div class="timeline-segment" style="flex:${tl.permits};background:#38a169;">Permits<br>${tl.permits}mo</div>
+        <div class="timeline-segment" style="flex:${tl.construction};background:#dd6b20;">Construction<br>${tl.construction}mo</div>
+        <div class="timeline-segment" style="flex:${tl.leaseup};background:#e53e3e;">Lease-Up<br>${tl.leaseup}mo</div>
+    </div></div>`;
+    if (r.legislation && r.legislation.length > 0) {
+        html += `<div class="analysis-section"><h3>Applicable Legislation</h3><div class="legislation-cards">${r.legislation.map(b => `<div class="legislation-card clickable" onclick="showLegislationDetail('${b.id}')"><strong>${b.name}</strong><p>${b.description}</p></div>`).join('')}</div></div>`;
+    }
+    html += generateRisksHTML(r.id, inp);
+    html += `<div class="disclaimer" style="margin-top:1.5rem;"><strong>Disclaimer:</strong> This pro forma is a preliminary estimate for educational purposes only.</div>`;
+    document.getElementById('modalBody').innerHTML = html;
+    document.getElementById('analysisModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    document.getElementById('analysisModal').scrollTop = 0;
+}
+
+function closeAnalysis() { document.getElementById('analysisModal').style.display = 'none'; document.body.style.overflow = ''; }
+function printAnalysis() { document.body.classList.add('printing-analysis'); window.print(); document.body.classList.remove('printing-analysis'); }
+
+// ============================================================
+//  TAB NAVIGATION
+// ============================================================
+let activeTab = 'Calculator';
+let contactsInitialized = false;
+let finderMapInitialized = false;
+let finderMapInstance = null;
+let finderResults2 = [];
+let finderSortCol2 = 'impRatio';
+let finderSortAsc2 = true;
+let finderParcelLayer2 = null;
+let finderSelectedSet = new Set();
+let sitesMapInitialized = false;
+let sitesMapInstance = null;
+
+function switchTab(tab) {
+    activeTab = tab;
+    document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+        const tabs = ['Calculator','Finder','Pipeline','Contacts','Sites'];
+        btn.classList.toggle('active', tabs[i] === tab);
+    });
+    ['tabCalculator','tabFinder','tabPipeline','tabContacts','tabSites'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('active', id === 'tab' + tab);
+    });
+    if (tab === 'Contacts' && !contactsInitialized) { renderContactsDirectory(); contactsInitialized = true; }
+    if (tab === 'Finder' && !finderMapInitialized) { setTimeout(() => initFinderMap(), 100); }
+    else if (tab === 'Finder' && finderMapInstance) { setTimeout(() => finderMapInstance.invalidateSize(), 100); }
+    if (tab === 'Pipeline' && !pipelineMapInitialized) { setTimeout(() => initPipelineMap(), 100); }
+    else if (tab === 'Pipeline' && pipelineMapInstance) { setTimeout(() => pipelineMapInstance.invalidateSize(), 100); }
+    if (tab === 'Sites' && !sitesMapInitialized) { setTimeout(() => initSitesMap(), 100); }
+    else if (tab === 'Sites' && sitesMapInstance) { setTimeout(() => sitesMapInstance.invalidateSize(), 100); }
+}
+
+// ============================================================
+//  CONTACTS DIRECTORY
+// ============================================================
+const CONTACTS_DATA = [
+    { name: 'LA City Planning Dept', category: 'planning', role: 'City Planning', phone: '(213) 978-1271', email: 'planning.lacityplanning@lacity.org', website: 'https://planning.lacity.gov', address: '200 N Spring St, Room 525, Los Angeles, CA 90012', notes: 'Zoning, General Plan, entitlements, CEQA' },
+    { name: 'LA County Dept of Regional Planning', category: 'planning', role: 'County Planning', phone: '(213) 974-6411', email: 'planning@planning.lacounty.gov', website: 'https://planning.lacounty.gov', address: '320 W Temple St, Los Angeles, CA 90012', notes: 'Unincorporated LA County areas' },
+    { name: 'Santa Monica Planning', category: 'planning', role: 'City Planning', phone: '(310) 458-8341', email: 'planning@smgov.net', website: 'https://www.smgov.net/Departments/PCD/', address: '1685 Main St, Room 212, Santa Monica, CA 90401', notes: 'Planning, zoning, permits' },
+    { name: 'Culver City Planning', category: 'planning', role: 'City Planning', phone: '(310) 253-5750', email: 'planning@culvercity.org', website: 'https://www.culvercity.org/City-Hall/Community-Development/Planning-Division', address: '9770 Culver Blvd, Culver City, CA 90232', notes: 'Current & advance planning' },
+    { name: 'Beverly Hills Planning', category: 'planning', role: 'City Planning', phone: '(310) 285-1141', email: 'planning@beverlyhills.org', website: 'https://www.beverlyhills.org/departments/communitydevelopment/planningdivision/', address: '455 N Rexford Dr, Beverly Hills, CA 90210', notes: 'Planning Commission, design review' },
+    { name: 'West Hollywood Planning', category: 'planning', role: 'City Planning', phone: '(323) 848-6475', email: '', website: 'https://www.weho.org/city-government/city-departments/community-development/planning-division', address: '8300 Santa Monica Blvd, West Hollywood, CA 90069', notes: 'Rent stabilization, planning' },
+    { name: 'Pasadena Planning', category: 'planning', role: 'City Planning', phone: '(626) 744-4009', email: 'planning@cityofpasadena.net', website: 'https://www.cityofpasadena.net/planning/', address: '175 N Garfield Ave, Pasadena, CA 91101', notes: 'Historic preservation, design review' },
+    { name: 'Glendale Community Development', category: 'planning', role: 'City Planning', phone: '(818) 548-2140', email: '', website: 'https://www.glendaleca.gov/government/departments/community-development', address: '633 E Broadway, Room 103, Glendale, CA 91206', notes: 'Planning, building, code compliance' },
+    { name: 'Burbank Planning', category: 'planning', role: 'City Planning', phone: '(818) 238-5250', email: '', website: 'https://www.burbankca.gov/web/community-development/planning-division', address: '150 N Third St, Burbank, CA 91502', notes: 'Current planning, advance planning' },
+    { name: 'Long Beach Development Services', category: 'planning', role: 'City Planning', phone: '(562) 570-6194', email: '', website: 'https://www.longbeach.gov/lbds/', address: '411 W Ocean Blvd, 3rd Floor, Long Beach, CA 90802', notes: 'Planning, building, code enforcement' },
+    { name: 'Inglewood Planning', category: 'planning', role: 'City Planning', phone: '(310) 412-5230', email: '', website: 'https://www.cityofinglewood.org/148/Planning-Division', address: 'One Manchester Blvd, Inglewood, CA 90301', notes: 'SoFi Stadium area, TOC opportunities' },
+    { name: 'LA Dept of Building & Safety (LADBS)', category: 'building', role: 'Building & Safety', phone: '(213) 482-0000', email: '', website: 'https://www.ladbs.org', address: '201 N Figueroa St, Suite 1000, Los Angeles, CA 90012', notes: 'Permits, inspections, code enforcement' },
+    { name: 'LADBS Express Permit', category: 'building', role: 'Express Permits', phone: '(213) 482-0466', email: '', website: 'https://www.ladbs.org/services/check-status/express-permit', address: '201 N Figueroa St, Los Angeles, CA 90012', notes: 'Over-the-counter permits for minor work' },
+    { name: 'LA County Building & Safety', category: 'building', role: 'County Building', phone: '(626) 458-3177', email: '', website: 'https://dpw.lacounty.gov/building-and-safety/', address: '900 S Fremont Ave, Alhambra, CA 91803', notes: 'Unincorporated areas' },
+    { name: 'LA Fire Dept (LAFD) - Plan Check', category: 'building', role: 'Fire Dept Plan Check', phone: '(213) 978-3860', email: '', website: 'https://www.lafd.org/fire-prevention/plan-check', address: '200 N Main St, Room 1700, Los Angeles, CA 90012', notes: 'Fire life safety plan review' },
+    { name: 'LA Housing Dept (LAHD)', category: 'housing', role: 'Housing Authority', phone: '(866) 557-7368', email: '', website: 'https://housing.lacity.gov', address: '1200 W 7th St, Suite 100, Los Angeles, CA 90017', notes: 'Affordable housing, rent stabilization' },
+    { name: 'HACLA (Housing Authority)', category: 'housing', role: 'Housing Authority', phone: '(213) 252-2500', email: '', website: 'https://www.hacla.org', address: '2600 Wilshire Blvd, Los Angeles, CA 90057', notes: 'Section 8, public housing' },
+    { name: 'CA HCD', category: 'housing', role: 'State Housing', phone: '(916) 263-2911', email: '', website: 'https://www.hcd.ca.gov', address: '2020 W El Camino Ave, Suite 500, Sacramento, CA 95833', notes: 'RHNA, housing element' },
+    { name: 'CTCAC (Tax Credit Allocation)', category: 'housing', role: 'Tax Credits', phone: '(916) 654-6340', email: '', website: 'https://www.treasurer.ca.gov/ctcac/', address: '915 Capitol Mall, Suite 485, Sacramento, CA 95814', notes: 'LIHTC 4% and 9%' },
+    { name: 'KTGY Architecture + Planning', category: 'architect', role: 'Architect (Multifamily)', phone: '(310) 394-2623', email: '', website: 'https://ktgy.com', address: '17911 Von Karman Ave, Irvine, CA 92614', notes: 'Multifamily, mixed-use, senior living' },
+    { name: 'AC Martin Partners', category: 'architect', role: 'Architect (Mixed-Use)', phone: '(213) 683-1900', email: '', website: 'https://acmartin.com', address: '444 S Flower St, Suite 1200, Los Angeles, CA 90071', notes: 'DTLA towers, mixed-use, civic' },
+    { name: 'HKS Architects', category: 'architect', role: 'Architect (Commercial)', phone: '(213) 542-5900', email: '', website: 'https://www.hksinc.com', address: '350 S Figueroa St, Suite 200, Los Angeles, CA 90071', notes: 'Office, hospitality, sports' },
+    { name: 'Steinberg Hart', category: 'architect', role: 'Architect (Community)', phone: '(213) 629-0500', email: '', website: 'https://www.steinberghart.com', address: '750 B St, Suite 2300, San Diego, CA 92101', notes: 'Affordable housing, education' },
+    { name: 'Togawa Smith Martin', category: 'architect', role: 'Architect (Affordable)', phone: '(323) 258-7028', email: '', website: 'https://tsminc.com', address: '460 S Spring St, Suite 500, Los Angeles, CA 90013', notes: 'Affordable, supportive housing' },
+    { name: 'KPFF Consulting Engineers', category: 'engineer', role: 'Structural Engineer', phone: '(213) 318-4140', email: '', website: 'https://www.kpff.com', address: '515 S Flower St, Suite 4500, Los Angeles, CA 90071', notes: 'Structural, civil, seismic' },
+    { name: 'Psomas Engineering', category: 'engineer', role: 'Civil Engineer', phone: '(213) 223-1400', email: '', website: 'https://www.psomas.com', address: '555 S Flower St, Suite 4300, Los Angeles, CA 90071', notes: 'Civil, surveying, environmental' },
+    { name: 'ARUP', category: 'engineer', role: 'MEP / Multidiscipline', phone: '(213) 629-5575', email: '', website: 'https://www.arup.com', address: '900 Wilshire Blvd, Suite 700, Los Angeles, CA 90017', notes: 'Structural, MEP, sustainability' },
+    { name: 'Buro Happold', category: 'engineer', role: 'MEP Engineer', phone: '(213) 337-0025', email: '', website: 'https://www.burohappold.com', address: '6601 Center Dr West, Suite 500, Los Angeles, CA 90045', notes: 'MEP, sustainability, smart buildings' },
+    { name: 'AECOM-Hunt', category: 'gc', role: 'General Contractor', phone: '(213) 593-8000', email: '', website: 'https://www.aecom.com', address: '300 S Grand Ave, Suite 1000, Los Angeles, CA 90071', notes: 'Large-scale, infrastructure' },
+    { name: 'Suffolk Construction', category: 'gc', role: 'General Contractor', phone: '(213) 787-3700', email: '', website: 'https://www.suffolk.com', address: '915 Wilshire Blvd, Suite 1700, Los Angeles, CA 90017', notes: 'High-rise, multifamily' },
+    { name: 'Bernards', category: 'gc', role: 'General Contractor', phone: '(909) 941-5225', email: '', website: 'https://www.bernards.com', address: '555 First St, San Fernando, CA 91340', notes: 'Affordable housing, education' },
+    { name: 'Morley Builders', category: 'gc', role: 'General Contractor', phone: '(310) 471-4900', email: '', website: 'https://www.morleybuilders.com', address: '2901 28th St, Suite 100, Santa Monica, CA 90405', notes: 'Mixed-use, multifamily' },
+    { name: 'Webcor Builders', category: 'gc', role: 'General Contractor', phone: '(213) 271-1780', email: '', website: 'https://www.webcor.com', address: '555 S Flower St, Suite 4800, Los Angeles, CA 90071', notes: 'High-rise, lab/life science' },
+    { name: 'CBRE Capital Markets', category: 'lender', role: 'Capital Markets', phone: '(213) 613-3226', email: '', website: 'https://www.cbre.com/services/capital-markets', address: '400 S Hope St, 25th Floor, Los Angeles, CA 90071', notes: 'Debt placement, equity' },
+    { name: 'JLL Capital Markets', category: 'lender', role: 'Capital Markets', phone: '(213) 239-6000', email: '', website: 'https://www.jll.com', address: '515 S Flower St, Suite 3200, Los Angeles, CA 90071', notes: 'Debt, equity, structured finance' },
+    { name: 'Pacific Western Bank', category: 'lender', role: 'Construction Lender', phone: '(310) 887-8500', email: '', website: 'https://www.bancofcal.com', address: '3 MacArthur Pl, Santa Ana, CA 92707', notes: 'Construction, bridge, permanent' },
+    { name: 'Ready Capital', category: 'lender', role: 'Bridge Lender', phone: '(212) 257-4600', email: '', website: 'https://readycapital.com', address: '1251 Avenue of the Americas, NY 10020', notes: 'Bridge, construction, SBA 504' },
+    { name: 'Enterprise Community Investment', category: 'lender', role: 'LIHTC Syndicator', phone: '(410) 964-1230', email: '', website: 'https://www.enterprisecommunity.org', address: '70 Corporate Center, Columbia, MD 21044', notes: 'LIHTC syndication' },
+    { name: 'Raymond James Tax Credit Funds', category: 'lender', role: 'LIHTC Syndicator', phone: '(800) 438-8088', email: '', website: 'https://www.rjtcf.com', address: '880 Carillon Pkwy, St. Petersburg, FL 33716', notes: 'LIHTC, HTC, NMTC' },
+    { name: 'Armbruster Goldsmith & Delvac', category: 'legal', role: 'Land Use Attorney', phone: '(310) 209-8800', email: '', website: 'https://www.agd-landuse.com', address: '12100 Wilshire Blvd, Suite 1600, Los Angeles, CA 90025', notes: 'Entitlements, CEQA' },
+    { name: 'Latham & Watkins', category: 'legal', role: 'Land Use Attorney', phone: '(213) 485-1234', email: '', website: 'https://www.lw.com', address: '355 S Grand Ave, Suite 100, Los Angeles, CA 90071', notes: 'Complex entitlements, P3' },
+    { name: 'Manatt Phelps & Phillips', category: 'legal', role: 'RE/Land Use Attorney', phone: '(310) 312-4000', email: '', website: 'https://www.manatt.com', address: '2049 Century Park E, Suite 1700, Los Angeles, CA 90067', notes: 'Real estate, affordable housing' },
+    { name: 'Cox Castle & Nicholson', category: 'legal', role: 'RE Attorney', phone: '(310) 284-2200', email: '', website: 'https://www.coxcastle.com', address: '2049 Century Park E, Suite 2800, Los Angeles, CA 90067', notes: 'RE transactions, construction' },
+    { name: 'Kosmont Companies', category: 'consultant', role: 'RE/Financial Advisory', phone: '(213) 417-3300', email: '', website: 'https://www.kosmont.com', address: '865 S Figueroa St, Suite 3500, Los Angeles, CA 90017', notes: 'P3, fiscal impact, EIFD' },
+    { name: 'HR&A Advisors', category: 'consultant', role: 'Economic Consultant', phone: '(212) 977-6200', email: '', website: 'https://www.hraadvisors.com', address: '700 S Flower St, Suite 2995, Los Angeles, CA 90017', notes: 'Economic analysis, housing policy' },
+    { name: 'Keyser Marston Associates', category: 'consultant', role: 'RE Economics', phone: '(310) 396-4556', email: '', website: 'https://www.keysermarston.com', address: '1880 Century Park E, Suite 818, Los Angeles, CA 90067', notes: 'Feasibility, fiscal impact' },
+    { name: 'CBRE Consulting', category: 'consultant', role: 'Market Research', phone: '(213) 613-3333', email: '', website: 'https://www.cbre.com/services/advisory-and-consulting', address: '400 S Hope St, 25th Floor, Los Angeles, CA 90071', notes: 'Market studies, HBU' },
+    { name: 'EPS (Economic & Planning Systems)', category: 'consultant', role: 'Economic Consultant', phone: '(510) 841-9190', email: '', website: 'https://www.epsys.com', address: '1 Kaiser Plaza, Suite 1410, Oakland, CA 94612', notes: 'Fiscal impact, public finance' },
+    { name: 'LADWP', category: 'utility', role: 'Electric & Water', phone: '(800) 342-5397', email: '', website: 'https://www.ladwp.com', address: '111 N Hope St, Los Angeles, CA 90012', notes: 'Electric, water, solar' },
+    { name: 'SoCalGas', category: 'utility', role: 'Natural Gas', phone: '(800) 427-2200', email: '', website: 'https://www.socalgas.com', address: '555 W 5th St, Los Angeles, CA 90013', notes: 'Gas service, energy efficiency' },
+    { name: 'LA Bureau of Sanitation', category: 'utility', role: 'Sewer & Stormwater', phone: '(800) 773-2489', email: '', website: 'https://www.lacitysan.org', address: '2714 Media Center Dr, Los Angeles, CA 90065', notes: 'Sewer, S-permits, stormwater' },
+    { name: 'Spectrum / Charter Business', category: 'utility', role: 'Telecom', phone: '(855) 222-0102', email: '', website: 'https://www.spectrum.com/business', address: '', notes: 'Fiber, internet, bulk building' },
+];
+
+const CATEGORY_ICONS = { planning: '🏛️', building: '🔨', housing: '🏠', architect: '📐', engineer: '⚙️', gc: '🏗️', lender: '💰', legal: '⚖️', consultant: '📊', utility: '⚡' };
+const CATEGORY_LABELS = { planning: 'Planning', building: 'Building & Safety', housing: 'Housing', architect: 'Architecture', engineer: 'Engineering', gc: 'General Contractor', lender: 'Finance', legal: 'Legal', consultant: 'Consulting', utility: 'Utilities' };
+
+function renderContactsDirectory() { var grid = document.getElementById('contactsGrid'); if (!grid) return; renderContactCards(CONTACTS_DATA, grid); }
+function renderContactCards(contacts, container) {
+    var html = '';
+    contacts.forEach(function(c) {
+        var icon = CATEGORY_ICONS[c.category] || '📋';
+        var catLabel = CATEGORY_LABELS[c.category] || c.category;
+        html += '<div class="contact-card" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem;">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;">';
+        html += '<div><div style="font-size:0.88rem;font-weight:700;">' + icon + ' ' + c.name + '</div>';
+        html += '<div style="font-size:0.72rem;color:var(--text-light);">' + c.role + '</div></div>';
+        html += '<span style="background:#edf2f7;padding:2px 8px;border-radius:4px;font-size:0.65rem;color:#4a5568;">' + catLabel + '</span></div>';
+        if (c.phone) html += '<div style="font-size:0.75rem;margin-bottom:0.25rem;">📞 <a href="tel:' + c.phone.replace(/[^0-9+]/g, '') + '" style="color:#3182ce;">' + c.phone + '</a></div>';
+        if (c.email) html += '<div style="font-size:0.75rem;margin-bottom:0.25rem;">✉️ <a href="mailto:' + c.email + '" style="color:#3182ce;">' + c.email + '</a></div>';
+        if (c.website) html += '<div style="font-size:0.75rem;margin-bottom:0.25rem;">🌐 <a href="' + c.website + '" target="_blank" style="color:#3182ce;">' + c.website.replace('https://', '').replace('http://', '') + '</a></div>';
+        if (c.address) html += '<div style="font-size:0.72rem;color:var(--text-light);margin-bottom:0.25rem;">📍 ' + c.address + '</div>';
+        if (c.notes) html += '<div style="font-size:0.7rem;color:#718096;font-style:italic;border-top:1px solid var(--border);padding-top:0.4rem;margin-top:0.4rem;">' + c.notes + '</div>';
+        html += '</div>';
+    });
+    if (contacts.length === 0) html = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-light);">No contacts match your search.</div>';
+    container.innerHTML = html;
+}
+function filterContacts() {
+    var search = (document.getElementById('contactSearch').value || '').toLowerCase();
+    var category = document.getElementById('contactCategory').value;
+    var filtered = CONTACTS_DATA.filter(function(c) {
+        var matchCat = !category || c.category === category;
+        var matchSearch = !search || c.name.toLowerCase().indexOf(search) >= 0 || c.role.toLowerCase().indexOf(search) >= 0 || (c.notes || '').toLowerCase().indexOf(search) >= 0;
+        return matchCat && matchSearch;
+    });
+    renderContactCards(filtered, document.getElementById('contactsGrid'));
+}
+
+// ============================================================
+//  DEVELOPMENT PIPELINE
+// ============================================================
+const PIPELINE_STAGE_MAP = {
+    'submitted': 'submitted', 'permit submitted': 'submitted', 'application submitted': 'submitted',
+    'plan check': 'plan_check', 'plan check submitted': 'plan_check', 'pcis job in plan check': 'plan_check', 'plan check correction(s) made': 'plan_check',
+    'issued': 'issued', 'permit issued': 'issued',
+    'under inspection': 'inspection', 'inspections started': 'inspection',
+    'finaled': 'finaled', 'permit finaled': 'finaled',
+    'coo issued': 'coo', 'certificate of occupancy': 'coo', 'co issued': 'coo', 'temporary certificate of occupancy': 'coo',
+};
+const PIPELINE_STAGE_LABELS = { submitted: 'Submitted', plan_check: 'Plan Check', issued: 'Issued', inspection: 'Under Inspection', finaled: 'Finaled', coo: 'Cert of Occ' };
+const PIPELINE_COLORS = { submitted: '#d69e2e', plan_check: '#dd6b20', issued: '#3182ce', inspection: '#38a169', finaled: '#718096', coo: '#276749' };
+let pipelineMapInstance = null, pipelineMapInitialized = false, pipelineMarkerLayer = null, pipelineSearchCenter = null;
+let pipelineResults = [], pipelineSortCol = 'valuation', pipelineSortAsc = false;
+let pipelineOverlayActive = false, pipelineOverlayLayer = null;
+let pipelineCache = new Map();
+
+function initPipelineMap() {
+    const mapEl = document.getElementById('pipelineMap'); if (!mapEl) return;
+    if (pipelineMapInstance) { pipelineMapInstance.remove(); pipelineMapInstance = null; }
+    pipelineMapInstance = L.map('pipelineMap').setView([34.05, -118.25], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 18 }).addTo(pipelineMapInstance);
+    pipelineMarkerLayer = L.layerGroup().addTo(pipelineMapInstance);
+    pipelineMapInstance.on('click', function(e) { setPipelineSearchCenter(e.latlng.lat, e.latlng.lng, `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`); });
+    renderPipelineMapLegend();
+    const twoYearsAgo = new Date(); twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+    const dateFromEl = document.getElementById('pipelineDateFrom');
+    if (dateFromEl && !dateFromEl.value) dateFromEl.value = twoYearsAgo.toISOString().split('T')[0];
+    pipelineMapInitialized = true;
+    setTimeout(() => { if (pipelineMapInstance) pipelineMapInstance.invalidateSize(); }, 200);
+}
+function renderPipelineMapLegend() {
+    const el = document.getElementById('pipelineLegend'); if (!el) return;
+    el.innerHTML = Object.entries(PIPELINE_COLORS).map(([key, color]) => `<div class="pipeline-legend-item"><span class="pipeline-legend-dot" style="background:${color};"></span>${PIPELINE_STAGE_LABELS[key]}</div>`).join('');
+}
+function setPipelineSearchCenter(lat, lon, label) {
+    pipelineSearchCenter = { lat, lon, label };
+    if (pipelineMapInstance._centerMarker) pipelineMapInstance.removeLayer(pipelineMapInstance._centerMarker);
+    const icon = L.divIcon({ html: '<div style="width:16px;height:16px;border-radius:50%;background:#e53e3e;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);"></div>', iconSize: [16, 16], iconAnchor: [8, 8], className: '' });
+    pipelineMapInstance._centerMarker = L.marker([lat, lon], { icon }).addTo(pipelineMapInstance);
+    pipelineMapInstance.setView([lat, lon], 14);
+    document.getElementById('pipelineMapStatus').textContent = `Search center: ${label}`;
+}
+async function geocodePipelineAddress() {
+    const input = document.getElementById('pipelineAddress'); const addr = input.value.trim();
+    if (!addr) { alert('Please enter an address.'); return; }
+    try { input.disabled = true; const result = await geocodeAddress(addr); setPipelineSearchCenter(result.lat, result.lon, addr); }
+    catch (e) { alert('Geocoding failed: ' + e.message); }
+    finally { input.disabled = false; }
+}
+function normalizePipelineRecord(raw, source) {
+    let lat, lon;
+    if (source === 'issued') { if (raw.geolocation) { lat = parseFloat(raw.geolocation.latitude || raw.geolocation.coordinates?.[1]); lon = parseFloat(raw.geolocation.longitude || raw.geolocation.coordinates?.[0]); } if (!lat && raw.latitude) lat = parseFloat(raw.latitude); if (!lon && raw.longitude) lon = parseFloat(raw.longitude); }
+    else { lat = parseFloat(raw.latitude_y_coordinate || raw.latitude); lon = parseFloat(raw.longitude_x_coordinate || raw.longitude); }
+    const statusRaw = (raw.status_desc || raw.status || raw.permit_status || '').toLowerCase().trim();
+    const stage = PIPELINE_STAGE_MAP[statusRaw] || guessStage(statusRaw);
+    const permitType = (raw.permit_type || raw.type || raw.permit_type_desc || '').toLowerCase();
+    let typeKey = 'bldg';
+    if (/grad/i.test(permitType)) typeKey = 'grading'; else if (/elec/i.test(permitType)) typeKey = 'elec'; else if (/plumb/i.test(permitType)) typeKey = 'plumb'; else if (/mech/i.test(permitType)) typeKey = 'mech';
+    return { permit_nbr: raw.permit_nbr || raw.pcis_permit || raw.permit_number || '', address: raw.address || raw.address_street || raw.project_address || '', permit_type: typeKey, permit_type_label: (raw.permit_type || raw.type || raw.permit_type_desc || 'Building').replace(/^\w/, c => c.toUpperCase()), stage, status_raw: raw.status_desc || raw.status || '', valuation: parseFloat(raw.valuation || raw.project_valuation || 0) || 0, date: raw.issue_date || raw.submitted_date || raw.status_date || raw.filed_date || '', zone: raw.zone || raw.existing_zoning || '', description: raw.work_description || raw.project_description || raw.description || '', lat, lon, source };
+}
+function guessStage(s) { if (/submit|appli/i.test(s)) return 'submitted'; if (/plan.*check|pcis/i.test(s)) return 'plan_check'; if (/issue/i.test(s)) return 'issued'; if (/inspect/i.test(s)) return 'inspection'; if (/final/i.test(s)) return 'finaled'; if (/co |certificate|occupan/i.test(s)) return 'coo'; return 'submitted'; }
+function buildBoundingBox(lat, lon, radiusMiles) { const latDeg = radiusMiles / 69.0; const lonDeg = radiusMiles / (69.0 * Math.cos(lat * Math.PI / 180)); return { minLat: lat - latDeg, maxLat: lat + latDeg, minLon: lon - lonDeg, maxLon: lon + lonDeg }; }
+
+async function queryPipelineIssuedPermits(lat, lon, radiusMiles, onProgress) {
+    const radiusMeters = radiusMiles * 1609.34; const baseUrl = 'https://data.lacity.org/resource/pi9x-tg5x.json'; const limit = 1000; let offset = 0; let allRecords = []; const cap = 5000;
+    while (offset < cap) { const where = `within_circle(geolocation, ${lat}, ${lon}, ${radiusMeters})`; const url = `${baseUrl}?$where=${encodeURIComponent(where)}&$limit=${limit}&$offset=${offset}&$order=issue_date DESC`; const resp = await fetch(url); if (!resp.ok) break; const data = await resp.json(); if (!data || data.length === 0) break; allRecords = allRecords.concat(data.map(r => normalizePipelineRecord(r, 'issued'))); if (onProgress) onProgress(`Fetched ${allRecords.length} issued permits...`, Math.min(allRecords.length / cap * 50, 45)); if (data.length < limit) break; offset += limit; }
+    return allRecords;
+}
+async function queryPipelinePreIssuancePermits(lat, lon, radiusMiles, onProgress) {
+    const bb = buildBoundingBox(lat, lon, radiusMiles); const baseUrl = 'https://data.lacity.org/resource/gwh9-jnip.json'; const limit = 1000; let offset = 0; let allRecords = []; const cap = 3000;
+    while (offset < cap) { const where = `latitude_y_coordinate >= ${bb.minLat} AND latitude_y_coordinate <= ${bb.maxLat} AND longitude_x_coordinate >= ${bb.minLon} AND longitude_x_coordinate <= ${bb.maxLon}`; const url = `${baseUrl}?$where=${encodeURIComponent(where)}&$limit=${limit}&$offset=${offset}&$order=submitted_date DESC`; const resp = await fetch(url); if (!resp.ok) break; const data = await resp.json(); if (!data || data.length === 0) break; const normalized = data.map(r => normalizePipelineRecord(r, 'pre_issuance')); const filtered = normalized.filter(r => r.lat && r.lon && haversine(lat, lon, r.lat, r.lon) <= radiusMiles); allRecords = allRecords.concat(filtered); if (onProgress) onProgress(`Fetched ${allRecords.length} pre-issuance permits...`, 50 + Math.min(allRecords.length / cap * 45, 45)); if (data.length < limit) break; offset += limit; }
+    return allRecords;
+}
+async function fetchAllPipelinePermits(lat, lon, radiusMiles, onProgress) {
+    const cacheKey = `${lat.toFixed(4)}_${lon.toFixed(4)}_${radiusMiles}`; const cached = pipelineCache.get(cacheKey);
+    if (cached && (Date.now() - cached.ts < 5 * 60 * 1000)) { if (onProgress) onProgress('Using cached results', 100); return cached.data; }
+    const [issued, preIssue] = await Promise.all([queryPipelineIssuedPermits(lat, lon, radiusMiles, onProgress), queryPipelinePreIssuancePermits(lat, lon, radiusMiles, onProgress)]);
+    const seen = new Set(); const combined = [];
+    for (const r of [...issued, ...preIssue]) { const key = r.permit_nbr || `${r.lat}_${r.lon}_${r.address}`; if (!seen.has(key)) { seen.add(key); combined.push(r); } }
+    pipelineCache.set(cacheKey, { ts: Date.now(), data: combined }); return combined;
+}
+
+async function runPipelineSearch() {
+    if (!pipelineSearchCenter) { alert('Please set a search center first.'); return; }
+    const radiusEl = document.querySelector('input[name="pipelineRadius"]:checked'); const radius = radiusEl ? parseFloat(radiusEl.value) : 0.5;
+    const progressEl = document.getElementById('pipelineProgress'); const fillEl = document.getElementById('pipelineProgressFill'); const textEl = document.getElementById('pipelineProgressText');
+    progressEl.classList.add('active'); fillEl.style.width = '5%'; textEl.textContent = 'Starting...';
+    try {
+        const allRecords = await fetchAllPipelinePermits(pipelineSearchCenter.lat, pipelineSearchCenter.lon, radius, (msg, pct) => { textEl.textContent = msg; fillEl.style.width = pct + '%'; });
+        fillEl.style.width = '95%'; textEl.textContent = `Processing ${allRecords.length} records...`;
+        let filtered = applyPipelineFilters(allRecords);
+        const dateFrom = document.getElementById('pipelineDateFrom').value; const dateTo = document.getElementById('pipelineDateTo').value;
+        if (dateFrom) filtered = filtered.filter(r => r.date >= dateFrom); if (dateTo) filtered = filtered.filter(r => r.date <= dateTo + 'T23:59:59');
+        pipelineResults = filtered; sortPipelineResults(pipelineResults); renderPipelineResults(); renderPipelineMarkers();
+        fillEl.style.width = '100%'; textEl.textContent = `Found ${filtered.length} permits`; setTimeout(() => progressEl.classList.remove('active'), 2000);
+    } catch (e) { fillEl.style.width = '0%'; textEl.textContent = 'Error: ' + e.message; }
+}
+function applyPipelineFilters(records) {
+    const checkedStages = new Set(); document.querySelectorAll('.pipelineStage:checked').forEach(cb => checkedStages.add(cb.value));
+    const checkedTypes = new Set(); document.querySelectorAll('.pipelinePermitType:checked').forEach(cb => checkedTypes.add(cb.value));
+    const minVal = parseFloat(document.getElementById('pipelineMinVal').value) || 0;
+    return records.filter(r => { if (checkedStages.size > 0 && !checkedStages.has(r.stage)) return false; if (checkedTypes.size > 0 && !checkedTypes.has(r.permit_type)) return false; if (r.valuation < minVal) return false; return true; });
+}
+function sortPipelineResults(records) { records.sort((a, b) => { let va = a[pipelineSortCol], vb = b[pipelineSortCol]; if (pipelineSortCol === 'valuation') { va = va || 0; vb = vb || 0; } if (typeof va === 'string') va = va.toLowerCase(); if (typeof vb === 'string') vb = vb.toLowerCase(); if (va < vb) return pipelineSortAsc ? -1 : 1; if (va > vb) return pipelineSortAsc ? 1 : -1; return 0; }); }
+function setPipelineSort(col) { if (pipelineSortCol === col) pipelineSortAsc = !pipelineSortAsc; else { pipelineSortCol = col; pipelineSortAsc = col === 'address'; } sortPipelineResults(pipelineResults); renderPipelineResults(); document.querySelectorAll('#pipelineTable th').forEach(th => { th.classList.remove('sort-asc', 'sort-desc'); if (th.dataset.col === col) th.classList.add(pipelineSortAsc ? 'sort-asc' : 'sort-desc'); }); }
+function renderPipelineResults() {
+    const area = document.getElementById('pipelineResultsArea'); const tbody = document.getElementById('pipelineTableBody'); const title = document.getElementById('pipelineResultsTitle'); const summary = document.getElementById('pipelineResultsSummary'); const exportBtn = document.getElementById('pipelineExportBtn');
+    if (!pipelineResults.length) { area.style.display = 'none'; exportBtn.style.display = 'none'; return; }
+    area.style.display = 'block'; exportBtn.style.display = 'inline-block'; title.textContent = 'Permit Results';
+    const totalVal = pipelineResults.reduce((s, r) => s + (r.valuation || 0), 0); summary.textContent = `${pipelineResults.length} permits · $${totalVal.toLocaleString()} total valuation`;
+    tbody.innerHTML = pipelineResults.map((r, i) => { const valStr = r.valuation ? '$' + r.valuation.toLocaleString() : '—'; const dateStr = r.date ? r.date.substring(0, 10) : '—'; const stageLabel = PIPELINE_STAGE_LABELS[r.stage] || r.stage; return `<tr onclick="highlightPipelineMarker(${i})" style="cursor:pointer;"><td onclick="event.stopPropagation()"><input type="checkbox" class="pipeline-select" data-idx="${i}" onchange="updatePipelineSelectUI()"></td><td>${r.address || '—'}</td><td style="font-family:monospace;font-size:0.78rem;">${r.permit_nbr || '—'}</td><td>${r.permit_type_label}</td><td><span class="pipeline-badge ${r.stage}">${stageLabel}</span></td><td>${valStr}</td><td>${dateStr}</td><td>${r.zone || '—'}</td><td style="max-width:200px;font-size:0.75rem;color:var(--text-light);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(r.description || '').replace(/"/g, '&quot;')}">${r.description || '—'}</td></tr>`; }).join('');
+    renderPipelineSavedList();
+}
+function renderPipelineMarkers() {
+    if (!pipelineMarkerLayer) return; pipelineMarkerLayer.clearLayers(); const cap = 500;
+    pipelineResults.slice(0, cap).forEach((r, i) => { if (!r.lat || !r.lon) return; const color = PIPELINE_COLORS[r.stage] || '#718096'; const marker = L.circleMarker([r.lat, r.lon], { radius: 6, fillColor: color, fillOpacity: 0.8, color: '#fff', weight: 1.5 }); marker.bindPopup(`<div style="font-size:0.82rem;"><strong>${r.address || 'Unknown'}</strong><br>Permit: ${r.permit_nbr}<br>Stage: ${PIPELINE_STAGE_LABELS[r.stage] || r.stage}<br>Valuation: ${r.valuation ? '$' + r.valuation.toLocaleString() : 'N/A'}</div>`, { maxWidth: 280 }); marker.on('click', () => highlightPipelineRow(i)); marker.addTo(pipelineMarkerLayer); });
+}
+function highlightPipelineMarker(idx) { const r = pipelineResults[idx]; if (!r) return; document.querySelectorAll('#pipelineTable tr.highlighted').forEach(tr => tr.classList.remove('highlighted')); const rows = document.querySelectorAll('#pipelineTableBody tr'); if (rows[idx]) { rows[idx].classList.add('highlighted'); rows[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } if (r.lat && r.lon && pipelineMapInstance) pipelineMapInstance.setView([r.lat, r.lon], 16); }
+function highlightPipelineRow(idx) { document.querySelectorAll('#pipelineTable tr.highlighted').forEach(tr => tr.classList.remove('highlighted')); const rows = document.querySelectorAll('#pipelineTableBody tr'); if (rows[idx]) { rows[idx].classList.add('highlighted'); rows[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } }
+function clearPipelineSearch() { pipelineResults = []; pipelineSearchCenter = null; if (pipelineMarkerLayer) pipelineMarkerLayer.clearLayers(); if (pipelineMapInstance && pipelineMapInstance._centerMarker) { pipelineMapInstance.removeLayer(pipelineMapInstance._centerMarker); pipelineMapInstance._centerMarker = null; } document.getElementById('pipelineResultsArea').style.display = 'none'; document.getElementById('pipelineExportBtn').style.display = 'none'; document.getElementById('pipelineProgress').classList.remove('active'); document.getElementById('pipelineMapStatus').textContent = 'Enter an address or click the map to set a search center'; document.getElementById('pipelineAddress').value = ''; document.getElementById('pipelineMinVal').value = ''; if (pipelineMapInstance) pipelineMapInstance.setView([34.05, -118.25], 12); }
+function exportPipelineCSV() { if (!pipelineResults.length) return; const headers = ['Address','Permit #','Type','Stage','Valuation','Date','Zone','Description','Lat','Lon']; const rows = pipelineResults.map(r => [r.address, r.permit_nbr, r.permit_type_label, PIPELINE_STAGE_LABELS[r.stage] || r.stage, r.valuation, r.date ? r.date.substring(0,10) : '', r.zone, (r.description||'').replace(/"/g,'""'), r.lat, r.lon]); let csv = headers.join(',') + '\n'; rows.forEach(row => { csv += row.map(v => `"${v}"`).join(',') + '\n'; }); const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `pipeline_permits_${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(url); }
+function togglePipelineSelectAll() { var allCB = document.getElementById('pipelineSelectAll'); document.querySelectorAll('.pipeline-select').forEach(cb => { cb.checked = allCB.checked; }); updatePipelineSelectUI(); }
+function updatePipelineSelectUI() { var checks = document.querySelectorAll('.pipeline-select:checked'); var saveBtn = document.getElementById('pipelineSaveBtn'); if (saveBtn) saveBtn.style.display = checks.length > 0 ? 'inline-block' : 'none'; }
+function getPipelineSaved() { try { return JSON.parse(localStorage.getItem('pipeline_saved_list')) || []; } catch(e) { return []; } }
+function setPipelineSaved(list) { localStorage.setItem('pipeline_saved_list', JSON.stringify(list)); }
+function savePipelineSelected() {
+    var checks = document.querySelectorAll('.pipeline-select:checked'); if (checks.length === 0) return;
+    var saved = getPipelineSaved(); var existingPermits = new Set(saved.map(s => s.permit_nbr)); var added = 0;
+    checks.forEach(cb => { var idx = parseInt(cb.getAttribute('data-idx')); var r = pipelineResults[idx]; if (r && !existingPermits.has(r.permit_nbr)) { saved.push({ address: r.address||'', permit_nbr: r.permit_nbr||'', permit_type: r.permit_type_label||'', stage: r.stage||'', stageLabel: PIPELINE_STAGE_LABELS[r.stage]||r.stage||'', valuation: r.valuation||0, date: r.date ? r.date.substring(0,10) : '', zone: r.zone||'', description: r.description||'', lat: r.lat, lon: r.lon }); added++; } cb.checked = false; });
+    setPipelineSaved(saved); updatePipelineSelectUI(); renderPipelineSavedList(); if (added > 0) alert(added + ' site(s) saved.');
+}
+function renderPipelineSavedList() {
+    var saved = getPipelineSaved(); var panel = document.getElementById('pipelineSavedPanel'); var body = document.getElementById('pipelineSavedBody'); var countEl = document.getElementById('pipelineSavedCount'); if (!panel || !body) return;
+    if (saved.length === 0) { panel.style.display = 'none'; return; }
+    panel.style.display = 'block'; countEl.textContent = saved.length + ' site' + (saved.length === 1 ? '' : 's');
+    body.innerHTML = saved.map((r, i) => '<tr><td>' + (r.address||'—') + '</td><td style="font-family:monospace;font-size:0.78rem;">' + (r.permit_nbr||'—') + '</td><td>' + (r.permit_type||'—') + '</td><td>' + (r.stageLabel||'—') + '</td><td>' + (r.valuation ? '$' + r.valuation.toLocaleString() : '—') + '</td><td style="max-width:150px;font-size:0.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (r.description||'—') + '</td><td><button type="button" class="saved-btn-remove" onclick="removePipelineSaved(' + i + ')">Remove</button></td></tr>').join('');
+}
+function removePipelineSaved(idx) { var saved = getPipelineSaved(); saved.splice(idx, 1); setPipelineSaved(saved); renderPipelineSavedList(); }
+function clearPipelineSaved() { if (!confirm('Remove all saved pipeline sites?')) return; setPipelineSaved([]); renderPipelineSavedList(); }
+function exportPipelineSavedCSV() { var saved = getPipelineSaved(); if (saved.length === 0) return; var csv = 'Address,Permit #,Type,Stage,Valuation,Date,Zone,Description,Lat,Lon\n'; saved.forEach(r => { csv += [r.address, r.permit_nbr, r.permit_type, r.stageLabel, r.valuation, r.date, r.zone, '"'+(r.description||'').replace(/"/g,'""')+'"', r.lat, r.lon].join(',') + '\n'; }); var blob = new Blob([csv], { type: 'text/csv' }); var url = URL.createObjectURL(blob); var a = document.createElement('a'); a.href = url; a.download = 'pipeline_saved_' + new Date().toISOString().slice(0,10) + '.csv'; a.click(); URL.revokeObjectURL(url); }
+
+// Pipeline overlay on finder map
+function injectPipelineOverlayButton() {
+    const container = document.getElementById('finderMapContainer'); if (!container || container.querySelector('.pipeline-overlay-btn')) return;
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'pipeline-overlay-btn'; btn.textContent = 'Show Permits Nearby'; btn.onclick = togglePipelineOverlay; container.style.position = 'relative'; container.appendChild(btn);
+}
+async function togglePipelineOverlay() {
+    const btn = document.querySelector('.pipeline-overlay-btn'); if (!btn) return;
+    if (pipelineOverlayActive) { if (pipelineOverlayLayer && finderMapInstance) { finderMapInstance.removeLayer(pipelineOverlayLayer); pipelineOverlayLayer = null; } pipelineOverlayActive = false; btn.classList.remove('active'); btn.textContent = 'Show Permits Nearby'; return; }
+    const stationSelect = document.getElementById('finderStation2'); if (!stationSelect || stationSelect.selectedIndex < 0) { alert('Select a station first.'); return; }
+    const idx = parseInt(stationSelect.value); const station = METRO_STATIONS[idx]; if (!station) return;
+    btn.textContent = 'Loading...'; btn.disabled = true;
+    try { const permits = await fetchAllPipelinePermits(station.lat, station.lon, 0.5, null); pipelineOverlayLayer = L.layerGroup(); permits.slice(0, 300).forEach(r => { if (!r.lat || !r.lon) return; const m = L.circleMarker([r.lat, r.lon], { radius: 4, fillColor: PIPELINE_COLORS[r.stage]||'#718096', fillOpacity: 0.7, color: '#fff', weight: 1 }); m.bindPopup(`<strong>${r.address||'Permit'}</strong><br>${r.permit_nbr}<br>${PIPELINE_STAGE_LABELS[r.stage]||r.stage}`); m.addTo(pipelineOverlayLayer); }); pipelineOverlayLayer.addTo(finderMapInstance); pipelineOverlayActive = true; btn.classList.add('active'); btn.textContent = `Hide Permits (${Math.min(permits.length, 300)})`; }
+    catch (e) { alert('Failed: ' + e.message); btn.textContent = 'Show Permits Nearby'; }
+    finally { btn.disabled = false; }
+}
+
+// ============================================================
+//  SB 79 OPPORTUNITY FINDER
+// ============================================================
+
+async function queryParcelsNearStation(lat, lon, radiusFt, onProgress) {
+    const baseUrl = 'https://public.gis.lacounty.gov/public/rest/services/LACounty_Cache/LACounty_Parcel/MapServer/0/query';
+    const outFields = 'APN,SitusFullAddress,UseType,UseDescription,UseCode,Roll_LandValue,Roll_ImpValue,YearBuilt1,SQFTmain1,Units1,CENTER_LAT,CENTER_LON,Shape.STArea()';
+    const allFeatures = []; let offset = 0; const pageSize = 1000; let total = null;
+    while (true) {
+        const params = new URLSearchParams({ geometry: `${lon},${lat}`, geometryType: 'esriGeometryPoint', inSR: '4326', spatialRel: 'esriSpatialRelIntersects', distance: radiusFt, units: 'esriSRUnit_Foot', outFields, returnGeometry: false, returnCountOnly: false, resultOffset: offset, resultRecordCount: pageSize, f: 'json' });
+        const resp = await fetch(`${baseUrl}?${params}`); if (!resp.ok) throw new Error(`HTTP ${resp.status}`); const data = await resp.json(); if (data.error) throw new Error(data.error.message || 'GIS API error');
+        const features = data.features || []; allFeatures.push(...features);
+        if (onProgress) onProgress(allFeatures.length, total || allFeatures.length + (features.length === pageSize ? pageSize : 0));
+        if (features.length < pageSize) break; offset += pageSize; if (offset > 5000) break;
+    }
+    return allFeatures;
+}
+
+function classifyParcelUseType(useType, useDesc, useCode) {
+    const ut = (useType || '').toLowerCase(); const ud = (useDesc || '').toLowerCase(); const uc = (useCode || '').toString();
+    if (ut.includes('vacant') || ud.includes('vacant') || uc === '0000' || uc === '0100') return 'Vacant';
+    if (ut.includes('resident') || ud.includes('resident') || ud.includes('single') || ud.includes('duplex') || ud.includes('apartment') || ud.includes('condo') || uc.startsWith('01') || uc.startsWith('02') || uc.startsWith('03') || uc.startsWith('04')) return 'Residential';
+    if (ut.includes('commerc') || ud.includes('commerc') || ud.includes('office') || ud.includes('retail') || uc.startsWith('1') || uc.startsWith('2')) return 'Commercial';
+    if (ut.includes('industr') || ud.includes('industr') || ud.includes('warehouse') || uc.startsWith('3') || uc.startsWith('4')) return 'Industrial';
+    return 'Commercial';
+}
+function classifySB79Zone(parcelLat, parcelLon, stationLat, stationLon) { const dist = haversine(parcelLat, parcelLon, stationLat, stationLon); if (dist <= SB79_ZONES.adjacent.maxDist) return { key: 'adjacent', dist }; if (dist <= SB79_ZONES.inner.maxDist) return { key: 'inner', dist }; if (dist <= SB79_ZONES.outer.maxDist) return { key: 'outer', dist }; return { key: 'outside', dist }; }
+function getSB79Allowances(tier, zoneKey) { const tierData = SB79_TIERS[tier]; const zone = SB79_ZONES[zoneKey]; if (!tierData || !zone) return null; return { height: Math.round(tierData.height * zone.heightMult), density: Math.round(tierData.density * zone.heightMult), far: parseFloat((tierData.far * zone.heightMult).toFixed(2)), parking: zone.parking }; }
+
+function getAllNearbyTransit(lat, lon, maxMiles) {
+    if (!maxMiles) maxMiles = 0.75; var nearby = [];
+    for (var i = 0; i < METRO_STATIONS.length; i++) { var s = METRO_STATIONS[i]; var d = haversine(lat, lon, s.lat, s.lon); if (d <= maxMiles) { var tierData = SB79_TIERS[s.tier] || {}; var zoneKey = 'outside', parking = 1.0, heightMult = 0; if (d <= SB79_ZONES.adjacent.maxDist) { zoneKey = 'adjacent'; parking = 0; heightMult = 1.0; } else if (d <= SB79_ZONES.inner.maxDist) { zoneKey = 'inner'; parking = 0; heightMult = 1.0; } else if (d <= SB79_ZONES.outer.maxDist) { zoneKey = 'outer'; parking = 0.5; heightMult = 0.68; } var allowances = null; if (zoneKey !== 'outside') { allowances = { height: Math.round((tierData.height||0)*heightMult), density: Math.round((tierData.density||0)*heightMult), far: parseFloat(((tierData.far||0)*heightMult).toFixed(2)), parking }; } nearby.push({ station: s, stationIdx: i, distMiles: Math.round(d*1000)/1000, tier: s.tier, tierLabel: tierData.label||('Tier '+s.tier), line: s.line, lineLabel: LINE_LABELS[s.line]||s.line, zoneKey, allowances }); } }
+    nearby.sort((a,b) => a.distMiles - b.distMiles); return nearby;
+}
+
+function getLegislationForResult(result) {
+    var useTypes = ['multifamily_high','multifamily_mid','multifamily_low','mixeduse','senior','hotel','duplex','adu'];
+    var allBills = {}; var bestUseType = 'multifamily_mid'; var bestCount = 0;
+    var lotSf = result.lotSizeSqFt || 10000; var transit = 'moderate';
+    if (result.zone === 'adjacent') transit = 'adjacent'; else if (result.zone === 'inner' || result.zone === 'outer') transit = 'near';
+    var zoning = 'C2'; if ((result.allowances && result.allowances.far >= 4.0) || result.zone === 'adjacent' || result.zone === 'inner') zoning = 'TOD';
+    var prevGeocode = window.lastGeocode; if (result.lat && result.lon) window.lastGeocode = { lat: result.lat, lon: result.lon };
+    var inp = { parcelSize: lotSf, frontage: Math.round(Math.sqrt(lotSf)*0.8), zoning, neighborhood: 'dtla', siteCondition: result.useType === 'Vacant' ? 'vacant' : 'demolition', topography: 'flat', cornerLot: false, transit, arterial: 'major', utilities: 'full', constFlood: false, constHillside: false, constHistoric: false, constFault: false, constCoastal: false, constParking: false };
+    for (var u = 0; u < useTypes.length; u++) { try { var bills = getApplicableLegislation(useTypes[u], inp); for (var b = 0; b < bills.length; b++) allBills[bills[b].id] = bills[b]; if (bills.length > bestCount) { bestCount = bills.length; bestUseType = useTypes[u]; } } catch(e) {} }
+    window.lastGeocode = prevGeocode;
+    var billList = []; for (var key in allBills) { if (allBills.hasOwnProperty(key)) billList.push(allBills[key]); }
+    return { bills: billList, effects: stackLegislationEffects(billList), bestUseType, inp };
+}
+
+function filterAndScoreResults(features, station, filters) {
+    const results = [];
+    for (const f of features) {
+        const a = f.attributes; const lat = parseFloat(a.CENTER_LAT); const lon = parseFloat(a.CENTER_LON); if (!lat || !lon) continue;
+        const lotSizeSqFt = Math.round(a['Shape.STArea()'] || a['Shape__Area'] || 0);
+        const landVal = parseFloat(a.Roll_LandValue) || 0; const impVal = parseFloat(a.Roll_ImpValue) || 0;
+        const impRatio = landVal > 0 ? impVal / landVal : (impVal === 0 ? 0 : 999);
+        const yearBuilt = parseInt(a.YearBuilt1) || 0; const useType = classifyParcelUseType(a.UseType, a.UseDescription, a.UseCode);
+        const address = a.SitusFullAddress || 'No address'; const apn = a.APN || '';
+        const zoneInfo = classifySB79Zone(lat, lon, station.lat, station.lon); if (zoneInfo.key === 'outside') continue;
+        if (filters.selectedZones && filters.selectedZones.length > 0 && !filters.selectedZones.includes(zoneInfo.key)) continue;
+        if (filters.minLot && lotSizeSqFt < filters.minLot) continue; if (filters.maxLot && lotSizeSqFt > filters.maxLot) continue;
+        if (filters.useTypes.length > 0 && !filters.useTypes.includes(useType)) continue;
+        const allowances = getSB79Allowances(station.tier, zoneInfo.key);
+        var nearbyTransit = getAllNearbyTransit(lat, lon, 0.75);
+        var resultObj = { address, apn, lotSizeSqFt, useType, yearBuilt, landVal, impVal, impRatio, lat, lon, zone: zoneInfo.key, zoneDist: zoneInfo.dist, allowances, tier: station.tier, nearbyTransit };
+        var legInfo = getLegislationForResult(resultObj); resultObj.legislation = legInfo.bills; resultObj.legislationEffects = legInfo.effects;
+        results.push(resultObj);
+    }
+    return results;
+}
+
+function initFinderMap() {
+    const mapEl = document.getElementById('finderMap'); if (!mapEl) return;
+    if (finderMapInstance) { finderMapInstance.remove(); finderMapInstance = null; }
+    finderMapInstance = L.map('finderMap').setView([34.05, -118.25], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 18 }).addTo(finderMapInstance);
+    const seenCoords = new Set();
+    METRO_STATIONS.forEach((s, idx) => { const key = `${s.lat.toFixed(4)},${s.lon.toFixed(4)},${s.line}`; if (seenCoords.has(key)) return; seenCoords.add(key); const color = LINE_COLORS[s.line]||'#718096'; const icon = L.divIcon({ html: `<div style="background:${color};width:10px;height:10px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>`, iconSize: [10,10], iconAnchor: [5,5], className: '' }); const marker = L.marker([s.lat, s.lon], { icon }).bindPopup(`<strong>${s.name}</strong><br>${LINE_LABELS[s.line]||s.line}`).on('click', () => { selectFinderStation2(idx); drawFinderStationRadii(s); }); marker.addTo(finderMapInstance); });
+    attachZoneClickHandler(finderMapInstance); renderFinderMapLegend(); populateFinderStations2();
+    finderMapInitialized = true; setTimeout(() => { if (finderMapInstance) finderMapInstance.invalidateSize(); }, 200); injectPipelineOverlayButton();
+}
+function drawFinderStationRadii(station) {
+    if (finderMapInstance._finderRadii) finderMapInstance._finderRadii.forEach(c => finderMapInstance.removeLayer(c));
+    var tierColor = station.tier === 1 ? '#805ad5' : '#3182ce'; var circles = [];
+    circles.push(L.circle([station.lat, station.lon], { radius: 805, color: tierColor, weight: 2.5, opacity: 0.8, fillColor: tierColor, fillOpacity: 0.08, interactive: false, dashArray: '12,8' }).addTo(finderMapInstance));
+    circles.push(L.circle([station.lat, station.lon], { radius: 402, color: tierColor, weight: 2.5, opacity: 0.8, fillColor: tierColor, fillOpacity: 0.12, interactive: false, dashArray: '8,6' }).addTo(finderMapInstance));
+    circles.push(L.circle([station.lat, station.lon], { radius: 61, color: tierColor, weight: 2.5, opacity: 0.9, fillColor: tierColor, fillOpacity: 0.20, interactive: false, dashArray: '4,4' }).addTo(finderMapInstance));
+    finderMapInstance._finderRadii = circles; finderMapInstance.setView([station.lat, station.lon], 14);
+}
+function renderFinderMapLegend() { const el = document.getElementById('finderMapLegend'); if (!el) return; el.innerHTML = `<div class="legend-item"><span class="legend-dot" style="background:#e53e3e;"></span> Red/B</div><div class="legend-item"><span class="legend-dot" style="background:#805ad5;"></span> Purple/D</div><div class="legend-item"><span class="legend-dot" style="background:#3182ce;"></span> Blue/A</div><div class="legend-item"><span class="legend-dot" style="background:#d69e2e;"></span> Expo/E</div><div class="legend-item"><span class="legend-dot" style="background:#b7791f;"></span> Gold/L</div><div class="legend-item"><span class="legend-dot" style="background:#38a169;"></span> Green/C</div><div class="legend-item"><span class="legend-dot" style="background:#00bcd4;"></span> K Line</div><div class="legend-item"><span class="legend-dot" style="background:#ed64a6;"></span> Regional Connector</div><div class="legend-item"><span class="legend-dot" style="background:#e53e3e;border:2px solid #999;"></span> Metrolink</div>`; }
+function populateFinderStations2() { const sel = document.getElementById('finderStation2'); if (!sel) return; sel.innerHTML = ''; const grouped = {}; METRO_STATIONS.forEach((s, idx) => { if (!grouped[s.line]) grouped[s.line] = []; grouped[s.line].push({ ...s, idx }); }); const lineOrder = ['red','purple','blue_a','expo_e','gold_l','green_c','k_line','connector','metrolink']; for (const lineKey of lineOrder) { if (!grouped[lineKey]) continue; const grp = document.createElement('optgroup'); grp.label = LINE_LABELS[lineKey]||lineKey; for (const s of grouped[lineKey]) { const opt = document.createElement('option'); opt.value = s.idx; opt.textContent = s.name; grp.appendChild(opt); } sel.appendChild(grp); } }
+function selectFinderStation2(idx) { const sel = document.getElementById('finderStation2'); if (sel && sel.querySelector(`option[value="${idx}"]`)) sel.value = idx; }
+document.addEventListener('change', (e) => { if (e.target.id === 'finderStation2' && finderMapInstance) { const station = METRO_STATIONS[parseInt(e.target.value)]; if (station) drawFinderStationRadii(station); } });
+
+async function runStandaloneSearch() {
+    const sel = document.getElementById('finderStation2'); const station = METRO_STATIONS[parseInt(sel.value)]; if (!station) return;
+    const radiusChecks = document.querySelectorAll('.finderRadius2:checked'); const selectedRadii = Array.from(radiusChecks).map(c => parseInt(c.value)); if (selectedRadii.length === 0) { alert('Select at least one search radius.'); return; }
+    const radiusFt = Math.max(...selectedRadii); const useTypes = Array.from(document.querySelectorAll('.finderUseType2:checked')).map(c => c.value);
+    const minLot = parseInt(document.getElementById('finderMinLot2').value)||0; const maxLot = parseInt(document.getElementById('finderMaxLot2').value)||999999;
+    const selectedZones = []; if (selectedRadii.includes(200)) selectedZones.push('adjacent'); if (selectedRadii.includes(1320)) selectedZones.push('inner'); if (selectedRadii.includes(2640)) selectedZones.push('outer');
+    const filters = { useTypes, minLot, maxLot, maxRatio: null, yearBefore: null, selectedZones }; finderSelectedSet.clear();
+    const progressEl = document.getElementById('finderProgress2'); const fillEl = document.getElementById('finderProgressFill2'); const textEl = document.getElementById('finderProgressText2'); const btn = document.getElementById('finderSearchBtn2');
+    progressEl.classList.add('active'); fillEl.style.width = '0%'; textEl.textContent = 'Querying parcels near ' + station.name + '...'; btn.disabled = true; document.getElementById('finderResultsArea2').innerHTML = '';
+    drawFinderStationRadii(station);
+    try {
+        const features = await queryParcelsNearStation(station.lat, station.lon, radiusFt, (loaded, est) => { fillEl.style.width = Math.min(90, Math.round((loaded/Math.max(est,1))*90)) + '%'; textEl.textContent = `Loading... ${loaded} parcels`; });
+        fillEl.style.width = '95%'; textEl.textContent = `Filtering ${features.length} parcels...`;
+        finderResults2 = filterAndScoreResults(features, station, filters); finderSortCol2 = 'impRatio'; finderSortAsc2 = true; finderResults2.sort((a,b) => a.impRatio - b.impRatio);
+        fillEl.style.width = '100%'; textEl.textContent = `Found ${finderResults2.length} opportunities`; renderFinderResults2(station); addFinderParcelsToMap2(station);
+    } catch (e) { document.getElementById('finderResultsArea2').innerHTML = `<div class="finder-error"><strong>Search failed:</strong> ${e.message}</div>`; }
+    btn.disabled = false; setTimeout(() => progressEl.classList.remove('active'), 2000);
+}
+
+function renderFinderResults2(station) {
+    const area = document.getElementById('finderResultsArea2');
+    if (finderResults2.length === 0) { area.innerHTML = '<div class="finder-no-results">No parcels matched your filters.</div>'; return; }
+    const zoneBadge = (z) => `<span class="zone-badge ${z}">${z.charAt(0).toUpperCase()+z.slice(1)}</span>`;
+    const ratioClass = (r) => r < 0.5 ? 'imp-ratio-hot' : r < 1.0 ? 'imp-ratio-warm' : 'imp-ratio-cool';
+    const f = (v) => v ? '$'+v.toLocaleString() : '-';
+    let html = `<div id="finderSelectionBar" class="selection-bar" style="display:none;"><span id="finderSelCount">0</span><button type="button" class="finder-btn-export" onclick="addSelectionToSaved()" style="margin:0 0.5rem;">Add to Saved</button><button type="button" class="finder-btn-export" onclick="clearFinderSelection()">Clear</button></div>`;
+    html += `<div class="finder-summary">${finderResults2.length} opportunities near <strong>${station.name}</strong></div>`;
+    html += `<div class="finder-table-wrapper"><table class="finder-table" id="finderTable2"><thead><tr><th onclick="event.stopPropagation();toggleSelectAll()"><input type="checkbox" id="finderSelectAll" onclick="event.stopPropagation();toggleSelectAll()"></th><th onclick="sortFinderTable2('address')">Address</th><th onclick="sortFinderTable2('apn')">APN</th><th onclick="sortFinderTable2('lotSizeSqFt')">Lot Size</th><th onclick="sortFinderTable2('useType')">Use</th><th onclick="sortFinderTable2('yearBuilt')">Year</th><th onclick="sortFinderTable2('landVal')">Land Val</th><th onclick="sortFinderTable2('impVal')">Imp Val</th><th onclick="sortFinderTable2('impRatio')">Imp/Land</th><th onclick="sortFinderTable2('zone')">Zone</th><th>Allowances</th><th>Links</th></tr></thead><tbody>`;
+    finderResults2.forEach((r, i) => { const allow = r.allowances; const allowStr = allow ? `${allow.height}ft/${allow.density}du/${allow.far}FAR` : '-'; const checked = finderSelectedSet.has(i) ? 'checked' : ''; const enc = encodeURIComponent(r.address); const apnClean = (r.apn||'').replace(/[^0-9]/g,''); html += `<tr onclick="highlightFinderParcel2(${i})" id="finderRow2_${i}"><td onclick="event.stopPropagation()"><input type="checkbox" class="finder-row-check" data-idx="${i}" ${checked} onchange="onFinderCheckChange()"></td><td>${r.address}</td><td>${r.apn}</td><td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString()+' sf' : '-'}</td><td>${r.useType}</td><td>${r.yearBuilt > 0 ? r.yearBuilt : '-'}</td><td>${f(r.landVal)}</td><td>${f(r.impVal)}</td><td class="${ratioClass(r.impRatio)}">${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'}</td><td>${zoneBadge(r.zone)}</td><td style="font-size:0.75rem;">${allowStr}</td><td><span class="prop-links" onclick="event.stopPropagation()"><a href="https://www.zillow.com/homes/${enc}_rb/" target="_blank">Z</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank">LA</a></span></td></tr>`; });
+    html += '</tbody></table></div>';
+    html += `<button type="button" class="finder-btn-export" onclick="exportFinderCSV2()">Export CSV (${finderResults2.length})</button>`;
+    area.innerHTML = html; updateSelectionBar();
+}
+function sortFinderTable2(col) { if (finderSortCol2 === col) finderSortAsc2 = !finderSortAsc2; else { finderSortCol2 = col; finderSortAsc2 = true; } finderResults2.sort((a,b) => { let va = a[col], vb = b[col]; if (typeof va === 'string') { va = va.toLowerCase(); vb = (vb||'').toLowerCase(); return finderSortAsc2 ? va.localeCompare(vb) : vb.localeCompare(va); } va = va||0; vb = vb||0; return finderSortAsc2 ? va - vb : vb - va; }); const station = METRO_STATIONS[parseInt(document.getElementById('finderStation2').value)]; renderFinderResults2(station); }
+function addFinderParcelsToMap2(station) { if (!finderMapInstance) return; if (finderParcelLayer2) finderMapInstance.removeLayer(finderParcelLayer2); finderParcelLayer2 = L.layerGroup().addTo(finderMapInstance); finderResults2.forEach((r, i) => { if (!r.lat || !r.lon) return; let color = '#38a169'; if (r.impRatio < 0.5) color = '#e53e3e'; else if (r.impRatio < 1.0) color = '#dd6b20'; const marker = L.circleMarker([r.lat, r.lon], { radius: 5, fillColor: color, color: '#fff', weight: 1, opacity: 0.9, fillOpacity: 0.8 }); marker.bindPopup(`<strong>${r.address}</strong><br>APN: ${r.apn}<br>Lot: ${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString()+' sf' : '-'}<br>Imp/Land: ${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'}`); marker.on('click', () => { const row = document.getElementById('finderRow2_'+i); if (row) { row.classList.add('highlighted'); row.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }); marker.addTo(finderParcelLayer2); }); }
+function highlightFinderParcel2(idx) { const r = finderResults2[idx]; if (!r || !finderMapInstance) return; document.querySelectorAll('#finderTable2 tr.highlighted').forEach(tr => tr.classList.remove('highlighted')); const row = document.getElementById('finderRow2_'+idx); if (row) row.classList.add('highlighted'); finderMapInstance.setView([r.lat, r.lon], 17); }
+function exportFinderCSV2() { if (finderResults2.length === 0) return; const headers = ['Address','APN','Lot Size','Use','Year','Land Value','Imp Value','Imp/Land','Zone','Height','Density','FAR','Lat','Lon']; const rows = finderResults2.map(r => { const a = r.allowances||{}; return [`"${(r.address||'').replace(/"/g,'""')}"`,r.apn,r.lotSizeSqFt,r.useType,r.yearBuilt||'',r.landVal,r.impVal,r.impRatio < 100 ? r.impRatio.toFixed(3):'',r.zone,a.height||'',a.density||'',a.far||'',r.lat,r.lon].join(','); }); const csv = [headers.join(','), ...rows].join('\n'); const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `sb79-opportunities-${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(url); }
+
+// Selection & Saved List
+function onFinderCheckChange() { finderSelectedSet.clear(); document.querySelectorAll('.finder-row-check:checked').forEach(cb => finderSelectedSet.add(parseInt(cb.dataset.idx))); const allCb = document.getElementById('finderSelectAll'); if (allCb) allCb.checked = finderSelectedSet.size === document.querySelectorAll('.finder-row-check').length && finderSelectedSet.size > 0; updateSelectionBar(); }
+function toggleSelectAll() { const allCb = document.getElementById('finderSelectAll'); const checks = document.querySelectorAll('.finder-row-check'); const shouldCheck = allCb ? allCb.checked : false; finderSelectedSet.clear(); checks.forEach(cb => { cb.checked = shouldCheck; if (shouldCheck) finderSelectedSet.add(parseInt(cb.dataset.idx)); }); updateSelectionBar(); }
+function updateSelectionBar() { const bar = document.getElementById('finderSelectionBar'); if (!bar) return; if (finderSelectedSet.size > 0) { bar.style.display = 'flex'; document.getElementById('finderSelCount').textContent = finderSelectedSet.size + ' selected'; } else bar.style.display = 'none'; }
+function clearFinderSelection() { finderSelectedSet.clear(); document.querySelectorAll('.finder-row-check').forEach(cb => cb.checked = false); const allCb = document.getElementById('finderSelectAll'); if (allCb) allCb.checked = false; updateSelectionBar(); }
+function addSelectionToSaved() { if (finderSelectedSet.size === 0) return; const saved = getSavedList(); const existingApns = new Set(saved.map(s => s.apn)); let added = 0; finderSelectedSet.forEach(idx => { const r = finderResults2[idx]; if (r && !existingApns.has(r.apn)) { saved.push({ address: r.address, apn: r.apn, lotSizeSqFt: r.lotSizeSqFt, useType: r.useType, yearBuilt: r.yearBuilt, landVal: r.landVal, impVal: r.impVal, impRatio: r.impRatio, zone: r.zone, allowances: r.allowances, lat: r.lat, lon: r.lon, tier: r.tier }); added++; } }); setSavedList(saved); clearFinderSelection(); renderSavedList(); if (added > 0) { const panel = document.getElementById('savedListPanel'); if (panel) panel.scrollIntoView({ behavior: 'smooth' }); } }
+function getSavedList() { try { return JSON.parse(localStorage.getItem('sb79_saved_list')) || []; } catch { return []; } }
+function setSavedList(list) { localStorage.setItem('sb79_saved_list', JSON.stringify(list)); }
+function renderSavedList() {
+    const saved = getSavedList(); const panel = document.getElementById('savedListPanel'); const body = document.getElementById('savedListBody'); const countEl = document.getElementById('savedListCount'); if (!panel || !body) return;
+    if (saved.length === 0) { panel.style.display = 'none'; return; }
+    panel.style.display = 'block'; countEl.textContent = saved.length + ' propert' + (saved.length === 1 ? 'y' : 'ies');
+    body.innerHTML = saved.map((r, i) => { const enc = encodeURIComponent(r.address||''); const apnClean = (r.apn||'').replace(/[^0-9]/g,''); return `<tr><td><input type="checkbox" class="saved-select" data-idx="${i}"></td><td>${r.address}</td><td>${r.apn}</td><td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString()+' sf' : '-'}</td><td>${r.zone||'-'}</td><td><span class="prop-links"><a href="https://www.zillow.com/homes/${enc}_rb/" target="_blank">Z</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank">LA</a></span></td><td><button type="button" class="saved-btn-remove" onclick="removeSavedItem(${i})">Remove</button></td></tr>`; }).join('');
+}
+function removeSavedItem(idx) { const saved = getSavedList(); saved.splice(idx, 1); setSavedList(saved); renderSavedList(); }
+function clearSavedList() { if (!confirm('Remove all saved properties?')) return; setSavedList([]); renderSavedList(); }
+function toggleSavedSelectAll() { var allCB = document.getElementById('savedSelectAll'); document.querySelectorAll('.saved-select').forEach(cb => { cb.checked = allCB.checked; }); }
+function combineContiguousParcels() {
+    var checks = document.querySelectorAll('.saved-select:checked'); if (checks.length < 2 || checks.length > 4) { alert('Select 2-4 parcels.'); return; }
+    var saved = getSavedList(); var selected = []; checks.forEach(cb => { var idx = parseInt(cb.getAttribute('data-idx')); if (saved[idx]) selected.push(saved[idx]); });
+    var combinedLotSize = selected.reduce((s,p) => s + (p.lotSizeSqFt||0), 0); var avgLat = selected.reduce((s,p) => s + (p.lat||0), 0)/selected.length; var avgLon = selected.reduce((s,p) => s + (p.lon||0), 0)/selected.length;
+    var bestFar = 0; selected.forEach(p => { if (p.allowances && (p.allowances.far||0) > bestFar) bestFar = p.allowances.far; });
+    var combined = { address: 'COMBINED: ' + selected.map(p => p.address||p.apn).join(' + '), apn: selected.map(p => p.apn).join('+'), lotSizeSqFt: combinedLotSize, useType: selected[0].useType||'Commercial', yearBuilt: 0, landVal: selected.reduce((s,p)=>s+(p.landVal||0),0), impVal: selected.reduce((s,p)=>s+(p.impVal||0),0), lat: avgLat, lon: avgLon, zone: selected[0].zone||'inner', allowances: { far: bestFar||3.0, height: 55, density: 70, parking: '0.5/unit' }, isCombined: true };
+    combined.impRatio = combined.landVal > 0 ? combined.impVal/combined.landVal : 0;
+    saved.unshift(combined); setSavedList(saved); renderSavedList(); alert('Combined parcel created!');
+}
+function exportSavedCSV() { const saved = getSavedList(); if (saved.length === 0) return; const headers = ['Address','APN','Lot Size','Use','Year','Land Value','Imp Value','Imp/Land','Zone','Height','Density','FAR','Lat','Lon']; const rows = saved.map(r => { const a = r.allowances||{}; return [`"${(r.address||'').replace(/"/g,'""')}"`,r.apn,r.lotSizeSqFt,r.useType,r.yearBuilt||'',r.landVal,r.impVal,r.impRatio < 100 ? r.impRatio.toFixed(3):'',r.zone,a.height||'',a.density||'',a.far||'',r.lat,r.lon].join(','); }); const csv = [headers.join(','), ...rows].join('\n'); const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `sb79-saved-${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(url); }
+
+// Load saved list on page init
+document.addEventListener('DOMContentLoaded', () => { renderSavedList(); renderPipelineSavedList(); renderAgentSites(); });
+
+// ============================================================
+//  Listing One-Pager
+// ============================================================
+function generateListingOnePager(result, inp, address) {
+    const effects = stackLegislationEffects(result.legislation || []);
+    const budget = generateBudget(result.id, inp, effects);
+    const ease = computeEaseOfExecution(result.id, inp, effects);
+    const risk = computeRiskLevel(result.id, inp, effects);
+
+    // Values
+    const landValPSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
+    const asIsValue = landValPSF * inp.parcelSize;
+    const devValue = budget.stabilizedValue || 0;
+    const uplift = devValue - asIsValue;
+    const upliftPct = asIsValue > 0 ? ((uplift / asIsValue) * 100).toFixed(0) : 'N/A';
+
+    // Building params
+    const bp = BUILDING_PARAMS[result.id] || {};
+    const far = FAR_TYPICAL[result.id] || 2.5;
+    const effectiveFAR = effects.farBonus ? far * (1 + effects.farBonus) : far;
+    const buildableSF = Math.round(inp.parcelSize * effectiveFAR);
+    const avgUnit = bp.avgUnitSF || 850;
+    const units = bp.hasUnits !== false ? Math.max(1, Math.floor(buildableSF * 0.85 / avgUnit)) : 0;
+    const stories = bp.stories || Math.min(Math.ceil(effectiveFAR / 0.85), 8);
+    const timeline = TIMELINE_MONTHS[result.id] || 36;
+
+    // Ease meter color
+    let easeColor = '#ef4444';
+    if (ease >= 75) easeColor = '#22c55e';
+    else if (ease >= 50) easeColor = '#eab308';
+    else if (ease >= 25) easeColor = '#f97316';
+
+    // SB 79 section
+    let sb79HTML = '';
+    if (window.lastGeocode) {
+        const sb79 = detectSB79Eligibility(window.lastGeocode.lat, window.lastGeocode.lon);
+        if (sb79 && sb79.eligible) {
+            const st = sb79.nearestStation;
+            sb79HTML = `
+            <div class="onepager-sb79">
+                <h4 style="margin:0 0 0.5rem;font-size:0.85rem;color:#0f766e;">SB 79 Transit-Oriented Development</h4>
+                <div style="font-size:0.8rem;color:#334155;">
+                    <strong>Eligible</strong> — ${st.zone.charAt(0).toUpperCase()+st.zone.slice(1)} Zone (${(st.distance).toFixed(2)} mi from ${st.name})<br>
+                    Tier ${st.tier} (${st.tier===1?'Heavy Rail':'Light Rail / Commuter Rail'})
+                    ${st.allowances ? `<br>Height: ${st.allowances.height} ft &bull; Density: ${st.allowances.density} du/ac &bull; FAR: ${st.allowances.far} &bull; Parking: ${st.allowances.parking}` : ''}
+                </div>
+            </div>`;
+        }
+    }
+
+    // Legislation section
+    let legHTML = '';
+    if (result.legislation && result.legislation.length > 0) {
+        legHTML = `
+        <div class="onepager-legislation">
+            <h4 style="font-size:0.85rem;color:var(--primary);margin-bottom:0.5rem;">Applicable Legislation</h4>
+            <div class="leg-pills">
+                ${result.legislation.map(l => `<span class="leg-pill">${l.name}</span>`).join('')}
+            </div>
+        </div>`;
+    }
+
+    // Use name
+    const useDef = LAND_USES.find(u => u.id === result.id) || { name: result.name, icon: '' };
+
+    return `
+    <div class="onepager-hero">
+        <h2>Development Opportunity</h2>
+        <div class="address">${address || 'Subject Property'}</div>
+        <div class="value-trio">
+            <div class="value-box">
+                <div class="val-label">Estimated As-Is Value</div>
+                <div class="val-amount">$${fmt(asIsValue)}</div>
+            </div>
+            <div class="value-arrow">&rarr;</div>
+            <div class="value-box">
+                <div class="val-label">Redevelopment Value</div>
+                <div class="val-amount">$${fmt(devValue)}</div>
+            </div>
+            <div class="value-arrow">&rarr;</div>
+            <div class="value-box">
+                <div class="val-label">Value Uplift</div>
+                <div class="val-amount uplift">+$${fmt(Math.max(0, uplift))}</div>
+            </div>
+        </div>
+    </div>
+    <div class="onepager-body">
+        <div class="onepager-grid">
+            <div class="onepager-section">
+                <h4>Best Use Recommendation</h4>
+                <div style="font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;">${useDef.icon} ${useDef.name}</div>
+                <div class="onepager-metric"><span class="m-label">HBU Score</span><span class="m-value">${result.overall}/100</span></div>
+                <div class="onepager-metric"><span class="m-label">Feasibility</span><span class="m-value" style="color:${result.devMarginPct >= 0.15 ? '#16a34a' : result.devMarginPct >= 0 ? '#ca8a04' : '#dc2626'}">${result.devMarginPct >= 0.15 ? 'Feasible' : result.devMarginPct >= 0 ? 'Marginal' : 'Not Feasible'}</span></div>
+                <div class="onepager-metric"><span class="m-label">Risk Level</span><span class="m-value">${risk}</span></div>
+                <h4 style="margin-top:1rem;">Ease of Build</h4>
+                <div class="ease-meter">
+                    <span style="font-weight:700;font-size:0.85rem;">${ease}/100</span>
+                    <div class="ease-meter-bar"><div class="ease-meter-fill" style="width:${ease}%;background:${easeColor};"></div></div>
+                </div>
+                <div style="font-size:0.72rem;color:#94a3b8;margin-top:0.25rem;">${ease >= 75 ? 'Streamlined by-right approvals expected' : ease >= 50 ? 'Standard entitlement process' : 'Complex discretionary approvals likely'}</div>
+            </div>
+            <div class="onepager-section">
+                <h4>Key Development Metrics</h4>
+                <div class="onepager-metric"><span class="m-label">Lot Size</span><span class="m-value">${inp.parcelSize.toLocaleString()} SF</span></div>
+                <div class="onepager-metric"><span class="m-label">Buildable Area</span><span class="m-value">${buildableSF.toLocaleString()} SF</span></div>
+                ${units > 0 ? `<div class="onepager-metric"><span class="m-label">Est. Units</span><span class="m-value">${units}</span></div>` : ''}
+                <div class="onepager-metric"><span class="m-label">Stories</span><span class="m-value">${stories}</span></div>
+                <div class="onepager-metric"><span class="m-label">FAR</span><span class="m-value">${effectiveFAR.toFixed(2)}</span></div>
+                <div class="onepager-metric"><span class="m-label">Total Dev Cost</span><span class="m-value">$${fmt(budget.totalCost)}</span></div>
+                <div class="onepager-metric"><span class="m-label">Dev Margin</span><span class="m-value">${(result.devMarginPct * 100).toFixed(1)}%</span></div>
+                <div class="onepager-metric"><span class="m-label">Uplift %</span><span class="m-value">${upliftPct}%</span></div>
+                <div class="onepager-metric"><span class="m-label">Timeline</span><span class="m-value">~${timeline} months</span></div>
+            </div>
+        </div>
+        ${sb79HTML}
+        ${legHTML}
+        <div class="onepager-branding">
+            <div class="agent-name">Prepared by CLS CRE &mdash; Land to Yield</div>
+            <div style="font-size:0.75rem;color:#94a3b8;">landtoyield.com</div>
+        </div>
+        <div class="onepager-disclaimer">
+            This report is for informational purposes only and does not constitute an appraisal, legal opinion, or guarantee of development feasibility.
+            All estimates are based on publicly available data, zoning assumptions, and market averages. Actual values, costs, and entitlement outcomes may vary.
+            Consult licensed professionals before making investment decisions. &copy; ${new Date().getFullYear()} CLS CRE.
+        </div>
+    </div>`;
+}
+
+function openListingOnePager(resultIndex) {
+    if (!lastResults || !lastInputs) { alert('Please run a calculation first.'); return; }
+    const result = lastResults[resultIndex];
+    if (!result) return;
+    const address = document.getElementById('addressInput').value.trim() || 'Subject Property';
+    const html = generateListingOnePager(result, lastInputs, address);
+    document.getElementById('onepagerContent').innerHTML = html;
+    document.getElementById('onepagerModal').style.display = '';
+    document.body.style.overflow = 'hidden';
+}
+
+function openListingOnePagerFromData(siteData) {
+    // Rebuild inputs and result from saved site data (My Sites tab)
+    const inp = siteData.inputs || buildInpFromSaved(siteData);
+    const useId = siteData.bestUseId || determineBestUse(inp);
+    const legislation = getApplicableLegislation(useId, inp);
+    const effects = stackLegislationEffects(legislation);
+    const legal = scoreLegal(useId, inp, effects);
+    const physical = scorePhysical(useId, inp);
+    const financial = scoreFinancial(useId, inp, effects);
+    const productive = scoreProductive(useId, inp, effects);
+    const budget = generateBudget(useId, inp, effects);
+    let overall;
+    if (legal === 0) { overall = 0; } else {
+        overall = legal * 0.25 + physical * 0.20 + financial * 0.30 + productive * 0.25;
+        if (legal <= 0.5) overall *= 0.8;
+        if (budget.devMargin < -0.15) overall *= 0.50;
+        else if (budget.devMargin < -0.05) overall *= 0.65;
+        else if (budget.devMargin < 0) overall *= 0.80;
+    }
+    const useDef = LAND_USES.find(u => u.id === useId) || {};
+    const result = {
+        id: useId, name: useDef.name || useId, icon: useDef.icon || '',
+        legal: Math.round(legal * 100), physical: Math.round(physical * 100),
+        financial: Math.round(financial * 100), productive: Math.round(productive * 100),
+        overall: Math.round(overall * 100), devMarginPct: budget.devMargin, legislation
+    };
+    // Restore geocode if available
+    if (siteData.lat && siteData.lon) window.lastGeocode = { lat: siteData.lat, lon: siteData.lon };
+    const html = generateListingOnePager(result, inp, siteData.address || 'Subject Property');
+    document.getElementById('onepagerContent').innerHTML = html;
+    document.getElementById('onepagerModal').style.display = '';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeOnePager() {
+    document.getElementById('onepagerModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function printOnePager() {
+    document.body.classList.add('printing-onepager');
+    window.print();
+    document.body.classList.remove('printing-onepager');
+}
+
+// ============================================================
+//  buildInpFromSaved + determineBestUse (for finder/pipeline)
+// ============================================================
+function buildInpFromSaved(prop) {
+    let neighborhood = 'dtla';
+    if (prop.lat && prop.lon) { let minDist = Infinity; for (const [key, c] of Object.entries(NEIGHBORHOOD_CENTROIDS)) { const d = Math.sqrt(Math.pow(prop.lat - c.lat, 2) + Math.pow(prop.lon - c.lon, 2)); if (d < minDist) { minDist = d; neighborhood = key; } } }
+    let zoning = 'C2'; if ((prop.allowances && prop.allowances.far >= 4.0) || prop.zone === 'adjacent' || prop.zone === 'inner') zoning = 'TOD';
+    let transit = 'moderate'; if (prop.zone === 'adjacent') transit = 'adjacent'; else if (prop.zone === 'inner' || prop.zone === 'outer') transit = 'near';
+    return { parcelSize: prop.lotSizeSqFt||10000, frontage: Math.round(Math.sqrt(prop.lotSizeSqFt||10000)*0.8), zoning, neighborhood, siteCondition: prop.useType === 'Vacant' ? 'vacant' : 'demolition', topography: 'flat', cornerLot: false, transit, arterial: 'major', utilities: 'full', constFlood: false, constHillside: false, constHistoric: false, constFault: false, constCoastal: false, constParking: false };
+}
+function determineBestUse(inp) {
+    let bestId = 'multifamily_mid'; let bestScore = 0;
+    for (const use of LAND_USES) { const legislation = getApplicableLegislation(use.id, inp); const effects = stackLegislationEffects(legislation); const legal = scoreLegal(use.id, inp, effects); const physical = scorePhysical(use.id, inp); const financial = scoreFinancial(use.id, inp, effects); const productive = scoreProductive(use.id, inp, effects); const composite = (legal*25 + physical*25 + financial*30 + productive*20)/100; if (composite > bestScore && legal > 0) { bestScore = composite; bestId = use.id; } }
+    return bestId;
+}
+
+// ============================================================
+//  My Sites — localStorage persistence + map + table
+// ============================================================
+function getAgentSites() {
+    try { return JSON.parse(localStorage.getItem('agent_sites') || '[]'); } catch(e) { return []; }
+}
+function setAgentSites(sites) {
+    localStorage.setItem('agent_sites', JSON.stringify(sites));
+}
+
+function computeAttractivenessScore(site) {
+    // 40% value uplift %, 30% dev margin, 30% ease of build
+    const upliftPct = site.asIsValue > 0 ? Math.min((site.uplift / site.asIsValue) * 100, 200) : 0;
+    const upliftScore = Math.min(100, Math.max(0, upliftPct / 2)); // 200%+ = 100
+    const marginScore = Math.min(100, Math.max(0, (site.devMarginPct + 0.10) * 250)); // -10% = 0, 30% = 100
+    const easeScore = Math.max(0, Math.min(100, site.ease || 0));
+    return Math.round(upliftScore * 0.4 + marginScore * 0.3 + easeScore * 0.3);
+}
+
+function saveToAgentSites(results, inp) {
+    if (!results || results.length === 0) return;
+    const topResult = results[0];
+    const effects = stackLegislationEffects(topResult.legislation || []);
+    const budget = generateBudget(topResult.id, inp, effects);
+    const ease = computeEaseOfExecution(topResult.id, inp, effects);
+    const landValPSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
+    const asIsValue = landValPSF * inp.parcelSize;
+    const devValue = budget.stabilizedValue || 0;
+    const uplift = devValue - asIsValue;
+    const address = document.getElementById('addressInput').value.trim() || 'Unknown Address';
+    const geo = window.lastGeocode || {};
+
+    const site = {
+        id: Date.now().toString(),
+        address: address,
+        lat: geo.lat || null,
+        lon: geo.lon || null,
+        bestUseId: topResult.id,
+        bestUseName: topResult.name,
+        bestUseIcon: topResult.icon || '',
+        overall: topResult.overall,
+        lotSize: inp.parcelSize,
+        asIsValue: asIsValue,
+        devValue: devValue,
+        uplift: uplift,
+        devMarginPct: topResult.devMarginPct,
+        ease: ease,
+        inputs: inp,
+        date: new Date().toISOString().slice(0, 10),
+    };
+    site.attractiveness = computeAttractivenessScore(site);
+
+    const sites = getAgentSites();
+    // Replace if same address exists
+    const existIdx = sites.findIndex(s => s.address === site.address);
+    if (existIdx >= 0) sites.splice(existIdx, 1);
+    sites.unshift(site);
+    setAgentSites(sites);
+}
+
+let sitesMapMarkers = [];
+let sitesSortCol = 'score';
+let sitesSortAsc = false;
+
+function initSitesMap() {
+    if (sitesMapInitialized) return;
+    sitesMapInstance = L.map('sitesMap', { scrollWheelZoom: true }).setView([34.05, -118.25], 11);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 19
+    }).addTo(sitesMapInstance);
+    sitesMapInitialized = true;
+    renderAgentSites();
+}
+
+function getAttractivenessColor(score) {
+    if (score >= 75) return '#059669';
+    if (score >= 50) return '#d69e2e';
+    if (score >= 25) return '#ea580c';
+    return '#dc2626';
+}
+
+function renderAgentSites() {
+    const sites = getAgentSites();
+    const tbody = document.getElementById('sitesTableBody');
+    const countEl = document.getElementById('sitesCount');
+    countEl.textContent = sites.length + ' propert' + (sites.length === 1 ? 'y' : 'ies');
+
+    // Sort
+    const sorted = [...sites].sort((a, b) => {
+        let va, vb;
+        switch (sitesSortCol) {
+            case 'score': va = a.attractiveness; vb = b.attractiveness; break;
+            case 'address': va = (a.address||'').toLowerCase(); vb = (b.address||'').toLowerCase(); return sitesSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+            case 'bestUse': va = (a.bestUseName||'').toLowerCase(); vb = (b.bestUseName||'').toLowerCase(); return sitesSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+            case 'lotSize': va = a.lotSize||0; vb = b.lotSize||0; break;
+            case 'asIsValue': va = a.asIsValue||0; vb = b.asIsValue||0; break;
+            case 'devValue': va = a.devValue||0; vb = b.devValue||0; break;
+            case 'uplift': va = a.uplift||0; vb = b.uplift||0; break;
+            case 'margin': va = a.devMarginPct||0; vb = b.devMarginPct||0; break;
+            case 'ease': va = a.ease||0; vb = b.ease||0; break;
+            case 'date': va = a.date||''; vb = b.date||''; return sitesSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+            default: va = a.attractiveness; vb = b.attractiveness;
+        }
+        return sitesSortAsc ? va - vb : vb - va;
+    });
+
+    // Table
+    if (sorted.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:2rem;color:#94a3b8;">No properties saved yet. Run an HBU analysis to add properties automatically.</td></tr>';
+    } else {
+        tbody.innerHTML = sorted.map((s, i) => {
+            const color = getAttractivenessColor(s.attractiveness);
+            return `<tr>
+                <td><span style="display:inline-block;width:36px;height:36px;border-radius:50%;background:${color};color:white;font-weight:800;text-align:center;line-height:36px;font-size:0.82rem;">${s.attractiveness}</span></td>
+                <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(s.address||'').replace(/"/g,'&quot;')}">${s.address||'—'}</td>
+                <td>${s.bestUseIcon||''} ${s.bestUseName||'—'}</td>
+                <td>${(s.lotSize||0).toLocaleString()} SF</td>
+                <td>$${fmt(s.asIsValue||0)}</td>
+                <td>$${fmt(s.devValue||0)}</td>
+                <td style="color:${(s.uplift||0) >= 0 ? '#059669':'#dc2626'};font-weight:600;">${(s.uplift||0) >= 0 ? '+':''}$${fmt(s.uplift||0)}</td>
+                <td style="color:${(s.devMarginPct||0) >= 0.15 ? '#059669' : (s.devMarginPct||0) >= 0 ? '#ca8a04' : '#dc2626'};font-weight:600;">${((s.devMarginPct||0)*100).toFixed(1)}%</td>
+                <td>${s.ease||0}/100</td>
+                <td style="font-size:0.78rem;">${s.date||'—'}</td>
+                <td>
+                    <button type="button" class="btn-lookup" style="font-size:0.72rem;padding:4px 10px;" onclick="openListingOnePagerFromData(getAgentSites()[${sites.indexOf(s)}])">One-Pager</button>
+                    <button type="button" style="font-size:0.72rem;padding:4px 8px;background:#e53e3e;color:white;border:none;border-radius:6px;cursor:pointer;" onclick="removeAgentSite('${s.id}')">✕</button>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    // Update sort header indicators
+    document.querySelectorAll('#sitesTable th[data-col]').forEach(th => {
+        th.textContent = th.textContent.replace(/ [▲▼]$/, '');
+        if (th.dataset.col === sitesSortCol) th.textContent += sitesSortAsc ? ' ▲' : ' ▼';
+    });
+
+    // Map markers
+    if (sitesMapInstance) {
+        sitesMapMarkers.forEach(m => sitesMapInstance.removeLayer(m));
+        sitesMapMarkers = [];
+        const bounds = [];
+        sorted.forEach(s => {
+            if (!s.lat || !s.lon) return;
+            const color = getAttractivenessColor(s.attractiveness);
+            const marker = L.circleMarker([s.lat, s.lon], {
+                radius: 10, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.9
+            }).addTo(sitesMapInstance);
+            marker.bindPopup(`<strong>${s.address}</strong><br>${s.bestUseIcon||''} ${s.bestUseName}<br>Score: ${s.attractiveness}/100<br>Uplift: $${fmt(s.uplift||0)}`);
+            sitesMapMarkers.push(marker);
+            bounds.push([s.lat, s.lon]);
+        });
+        if (bounds.length > 0) sitesMapInstance.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
+    }
+}
+
+function sortAgentSites(col) {
+    if (sitesSortCol === col) sitesSortAsc = !sitesSortAsc;
+    else { sitesSortCol = col; sitesSortAsc = false; }
+    renderAgentSites();
+}
+
+function removeAgentSite(id) {
+    const sites = getAgentSites();
+    const idx = sites.findIndex(s => s.id === id);
+    if (idx >= 0) { sites.splice(idx, 1); setAgentSites(sites); renderAgentSites(); }
+}
+
+function clearAgentSites() {
+    if (!confirm('Remove all saved properties from My Sites?')) return;
+    setAgentSites([]);
+    renderAgentSites();
 }
 
 </script>
