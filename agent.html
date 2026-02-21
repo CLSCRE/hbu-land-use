@@ -1942,7 +1942,7 @@
 <div class="container">
     <div class="intro-box" style="border-left-color:#059669;">
         <h3>My Portfolio</h3>
-        <p>Every property you analyze is <strong>automatically saved here</strong>, ranked by how attractive it is as a listing opportunity. The <strong>Attractiveness Score</strong> combines value uplift potential, development margin, and ease of build — so you can prioritize which homeowners to approach first. Click <strong>"One-Pager"</strong> on any property to generate a polished, printable report you can hand to the owner.</p>
+        <p>Every property you analyze is <strong>automatically saved here</strong>, ranked by listing attractiveness. The key metric is the <strong>Opportunity Ratio</strong> — what a developer would pay divided by the current market value. Properties at <strong style="color:#059669;">1.5x or higher</strong> are strong listing opportunities where the homeowner stands to gain significantly. Properties <strong style="color:#dc2626;">below 1.0x</strong> are worth more as-is. Use the filter to show only strong opportunities, and click <strong>"One-Pager"</strong> to generate a polished report for the owner.</p>
     </div>
 
     <div id="sitesMapContainer" style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
@@ -1957,6 +1957,9 @@
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
             <h2 style="font-size:1.1rem;color:var(--primary);margin:0;">Saved Properties</h2>
             <span style="font-size:0.82rem;color:var(--text-light);" id="sitesCount">0 properties</span>
+            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;color:var(--text-light);cursor:pointer;">
+                <input type="checkbox" id="filterStrongOpp" onchange="renderAgentSites()" style="accent-color:#059669;"> Show only strong opportunities (1.5x+)
+            </label>
             <button type="button" class="btn-lookup" onclick="clearAgentSites()" style="font-size:0.78rem;padding:6px 14px;background:#e53e3e;color:white;">Clear All</button>
         </div>
         <div class="finder-table-wrapper">
@@ -1971,6 +1974,7 @@
                     <th data-col="uplift" onclick="sortAgentSites('uplift')" style="cursor:pointer;">Premium</th>
                     <th data-col="margin" onclick="sortAgentSites('margin')" style="cursor:pointer;">Margin</th>
                     <th data-col="ease" onclick="sortAgentSites('ease')" style="cursor:pointer;">Ease</th>
+                    <th data-col="oppRatio" onclick="sortAgentSites('oppRatio')" style="cursor:pointer;">Opp. Ratio</th>
                     <th data-col="date" onclick="sortAgentSites('date')" style="cursor:pointer;">Date</th>
                     <th style="cursor:default;">Action</th>
                 </tr></thead>
@@ -3702,6 +3706,16 @@ function renderResults(results, inp) {
     const rankLabels = ['1st — Best Use', '2nd — Alternative', '3rd — Alternative'];
     const rankClasses = ['rank-1', 'rank-2', 'rank-3'];
 
+    // Compute market value once for opportunity ratio on cards
+    const cardGeo = window.lastGeocode || {};
+    let cardMarketValue = 0;
+    if (cardGeo.assessedTotal && cardGeo.assessedTotal > 0) {
+        cardMarketValue = Math.round(cardGeo.assessedTotal * 1.9);
+    } else {
+        const landValPSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
+        cardMarketValue = Math.round(landValPSF * inp.parcelSize * 1.3);
+    }
+
     for (let i = 0; i < 3; i++) {
         const r = results[i];
         const effects = stackLegislationEffects(r.legislation || []);
@@ -3719,6 +3733,16 @@ function renderResults(results, inp) {
         else if (r.devMarginPct >= 0) feasBadge = '<span style="display:inline-block;font-size:0.7rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;background:#fffff0;color:#b7791f;margin-left:0.5rem;">MARGINAL</span>';
         else feasBadge = '<span style="display:inline-block;font-size:0.7rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;background:#fff5f5;color:#c53030;margin-left:0.5rem;">NOT FEASIBLE</span>';
 
+        // Opportunity Ratio badge — dev land bid vs market value
+        const cardBudget = generateBudget(r.id, inp, effects);
+        const cardDevCosts = (cardBudget.totalHard || 0) + (cardBudget.totalSoft || 0);
+        const cardDevBid = Math.max(0, (cardBudget.stabilizedValue || 0) - cardDevCosts);
+        const cardOppRatio = cardMarketValue > 0 ? cardDevBid / cardMarketValue : 0;
+        let oppBadge = '';
+        if (cardOppRatio >= 1.5) oppBadge = `<span style="display:inline-block;font-size:0.7rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;background:#ecfdf5;color:#059669;margin-left:0.5rem;">🎯 ${cardOppRatio.toFixed(1)}x OPP</span>`;
+        else if (cardOppRatio >= 1.0) oppBadge = `<span style="display:inline-block;font-size:0.7rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;background:#fffbeb;color:#b45309;margin-left:0.5rem;">${cardOppRatio.toFixed(1)}x OPP</span>`;
+        else oppBadge = `<span style="display:inline-block;font-size:0.7rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;background:#fef2f2;color:#dc2626;margin-left:0.5rem;">${cardOppRatio.toFixed(1)}x OPP</span>`;
+
         const card = document.createElement('div');
         card.className = `result-card ${rankClasses[i]}`;
         card.style.cursor = 'pointer';
@@ -3726,7 +3750,7 @@ function renderResults(results, inp) {
         card.innerHTML = `
             <div class="rank-banner">
                 <span class="rank-num">#${i + 1}</span>
-                ${rankLabels[i]}${feasBadge}
+                ${rankLabels[i]}${feasBadge}${oppBadge}
             </div>
             <div class="card-body">
                 <div class="use-name">${r.icon} ${r.name}</div>
@@ -5534,6 +5558,23 @@ function generateListingOnePager(result, inp, address) {
     const premium = residualLandValue - estimatedMarketValue;
     const premiumPct = estimatedMarketValue > 0 ? ((premium / estimatedMarketValue) * 100).toFixed(0) : 'N/A';
 
+    // Opportunity Ratio — dev land bid / market value. >= 1.5x is a strong opportunity
+    const oppRatio = estimatedMarketValue > 0 ? residualLandValue / estimatedMarketValue : 0;
+    let oppBanner = '';
+    if (oppRatio >= 1.5) {
+        oppBanner = `<div style="background:#059669;color:white;padding:0.75rem 1.25rem;text-align:center;font-weight:700;font-size:0.95rem;border-radius:10px;margin-bottom:1rem;">
+            STRONG LISTING OPPORTUNITY &mdash; Developer would pay <span style="font-size:1.15rem;">${oppRatio.toFixed(1)}x</span> current market value
+        </div>`;
+    } else if (oppRatio >= 1.0) {
+        oppBanner = `<div style="background:#ca8a04;color:white;padding:0.75rem 1.25rem;text-align:center;font-weight:700;font-size:0.95rem;border-radius:10px;margin-bottom:1rem;">
+            MODERATE OPPORTUNITY &mdash; Developer would pay <span style="font-size:1.15rem;">${oppRatio.toFixed(1)}x</span> current market value. Upside is limited.
+        </div>`;
+    } else {
+        oppBanner = `<div style="background:#dc2626;color:white;padding:0.75rem 1.25rem;text-align:center;font-weight:700;font-size:0.90rem;border-radius:10px;margin-bottom:1rem;">
+            NOT A STRONG LISTING OPPORTUNITY &mdash; Developer land bid (${fmt(residualLandValue)}) is <em>below</em> current market value (${fmt(estimatedMarketValue)}). The property is worth more as-is than what a developer would pay to redevelop it. Ratio: ${oppRatio.toFixed(2)}x
+        </div>`;
+    }
+
     // Building params
     const bp = BUILDING_PARAMS[result.id] || {};
     const far = FAR_TYPICAL[result.id] || 2.5;
@@ -5599,11 +5640,12 @@ function generateListingOnePager(result, inp, address) {
             </div>
         </div>
         <div style="margin-top:1rem;font-size:0.92rem;opacity:0.9;">
-            ${premium > 0 ? `That\u2019s a <strong style="color:#fde68a;font-size:1.15rem;">+${fmt(premium)}</strong> premium (${premiumPct}% above current value)` : 'Based on highest-and-best-use residual land analysis'}
+            ${oppRatio >= 1.5 ? `That\u2019s <strong style="color:#fde68a;font-size:1.15rem;">${oppRatio.toFixed(1)}x</strong> the current market value &mdash; a <strong style="color:#fde68a;">+${fmt(premium)}</strong> premium` : oppRatio >= 1.0 ? `Developer would pay <strong style="color:#fde68a;">${oppRatio.toFixed(1)}x</strong> current value &mdash; modest upside of +${fmt(premium)}` : `Developer land bid is <strong style="color:#fca5a5;">${oppRatio.toFixed(2)}x</strong> of current market value`}
         </div>
         <div style="font-size:0.7rem;opacity:0.6;margin-top:0.5rem;">${marketValueSource} &mdash; verify with Zillow/Redfin comps</div>
     </div>
     <div class="onepager-body">
+        ${oppBanner}
         <div class="onepager-grid">
             <div class="onepager-section">
                 <h4>Best Use Recommendation</h4>
@@ -5728,12 +5770,17 @@ function setAgentSites(sites) {
 }
 
 function computeAttractivenessScore(site) {
-    // 40% value uplift %, 30% dev margin, 30% ease of build
-    const upliftPct = site.asIsValue > 0 ? Math.min((site.uplift / site.asIsValue) * 100, 200) : 0;
-    const upliftScore = Math.min(100, Math.max(0, upliftPct / 2)); // 200%+ = 100
+    // Opportunity Ratio drives the score — agents care about dev bid vs market value
+    const oppRatio = site.oppRatio || (site.asIsValue > 0 ? site.devValue / site.asIsValue : 0);
+    // oppRatio score: 0x=0, 1.0x=40, 1.5x=70, 2.0x=90, 2.5x+=100
+    const oppScore = Math.min(100, Math.max(0, oppRatio * 45));
     const marginScore = Math.min(100, Math.max(0, (site.devMarginPct + 0.10) * 250)); // -10% = 0, 30% = 100
     const easeScore = Math.max(0, Math.min(100, site.ease || 0));
-    return Math.round(upliftScore * 0.4 + marginScore * 0.3 + easeScore * 0.3);
+    // 50% opp ratio, 25% margin, 25% ease
+    let score = Math.round(oppScore * 0.50 + marginScore * 0.25 + easeScore * 0.25);
+    // Harsh penalty if dev bid is below market value — not worth pursuing
+    if (oppRatio < 1.0) score = Math.min(score, 30);
+    return score;
 }
 
 function saveToAgentSites(results, inp) {
@@ -5773,6 +5820,7 @@ function saveToAgentSites(results, inp) {
         uplift: uplift,
         devMarginPct: topResult.devMarginPct,
         ease: ease,
+        oppRatio: asIsValue > 0 ? devValue / asIsValue : 0,
         inputs: inp,
         date: new Date().toISOString().slice(0, 10),
     };
@@ -5808,9 +5856,18 @@ function getAttractivenessColor(score) {
 }
 
 function renderAgentSites() {
-    const sites = getAgentSites();
+    let sites = getAgentSites();
     const tbody = document.getElementById('sitesTableBody');
     const countEl = document.getElementById('sitesCount');
+
+    // Filter by strong opportunities if checkbox is checked
+    const filterEl = document.getElementById('filterStrongOpp');
+    if (filterEl && filterEl.checked) {
+        sites = sites.filter(s => {
+            const ratio = s.oppRatio || (s.asIsValue > 0 ? s.devValue / s.asIsValue : 0);
+            return ratio >= 1.5;
+        });
+    }
     countEl.textContent = sites.length + ' propert' + (sites.length === 1 ? 'y' : 'ies');
 
     // Sort
@@ -5826,6 +5883,7 @@ function renderAgentSites() {
             case 'uplift': va = a.uplift||0; vb = b.uplift||0; break;
             case 'margin': va = a.devMarginPct||0; vb = b.devMarginPct||0; break;
             case 'ease': va = a.ease||0; vb = b.ease||0; break;
+            case 'oppRatio': va = a.oppRatio||(a.asIsValue>0?a.devValue/a.asIsValue:0); vb = b.oppRatio||(b.asIsValue>0?b.devValue/b.asIsValue:0); break;
             case 'date': va = a.date||''; vb = b.date||''; return sitesSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
             default: va = a.attractiveness; vb = b.attractiveness;
         }
@@ -5834,10 +5892,12 @@ function renderAgentSites() {
 
     // Table
     if (sorted.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:2rem;color:#94a3b8;">No properties saved yet. Run an HBU analysis to add properties automatically.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:2rem;color:#94a3b8;">No properties saved yet. Run an HBU analysis to add properties automatically.</td></tr>';
     } else {
         tbody.innerHTML = sorted.map((s, i) => {
             const color = getAttractivenessColor(s.attractiveness);
+            const ratio = s.oppRatio || (s.asIsValue > 0 ? s.devValue / s.asIsValue : 0);
+            const ratioColor = ratio >= 1.5 ? '#059669' : ratio >= 1.0 ? '#ca8a04' : '#dc2626';
             return `<tr>
                 <td><span style="display:inline-block;width:36px;height:36px;border-radius:50%;background:${color};color:white;font-weight:800;text-align:center;line-height:36px;font-size:0.82rem;">${s.attractiveness}</span></td>
                 <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(s.address||'').replace(/"/g,'&quot;')}">${s.address||'—'}</td>
@@ -5848,6 +5908,7 @@ function renderAgentSites() {
                 <td style="color:${(s.uplift||0) >= 0 ? '#059669':'#dc2626'};font-weight:600;">${(s.uplift||0) >= 0 ? '+':''}${fmt(s.uplift||0)}</td>
                 <td style="color:${(s.devMarginPct||0) >= 0.15 ? '#059669' : (s.devMarginPct||0) >= 0 ? '#ca8a04' : '#dc2626'};font-weight:600;">${((s.devMarginPct||0)*100).toFixed(1)}%</td>
                 <td>${s.ease||0}/100</td>
+                <td style="font-weight:700;color:${ratioColor};">${ratio.toFixed(1)}x</td>
                 <td style="font-size:0.78rem;">${s.date||'—'}</td>
                 <td>
                     <button type="button" class="btn-lookup" style="font-size:0.72rem;padding:4px 10px;" onclick="openListingOnePagerFromData(getAgentSites()[${sites.indexOf(s)}])">One-Pager</button>
@@ -5874,7 +5935,8 @@ function renderAgentSites() {
             const marker = L.circleMarker([s.lat, s.lon], {
                 radius: 10, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.9
             }).addTo(sitesMapInstance);
-            marker.bindPopup(`<strong>${s.address}</strong><br>${s.bestUseIcon||''} ${s.bestUseName}<br>Score: ${s.attractiveness}/100<br>Uplift: ${fmt(s.uplift||0)}`);
+            const popupRatio = s.oppRatio || (s.asIsValue > 0 ? s.devValue / s.asIsValue : 0);
+            marker.bindPopup(`<strong>${s.address}</strong><br>${s.bestUseIcon||''} ${s.bestUseName}<br>Score: ${s.attractiveness}/100<br>Opp. Ratio: <strong style="color:${popupRatio >= 1.5 ? '#059669' : popupRatio >= 1.0 ? '#ca8a04' : '#dc2626'}">${popupRatio.toFixed(1)}x</strong>`);
             sitesMapMarkers.push(marker);
             bounds.push([s.lat, s.lon]);
         });
