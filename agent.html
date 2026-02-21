@@ -6,7 +6,9 @@
     <title>Agent Portal — Land to Yield</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.16.0/dist/leaflet-geoman.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.16.0/dist/leaflet-geoman.min.js"></script>
     <style>
         :root {
             --primary: #0d9488;
@@ -1406,6 +1408,88 @@
             margin-top: 0.5rem;
             font-weight: 600;
         }
+
+        /* Scanner mode selector */
+        .scanner-modes { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+        .scanner-mode-btn {
+            padding: 0.5rem 1rem; border-radius: 8px; border: 2px solid var(--border);
+            background: var(--card); color: var(--text-light); font-weight: 600; font-size: 0.82rem;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .scanner-mode-btn:hover { border-color: var(--primary-light); color: var(--primary); }
+        .scanner-mode-btn.active { border-color: var(--primary); background: #f0fdfa; color: var(--primary); }
+        .scanner-panel { display: none; }
+        .scanner-panel.active { display: block; }
+
+        /* Opp ratio cells */
+        .opp-strong { background: #dcfce7; color: #166534; font-weight: 700; }
+        .opp-moderate { background: #fef9c3; color: #854d0e; font-weight: 600; }
+        .opp-weak { background: #fee2e2; color: #991b1b; font-weight: 600; }
+        .opp-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.78rem; }
+
+        /* Copy APN button */
+        .btn-copy-apn {
+            background: none; border: 1px solid var(--border); border-radius: 4px;
+            padding: 0.15rem 0.4rem; font-size: 0.7rem; cursor: pointer; color: var(--text-light);
+            transition: all 0.15s;
+        }
+        .btn-copy-apn:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* Agent profile modal */
+        .profile-modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5);
+            z-index: 9999; display: flex; align-items: center; justify-content: center;
+        }
+        .profile-modal {
+            background: var(--card); border-radius: 16px; padding: 2rem; max-width: 500px; width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .profile-modal h3 { color: var(--primary); margin-bottom: 1.25rem; font-size: 1.1rem; }
+        .profile-modal .field { margin-bottom: 0.9rem; }
+        .profile-modal label { font-size: 0.82rem; font-weight: 600; margin-bottom: 0.2rem; display: block; }
+        .profile-modal input {
+            width: 100%; padding: 0.6rem 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;
+            font-size: 0.9rem; font-family: inherit;
+        }
+        .profile-modal input:focus { border-color: var(--primary); outline: none; }
+        .profile-modal-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+        .profile-modal-actions button {
+            flex: 1; padding: 0.6rem; border-radius: 8px; font-weight: 600; font-size: 0.88rem;
+            cursor: pointer; border: none; font-family: inherit;
+        }
+
+        /* Letter modal */
+        .letter-modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5);
+            z-index: 9998; display: flex; align-items: center; justify-content: center; overflow-y: auto;
+        }
+        .letter-modal {
+            background: white; border-radius: 16px; padding: 2.5rem; max-width: 700px; width: 95%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2); margin: 2rem auto;
+        }
+        .letter-content { font-family: Georgia, 'Times New Roman', serif; line-height: 1.8; font-size: 1rem; color: #1a1a1a; }
+        .letter-content p { margin-bottom: 1rem; }
+        .letter-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; justify-content: flex-end; }
+        .letter-actions button {
+            padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; font-size: 0.85rem;
+            cursor: pointer; border: none; font-family: 'Inter', sans-serif;
+        }
+
+        /* Settings gear icon */
+        .header-settings {
+            position: absolute; right: 1.5rem; top: 50%; transform: translateY(-50%);
+            background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer;
+            font-size: 1.3rem; transition: all 0.2s;
+        }
+        .header-settings:hover { color: white; transform: translateY(-50%) rotate(45deg); }
+        header { position: relative; }
+
+        @media print {
+            .letter-actions, .letter-modal-overlay > button { display: none !important; }
+            .letter-modal { box-shadow: none; border-radius: 0; max-width: 100%; padding: 1in; }
+            .letter-modal-overlay { background: white; position: static; }
+            body > *:not(.letter-modal-overlay) { display: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -1431,6 +1515,7 @@
         <a href="index.html">Home</a>
         <a href="app.html">Developer Portal</a>
     </div>
+    <button class="header-settings" onclick="openAgentProfileModal()" title="Agent Profile Settings">&#9881;</button>
 </header>
 
 <div class="tab-bar">
@@ -1708,39 +1793,108 @@
     </div>
 
     <div style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
-        <h2 style="font-size:1.1rem;color:var(--primary);border-bottom:2px solid var(--border);padding-bottom:0.5rem;margin-bottom:1.25rem;">Search Filters</h2>
-        <div class="finder-controls">
-            <div class="finder-field" style="grid-column: span 2;">
-                <label>Transit Station</label>
-                <select id="finderStation2"></select>
-            </div>
-            <div class="finder-field">
-                <label>Search Radius (select one or more)</label>
-                <div class="finder-checks">
-                    <label><input type="checkbox" class="finderRadius2" value="200"> Adjacent (200ft)</label>
-                    <label><input type="checkbox" class="finderRadius2" value="1320"> Inner (1/4 mi)</label>
-                    <label><input type="checkbox" class="finderRadius2" value="2640" checked> Outer (1/2 mi)</label>
+        <h2 style="font-size:1.1rem;color:var(--primary);border-bottom:2px solid var(--border);padding-bottom:0.5rem;margin-bottom:1.25rem;">Area Scanner</h2>
+
+        <div class="scanner-modes">
+            <button class="scanner-mode-btn active" onclick="setScannerMode('station')">&#128651; Metro Station</button>
+            <button class="scanner-mode-btn" onclick="setScannerMode('draw')">&#9999;&#65039; Draw on Map</button>
+            <button class="scanner-mode-btn" onclick="setScannerMode('zip')">&#128230; ZIP Code</button>
+            <button class="scanner-mode-btn" onclick="setScannerMode('radius')">&#128205; Address Radius</button>
+        </div>
+
+        <!-- Mode: Metro Station (existing) -->
+        <div id="scannerPanel_station" class="scanner-panel active">
+            <div class="finder-controls">
+                <div class="finder-field" style="grid-column: span 2;">
+                    <label>Transit Station</label>
+                    <select id="finderStation2"></select>
                 </div>
-            </div>
-            <div class="finder-field">
-                <label>Use Type</label>
-                <div class="finder-checks">
-                    <label><input type="checkbox" class="finderUseType2" value="Residential" checked> Residential</label>
-                    <label><input type="checkbox" class="finderUseType2" value="Commercial" checked> Commercial</label>
-                    <label><input type="checkbox" class="finderUseType2" value="Industrial"> Industrial</label>
-                    <label><input type="checkbox" class="finderUseType2" value="Vacant" checked> Vacant</label>
+                <div class="finder-field">
+                    <label>Search Radius (select one or more)</label>
+                    <div class="finder-checks">
+                        <label><input type="checkbox" class="finderRadius2" value="200"> Adjacent (200ft)</label>
+                        <label><input type="checkbox" class="finderRadius2" value="1320"> Inner (1/4 mi)</label>
+                        <label><input type="checkbox" class="finderRadius2" value="2640" checked> Outer (1/2 mi)</label>
+                    </div>
                 </div>
-            </div>
-            <div class="finder-field">
-                <label>Min Lot Size (sq ft)</label>
-                <input type="number" id="finderMinLot2" value="2500" min="0" step="500">
-            </div>
-            <div class="finder-field">
-                <label>Max Lot Size (sq ft)</label>
-                <input type="number" id="finderMaxLot2" value="100000" min="0" step="500">
             </div>
         </div>
-        <button type="button" class="finder-btn-search" id="finderSearchBtn2" onclick="runStandaloneSearch()">Find Opportunities</button>
+
+        <!-- Mode: Draw on Map -->
+        <div id="scannerPanel_draw" class="scanner-panel">
+            <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.75rem;">Use the drawing tools on the map above to draw a polygon, rectangle, or circle. Then click <strong>Find Opportunities</strong> to scan all parcels in that area.</p>
+            <div style="font-size:0.78rem;color:var(--primary);font-weight:600;">Tip: Click the polygon or rectangle tool in the map toolbar, draw your shape, then search.</div>
+        </div>
+
+        <!-- Mode: ZIP Code -->
+        <div id="scannerPanel_zip" class="scanner-panel">
+            <div class="finder-controls">
+                <div class="finder-field" style="grid-column: span 2;">
+                    <label>ZIP Code</label>
+                    <select id="scannerZip">
+                        <option value="">Select a ZIP code...</option>
+                    </select>
+                </div>
+                <div class="finder-field">
+                    <label>Search Radius from ZIP Center</label>
+                    <div class="finder-checks">
+                        <label><input type="radio" name="zipRadius" value="0.5" checked> 1/2 mi</label>
+                        <label><input type="radio" name="zipRadius" value="0.75"> 3/4 mi</label>
+                        <label><input type="radio" name="zipRadius" value="1.0"> 1 mi</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mode: Address Radius -->
+        <div id="scannerPanel_radius" class="scanner-panel">
+            <div class="finder-controls">
+                <div class="finder-field" style="grid-column: span 2;">
+                    <label>Address</label>
+                    <div style="display:flex;gap:0.5rem;">
+                        <input type="text" id="scannerAddress" placeholder="e.g. 6801 Hollywood Blvd, Los Angeles, CA" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();runAreaScan();}">
+                        <button type="button" class="btn-lookup" onclick="geocodeScannerAddress()" style="white-space:nowrap;">Locate</button>
+                    </div>
+                    <div id="scannerAddressStatus" style="font-size:0.78rem;color:var(--text-light);margin-top:0.3rem;"></div>
+                </div>
+                <div class="finder-field">
+                    <label>Search Radius</label>
+                    <div class="finder-checks">
+                        <label><input type="radio" name="addrRadius" value="0.25"> 1/4 mi</label>
+                        <label><input type="radio" name="addrRadius" value="0.5" checked> 1/2 mi</label>
+                        <label><input type="radio" name="addrRadius" value="1.0"> 1 mi</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Common filters for all modes -->
+        <div style="border-top:1px solid var(--border);padding-top:1rem;margin-top:0.5rem;">
+            <div class="finder-controls">
+                <div class="finder-field">
+                    <label>Use Type</label>
+                    <div class="finder-checks">
+                        <label><input type="checkbox" class="finderUseType2" value="Residential" checked> Residential</label>
+                        <label><input type="checkbox" class="finderUseType2" value="Commercial" checked> Commercial</label>
+                        <label><input type="checkbox" class="finderUseType2" value="Industrial"> Industrial</label>
+                        <label><input type="checkbox" class="finderUseType2" value="Vacant" checked> Vacant</label>
+                    </div>
+                </div>
+                <div class="finder-field">
+                    <label>Min Lot Size (sq ft)</label>
+                    <input type="number" id="finderMinLot2" value="2500" min="0" step="500">
+                </div>
+                <div class="finder-field">
+                    <label>Max Lot Size (sq ft)</label>
+                    <input type="number" id="finderMaxLot2" value="100000" min="0" step="500">
+                </div>
+                <div class="finder-field">
+                    <label><input type="checkbox" id="filterStrongOnly"> Show only 1.5x+ opportunities</label>
+                </div>
+            </div>
+        </div>
+
+        <button type="button" class="finder-btn-search" id="finderSearchBtn2" onclick="runAreaScan()">Find Opportunities</button>
         <div class="finder-progress" id="finderProgress2">
             <div class="finder-progress-bar"><div class="finder-progress-fill" id="finderProgressFill2"></div></div>
             <div class="finder-progress-text" id="finderProgressText2">Querying parcels...</div>
@@ -1960,6 +2114,7 @@
             <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;color:var(--text-light);cursor:pointer;">
                 <input type="checkbox" id="filterStrongOpp" onchange="renderAgentSites()" style="accent-color:#059669;"> Show only strong opportunities (1.5x+)
             </label>
+            <button type="button" class="btn-lookup" onclick="exportPortfolioCallList()" style="font-size:0.78rem;padding:6px 14px;">Export Call List</button>
             <button type="button" class="btn-lookup" onclick="clearAgentSites()" style="font-size:0.78rem;padding:6px 14px;background:#e53e3e;color:white;">Clear All</button>
         </div>
         <div class="finder-table-wrapper">
@@ -2341,6 +2496,65 @@ const METRO_STATIONS = [
     { lat: 34.0500, lon: -117.7510, name: 'Pomona Downtown', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
     { lat: 33.7710, lon: -118.1890, name: 'Long Beach (Metrolink)', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
 ];
+
+// LA County ZIP Code centroids (approx center for radius-based scanning)
+const LA_ZIP_CENTROIDS = {
+'90001':{lat:33.9425,lon:-118.2551,name:'Florence-Firestone'},'90002':{lat:33.9490,lon:-118.2480,name:'Watts'},'90003':{lat:33.9640,lon:-118.2730,name:'South LA'},'90004':{lat:34.0770,lon:-118.3090,name:'Los Feliz'},
+'90005':{lat:34.0590,lon:-118.3100,name:'Koreatown'},'90006':{lat:34.0480,lon:-118.2920,name:'Westlake'},'90007':{lat:34.0290,lon:-118.2830,name:'USC/Exposition Park'},'90008':{lat:34.0110,lon:-118.3400,name:'Baldwin Hills'},
+'90010':{lat:34.0600,lon:-118.3020,name:'Mid-Wilshire'},'90011':{lat:33.9930,lon:-118.2580,name:'South Central'},'90012':{lat:34.0620,lon:-118.2400,name:'Civic Center/Chinatown'},'90013':{lat:34.0440,lon:-118.2450,name:'Downtown LA'},
+'90014':{lat:34.0390,lon:-118.2560,name:'Fashion District'},'90015':{lat:34.0360,lon:-118.2680,name:'South Park'},'90016':{lat:34.0280,lon:-118.3540,name:'West Adams'},'90017':{lat:34.0510,lon:-118.2660,name:'Downtown West'},
+'90018':{lat:34.0330,lon:-118.3190,name:'Jefferson Park'},'90019':{lat:34.0480,lon:-118.3430,name:'Mid-City'},'90020':{lat:34.0650,lon:-118.3090,name:'Koreatown North'},'90022':{lat:34.0230,lon:-118.1560,name:'East LA'},
+'90023':{lat:34.0230,lon:-118.1980,name:'Boyle Heights'},'90024':{lat:34.0640,lon:-118.4310,name:'Westwood'},'90025':{lat:34.0510,lon:-118.4450,name:'West LA'},'90026':{lat:34.0770,lon:-118.2600,name:'Echo Park'},
+'90027':{lat:34.1010,lon:-118.2920,name:'Los Feliz/Griffith'},'90028':{lat:34.0990,lon:-118.3260,name:'Hollywood'},'90029':{lat:34.0890,lon:-118.2940,name:'Thai Town'},'90031':{lat:34.0790,lon:-118.2100,name:'Lincoln Heights'},
+'90032':{lat:34.0780,lon:-118.1770,name:'El Sereno'},'90033':{lat:34.0510,lon:-118.2100,name:'Boyle Heights North'},'90034':{lat:34.0310,lon:-118.3970,name:'Palms/Cheviot Hills'},'90035':{lat:34.0520,lon:-118.3800,name:'Beverly-Fairfax'},
+'90036':{lat:34.0700,lon:-118.3510,name:'Fairfax'},'90037':{lat:33.9950,lon:-118.2860,name:'Vermont-Slauson'},'90038':{lat:34.0880,lon:-118.3220,name:'Hollywood East'},'90039':{lat:34.1120,lon:-118.2610,name:'Silverlake'},
+'90041':{lat:34.1370,lon:-118.2090,name:'Eagle Rock'},'90042':{lat:34.1140,lon:-118.1920,name:'Highland Park'},'90043':{lat:33.9930,lon:-118.3350,name:'View Park/Windsor Hills'},'90044':{lat:33.9560,lon:-118.2940,name:'Athens'},
+'90045':{lat:33.9610,lon:-118.3960,name:'Westchester'},'90046':{lat:34.1110,lon:-118.3700,name:'Hollywood Hills'},'90047':{lat:33.9570,lon:-118.3120,name:'Gramercy Park'},'90048':{lat:34.0750,lon:-118.3720,name:'Beverly Grove'},
+'90049':{lat:34.0690,lon:-118.4730,name:'Brentwood'},'90056':{lat:33.9850,lon:-118.3700,name:'Ladera Heights'},'90057':{lat:34.0590,lon:-118.2740,name:'Pico-Union'},'90058':{lat:33.9960,lon:-118.2130,name:'Vernon'},
+'90059':{lat:33.9280,lon:-118.2410,name:'Willowbrook'},'90061':{lat:33.9210,lon:-118.2740,name:'Gardena North'},'90062':{lat:34.0100,lon:-118.3070,name:'Vermont Knolls'},'90063':{lat:34.0440,lon:-118.1830,name:'East LA South'},
+'90064':{lat:34.0370,lon:-118.4260,name:'Rancho Park'},'90065':{lat:34.1010,lon:-118.2290,name:'Cypress Park/Glassell'},'90066':{lat:34.0000,lon:-118.4310,name:'Mar Vista'},'90067':{lat:34.0570,lon:-118.4140,name:'Century City'},
+'90068':{lat:34.1190,lon:-118.3350,name:'Hollywood Hills'},'90069':{lat:34.0900,lon:-118.3770,name:'West Hollywood'},'90071':{lat:34.0520,lon:-118.2550,name:'Bunker Hill'},'90077':{lat:34.0830,lon:-118.4490,name:'Bel Air'},
+'90089':{lat:34.0220,lon:-118.2850,name:'USC'},'90094':{lat:33.9740,lon:-118.4220,name:'Playa Vista'},'90095':{lat:34.0690,lon:-118.4440,name:'UCLA'},
+'90201':{lat:33.9680,lon:-118.1870,name:'Bell'},'90210':{lat:34.0900,lon:-118.4070,name:'Beverly Hills'},'90211':{lat:34.0640,lon:-118.3810,name:'Beverly Hills South'},
+'90212':{lat:34.0580,lon:-118.3990,name:'Beverly Hills SW'},'90220':{lat:33.8720,lon:-118.2420,name:'Compton'},'90221':{lat:33.8760,lon:-118.2200,name:'Compton East'},
+'90230':{lat:33.9990,lon:-118.3920,name:'Culver City'},'90232':{lat:34.0130,lon:-118.3920,name:'Culver City North'},
+'90240':{lat:33.9450,lon:-118.1320,name:'Downey'},'90241':{lat:33.9380,lon:-118.1480,name:'Downey South'},'90242':{lat:33.9220,lon:-118.1430,name:'Downey SE'},
+'90245':{lat:33.9160,lon:-118.3930,name:'El Segundo'},'90247':{lat:33.8900,lon:-118.3070,name:'Gardena'},'90248':{lat:33.8710,lon:-118.2980,name:'Gardena South'},
+'90249':{lat:33.8970,lon:-118.3240,name:'Gardena West'},'90250':{lat:33.8610,lon:-118.3520,name:'Hawthorne'},'90254':{lat:33.8620,lon:-118.3950,name:'Hermosa Beach'},
+'90255':{lat:33.9740,lon:-118.2070,name:'Huntington Park'},'90260':{lat:33.8870,lon:-118.3520,name:'Lawndale'},'90262':{lat:33.9400,lon:-118.2050,name:'Lynwood'},
+'90265':{lat:34.0350,lon:-118.6830,name:'Malibu'},'90266':{lat:33.8830,lon:-118.4020,name:'Manhattan Beach'},'90270':{lat:33.9830,lon:-118.1870,name:'Maywood'},
+'90272':{lat:34.0440,lon:-118.5260,name:'Pacific Palisades'},'90274':{lat:33.7650,lon:-118.3800,name:'Palos Verdes'},
+'90275':{lat:33.7660,lon:-118.3560,name:'Rancho Palos Verdes'},'90277':{lat:33.8360,lon:-118.3910,name:'Redondo Beach'},'90278':{lat:33.8620,lon:-118.3690,name:'Redondo Beach North'},
+'90280':{lat:33.9470,lon:-118.2170,name:'South Gate'},'90291':{lat:33.9920,lon:-118.4640,name:'Venice'},'90292':{lat:33.9770,lon:-118.4540,name:'Marina del Rey'},
+'90293':{lat:33.9590,lon:-118.4530,name:'Playa del Rey'},'90301':{lat:33.9500,lon:-118.3510,name:'Inglewood'},'90302':{lat:33.9610,lon:-118.3540,name:'Inglewood North'},
+'90303':{lat:33.9370,lon:-118.3400,name:'Inglewood South'},'90304':{lat:33.9310,lon:-118.3740,name:'Lennox'},'90305':{lat:33.9550,lon:-118.3660,name:'Inglewood West'},
+'91040':{lat:34.2370,lon:-118.2810,name:'Sunland-Tujunga'},'91042':{lat:34.2280,lon:-118.2430,name:'Tujunga'},
+'91101':{lat:34.1480,lon:-118.1440,name:'Pasadena'},'91103':{lat:34.1660,lon:-118.1620,name:'Pasadena NW'},'91104':{lat:34.1680,lon:-118.1280,name:'Pasadena NE'},
+'91105':{lat:34.1370,lon:-118.1640,name:'South Pasadena/Pasadena'},'91106':{lat:34.1370,lon:-118.1210,name:'Pasadena SE'},'91107':{lat:34.1540,lon:-118.0870,name:'Pasadena East'},
+'91201':{lat:34.1720,lon:-118.2990,name:'Glendale'},'91202':{lat:34.1640,lon:-118.2710,name:'Glendale South'},'91203':{lat:34.1510,lon:-118.2640,name:'Glendale Downtown'},
+'91204':{lat:34.1430,lon:-118.2600,name:'Glendale SE'},'91205':{lat:34.1390,lon:-118.2420,name:'Glendale East'},'91206':{lat:34.1610,lon:-118.2320,name:'Glendale NE'},
+'91301':{lat:34.1690,lon:-118.7540,name:'Agoura Hills'},'91302':{lat:34.1480,lon:-118.6620,name:'Calabasas'},
+'91303':{lat:34.2050,lon:-118.6010,name:'Canoga Park'},'91304':{lat:34.2310,lon:-118.6110,name:'Canoga Park North'},
+'91306':{lat:34.2240,lon:-118.5630,name:'Winnetka'},'91307':{lat:34.2070,lon:-118.6560,name:'West Hills'},
+'91311':{lat:34.2540,lon:-118.5680,name:'Chatsworth'},'91316':{lat:34.1600,lon:-118.5190,name:'Encino'},
+'91324':{lat:34.2400,lon:-118.5260,name:'Northridge'},'91325':{lat:34.2290,lon:-118.5130,name:'Northridge South'},
+'91326':{lat:34.2810,lon:-118.5560,name:'Porter Ranch'},'91331':{lat:34.2470,lon:-118.4070,name:'Pacoima'},
+'91335':{lat:34.1950,lon:-118.5380,name:'Reseda'},'91340':{lat:34.2680,lon:-118.4340,name:'San Fernando'},
+'91342':{lat:34.2910,lon:-118.4460,name:'Sylmar'},'91343':{lat:34.2360,lon:-118.4530,name:'North Hills'},
+'91344':{lat:34.2770,lon:-118.4960,name:'Granada Hills'},'91345':{lat:34.2570,lon:-118.4640,name:'Mission Hills'},
+'91350':{lat:34.3860,lon:-118.5380,name:'Santa Clarita'},'91351':{lat:34.3870,lon:-118.5690,name:'Canyon Country'},
+'91352':{lat:34.2030,lon:-118.3520,name:'Sun Valley'},'91356':{lat:34.1720,lon:-118.5520,name:'Tarzana'},
+'91364':{lat:34.1560,lon:-118.5660,name:'Woodland Hills'},'91367':{lat:34.1760,lon:-118.5910,name:'Woodland Hills West'},
+'91401':{lat:34.1830,lon:-118.4490,name:'Van Nuys'},'91402':{lat:34.2130,lon:-118.4400,name:'Panorama City'},
+'91403':{lat:34.1560,lon:-118.4520,name:'Sherman Oaks'},'91405':{lat:34.2010,lon:-118.4630,name:'Van Nuys West'},
+'91406':{lat:34.2030,lon:-118.4900,name:'Van Nuys NW'},'91411':{lat:34.1890,lon:-118.4660,name:'Sherman Oaks North'},
+'91423':{lat:34.1490,lon:-118.4240,name:'Sherman Oaks East'},'91436':{lat:34.1540,lon:-118.4700,name:'Encino East'},
+'91501':{lat:34.1950,lon:-118.3240,name:'Burbank'},'91502':{lat:34.1830,lon:-118.3110,name:'Burbank South'},
+'91504':{lat:34.2060,lon:-118.3020,name:'Burbank North'},'91505':{lat:34.1980,lon:-118.3380,name:'Burbank West'},
+'91601':{lat:34.1710,lon:-118.3800,name:'North Hollywood'},'91602':{lat:34.1510,lon:-118.3730,name:'North Hollywood South'},
+'91604':{lat:34.1450,lon:-118.3960,name:'Studio City'},'91605':{lat:34.2050,lon:-118.4060,name:'North Hollywood East'},
+'91606':{lat:34.1870,lon:-118.3950,name:'North Hollywood Central'},'91607':{lat:34.1650,lon:-118.4090,name:'Valley Village'},
+};
 
 // SB 79 Transit-Oriented Development tier definitions (effective July 1, 2026)
 const SB79_TIERS = {
@@ -5961,6 +6175,738 @@ function clearAgentSites() {
     setAgentSites([]);
     renderAgentSites();
 }
+
+// ============================================================
+//  AGENT PROFILE (localStorage)
+// ============================================================
+function getAgentProfile() { try { return JSON.parse(localStorage.getItem('agent_profile')) || {}; } catch(e) { return {}; } }
+function setAgentProfile(p) { localStorage.setItem('agent_profile', JSON.stringify(p)); }
+
+function openAgentProfileModal() {
+    const p = getAgentProfile();
+    const overlay = document.createElement('div');
+    overlay.className = 'profile-modal-overlay';
+    overlay.id = 'profileModalOverlay';
+    overlay.innerHTML = `<div class="profile-modal">
+        <h3>&#9881; Agent Profile</h3>
+        <p style="font-size:0.82rem;color:var(--text-light);margin-bottom:1rem;">This information is used in prospecting letters and exports.</p>
+        <div class="field"><label>Full Name</label><input type="text" id="profName" value="${(p.name||'').replace(/"/g,'&quot;')}"></div>
+        <div class="field"><label>Phone</label><input type="tel" id="profPhone" value="${(p.phone||'').replace(/"/g,'&quot;')}"></div>
+        <div class="field"><label>Email</label><input type="email" id="profEmail" value="${(p.email||'').replace(/"/g,'&quot;')}"></div>
+        <div class="field"><label>Brokerage</label><input type="text" id="profBrokerage" value="${(p.brokerage||'').replace(/"/g,'&quot;')}"></div>
+        <div class="field"><label>License #</label><input type="text" id="profLicense" value="${(p.licenseNo||'').replace(/"/g,'&quot;')}"></div>
+        <div class="profile-modal-actions">
+            <button onclick="closeAgentProfileModal()" style="background:var(--border);color:var(--text);">Cancel</button>
+            <button onclick="saveAgentProfile()" style="background:var(--primary);color:white;">Save Profile</button>
+        </div>
+    </div>`;
+    document.body.appendChild(overlay);
+}
+
+function saveAgentProfile() {
+    setAgentProfile({
+        name: document.getElementById('profName').value.trim(),
+        phone: document.getElementById('profPhone').value.trim(),
+        email: document.getElementById('profEmail').value.trim(),
+        brokerage: document.getElementById('profBrokerage').value.trim(),
+        licenseNo: document.getElementById('profLicense').value.trim(),
+    });
+    closeAgentProfileModal();
+}
+
+function closeAgentProfileModal() {
+    const el = document.getElementById('profileModalOverlay');
+    if (el) el.remove();
+}
+
+// ============================================================
+//  SCANNER MODE SELECTOR
+// ============================================================
+let currentScannerMode = 'station';
+let scannerDrawnLayer = null;
+let scannerAddressLatLon = null;
+let drawingToolsInitialized = false;
+
+function setScannerMode(mode) {
+    currentScannerMode = mode;
+    document.querySelectorAll('.scanner-mode-btn').forEach((btn, i) => {
+        const modes = ['station','draw','zip','radius'];
+        btn.classList.toggle('active', modes[i] === mode);
+    });
+    document.querySelectorAll('.scanner-panel').forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById('scannerPanel_' + mode);
+    if (panel) panel.classList.add('active');
+    if (mode === 'draw' && finderMapInstance && !drawingToolsInitialized) initDrawingTools();
+}
+
+// Populate ZIP dropdown
+function populateZipDropdown() {
+    const sel = document.getElementById('scannerZip');
+    if (!sel || sel.children.length > 1) return;
+    const sorted = Object.keys(LA_ZIP_CENTROIDS).sort();
+    for (const zip of sorted) {
+        const opt = document.createElement('option');
+        opt.value = zip;
+        opt.textContent = `${zip} — ${LA_ZIP_CENTROIDS[zip].name}`;
+        sel.appendChild(opt);
+    }
+}
+
+// ============================================================
+//  DRAWING TOOLS (Leaflet-Geoman)
+// ============================================================
+function initDrawingTools() {
+    if (!finderMapInstance || drawingToolsInitialized) return;
+    if (!finderMapInstance.pm) return; // geoman not loaded
+    finderMapInstance.pm.addControls({
+        position: 'topleft',
+        drawCircle: true,
+        drawCircleMarker: false,
+        drawMarker: false,
+        drawPolyline: false,
+        drawText: false,
+        drawPolygon: true,
+        drawRectangle: true,
+        editMode: false,
+        dragMode: false,
+        cutPolygon: false,
+        rotateMode: false,
+        removalMode: true,
+    });
+    finderMapInstance.on('pm:create', (e) => {
+        if (scannerDrawnLayer) finderMapInstance.removeLayer(scannerDrawnLayer);
+        scannerDrawnLayer = e.layer;
+    });
+    finderMapInstance.on('pm:remove', () => { scannerDrawnLayer = null; });
+    drawingToolsInitialized = true;
+}
+
+// ============================================================
+//  AREA QUERY FUNCTIONS
+// ============================================================
+const PARCEL_API_URL = 'https://public.gis.lacounty.gov/public/rest/services/LACounty_Cache/LACounty_Parcel/MapServer/0/query';
+const PARCEL_OUT_FIELDS = 'APN,SitusFullAddress,UseType,UseDescription,UseCode,Roll_LandValue,Roll_ImpValue,YearBuilt1,SQFTmain1,Units1,CENTER_LAT,CENTER_LON,Shape.STArea()';
+
+async function queryParcelsByRadius(lat, lon, radiusMeters, onProgress) {
+    const radiusFt = radiusMeters * 3.28084;
+    const allFeatures = []; let offset = 0; const pageSize = 1000;
+    while (true) {
+        const params = new URLSearchParams({ geometry: `${lon},${lat}`, geometryType: 'esriGeometryPoint', inSR: '4326', spatialRel: 'esriSpatialRelIntersects', distance: radiusFt, units: 'esriSRUnit_Foot', outFields: PARCEL_OUT_FIELDS, returnGeometry: false, resultOffset: offset, resultRecordCount: pageSize, f: 'json' });
+        const resp = await fetch(`${PARCEL_API_URL}?${params}`); if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json(); if (data.error) throw new Error(data.error.message || 'GIS API error');
+        const features = data.features || []; allFeatures.push(...features);
+        if (onProgress) onProgress(allFeatures.length);
+        if (features.length < pageSize) break; offset += pageSize; if (offset > 5000) break;
+    }
+    return allFeatures;
+}
+
+async function queryParcelsByBbox(south, west, north, east, onProgress) {
+    const allFeatures = []; let offset = 0; const pageSize = 1000;
+    while (true) {
+        const params = new URLSearchParams({ geometry: `${west},${south},${east},${north}`, geometryType: 'esriGeometryEnvelope', inSR: '4326', spatialRel: 'esriSpatialRelIntersects', outFields: PARCEL_OUT_FIELDS, returnGeometry: false, resultOffset: offset, resultRecordCount: pageSize, f: 'json' });
+        const resp = await fetch(`${PARCEL_API_URL}?${params}`); if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json(); if (data.error) throw new Error(data.error.message || 'GIS API error');
+        const features = data.features || []; allFeatures.push(...features);
+        if (onProgress) onProgress(allFeatures.length);
+        if (features.length < pageSize) break; offset += pageSize; if (offset > 5000) break;
+    }
+    return allFeatures;
+}
+
+async function queryParcelsByPolygon(latlngs, onProgress) {
+    const rings = [latlngs.map(ll => [ll.lng, ll.lat])];
+    // Close the ring
+    if (rings[0].length > 0 && (rings[0][0][0] !== rings[0][rings[0].length-1][0] || rings[0][0][1] !== rings[0][rings[0].length-1][1])) {
+        rings[0].push(rings[0][0]);
+    }
+    const geomJson = JSON.stringify({ rings, spatialReference: { wkid: 4326 } });
+    const allFeatures = []; let offset = 0; const pageSize = 1000;
+    while (true) {
+        const params = new URLSearchParams({ geometry: geomJson, geometryType: 'esriGeometryPolygon', inSR: '4326', spatialRel: 'esriSpatialRelIntersects', outFields: PARCEL_OUT_FIELDS, returnGeometry: false, resultOffset: offset, resultRecordCount: pageSize, f: 'json' });
+        const resp = await fetch(`${PARCEL_API_URL}?${params}`); if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json(); if (data.error) throw new Error(data.error.message || 'GIS API error');
+        const features = data.features || []; allFeatures.push(...features);
+        if (onProgress) onProgress(allFeatures.length);
+        if (features.length < pageSize) break; offset += pageSize; if (offset > 5000) break;
+    }
+    return allFeatures;
+}
+
+// Geocode an address for scanner radius mode
+async function geocodeScannerAddress() {
+    const addr = document.getElementById('scannerAddress').value.trim();
+    const status = document.getElementById('scannerAddressStatus');
+    if (!addr) { status.textContent = 'Enter an address.'; return; }
+    status.textContent = 'Geocoding...';
+    try {
+        const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(addr)}`);
+        const results = await resp.json();
+        if (results.length === 0) { status.textContent = 'Address not found. Try including city/state.'; return; }
+        const lat = parseFloat(results[0].lat), lon = parseFloat(results[0].lon);
+        scannerAddressLatLon = { lat, lon };
+        status.innerHTML = `Found: <strong>${results[0].display_name.substring(0, 60)}</strong> (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+        if (finderMapInstance) {
+            finderMapInstance.setView([lat, lon], 15);
+            if (finderMapInstance._scannerPin) finderMapInstance.removeLayer(finderMapInstance._scannerPin);
+            finderMapInstance._scannerPin = L.marker([lat, lon]).addTo(finderMapInstance).bindPopup(addr).openPopup();
+        }
+    } catch(e) { status.textContent = 'Geocoding failed: ' + e.message; }
+}
+
+// ============================================================
+//  BATCH OPPORTUNITY SCORING
+// ============================================================
+async function batchScoreOpportunities(features, centerLat, centerLon) {
+    const scored = [];
+    const useTypes = Array.from(document.querySelectorAll('.finderUseType2:checked')).map(c => c.value);
+    const minLot = parseInt(document.getElementById('finderMinLot2').value) || 0;
+    const maxLot = parseInt(document.getElementById('finderMaxLot2').value) || 999999;
+    const strongOnly = document.getElementById('filterStrongOnly') && document.getElementById('filterStrongOnly').checked;
+
+    for (let i = 0; i < features.length; i++) {
+        const a = features[i].attributes;
+        const lat = parseFloat(a.CENTER_LAT); const lon = parseFloat(a.CENTER_LON);
+        if (!lat || !lon) continue;
+        const lotSizeSqFt = Math.round(a['Shape.STArea()'] || a['Shape__Area'] || 0);
+        const landVal = parseFloat(a.Roll_LandValue) || 0;
+        const impVal = parseFloat(a.Roll_ImpValue) || 0;
+        const yearBuilt = parseInt(a.YearBuilt1) || 0;
+        const useType = classifyParcelUseType(a.UseType, a.UseDescription, a.UseCode);
+        const address = a.SitusFullAddress || 'No address';
+        const apn = a.APN || '';
+
+        // Apply basic filters
+        if (useTypes.length > 0 && !useTypes.includes(useType)) continue;
+        if (lotSizeSqFt < minLot || lotSizeSqFt > maxLot) continue;
+
+        // Pre-filter: skip parcels unlikely to be opportunities (imp/land > 2.0 for non-vacant)
+        const impRatio = landVal > 0 ? impVal / landVal : (impVal === 0 ? 0 : 999);
+        if (useType !== 'Vacant' && impRatio > 2.0 && lotSizeSqFt < 5000) continue;
+
+        // Check SB 79 eligibility
+        const nearbyTransit = getAllNearbyTransit(lat, lon, 0.75);
+        let zone = 'outside', allowances = null, tier = 0, bestStation = null;
+        if (nearbyTransit.length > 0) {
+            const best = nearbyTransit[0];
+            zone = best.zoneKey; allowances = best.allowances; tier = best.tier; bestStation = best.station;
+        }
+
+        // Build input for HBU calculation
+        let neighborhood = 'dtla';
+        let minDist = Infinity;
+        for (const [key, c] of Object.entries(NEIGHBORHOOD_CENTROIDS)) {
+            const d = Math.sqrt(Math.pow(lat - c.lat, 2) + Math.pow(lon - c.lon, 2));
+            if (d < minDist) { minDist = d; neighborhood = key; }
+        }
+        let zoning = 'C2';
+        if ((allowances && allowances.far >= 4.0) || zone === 'adjacent' || zone === 'inner') zoning = 'TOD';
+        let transit = 'moderate';
+        if (zone === 'adjacent') transit = 'adjacent';
+        else if (zone === 'inner' || zone === 'outer') transit = 'near';
+
+        const inp = {
+            parcelSize: lotSizeSqFt || 10000,
+            frontage: Math.round(Math.sqrt(lotSizeSqFt || 10000) * 0.8),
+            zoning, neighborhood,
+            siteCondition: useType === 'Vacant' ? 'vacant' : 'demolition',
+            topography: 'flat', cornerLot: false, transit, arterial: 'major', utilities: 'full',
+            constFlood: false, constHillside: false, constHistoric: false, constFault: false, constCoastal: false, constParking: false
+        };
+
+        // Determine best use
+        const bestUseId = determineBestUse(inp);
+        const legislation = getApplicableLegislation(bestUseId, inp);
+        const effects = stackLegislationEffects(legislation);
+        const budget = generateBudget(bestUseId, inp, effects);
+        const ease = computeEaseOfExecution(bestUseId, inp, effects);
+
+        // Residual land value
+        const devCostsExLand = (budget.totalHard || 0) + (budget.totalSoft || 0);
+        const residualLandValue = Math.max(0, (budget.stabilizedValue || 0) - devCostsExLand);
+
+        // Market value estimate
+        const assessedTotal = landVal + impVal;
+        const prop13Mult = 1.9;
+        let estimatedMarketValue = assessedTotal > 0 ? Math.round(assessedTotal * prop13Mult) : Math.round((LAND_VALUE_PSF[neighborhood] || 150) * lotSizeSqFt * 1.3);
+
+        // Opportunity ratio
+        const oppRatio = estimatedMarketValue > 0 ? residualLandValue / estimatedMarketValue : 0;
+
+        if (strongOnly && oppRatio < 1.5) continue;
+
+        const useDef = LAND_USES.find(u => u.id === bestUseId) || { name: bestUseId, icon: '' };
+        const bp = BUILDING_PARAMS[bestUseId] || {};
+        const far = FAR_TYPICAL[bestUseId] || 2.5;
+        const effectiveFAR = effects.farBonus ? far * (1 + effects.farBonus) : far;
+        const buildableSF = Math.round(inp.parcelSize * effectiveFAR);
+        const avgUnit = bp.avgUnitSF || bp.unitSF || 850;
+        const units = bp.unitSF ? Math.max(1, Math.floor(buildableSF * 0.85 / avgUnit)) : 0;
+        const stories = bp.stories || Math.min(Math.ceil(effectiveFAR / 0.85), 8);
+
+        // HBU score
+        const legal = scoreLegal(bestUseId, inp, effects);
+        const physical = scorePhysical(bestUseId, inp);
+        const financial = scoreFinancial(bestUseId, inp, effects);
+        const productive = scoreProductive(bestUseId, inp, effects);
+        const hbuScore = Math.round((legal*25 + physical*25 + financial*30 + productive*20)/100);
+
+        scored.push({
+            address, apn, lotSizeSqFt, useType, yearBuilt, landVal, impVal, impRatio,
+            lat, lon, zone, allowances, tier, nearbyTransit,
+            bestStation, bestUse: useDef.name, bestUseId, oppRatio, estimatedMarketValue,
+            residualLandValue, hbuScore, ease, units, stories,
+            sb79Eligible: zone !== 'outside',
+            legislation, effects, inp, budget
+        });
+    }
+
+    // Sort by opp ratio descending
+    scored.sort((a, b) => b.oppRatio - a.oppRatio);
+    return scored;
+}
+
+// ============================================================
+//  RUN AREA SCAN — UNIFIED DISPATCHER
+// ============================================================
+let scannerResults = [];
+let scannerSortCol = 'oppRatio';
+let scannerSortAsc = false;
+
+async function runAreaScan() {
+    const btn = document.getElementById('finderSearchBtn2');
+    const progressEl = document.getElementById('finderProgress2');
+    const fillEl = document.getElementById('finderProgressFill2');
+    const textEl = document.getElementById('finderProgressText2');
+    const resultsArea = document.getElementById('finderResultsArea2');
+
+    btn.disabled = true; progressEl.classList.add('active');
+    fillEl.style.width = '0%'; resultsArea.innerHTML = '';
+
+    try {
+        let features = [];
+        let centerLat = 34.05, centerLon = -118.25;
+
+        if (currentScannerMode === 'station') {
+            // Existing metro station search
+            const sel = document.getElementById('finderStation2');
+            const station = METRO_STATIONS[parseInt(sel.value)];
+            if (!station) { alert('Select a metro station.'); return; }
+            const radiusChecks = document.querySelectorAll('.finderRadius2:checked');
+            const selectedRadii = Array.from(radiusChecks).map(c => parseInt(c.value));
+            if (selectedRadii.length === 0) { alert('Select at least one search radius.'); return; }
+            const radiusFt = Math.max(...selectedRadii);
+            centerLat = station.lat; centerLon = station.lon;
+            textEl.textContent = `Querying parcels near ${station.name}...`;
+            drawFinderStationRadii(station);
+            features = await queryParcelsNearStation(station.lat, station.lon, radiusFt, (loaded) => {
+                fillEl.style.width = Math.min(50, Math.round(loaded / 20)) + '%';
+                textEl.textContent = `Loading... ${loaded} parcels`;
+            });
+
+        } else if (currentScannerMode === 'draw') {
+            if (!scannerDrawnLayer) { alert('Draw a shape on the map first (use the polygon, rectangle, or circle tool).'); return; }
+            textEl.textContent = 'Querying parcels in drawn area...';
+            if (scannerDrawnLayer instanceof L.Circle) {
+                const c = scannerDrawnLayer.getLatLng();
+                const r = scannerDrawnLayer.getRadius();
+                centerLat = c.lat; centerLon = c.lng;
+                features = await queryParcelsByRadius(c.lat, c.lng, r, (loaded) => {
+                    fillEl.style.width = Math.min(50, Math.round(loaded / 20)) + '%';
+                    textEl.textContent = `Loading... ${loaded} parcels`;
+                });
+            } else if (scannerDrawnLayer instanceof L.Rectangle) {
+                const b = scannerDrawnLayer.getBounds();
+                centerLat = b.getCenter().lat; centerLon = b.getCenter().lng;
+                features = await queryParcelsByBbox(b.getSouth(), b.getWest(), b.getNorth(), b.getEast(), (loaded) => {
+                    fillEl.style.width = Math.min(50, Math.round(loaded / 20)) + '%';
+                    textEl.textContent = `Loading... ${loaded} parcels`;
+                });
+            } else {
+                const latlngs = scannerDrawnLayer.getLatLngs()[0];
+                const c = scannerDrawnLayer.getBounds().getCenter();
+                centerLat = c.lat; centerLon = c.lng;
+                features = await queryParcelsByPolygon(latlngs, (loaded) => {
+                    fillEl.style.width = Math.min(50, Math.round(loaded / 20)) + '%';
+                    textEl.textContent = `Loading... ${loaded} parcels`;
+                });
+            }
+
+        } else if (currentScannerMode === 'zip') {
+            const zip = document.getElementById('scannerZip').value;
+            if (!zip || !LA_ZIP_CENTROIDS[zip]) { alert('Select a ZIP code.'); return; }
+            const zd = LA_ZIP_CENTROIDS[zip];
+            centerLat = zd.lat; centerLon = zd.lon;
+            const radiusMi = parseFloat(document.querySelector('input[name="zipRadius"]:checked').value) || 0.75;
+            const radiusMeters = radiusMi * 1609.34;
+            textEl.textContent = `Querying parcels in ${zip} (${zd.name})...`;
+            if (finderMapInstance) finderMapInstance.setView([zd.lat, zd.lon], 14);
+            features = await queryParcelsByRadius(zd.lat, zd.lon, radiusMeters, (loaded) => {
+                fillEl.style.width = Math.min(50, Math.round(loaded / 20)) + '%';
+                textEl.textContent = `Loading... ${loaded} parcels`;
+            });
+
+        } else if (currentScannerMode === 'radius') {
+            if (!scannerAddressLatLon) { alert('Enter and locate an address first.'); return; }
+            centerLat = scannerAddressLatLon.lat; centerLon = scannerAddressLatLon.lon;
+            const radiusMi = parseFloat(document.querySelector('input[name="addrRadius"]:checked').value) || 0.5;
+            const radiusMeters = radiusMi * 1609.34;
+            textEl.textContent = `Querying parcels within ${radiusMi} mi...`;
+            features = await queryParcelsByRadius(centerLat, centerLon, radiusMeters, (loaded) => {
+                fillEl.style.width = Math.min(50, Math.round(loaded / 20)) + '%';
+                textEl.textContent = `Loading... ${loaded} parcels`;
+            });
+        }
+
+        fillEl.style.width = '55%';
+        textEl.textContent = `Scoring ${features.length} parcels... (this may take a moment)`;
+
+        // Batch score
+        scannerResults = await batchScoreOpportunities(features, centerLat, centerLon);
+        // Also keep in finderResults2 for backward compat with saved list
+        finderResults2 = scannerResults;
+
+        fillEl.style.width = '100%';
+        textEl.textContent = `Found ${scannerResults.length} opportunities`;
+        renderScannerResults();
+        addScannerParcelsToMap();
+
+    } catch(e) {
+        resultsArea.innerHTML = `<div class="finder-error"><strong>Search failed:</strong> ${e.message}</div>`;
+    }
+    btn.disabled = false;
+    setTimeout(() => progressEl.classList.remove('active'), 2000);
+}
+
+// ============================================================
+//  ENHANCED RESULTS TABLE
+// ============================================================
+function renderScannerResults() {
+    const area = document.getElementById('finderResultsArea2');
+    if (scannerResults.length === 0) { area.innerHTML = '<div class="finder-no-results">No opportunities matched your filters.</div>'; return; }
+
+    const fmt = (v) => v ? '$' + Math.round(v).toLocaleString() : '-';
+    const oppClass = (r) => r >= 1.5 ? 'opp-strong' : r >= 1.0 ? 'opp-moderate' : 'opp-weak';
+
+    let html = `<div id="finderSelectionBar" class="selection-bar" style="display:none;">
+        <span id="finderSelCount">0</span>
+        <button type="button" class="finder-btn-export" onclick="addSelectionToSaved()" style="margin:0 0.5rem;">Add to Saved</button>
+        <button type="button" class="finder-btn-export" onclick="exportCallList()" style="margin:0 0.5rem;">Export Call List</button>
+        <button type="button" class="finder-btn-export" onclick="printBatchLetters()" style="margin:0 0.5rem;">Generate Letters</button>
+        <button type="button" class="finder-btn-export" onclick="clearFinderSelection()">Clear</button>
+    </div>`;
+
+    const strongCount = scannerResults.filter(r => r.oppRatio >= 1.5).length;
+    html += `<div class="finder-summary">${scannerResults.length} opportunities found &mdash; <span style="color:#059669;font-weight:700;">${strongCount} strong (1.5x+)</span></div>`;
+
+    html += `<div class="finder-table-wrapper"><table class="finder-table" id="finderTable2"><thead><tr>
+        <th onclick="event.stopPropagation();toggleSelectAll()"><input type="checkbox" id="finderSelectAll" onclick="event.stopPropagation();toggleSelectAll()"></th>
+        <th onclick="sortScannerTable('address')">Address</th>
+        <th onclick="sortScannerTable('apn')">APN</th>
+        <th onclick="sortScannerTable('lotSizeSqFt')">Lot Size</th>
+        <th onclick="sortScannerTable('useType')">Use</th>
+        <th onclick="sortScannerTable('oppRatio')">Opp. Ratio</th>
+        <th onclick="sortScannerTable('estimatedMarketValue')">Market Value</th>
+        <th onclick="sortScannerTable('residualLandValue')">Dev Land Bid</th>
+        <th onclick="sortScannerTable('hbuScore')">HBU Score</th>
+        <th onclick="sortScannerTable('bestUse')">Best Use</th>
+        <th>Actions</th>
+    </tr></thead><tbody>`;
+
+    scannerResults.forEach((r, i) => {
+        const checked = finderSelectedSet.has(i) ? 'checked' : '';
+        const enc = encodeURIComponent(r.address);
+        const apnClean = (r.apn || '').replace(/[^0-9]/g, '');
+        const ratioStr = r.oppRatio >= 0.01 ? r.oppRatio.toFixed(1) + 'x' : '-';
+        html += `<tr onclick="highlightScannerParcel(${i})" id="finderRow2_${i}">
+            <td onclick="event.stopPropagation()"><input type="checkbox" class="finder-row-check" data-idx="${i}" ${checked} onchange="onFinderCheckChange()"></td>
+            <td>${r.address}</td>
+            <td><span style="font-size:0.78rem;">${r.apn}</span> <button class="btn-copy-apn" onclick="event.stopPropagation();copyAPN('${apnClean}')" title="Copy APN">&#128203;</button></td>
+            <td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString() + ' sf' : '-'}</td>
+            <td>${r.useType}</td>
+            <td><span class="opp-badge ${oppClass(r.oppRatio)}">${ratioStr}</span></td>
+            <td>${fmt(r.estimatedMarketValue)}</td>
+            <td>${fmt(r.residualLandValue)}</td>
+            <td>${r.hbuScore}/100</td>
+            <td style="font-size:0.78rem;">${r.bestUse}</td>
+            <td onclick="event.stopPropagation()">
+                <span class="prop-links">
+                    <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" title="Lookup Owner on LA County Assessor">Owner</a> |
+                    <a href="https://www.zillow.com/homes/${enc}_rb/" target="_blank" title="View on Zillow">Z</a> |
+                    <a href="javascript:void(0)" onclick="openOnePagerFromScan(${i})" title="Generate One-Pager">1-Pg</a> |
+                    <a href="javascript:void(0)" onclick="openLetterModal(${i})" title="Generate Letter">Letter</a>
+                </span>
+            </td>
+        </tr>`;
+    });
+
+    html += '</tbody></table></div>';
+    html += `<div style="display:flex;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;">
+        <button type="button" class="finder-btn-export" onclick="exportCallList()">Export Call List (${scannerResults.length})</button>
+        <button type="button" class="finder-btn-export" onclick="exportFinderCSV2()">Export Basic CSV</button>
+    </div>`;
+    area.innerHTML = html;
+    updateSelectionBar();
+}
+
+function sortScannerTable(col) {
+    if (scannerSortCol === col) scannerSortAsc = !scannerSortAsc;
+    else { scannerSortCol = col; scannerSortAsc = col === 'address' || col === 'bestUse'; }
+    scannerResults.sort((a, b) => {
+        let va = a[col], vb = b[col];
+        if (typeof va === 'string') { va = va.toLowerCase(); vb = (vb || '').toLowerCase(); return scannerSortAsc ? va.localeCompare(vb) : vb.localeCompare(va); }
+        va = va || 0; vb = vb || 0; return scannerSortAsc ? va - vb : vb - va;
+    });
+    renderScannerResults();
+}
+
+function highlightScannerParcel(idx) {
+    const r = scannerResults[idx]; if (!r || !finderMapInstance) return;
+    document.querySelectorAll('#finderTable2 tr.highlighted').forEach(tr => tr.classList.remove('highlighted'));
+    const row = document.getElementById('finderRow2_' + idx);
+    if (row) row.classList.add('highlighted');
+    finderMapInstance.setView([r.lat, r.lon], 17);
+}
+
+function addScannerParcelsToMap() {
+    if (!finderMapInstance) return;
+    if (finderParcelLayer2) finderMapInstance.removeLayer(finderParcelLayer2);
+    finderParcelLayer2 = L.layerGroup().addTo(finderMapInstance);
+    scannerResults.forEach((r, i) => {
+        if (!r.lat || !r.lon) return;
+        let color = '#94a3b8';
+        if (r.oppRatio >= 1.5) color = '#059669';
+        else if (r.oppRatio >= 1.0) color = '#ca8a04';
+        else color = '#dc2626';
+        const marker = L.circleMarker([r.lat, r.lon], { radius: 5, fillColor: color, color: '#fff', weight: 1, opacity: 0.9, fillOpacity: 0.8 });
+        marker.bindPopup(`<strong>${r.address}</strong><br>Opp. Ratio: ${r.oppRatio.toFixed(1)}x<br>Dev Bid: $${Math.round(r.residualLandValue).toLocaleString()}<br>Best Use: ${r.bestUse}`);
+        marker.on('click', () => { const row = document.getElementById('finderRow2_' + i); if (row) { row.classList.add('highlighted'); row.scrollIntoView({ behavior: 'smooth', block: 'center' }); } });
+        marker.addTo(finderParcelLayer2);
+    });
+}
+
+function copyAPN(apn) {
+    navigator.clipboard.writeText(apn).then(() => {
+        const btn = event.target;
+        const orig = btn.textContent;
+        btn.textContent = '\u2713';
+        setTimeout(() => btn.textContent = orig, 1000);
+    });
+}
+
+// Open one-pager from scanner results
+function openOnePagerFromScan(idx) {
+    const r = scannerResults[idx]; if (!r) return;
+    const prevGeocode = window.lastGeocode;
+    window.lastGeocode = { lat: r.lat, lon: r.lon, assessedTotal: r.landVal + r.impVal };
+
+    const topResult = {
+        id: r.bestUseId,
+        name: r.bestUse,
+        overall: r.hbuScore,
+        devMarginPct: r.budget ? r.budget.devMargin : 0,
+        legislation: r.legislation || []
+    };
+    const html = generateListingOnePager(topResult, r.inp, r.address);
+    window.lastGeocode = prevGeocode;
+
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9990;overflow-y:auto;padding:2rem;';
+    modal.innerHTML = `<div style="max-width:800px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <div style="padding:0.75rem 1.5rem;background:#f1f5f9;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-weight:600;font-size:0.85rem;">One-Pager: ${r.address}</span>
+            <div>
+                <button onclick="window.print()" style="padding:0.4rem 1rem;background:var(--primary);color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;margin-right:0.5rem;">Print</button>
+                <button onclick="this.closest('div').closest('div').closest('div').remove()" style="padding:0.4rem 1rem;background:#e2e8f0;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Close</button>
+            </div>
+        </div>
+        <div class="onepager-container">${html}</div>
+    </div>`;
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
+}
+
+// ============================================================
+//  EXPORT TO CALL LIST (CRM-ready CSV)
+// ============================================================
+function exportCallList() {
+    const results = finderSelectedSet.size > 0
+        ? Array.from(finderSelectedSet).map(i => scannerResults[i]).filter(Boolean)
+        : scannerResults;
+    if (results.length === 0) { alert('No results to export.'); return; }
+
+    const headers = ['Address','APN','Lot Size (SF)','Use Type','Year Built','Est. Market Value','Developer Land Bid','Opp. Ratio','Premium ($)','Premium (%)','Best Use','HBU Score','Ease of Build','SB 79 Eligible','Zone','Owner Name','Mailing Address','Phone','Notes','Zillow URL','Assessor URL'];
+    const rows = results.map(r => {
+        const apnClean = (r.apn || '').replace(/[^0-9]/g, '');
+        const enc = encodeURIComponent(r.address);
+        const premium = r.residualLandValue - r.estimatedMarketValue;
+        const premiumPct = r.estimatedMarketValue > 0 ? ((premium / r.estimatedMarketValue) * 100).toFixed(0) : '';
+        return [
+            `"${(r.address || '').replace(/"/g, '""')}"`,
+            apnClean,
+            r.lotSizeSqFt,
+            r.useType,
+            r.yearBuilt || '',
+            Math.round(r.estimatedMarketValue),
+            Math.round(r.residualLandValue),
+            r.oppRatio.toFixed(2),
+            Math.round(premium),
+            premiumPct,
+            `"${r.bestUse}"`,
+            r.hbuScore,
+            r.ease || '',
+            r.sb79Eligible ? 'Yes' : 'No',
+            r.zone || '',
+            '', // Owner Name (blank)
+            '', // Mailing Address (blank)
+            '', // Phone (blank)
+            '', // Notes
+            `https://www.zillow.com/homes/${enc}_rb/`,
+            `https://portal.assessor.lacounty.gov/parceldetail/${apnClean}`
+        ].join(',');
+    });
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `call-list-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// Export from My Portfolio tab
+function exportPortfolioCallList() {
+    const sites = getAgentSites();
+    if (sites.length === 0) { alert('No properties in your portfolio.'); return; }
+    const headers = ['Address','APN','Lot Size (SF)','Best Use','Dev Value','As-Is Value','Opp. Ratio','HBU Score','Ease','Owner Name','Mailing Address','Phone','Notes','Zillow URL','Assessor URL'];
+    const rows = sites.map(s => {
+        const apnClean = (s.apn || '').replace(/[^0-9]/g, '');
+        const enc = encodeURIComponent(s.address || '');
+        const ratio = s.oppRatio || (s.asIsValue > 0 ? s.devValue / s.asIsValue : 0);
+        return [
+            `"${(s.address || '').replace(/"/g, '""')}"`,
+            apnClean, s.lotSizeSqFt || '', `"${s.bestUse || ''}"`,
+            Math.round(s.devValue || 0), Math.round(s.asIsValue || 0),
+            ratio.toFixed(2), s.score || '', s.ease || '',
+            '', '', '', '',
+            `https://www.zillow.com/homes/${enc}_rb/`,
+            `https://portal.assessor.lacounty.gov/parceldetail/${apnClean}`
+        ].join(',');
+    });
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url;
+    a.download = `portfolio-call-list-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+}
+
+// ============================================================
+//  DIRECT MAIL LETTER GENERATOR
+// ============================================================
+function generateProspectingLetter(r, agentProfile) {
+    const p = agentProfile || getAgentProfile();
+    const fmt = (v) => v ? '$' + Math.round(v).toLocaleString() : '$0';
+    const premium = r.residualLandValue - r.estimatedMarketValue;
+
+    let sb79Section = '';
+    if (r.sb79Eligible && r.bestStation) {
+        sb79Section = `<p>Your property is located within the <strong>SB 79 transit zone</strong> near ${r.bestStation.name} station, which allows significantly increased density and height under California's new transit-oriented development legislation (effective July 2026). This is a major value driver.</p>`;
+    }
+
+    return `<div class="letter-content">
+        <p style="text-align:right;color:#64748b;font-size:0.85rem;">${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        <p>Dear Homeowner,</p>
+        <p>I'm reaching out because recent California legislation has dramatically changed what can be built on properties like yours at <strong>${r.address}</strong>.</p>
+        <p>Based on my analysis, a developer could pay approximately <strong>${fmt(r.residualLandValue)}</strong> for your property &mdash; that's <strong>${r.oppRatio.toFixed(1)}x</strong> what it's currently valued at (${fmt(r.estimatedMarketValue)}). The highest and best use for your land is <strong>${r.bestUse}</strong>${r.units > 0 ? `, which could support <strong>${r.units} units</strong> across <strong>${r.stories} stories</strong>` : ''}.</p>
+        ${sb79Section}
+        <p>That represents a potential premium of <strong>${fmt(premium)}</strong> over the current market value of your property.</p>
+        <p>I specialize in helping homeowners maximize their property's value by connecting them with qualified developers. There's no obligation &mdash; I'd love to show you what your options are.</p>
+        <p style="margin-top:2rem;">Sincerely,</p>
+        <p style="margin-bottom:0.25rem;"><strong>${p.name || '[Your Name]'}</strong></p>
+        ${p.phone ? `<p style="margin:0;font-size:0.9rem;">${p.phone}</p>` : ''}
+        ${p.email ? `<p style="margin:0;font-size:0.9rem;">${p.email}</p>` : ''}
+        ${p.brokerage ? `<p style="margin:0;font-size:0.9rem;">${p.brokerage}</p>` : ''}
+        ${p.licenseNo ? `<p style="margin:0;font-size:0.82rem;color:#64748b;">DRE# ${p.licenseNo}</p>` : ''}
+    </div>`;
+}
+
+function openLetterModal(idx) {
+    const r = scannerResults[idx]; if (!r) return;
+    const agentProfile = getAgentProfile();
+    if (!agentProfile.name) {
+        if (confirm('Set up your agent profile first? Your name and contact info will appear on the letter.')) {
+            openAgentProfileModal();
+            return;
+        }
+    }
+    const letterHtml = generateProspectingLetter(r, agentProfile);
+    const overlay = document.createElement('div');
+    overlay.className = 'letter-modal-overlay';
+    overlay.id = 'letterModalOverlay';
+    overlay.innerHTML = `<div class="letter-modal">
+        ${letterHtml}
+        <div class="letter-actions">
+            <button onclick="document.getElementById('letterModalOverlay').remove()" style="background:#e2e8f0;color:var(--text);">Close</button>
+            <button onclick="window.print()" style="background:var(--primary);color:white;">Print Letter</button>
+        </div>
+    </div>`;
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+}
+
+function printBatchLetters() {
+    const selected = finderSelectedSet.size > 0
+        ? Array.from(finderSelectedSet).map(i => scannerResults[i]).filter(Boolean)
+        : scannerResults;
+    if (selected.length === 0) { alert('No properties selected.'); return; }
+    if (selected.length > 50) { if (!confirm(`Generate letters for ${selected.length} properties? This may take a moment.`)) return; }
+
+    const agentProfile = getAgentProfile();
+    if (!agentProfile.name) {
+        if (confirm('Set up your agent profile first? Your name and contact info will appear on the letters.')) {
+            openAgentProfileModal();
+            return;
+        }
+    }
+
+    let allLetters = '';
+    selected.forEach((r, i) => {
+        const pageBreak = i < selected.length - 1 ? 'page-break-after: always;' : '';
+        allLetters += `<div style="${pageBreak} padding: 1rem 0;">${generateProspectingLetter(r, agentProfile)}<hr style="border:none;border-top:1px solid #e2e8f0;margin-top:1.5rem;"></div>`;
+    });
+
+    const overlay = document.createElement('div');
+    overlay.className = 'letter-modal-overlay';
+    overlay.id = 'letterModalOverlay';
+    overlay.innerHTML = `<div class="letter-modal" style="max-width:750px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:2px solid var(--border);">
+            <span style="font-weight:700;font-size:1rem;">Batch Letters (${selected.length} properties)</span>
+            <div>
+                <button onclick="document.getElementById('letterModalOverlay').remove()" style="padding:0.4rem 1rem;background:#e2e8f0;border:none;border-radius:6px;cursor:pointer;font-weight:600;margin-right:0.5rem;">Close</button>
+                <button onclick="window.print()" style="padding:0.4rem 1rem;background:var(--primary);color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Print All</button>
+            </div>
+        </div>
+        ${allLetters}
+    </div>`;
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+}
+
+// ============================================================
+//  INITIALIZATION — populate ZIP dropdown, init drawing tools
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+    populateZipDropdown();
+});
+
+// Hook into existing finder map init to add drawing tools when in draw mode
+const _origInitFinderMap = initFinderMap;
+initFinderMap = function() {
+    _origInitFinderMap();
+    // Drawing tools will be initialized when user switches to draw mode
+};
 
 </script>
 </body>
