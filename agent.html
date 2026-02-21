@@ -1435,10 +1435,10 @@
 
 <div class="tab-bar">
     <button class="tab-btn active" onclick="switchTab('Calculator')">HBU Calculator</button>
-    <button class="tab-btn" onclick="switchTab('Finder')">SB 79 Finder</button>
+    <button class="tab-btn" onclick="switchTab('Finder')">Listing Scout</button>
     <button class="tab-btn" onclick="switchTab('Pipeline')">Pipeline</button>
     <button class="tab-btn" onclick="switchTab('Contacts')">Contacts</button>
-    <button class="tab-btn" onclick="switchTab('Sites')">My Sites</button>
+    <button class="tab-btn" onclick="switchTab('Sites')">My Portfolio</button>
 </div>
 
 <div id="tabCalculator" class="tab-content active">
@@ -1694,8 +1694,8 @@
 <div id="tabFinder" class="tab-content">
 <div class="container">
     <div class="intro-box" style="border-left-color:#805ad5;">
-        <h3>SB 79 Opportunity Finder</h3>
-        <p><strong>SB 79</strong> (effective July 1, 2026) overrides local zoning near qualifying transit stations, allowing up to <strong>95ft height, 160 du/acre, and 4.5 FAR</strong> for Tier 1 heavy rail and <strong>85ft, 140 du/acre, 4.0 FAR</strong> for Tier 2 light rail/Metrolink. Select a transit station below (or click one on the map) and set filters to find underbuilt parcels that SB 79 unlocks for higher-density development.</p>
+        <h3>Listing Scout</h3>
+        <p>Find homeowners sitting on <strong>hidden gold</strong>. New California legislation (SB 79, effective July 2026) dramatically increases what can be built near transit stations — meaning many homeowners' land is now worth <strong>far more than they realize</strong>. Select a station, search nearby parcels, and identify underbuilt properties where the land value exceeds the improvement value. These owners are your best listing leads — you can show them exactly what their property is worth to a developer.</p>
     </div>
 
     <div id="finderMapContainer" style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
@@ -1910,7 +1910,7 @@
 <div class="container">
     <div class="intro-box" style="border-left-color:#805ad5;">
         <h3>Contacts Directory</h3>
-        <p>Your <strong>one-stop shop</strong> for all development-related contacts in Los Angeles County. Planning departments, city officials, architects, engineers, contractors, lenders, and consultants. Filter by category or search by name.</p>
+        <p>Your <strong>go-to rolodex</strong> for every vendor and service provider you need to close a residential deal in Los Angeles County. Title &amp; escrow, home inspectors, mortgage lenders, appraisers, photographers, stagers, and more. Filter by category or search by name.</p>
     </div>
 
     <div style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
@@ -1918,16 +1918,18 @@
             <input type="text" id="contactSearch" placeholder="Search contacts..." style="flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:0.85rem;" oninput="filterContacts()">
             <select id="contactCategory" style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:0.85rem;" onchange="filterContacts()">
                 <option value="">All Categories</option>
-                <option value="planning">Planning Departments</option>
-                <option value="building">Building & Safety</option>
-                <option value="housing">Housing Agencies</option>
-                <option value="architect">Architects</option>
-                <option value="engineer">Engineers</option>
-                <option value="gc">General Contractors</option>
-                <option value="lender">Lenders & Finance</option>
-                <option value="legal">Legal / Land Use</option>
-                <option value="consultant">Consultants</option>
-                <option value="utility">Utilities</option>
+                <option value="title">Title & Escrow</option>
+                <option value="mortgage">Mortgage Lenders</option>
+                <option value="inspector">Home Inspectors</option>
+                <option value="appraiser">Appraisers</option>
+                <option value="photo">Photography & Media</option>
+                <option value="staging">Staging</option>
+                <option value="termite">Termite & Pest</option>
+                <option value="insurance">Insurance</option>
+                <option value="notary">Notary & Signing</option>
+                <option value="moving">Moving & Junk Removal</option>
+                <option value="handyman">Handyman & Repair</option>
+                <option value="legal">Legal</option>
             </select>
         </div>
         <div id="contactsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem;"></div>
@@ -1939,8 +1941,8 @@
 <div id="tabSites" class="tab-content">
 <div class="container">
     <div class="intro-box" style="border-left-color:#059669;">
-        <h3>My Sites</h3>
-        <p>Every property you analyze is automatically saved here, ranked by <strong>Attractiveness Score</strong> — a composite of value uplift potential, development margin, and ease of build. Use this dashboard to prioritize which sites to pursue first, and generate a Listing One-Pager for any property.</p>
+        <h3>My Portfolio</h3>
+        <p>Every property you analyze is <strong>automatically saved here</strong>, ranked by how attractive it is as a listing opportunity. The <strong>Attractiveness Score</strong> combines value uplift potential, development margin, and ease of build — so you can prioritize which homeowners to approach first. Click <strong>"One-Pager"</strong> on any property to generate a polished, printable report you can hand to the owner.</p>
     </div>
 
     <div id="sitesMapContainer" style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
@@ -1955,7 +1957,7 @@
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
             <h2 style="font-size:1.1rem;color:var(--primary);margin:0;">Saved Properties</h2>
             <span style="font-size:0.82rem;color:var(--text-light);" id="sitesCount">0 properties</span>
-            <button type="button" class="btn-lookup" onclick="clearAgentSites()" style="font-size:0.78rem;padding:6px 14px;background:#e53e3e;color:white;">Clear All Sites</button>
+            <button type="button" class="btn-lookup" onclick="clearAgentSites()" style="font-size:0.78rem;padding:6px 14px;background:#e53e3e;color:white;">Clear All</button>
         </div>
         <div class="finder-table-wrapper">
             <table class="finder-table" id="sitesTable">
@@ -5053,62 +5055,80 @@ function switchTab(tab) {
 //  CONTACTS DIRECTORY
 // ============================================================
 const CONTACTS_DATA = [
-    { name: 'LA City Planning Dept', category: 'planning', role: 'City Planning', phone: '(213) 978-1271', email: 'planning.lacityplanning@lacity.org', website: 'https://planning.lacity.gov', address: '200 N Spring St, Room 525, Los Angeles, CA 90012', notes: 'Zoning, General Plan, entitlements, CEQA' },
-    { name: 'LA County Dept of Regional Planning', category: 'planning', role: 'County Planning', phone: '(213) 974-6411', email: 'planning@planning.lacounty.gov', website: 'https://planning.lacounty.gov', address: '320 W Temple St, Los Angeles, CA 90012', notes: 'Unincorporated LA County areas' },
-    { name: 'Santa Monica Planning', category: 'planning', role: 'City Planning', phone: '(310) 458-8341', email: 'planning@smgov.net', website: 'https://www.smgov.net/Departments/PCD/', address: '1685 Main St, Room 212, Santa Monica, CA 90401', notes: 'Planning, zoning, permits' },
-    { name: 'Culver City Planning', category: 'planning', role: 'City Planning', phone: '(310) 253-5750', email: 'planning@culvercity.org', website: 'https://www.culvercity.org/City-Hall/Community-Development/Planning-Division', address: '9770 Culver Blvd, Culver City, CA 90232', notes: 'Current & advance planning' },
-    { name: 'Beverly Hills Planning', category: 'planning', role: 'City Planning', phone: '(310) 285-1141', email: 'planning@beverlyhills.org', website: 'https://www.beverlyhills.org/departments/communitydevelopment/planningdivision/', address: '455 N Rexford Dr, Beverly Hills, CA 90210', notes: 'Planning Commission, design review' },
-    { name: 'West Hollywood Planning', category: 'planning', role: 'City Planning', phone: '(323) 848-6475', email: '', website: 'https://www.weho.org/city-government/city-departments/community-development/planning-division', address: '8300 Santa Monica Blvd, West Hollywood, CA 90069', notes: 'Rent stabilization, planning' },
-    { name: 'Pasadena Planning', category: 'planning', role: 'City Planning', phone: '(626) 744-4009', email: 'planning@cityofpasadena.net', website: 'https://www.cityofpasadena.net/planning/', address: '175 N Garfield Ave, Pasadena, CA 91101', notes: 'Historic preservation, design review' },
-    { name: 'Glendale Community Development', category: 'planning', role: 'City Planning', phone: '(818) 548-2140', email: '', website: 'https://www.glendaleca.gov/government/departments/community-development', address: '633 E Broadway, Room 103, Glendale, CA 91206', notes: 'Planning, building, code compliance' },
-    { name: 'Burbank Planning', category: 'planning', role: 'City Planning', phone: '(818) 238-5250', email: '', website: 'https://www.burbankca.gov/web/community-development/planning-division', address: '150 N Third St, Burbank, CA 91502', notes: 'Current planning, advance planning' },
-    { name: 'Long Beach Development Services', category: 'planning', role: 'City Planning', phone: '(562) 570-6194', email: '', website: 'https://www.longbeach.gov/lbds/', address: '411 W Ocean Blvd, 3rd Floor, Long Beach, CA 90802', notes: 'Planning, building, code enforcement' },
-    { name: 'Inglewood Planning', category: 'planning', role: 'City Planning', phone: '(310) 412-5230', email: '', website: 'https://www.cityofinglewood.org/148/Planning-Division', address: 'One Manchester Blvd, Inglewood, CA 90301', notes: 'SoFi Stadium area, TOC opportunities' },
-    { name: 'LA Dept of Building & Safety (LADBS)', category: 'building', role: 'Building & Safety', phone: '(213) 482-0000', email: '', website: 'https://www.ladbs.org', address: '201 N Figueroa St, Suite 1000, Los Angeles, CA 90012', notes: 'Permits, inspections, code enforcement' },
-    { name: 'LADBS Express Permit', category: 'building', role: 'Express Permits', phone: '(213) 482-0466', email: '', website: 'https://www.ladbs.org/services/check-status/express-permit', address: '201 N Figueroa St, Los Angeles, CA 90012', notes: 'Over-the-counter permits for minor work' },
-    { name: 'LA County Building & Safety', category: 'building', role: 'County Building', phone: '(626) 458-3177', email: '', website: 'https://dpw.lacounty.gov/building-and-safety/', address: '900 S Fremont Ave, Alhambra, CA 91803', notes: 'Unincorporated areas' },
-    { name: 'LA Fire Dept (LAFD) - Plan Check', category: 'building', role: 'Fire Dept Plan Check', phone: '(213) 978-3860', email: '', website: 'https://www.lafd.org/fire-prevention/plan-check', address: '200 N Main St, Room 1700, Los Angeles, CA 90012', notes: 'Fire life safety plan review' },
-    { name: 'LA Housing Dept (LAHD)', category: 'housing', role: 'Housing Authority', phone: '(866) 557-7368', email: '', website: 'https://housing.lacity.gov', address: '1200 W 7th St, Suite 100, Los Angeles, CA 90017', notes: 'Affordable housing, rent stabilization' },
-    { name: 'HACLA (Housing Authority)', category: 'housing', role: 'Housing Authority', phone: '(213) 252-2500', email: '', website: 'https://www.hacla.org', address: '2600 Wilshire Blvd, Los Angeles, CA 90057', notes: 'Section 8, public housing' },
-    { name: 'CA HCD', category: 'housing', role: 'State Housing', phone: '(916) 263-2911', email: '', website: 'https://www.hcd.ca.gov', address: '2020 W El Camino Ave, Suite 500, Sacramento, CA 95833', notes: 'RHNA, housing element' },
-    { name: 'CTCAC (Tax Credit Allocation)', category: 'housing', role: 'Tax Credits', phone: '(916) 654-6340', email: '', website: 'https://www.treasurer.ca.gov/ctcac/', address: '915 Capitol Mall, Suite 485, Sacramento, CA 95814', notes: 'LIHTC 4% and 9%' },
-    { name: 'KTGY Architecture + Planning', category: 'architect', role: 'Architect (Multifamily)', phone: '(310) 394-2623', email: '', website: 'https://ktgy.com', address: '17911 Von Karman Ave, Irvine, CA 92614', notes: 'Multifamily, mixed-use, senior living' },
-    { name: 'AC Martin Partners', category: 'architect', role: 'Architect (Mixed-Use)', phone: '(213) 683-1900', email: '', website: 'https://acmartin.com', address: '444 S Flower St, Suite 1200, Los Angeles, CA 90071', notes: 'DTLA towers, mixed-use, civic' },
-    { name: 'HKS Architects', category: 'architect', role: 'Architect (Commercial)', phone: '(213) 542-5900', email: '', website: 'https://www.hksinc.com', address: '350 S Figueroa St, Suite 200, Los Angeles, CA 90071', notes: 'Office, hospitality, sports' },
-    { name: 'Steinberg Hart', category: 'architect', role: 'Architect (Community)', phone: '(213) 629-0500', email: '', website: 'https://www.steinberghart.com', address: '750 B St, Suite 2300, San Diego, CA 92101', notes: 'Affordable housing, education' },
-    { name: 'Togawa Smith Martin', category: 'architect', role: 'Architect (Affordable)', phone: '(323) 258-7028', email: '', website: 'https://tsminc.com', address: '460 S Spring St, Suite 500, Los Angeles, CA 90013', notes: 'Affordable, supportive housing' },
-    { name: 'KPFF Consulting Engineers', category: 'engineer', role: 'Structural Engineer', phone: '(213) 318-4140', email: '', website: 'https://www.kpff.com', address: '515 S Flower St, Suite 4500, Los Angeles, CA 90071', notes: 'Structural, civil, seismic' },
-    { name: 'Psomas Engineering', category: 'engineer', role: 'Civil Engineer', phone: '(213) 223-1400', email: '', website: 'https://www.psomas.com', address: '555 S Flower St, Suite 4300, Los Angeles, CA 90071', notes: 'Civil, surveying, environmental' },
-    { name: 'ARUP', category: 'engineer', role: 'MEP / Multidiscipline', phone: '(213) 629-5575', email: '', website: 'https://www.arup.com', address: '900 Wilshire Blvd, Suite 700, Los Angeles, CA 90017', notes: 'Structural, MEP, sustainability' },
-    { name: 'Buro Happold', category: 'engineer', role: 'MEP Engineer', phone: '(213) 337-0025', email: '', website: 'https://www.burohappold.com', address: '6601 Center Dr West, Suite 500, Los Angeles, CA 90045', notes: 'MEP, sustainability, smart buildings' },
-    { name: 'AECOM-Hunt', category: 'gc', role: 'General Contractor', phone: '(213) 593-8000', email: '', website: 'https://www.aecom.com', address: '300 S Grand Ave, Suite 1000, Los Angeles, CA 90071', notes: 'Large-scale, infrastructure' },
-    { name: 'Suffolk Construction', category: 'gc', role: 'General Contractor', phone: '(213) 787-3700', email: '', website: 'https://www.suffolk.com', address: '915 Wilshire Blvd, Suite 1700, Los Angeles, CA 90017', notes: 'High-rise, multifamily' },
-    { name: 'Bernards', category: 'gc', role: 'General Contractor', phone: '(909) 941-5225', email: '', website: 'https://www.bernards.com', address: '555 First St, San Fernando, CA 91340', notes: 'Affordable housing, education' },
-    { name: 'Morley Builders', category: 'gc', role: 'General Contractor', phone: '(310) 471-4900', email: '', website: 'https://www.morleybuilders.com', address: '2901 28th St, Suite 100, Santa Monica, CA 90405', notes: 'Mixed-use, multifamily' },
-    { name: 'Webcor Builders', category: 'gc', role: 'General Contractor', phone: '(213) 271-1780', email: '', website: 'https://www.webcor.com', address: '555 S Flower St, Suite 4800, Los Angeles, CA 90071', notes: 'High-rise, lab/life science' },
-    { name: 'CBRE Capital Markets', category: 'lender', role: 'Capital Markets', phone: '(213) 613-3226', email: '', website: 'https://www.cbre.com/services/capital-markets', address: '400 S Hope St, 25th Floor, Los Angeles, CA 90071', notes: 'Debt placement, equity' },
-    { name: 'JLL Capital Markets', category: 'lender', role: 'Capital Markets', phone: '(213) 239-6000', email: '', website: 'https://www.jll.com', address: '515 S Flower St, Suite 3200, Los Angeles, CA 90071', notes: 'Debt, equity, structured finance' },
-    { name: 'Pacific Western Bank', category: 'lender', role: 'Construction Lender', phone: '(310) 887-8500', email: '', website: 'https://www.bancofcal.com', address: '3 MacArthur Pl, Santa Ana, CA 92707', notes: 'Construction, bridge, permanent' },
-    { name: 'Ready Capital', category: 'lender', role: 'Bridge Lender', phone: '(212) 257-4600', email: '', website: 'https://readycapital.com', address: '1251 Avenue of the Americas, NY 10020', notes: 'Bridge, construction, SBA 504' },
-    { name: 'Enterprise Community Investment', category: 'lender', role: 'LIHTC Syndicator', phone: '(410) 964-1230', email: '', website: 'https://www.enterprisecommunity.org', address: '70 Corporate Center, Columbia, MD 21044', notes: 'LIHTC syndication' },
-    { name: 'Raymond James Tax Credit Funds', category: 'lender', role: 'LIHTC Syndicator', phone: '(800) 438-8088', email: '', website: 'https://www.rjtcf.com', address: '880 Carillon Pkwy, St. Petersburg, FL 33716', notes: 'LIHTC, HTC, NMTC' },
-    { name: 'Armbruster Goldsmith & Delvac', category: 'legal', role: 'Land Use Attorney', phone: '(310) 209-8800', email: '', website: 'https://www.agd-landuse.com', address: '12100 Wilshire Blvd, Suite 1600, Los Angeles, CA 90025', notes: 'Entitlements, CEQA' },
-    { name: 'Latham & Watkins', category: 'legal', role: 'Land Use Attorney', phone: '(213) 485-1234', email: '', website: 'https://www.lw.com', address: '355 S Grand Ave, Suite 100, Los Angeles, CA 90071', notes: 'Complex entitlements, P3' },
-    { name: 'Manatt Phelps & Phillips', category: 'legal', role: 'RE/Land Use Attorney', phone: '(310) 312-4000', email: '', website: 'https://www.manatt.com', address: '2049 Century Park E, Suite 1700, Los Angeles, CA 90067', notes: 'Real estate, affordable housing' },
-    { name: 'Cox Castle & Nicholson', category: 'legal', role: 'RE Attorney', phone: '(310) 284-2200', email: '', website: 'https://www.coxcastle.com', address: '2049 Century Park E, Suite 2800, Los Angeles, CA 90067', notes: 'RE transactions, construction' },
-    { name: 'Kosmont Companies', category: 'consultant', role: 'RE/Financial Advisory', phone: '(213) 417-3300', email: '', website: 'https://www.kosmont.com', address: '865 S Figueroa St, Suite 3500, Los Angeles, CA 90017', notes: 'P3, fiscal impact, EIFD' },
-    { name: 'HR&A Advisors', category: 'consultant', role: 'Economic Consultant', phone: '(212) 977-6200', email: '', website: 'https://www.hraadvisors.com', address: '700 S Flower St, Suite 2995, Los Angeles, CA 90017', notes: 'Economic analysis, housing policy' },
-    { name: 'Keyser Marston Associates', category: 'consultant', role: 'RE Economics', phone: '(310) 396-4556', email: '', website: 'https://www.keysermarston.com', address: '1880 Century Park E, Suite 818, Los Angeles, CA 90067', notes: 'Feasibility, fiscal impact' },
-    { name: 'CBRE Consulting', category: 'consultant', role: 'Market Research', phone: '(213) 613-3333', email: '', website: 'https://www.cbre.com/services/advisory-and-consulting', address: '400 S Hope St, 25th Floor, Los Angeles, CA 90071', notes: 'Market studies, HBU' },
-    { name: 'EPS (Economic & Planning Systems)', category: 'consultant', role: 'Economic Consultant', phone: '(510) 841-9190', email: '', website: 'https://www.epsys.com', address: '1 Kaiser Plaza, Suite 1410, Oakland, CA 94612', notes: 'Fiscal impact, public finance' },
-    { name: 'LADWP', category: 'utility', role: 'Electric & Water', phone: '(800) 342-5397', email: '', website: 'https://www.ladwp.com', address: '111 N Hope St, Los Angeles, CA 90012', notes: 'Electric, water, solar' },
-    { name: 'SoCalGas', category: 'utility', role: 'Natural Gas', phone: '(800) 427-2200', email: '', website: 'https://www.socalgas.com', address: '555 W 5th St, Los Angeles, CA 90013', notes: 'Gas service, energy efficiency' },
-    { name: 'LA Bureau of Sanitation', category: 'utility', role: 'Sewer & Stormwater', phone: '(800) 773-2489', email: '', website: 'https://www.lacitysan.org', address: '2714 Media Center Dr, Los Angeles, CA 90065', notes: 'Sewer, S-permits, stormwater' },
-    { name: 'Spectrum / Charter Business', category: 'utility', role: 'Telecom', phone: '(855) 222-0102', email: '', website: 'https://www.spectrum.com/business', address: '', notes: 'Fiber, internet, bulk building' },
+    // === Title & Escrow ===
+    { name: 'Chicago Title — Los Angeles', category: 'title', role: 'Title & Escrow', phone: '(213) 612-4100', email: '', website: 'https://www.chicagotitle.com', address: '700 S Flower St, Suite 900, Los Angeles, CA 90017', notes: 'Full-service title, escrow, residential & commercial' },
+    { name: 'Fidelity National Title', category: 'title', role: 'Title & Escrow', phone: '(213) 253-9500', email: '', website: 'https://www.fidelitynational.com', address: '777 S Figueroa St, Suite 3000, Los Angeles, CA 90017', notes: 'Title insurance, escrow, 1031 exchange QI' },
+    { name: 'First American Title', category: 'title', role: 'Title & Escrow', phone: '(714) 250-3000', email: '', website: 'https://www.firstam.com', address: '1 First American Way, Santa Ana, CA 92707', notes: 'Title insurance, home warranty, escrow' },
+    { name: 'Old Republic Title', category: 'title', role: 'Title & Escrow', phone: '(213) 273-1730', email: '', website: 'https://www.oldrepublictitle.com', address: '445 S Figueroa St, Suite 3100, Los Angeles, CA 90071', notes: 'Residential title, escrow, commercial' },
+    { name: 'Stewart Title of California', category: 'title', role: 'Title & Escrow', phone: '(310) 820-0850', email: '', website: 'https://www.stewart.com', address: '11150 Santa Monica Blvd, Suite 800, Los Angeles, CA 90025', notes: 'Title insurance, escrow services' },
+    { name: 'Glen Oaks Escrow', category: 'title', role: 'Escrow', phone: '(818) 241-4114', email: '', website: 'https://glenoaksescrow.com', address: '530 S Lake Ave, Suite 200, Pasadena, CA 91101', notes: 'Independent escrow, residential specialist' },
+
+    // === Mortgage Lenders ===
+    { name: 'Guaranteed Rate', category: 'mortgage', role: 'Mortgage Lender', phone: '(866) 934-7283', email: '', website: 'https://www.rate.com', address: '3940 Laurel Canyon Blvd, Suite 609, Studio City, CA 91604', notes: 'Conventional, FHA, VA, jumbo loans' },
+    { name: 'loanDepot', category: 'mortgage', role: 'Mortgage Lender', phone: '(888) 337-6888', email: '', website: 'https://www.loandepot.com', address: '6561 Irvine Center Dr, Irvine, CA 92618', notes: 'Purchase, refi, FHA, VA, jumbo' },
+    { name: 'CrossCountry Mortgage', category: 'mortgage', role: 'Mortgage Lender', phone: '(877) 351-3400', email: '', website: 'https://www.crosscountrymortgage.com', address: '11601 Wilshire Blvd, Suite 300, Los Angeles, CA 90025', notes: 'First-time buyer programs, FHA, conventional' },
+    { name: 'Kinecta Federal Credit Union', category: 'mortgage', role: 'Credit Union Lender', phone: '(800) 854-9846', email: '', website: 'https://www.kinecta.org', address: '1440 Rosecrans Ave, Manhattan Beach, CA 90266', notes: 'Competitive rates, local CU, residential' },
+    { name: 'United Wholesale Mortgage (UWM)', category: 'mortgage', role: 'Wholesale Lender', phone: '(800) 981-8898', email: '', website: 'https://www.uwm.com', address: '585 S Blvd E, Pontiac, MI 48341', notes: 'Largest wholesale lender, broker channel' },
+
+    // === Home Inspectors ===
+    { name: 'Inspection Experts', category: 'inspector', role: 'Home Inspector', phone: '(800) 400-0407', email: '', website: 'https://www.inspectionexperts.com', address: 'Serving all Los Angeles County', notes: 'Full home inspection, sewer scope, pool/spa' },
+    { name: 'The Real Estate Inspection Co.', category: 'inspector', role: 'Home Inspector', phone: '(310) 396-0606', email: '', website: 'https://www.therealestateInspection.com', address: 'Santa Monica, CA', notes: 'Residential inspections, foundation, roof, HVAC' },
+    { name: 'WIN Home Inspection — LA', category: 'inspector', role: 'Home Inspector', phone: '(800) 309-6753', email: '', website: 'https://www.wini.com', address: 'Serving Los Angeles metro area', notes: 'Same-day reports, mold, radon, sewer' },
+    { name: 'Insight Property Inspections', category: 'inspector', role: 'Home Inspector', phone: '(818) 694-6665', email: '', website: 'https://www.insightpi.com', address: 'Serving LA County & Ventura County', notes: 'InterNACHI certified, thermal imaging' },
+
+    // === Appraisers ===
+    { name: 'CBRE Valuation & Advisory', category: 'appraiser', role: 'Appraiser (Residential & Commercial)', phone: '(213) 613-3333', email: '', website: 'https://www.cbre.com/services/valuation', address: '400 S Hope St, 25th Floor, Los Angeles, CA 90071', notes: 'Certified appraisals, market value, estate, litigation' },
+    { name: 'Pacific Appraisal Associates', category: 'appraiser', role: 'Residential Appraiser', phone: '(310) 474-3130', email: '', website: '', address: '11440 W Olympic Blvd, Suite 600, Los Angeles, CA 90064', notes: 'FHA, VA, conventional, estate appraisals' },
+    { name: 'Westside Appraisal Group', category: 'appraiser', role: 'Residential Appraiser', phone: '(310) 839-3993', email: '', website: '', address: 'Culver City, CA 90232', notes: 'Single-family, condo, multifamily 2-4 units' },
+    { name: 'BBG (formerly Bowman Consulting)', category: 'appraiser', role: 'Commercial Appraiser', phone: '(214) 855-0700', email: '', website: 'https://www.bbgres.com', address: '515 S Flower St, Suite 1200, Los Angeles, CA 90071', notes: 'Land valuation, HBU studies, litigation support' },
+
+    // === Photography & Media ===
+    { name: 'HomeJab Real Estate Photography', category: 'photo', role: 'RE Photography', phone: '(855) 466-3522', email: '', website: 'https://www.homejab.com', address: 'Serving all Los Angeles County', notes: 'MLS-ready photos, drone, video, 3D tours' },
+    { name: 'Matterport 3D Tours (LA providers)', category: 'photo', role: '3D Virtual Tours', phone: '', email: '', website: 'https://matterport.com/industries/real-estate', address: 'Multiple LA-area providers', notes: '3D walkthroughs, floor plans, dollhouse view' },
+    { name: 'BoxBrownie.com', category: 'photo', role: 'Virtual Staging & Editing', phone: '', email: '', website: 'https://www.boxbrownie.com', address: 'Online service', notes: 'Virtual staging, twilight conversion, photo editing, floor plans' },
+    { name: 'Tourfactory', category: 'photo', role: 'RE Media', phone: '(800) 768-3892', email: '', website: 'https://www.tourfactory.com', address: 'Serving Los Angeles metro', notes: 'Professional photography, video, drone, Zillow 3D' },
+
+    // === Staging ===
+    { name: 'Meridith Baer Home', category: 'staging', role: 'Luxury Staging', phone: '(310) 472-4500', email: '', website: 'https://www.meridithbaer.com', address: '13030 Saticoy St, North Hollywood, CA 91605', notes: 'High-end staging, luxury homes, celebrity listings' },
+    { name: 'STAGE by Sarah Richardson', category: 'staging', role: 'Home Staging', phone: '(310) 562-8260', email: '', website: '', address: 'Los Angeles, CA', notes: 'Vacant & occupied staging, consultations' },
+    { name: 'White Orchid Interiors', category: 'staging', role: 'Home Staging', phone: '(818) 510-5488', email: '', website: 'https://www.whiteorchidinteriors.com', address: 'Los Angeles, CA', notes: 'Staging, interior design, furniture rental' },
+    { name: 'Showhomes', category: 'staging', role: 'Home Staging', phone: '(888) 882-4743', email: '', website: 'https://www.showhomes.com', address: 'Multiple LA-area franchises', notes: 'Vacant staging, home manager program, consultations' },
+
+    // === Termite & Pest ===
+    { name: 'Terminix — Los Angeles', category: 'termite', role: 'Termite & Pest Control', phone: '(877) 837-6464', email: '', website: 'https://www.terminix.com', address: 'Multiple LA-area offices', notes: 'Termite inspections, Section 1 & 2 reports, fumigation' },
+    { name: 'Western Exterminator', category: 'termite', role: 'Termite & Pest Control', phone: '(888) 444-6138', email: '', website: 'https://www.westernexterminator.com', address: 'Multiple LA-area offices', notes: 'Termite reports, wood damage repair, pest control' },
+    { name: 'Dewey Pest & Termite Control', category: 'termite', role: 'Termite & Pest Control', phone: '(866) 933-3939', email: '', website: 'https://www.deweypest.com', address: 'Serving all of Southern California', notes: 'Residential termite, local family-owned since 1929' },
+
+    // === Insurance ===
+    { name: 'State Farm — LA Metro', category: 'insurance', role: 'Homeowners Insurance', phone: '(800) 732-5246', email: '', website: 'https://www.statefarm.com', address: 'Multiple LA-area agents', notes: 'Home, fire, earthquake, umbrella' },
+    { name: 'Farmers Insurance — LA', category: 'insurance', role: 'Homeowners Insurance', phone: '(888) 327-6335', email: '', website: 'https://www.farmers.com', address: 'Multiple LA-area agents', notes: 'Home, fire, earthquake, flood, umbrella' },
+    { name: 'California Earthquake Authority (CEA)', category: 'insurance', role: 'Earthquake Insurance', phone: '(877) 797-4300', email: '', website: 'https://www.earthquakeauthority.com', address: 'Sacramento, CA', notes: 'State earthquake insurance, available through participating insurers' },
+    { name: 'California FAIR Plan', category: 'insurance', role: 'Fire Insurance (Last Resort)', phone: '(800) 339-4099', email: '', website: 'https://www.cfpnet.com', address: 'Los Angeles, CA', notes: 'Basic fire coverage for high-risk areas, insurer of last resort' },
+
+    // === Notary & Signing ===
+    { name: 'National Notary Association (NNA) — Find a Notary', category: 'notary', role: 'Notary Locator', phone: '(800) 876-6827', email: '', website: 'https://www.nationalnotary.org/notary-signing-agent/find-a-notary', address: '9350 De Soto Ave, Chatsworth, CA 91311', notes: 'Find certified notary signing agents in LA' },
+    { name: 'Snapdocs', category: 'notary', role: 'Signing Service', phone: '', email: '', website: 'https://www.snapdocs.com', address: 'Online platform', notes: 'Digital notary scheduling, e-closings, signing agent network' },
+    { name: 'SigningOrder.com', category: 'notary', role: 'Signing Service', phone: '(888) 744-6464', email: '', website: 'https://www.signingorder.com', address: 'Online platform', notes: 'Mobile notary dispatch, same-day closings' },
+
+    // === Moving & Junk Removal ===
+    { name: 'PODS Moving & Storage', category: 'moving', role: 'Moving Containers', phone: '(877) 770-7637', email: '', website: 'https://www.pods.com', address: 'Serving all Los Angeles County', notes: 'Portable storage, local & long-distance moving' },
+    { name: '1-800-GOT-JUNK?', category: 'moving', role: 'Junk Removal', phone: '(800) 468-5865', email: '', website: 'https://www.1800gotjunk.com', address: 'Multiple LA-area franchises', notes: 'Full-service junk removal, estate cleanouts, appliances' },
+    { name: 'Two Men and a Truck — LA', category: 'moving', role: 'Moving Company', phone: '(310) 734-6803', email: '', website: 'https://twomenandatruck.com', address: 'Serving Los Angeles metro', notes: 'Local & long-distance moves, packing services' },
+
+    // === Handyman & Repair ===
+    { name: 'Mr. Handyman — LA West', category: 'handyman', role: 'Handyman Service', phone: '(310) 906-1720', email: '', website: 'https://www.mrhandyman.com', address: 'Serving West Los Angeles', notes: 'Pre-listing repairs, drywall, paint, plumbing, doors' },
+    { name: 'ABC Plumbing, Heating & Air', category: 'handyman', role: 'Plumbing & HVAC', phone: '(310) 644-7717', email: '', website: '', address: 'Serving LA County', notes: 'Plumbing repairs, water heaters, HVAC tune-ups' },
+    { name: 'Mike Diamond Services', category: 'handyman', role: 'Plumbing & HVAC', phone: '(800) 439-2833', email: '', website: 'https://www.mikediamondservices.com', address: 'Serving all of LA County', notes: '"Smell Good Plumber," sewer line, HVAC, electrical' },
+    { name: 'Larchmont Painting & Decorating', category: 'handyman', role: 'Painting', phone: '(323) 644-4200', email: '', website: '', address: 'Los Angeles, CA', notes: 'Interior & exterior painting, pre-sale prep' },
+
+    // === Legal ===
+    { name: 'Keller Williams Legal (RE Division)', category: 'legal', role: 'RE Transaction Attorney', phone: '(310) 807-0404', email: '', website: '', address: 'Los Angeles, CA', notes: 'Purchase agreements, disclosures, disputes' },
+    { name: 'Esquire Real Estate Brokerage', category: 'legal', role: 'Attorney-Broker', phone: '(213) 985-4163', email: '', website: 'https://www.esquirereb.com', address: '444 S Flower St, Suite 1700, Los Angeles, CA 90071', notes: 'Licensed attorney + broker, transaction support' },
+    { name: 'Schorr Law (RE Litigation)', category: 'legal', role: 'RE Litigation Attorney', phone: '(310) 954-1877', email: '', website: 'https://www.schorr-law.com', address: '1901 Avenue of the Stars, Suite 615, Los Angeles, CA 90067', notes: 'Boundary disputes, title issues, seller disclosure' },
 ];
 
-const CATEGORY_ICONS = { planning: '🏛️', building: '🔨', housing: '🏠', architect: '📐', engineer: '⚙️', gc: '🏗️', lender: '💰', legal: '⚖️', consultant: '📊', utility: '⚡' };
-const CATEGORY_LABELS = { planning: 'Planning', building: 'Building & Safety', housing: 'Housing', architect: 'Architecture', engineer: 'Engineering', gc: 'General Contractor', lender: 'Finance', legal: 'Legal', consultant: 'Consulting', utility: 'Utilities' };
+const CATEGORY_ICONS = { title: '📋', mortgage: '🏦', inspector: '🔍', appraiser: '📊', photo: '📷', staging: '🛋️', termite: '🐛', insurance: '🛡️', notary: '✍️', moving: '📦', handyman: '🔧', legal: '⚖️' };
+const CATEGORY_LABELS = { title: 'Title & Escrow', mortgage: 'Mortgage Lenders', inspector: 'Home Inspectors', appraiser: 'Appraisers', photo: 'Photography & Media', staging: 'Staging', termite: 'Termite & Pest', insurance: 'Insurance', notary: 'Notary & Signing', moving: 'Moving & Junk', handyman: 'Handyman & Repair', legal: 'Legal' };
 
 function renderContactsDirectory() { var grid = document.getElementById('contactsGrid'); if (!grid) return; renderContactCards(CONTACTS_DATA, grid); }
 function renderContactCards(contacts, container) {
@@ -5473,12 +5493,16 @@ function generateListingOnePager(result, inp, address) {
     const ease = computeEaseOfExecution(result.id, inp, effects);
     const risk = computeRiskLevel(result.id, inp, effects);
 
-    // Values
+    // Values — Residual Land Value approach
+    // What a developer would pay: Stabilized Value minus all costs except land
+    const devCostsExLand = (budget.totalHard || 0) + (budget.totalSoft || 0);
+    const residualLandValue = Math.max(0, (budget.stabilizedValue || 0) - devCostsExLand);
+    // Current raw land value (our estimate)
     const landValPSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
-    const asIsValue = landValPSF * inp.parcelSize;
-    const devValue = budget.stabilizedValue || 0;
-    const uplift = devValue - asIsValue;
-    const upliftPct = asIsValue > 0 ? ((uplift / asIsValue) * 100).toFixed(0) : 'N/A';
+    const asIsLandValue = landValPSF * inp.parcelSize;
+    // Premium a developer would pay over raw land
+    const premium = residualLandValue - asIsLandValue;
+    const premiumPct = asIsLandValue > 0 ? ((premium / asIsLandValue) * 100).toFixed(0) : 'N/A';
 
     // Building params
     const bp = BUILDING_PARAMS[result.id] || {};
@@ -5531,23 +5555,21 @@ function generateListingOnePager(result, inp, address) {
 
     return `
     <div class="onepager-hero">
-        <h2>Development Opportunity</h2>
+        <h2>Your Land Is Worth More Than You Think</h2>
         <div class="address">${address || 'Subject Property'}</div>
         <div class="value-trio">
             <div class="value-box">
-                <div class="val-label">Estimated As-Is Value</div>
-                <div class="val-amount">$${fmt(asIsValue)}</div>
+                <div class="val-label">Current Land Value</div>
+                <div class="val-amount">$${fmt(asIsLandValue)}</div>
             </div>
             <div class="value-arrow">&rarr;</div>
             <div class="value-box">
-                <div class="val-label">Redevelopment Value</div>
-                <div class="val-amount">$${fmt(devValue)}</div>
+                <div class="val-label">What a Developer Would Pay</div>
+                <div class="val-amount uplift" style="color:#fde68a;">$${fmt(residualLandValue)}</div>
             </div>
-            <div class="value-arrow">&rarr;</div>
-            <div class="value-box">
-                <div class="val-label">Value Uplift</div>
-                <div class="val-amount uplift">+$${fmt(Math.max(0, uplift))}</div>
-            </div>
+        </div>
+        <div style="margin-top:1rem;font-size:0.92rem;opacity:0.9;">
+            ${premium > 0 ? `That\u2019s a <strong style="color:#fde68a;font-size:1.15rem;">+$${fmt(premium)}</strong> premium (${premiumPct}% above current value)` : 'Based on highest-and-best-use residual land analysis'}
         </div>
     </div>
     <div class="onepager-body">
@@ -5572,9 +5594,9 @@ function generateListingOnePager(result, inp, address) {
                 ${units > 0 ? `<div class="onepager-metric"><span class="m-label">Est. Units</span><span class="m-value">${units}</span></div>` : ''}
                 <div class="onepager-metric"><span class="m-label">Stories</span><span class="m-value">${stories}</span></div>
                 <div class="onepager-metric"><span class="m-label">FAR</span><span class="m-value">${effectiveFAR.toFixed(2)}</span></div>
-                <div class="onepager-metric"><span class="m-label">Total Dev Cost</span><span class="m-value">$${fmt(budget.totalCost)}</span></div>
-                <div class="onepager-metric"><span class="m-label">Dev Margin</span><span class="m-value">${(result.devMarginPct * 100).toFixed(1)}%</span></div>
-                <div class="onepager-metric"><span class="m-label">Uplift %</span><span class="m-value">${upliftPct}%</span></div>
+                <div class="onepager-metric"><span class="m-label">Stabilized Value</span><span class="m-value">$${fmt(budget.stabilizedValue || 0)}</span></div>
+                <div class="onepager-metric"><span class="m-label">Dev Costs (ex. Land)</span><span class="m-value">$${fmt(devCostsExLand)}</span></div>
+                <div class="onepager-metric"><span class="m-label">Developer Land Bid</span><span class="m-value" style="color:#059669;font-weight:800;">$${fmt(residualLandValue)}</span></div>
                 <div class="onepager-metric"><span class="m-label">Timeline</span><span class="m-value">~${timeline} months</span></div>
             </div>
         </div>
