@@ -1966,9 +1966,9 @@
                     <th data-col="address" onclick="sortAgentSites('address')" style="cursor:pointer;">Address</th>
                     <th data-col="bestUse" onclick="sortAgentSites('bestUse')" style="cursor:pointer;">Best Use</th>
                     <th data-col="lotSize" onclick="sortAgentSites('lotSize')" style="cursor:pointer;">Lot Size</th>
-                    <th data-col="asIsValue" onclick="sortAgentSites('asIsValue')" style="cursor:pointer;">As-Is Value</th>
-                    <th data-col="devValue" onclick="sortAgentSites('devValue')" style="cursor:pointer;">Dev Value</th>
-                    <th data-col="uplift" onclick="sortAgentSites('uplift')" style="cursor:pointer;">Uplift</th>
+                    <th data-col="asIsValue" onclick="sortAgentSites('asIsValue')" style="cursor:pointer;">Market Value</th>
+                    <th data-col="devValue" onclick="sortAgentSites('devValue')" style="cursor:pointer;">Dev Land Bid</th>
+                    <th data-col="uplift" onclick="sortAgentSites('uplift')" style="cursor:pointer;">Premium</th>
                     <th data-col="margin" onclick="sortAgentSites('margin')" style="cursor:pointer;">Margin</th>
                     <th data-col="ease" onclick="sortAgentSites('ease')" style="cursor:pointer;">Ease</th>
                     <th data-col="date" onclick="sortAgentSites('date')" style="cursor:pointer;">Date</th>
@@ -2794,6 +2794,17 @@ async function lookupAddress() {
         document.getElementById('frontage').value = est;
         markAutofill('frontage');
         filledCount++;
+
+        // Store assessed values for one-pager (Prop 13 assessed, not market)
+        if (parcelResult.attrs) {
+            const assessedLand = parseFloat(parcelResult.attrs.Roll_LandValue) || 0;
+            const assessedImp = parseFloat(parcelResult.attrs.Roll_ImpValue) || 0;
+            if (window.lastGeocode) {
+                window.lastGeocode.assessedLand = assessedLand;
+                window.lastGeocode.assessedImp = assessedImp;
+                window.lastGeocode.assessedTotal = assessedLand + assessedImp;
+            }
+        }
     } else {
         statusParts.push(`<span class="status-item warn">Parcel size: could not retrieve — enter manually</span>`);
     }
@@ -3617,10 +3628,14 @@ function calculateHBU() {
             overall = legal * 0.25 + physical * 0.20 + financial * 0.30 + productive * 0.25;
             // Penalize further if legal is only conditional
             if (legal <= 0.5) overall *= 0.8;
-            // Feasibility gate — penalize uses that lose money
-            if (devMarginPct < -0.15) overall *= 0.50;
-            else if (devMarginPct < -0.05) overall *= 0.65;
-            else if (devMarginPct < 0) overall *= 0.80;
+            // Financial performance gate — reward high margins, penalize low/negative
+            if (devMarginPct >= 0.30) overall *= 1.20;       // excellent deal — boost
+            else if (devMarginPct >= 0.15) overall *= 1.10;  // strong deal — slight boost
+            else if (devMarginPct >= 0.05) overall *= 1.0;   // acceptable — no change
+            else if (devMarginPct >= 0) overall *= 0.75;     // barely feasible — penalize
+            else if (devMarginPct >= -0.05) overall *= 0.55;
+            else if (devMarginPct >= -0.15) overall *= 0.40;
+            else overall *= 0.25;                            // major money loser
         }
 
         return {
@@ -5497,12 +5512,27 @@ function generateListingOnePager(result, inp, address) {
     // What a developer would pay: Stabilized Value minus all costs except land
     const devCostsExLand = (budget.totalHard || 0) + (budget.totalSoft || 0);
     const residualLandValue = Math.max(0, (budget.stabilizedValue || 0) - devCostsExLand);
-    // Current raw land value (our estimate)
-    const landValPSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
-    const asIsLandValue = landValPSF * inp.parcelSize;
-    // Premium a developer would pay over raw land
-    const premium = residualLandValue - asIsLandValue;
-    const premiumPct = asIsLandValue > 0 ? ((premium / asIsLandValue) * 100).toFixed(0) : 'N/A';
+
+    // Estimated current market value — use county assessed value with Prop 13 multiplier
+    // CA Prop 13 assessed values are typically 40-60% of market for older properties
+    const geo = window.lastGeocode || {};
+    let estimatedMarketValue = 0;
+    let marketValueSource = '';
+    if (geo.assessedTotal && geo.assessedTotal > 0) {
+        // Prop 13 adjustment: assessed values lag market by ~1.8-2.2x in LA
+        const prop13Mult = 1.9;
+        estimatedMarketValue = Math.round(geo.assessedTotal * prop13Mult);
+        marketValueSource = 'County assessed value adjusted for Prop 13';
+    } else {
+        // Fallback: use land PSF estimate (less accurate)
+        const landValPSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
+        estimatedMarketValue = Math.round(landValPSF * inp.parcelSize * 1.3);
+        marketValueSource = 'Estimated from neighborhood land values';
+    }
+
+    // Premium a developer would pay over current market value
+    const premium = residualLandValue - estimatedMarketValue;
+    const premiumPct = estimatedMarketValue > 0 ? ((premium / estimatedMarketValue) * 100).toFixed(0) : 'N/A';
 
     // Building params
     const bp = BUILDING_PARAMS[result.id] || {};
@@ -5559,18 +5589,19 @@ function generateListingOnePager(result, inp, address) {
         <div class="address">${address || 'Subject Property'}</div>
         <div class="value-trio">
             <div class="value-box">
-                <div class="val-label">Current Land Value</div>
-                <div class="val-amount">$${fmt(asIsLandValue)}</div>
+                <div class="val-label">Est. Current Market Value</div>
+                <div class="val-amount">${fmt(estimatedMarketValue)}</div>
             </div>
             <div class="value-arrow">&rarr;</div>
             <div class="value-box">
                 <div class="val-label">What a Developer Would Pay</div>
-                <div class="val-amount uplift" style="color:#fde68a;">$${fmt(residualLandValue)}</div>
+                <div class="val-amount uplift" style="color:#fde68a;">${fmt(residualLandValue)}</div>
             </div>
         </div>
         <div style="margin-top:1rem;font-size:0.92rem;opacity:0.9;">
-            ${premium > 0 ? `That\u2019s a <strong style="color:#fde68a;font-size:1.15rem;">+$${fmt(premium)}</strong> premium (${premiumPct}% above current value)` : 'Based on highest-and-best-use residual land analysis'}
+            ${premium > 0 ? `That\u2019s a <strong style="color:#fde68a;font-size:1.15rem;">+${fmt(premium)}</strong> premium (${premiumPct}% above current value)` : 'Based on highest-and-best-use residual land analysis'}
         </div>
+        <div style="font-size:0.7rem;opacity:0.6;margin-top:0.5rem;">${marketValueSource} &mdash; verify with Zillow/Redfin comps</div>
     </div>
     <div class="onepager-body">
         <div class="onepager-grid">
@@ -5594,9 +5625,9 @@ function generateListingOnePager(result, inp, address) {
                 ${units > 0 ? `<div class="onepager-metric"><span class="m-label">Est. Units</span><span class="m-value">${units}</span></div>` : ''}
                 <div class="onepager-metric"><span class="m-label">Stories</span><span class="m-value">${stories}</span></div>
                 <div class="onepager-metric"><span class="m-label">FAR</span><span class="m-value">${effectiveFAR.toFixed(2)}</span></div>
-                <div class="onepager-metric"><span class="m-label">Stabilized Value</span><span class="m-value">$${fmt(budget.stabilizedValue || 0)}</span></div>
-                <div class="onepager-metric"><span class="m-label">Dev Costs (ex. Land)</span><span class="m-value">$${fmt(devCostsExLand)}</span></div>
-                <div class="onepager-metric"><span class="m-label">Developer Land Bid</span><span class="m-value" style="color:#059669;font-weight:800;">$${fmt(residualLandValue)}</span></div>
+                <div class="onepager-metric"><span class="m-label">Stabilized Value</span><span class="m-value">${fmt(budget.stabilizedValue || 0)}</span></div>
+                <div class="onepager-metric"><span class="m-label">Dev Costs (ex. Land)</span><span class="m-value">${fmt(devCostsExLand)}</span></div>
+                <div class="onepager-metric"><span class="m-label">Developer Land Bid</span><span class="m-value" style="color:#059669;font-weight:800;">${fmt(residualLandValue)}</span></div>
                 <div class="onepager-metric"><span class="m-label">Timeline</span><span class="m-value">~${timeline} months</span></div>
             </div>
         </div>
@@ -5711,9 +5742,18 @@ function saveToAgentSites(results, inp) {
     const effects = stackLegislationEffects(topResult.legislation || []);
     const budget = generateBudget(topResult.id, inp, effects);
     const ease = computeEaseOfExecution(topResult.id, inp, effects);
-    const landValPSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
-    const asIsValue = landValPSF * inp.parcelSize;
-    const devValue = budget.stabilizedValue || 0;
+    // Estimated market value using county assessed + Prop 13 multiplier
+    const geo2 = window.lastGeocode || {};
+    let asIsValue = 0;
+    if (geo2.assessedTotal && geo2.assessedTotal > 0) {
+        asIsValue = Math.round(geo2.assessedTotal * 1.9);
+    } else {
+        const landValPSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
+        asIsValue = Math.round(landValPSF * inp.parcelSize * 1.3);
+    }
+    // Developer land bid (residual)
+    const devCostsExLand = (budget.totalHard || 0) + (budget.totalSoft || 0);
+    const devValue = Math.max(0, (budget.stabilizedValue || 0) - devCostsExLand);
     const uplift = devValue - asIsValue;
     const address = document.getElementById('addressInput').value.trim() || 'Unknown Address';
     const geo = window.lastGeocode || {};
@@ -5803,9 +5843,9 @@ function renderAgentSites() {
                 <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(s.address||'').replace(/"/g,'&quot;')}">${s.address||'—'}</td>
                 <td>${s.bestUseIcon||''} ${s.bestUseName||'—'}</td>
                 <td>${(s.lotSize||0).toLocaleString()} SF</td>
-                <td>$${fmt(s.asIsValue||0)}</td>
-                <td>$${fmt(s.devValue||0)}</td>
-                <td style="color:${(s.uplift||0) >= 0 ? '#059669':'#dc2626'};font-weight:600;">${(s.uplift||0) >= 0 ? '+':''}$${fmt(s.uplift||0)}</td>
+                <td>${fmt(s.asIsValue||0)}</td>
+                <td>${fmt(s.devValue||0)}</td>
+                <td style="color:${(s.uplift||0) >= 0 ? '#059669':'#dc2626'};font-weight:600;">${(s.uplift||0) >= 0 ? '+':''}${fmt(s.uplift||0)}</td>
                 <td style="color:${(s.devMarginPct||0) >= 0.15 ? '#059669' : (s.devMarginPct||0) >= 0 ? '#ca8a04' : '#dc2626'};font-weight:600;">${((s.devMarginPct||0)*100).toFixed(1)}%</td>
                 <td>${s.ease||0}/100</td>
                 <td style="font-size:0.78rem;">${s.date||'—'}</td>
@@ -5834,7 +5874,7 @@ function renderAgentSites() {
             const marker = L.circleMarker([s.lat, s.lon], {
                 radius: 10, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.9
             }).addTo(sitesMapInstance);
-            marker.bindPopup(`<strong>${s.address}</strong><br>${s.bestUseIcon||''} ${s.bestUseName}<br>Score: ${s.attractiveness}/100<br>Uplift: $${fmt(s.uplift||0)}`);
+            marker.bindPopup(`<strong>${s.address}</strong><br>${s.bestUseIcon||''} ${s.bestUseName}<br>Score: ${s.attractiveness}/100<br>Uplift: ${fmt(s.uplift||0)}`);
             sitesMapMarkers.push(marker);
             bounds.push([s.lat, s.lon]);
         });
