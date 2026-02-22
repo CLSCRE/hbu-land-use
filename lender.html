@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Highest &amp; Best Use Calculator — Los Angeles, CA</title>
+    <title>HBU Land Use – Lender &amp; Capital Portal</title>
     <style>
         :root {
             --primary: #1a365d;
@@ -2304,62 +2304,45 @@
             .breakeven-card { padding: 0.75rem; }
         }
 
-/* Developer Summary Panel */
-.dev-summary-panel {
+/* Lender Credit Snapshot Panel */
+.lender-credit-panel {
   margin-top: 2rem;
   padding: 1.5rem;
   border-radius: 12px;
-  background: #faf9f7;
+  background: #f4f7f5;
   border: 1px solid rgba(0,0,0,0.06);
 }
 
-.dev-summary-panel h2 {
+.lender-credit-panel h2 {
   font-size: 1.4rem;
   margin-bottom: 1rem;
 }
 
-.dev-summary-grid {
+.lender-credit-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 1rem;
 }
 
-.dev-summary-card {
+.lender-credit-card {
   padding: 1rem;
   border-radius: 10px;
   background: #ffffff;
   border: 1px solid rgba(0,0,0,0.05);
 }
 
-.dev-offer-range {
-  font-weight: 600;
-  margin-top: 0.3rem;
-}
-
-.dev-scenario-buttons {
+.lender-risk-flags {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.4rem;
 }
 
-.dev-scenario-btn {
-  flex: 1;
+.lender-risk-flag {
+  padding: 0.2rem 0.5rem;
   border-radius: 999px;
-  border: 1px solid rgba(0,0,0,0.15);
-  background: #f5f4f2;
-  padding: 0.3rem 0.6rem;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-.dev-scenario-btn:hover {
-  background: #ebe9e4;
-}
-
-.dev-scenario-btn.active {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
+  font-size: 0.8rem;
+  border: 1px solid rgba(0,0,0,0.1);
+  background: #fff7e5;
 }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -2381,9 +2364,9 @@
 </div>
 
 <header>
-    <h1>Highest &amp; Best Use Calculator</h1>
-    <p>Land Use Analysis for Los Angeles, CA</p>
-    <span class="badge">HBU Analysis Tool</span>
+    <h1>Highest &amp; Best Use Calculator — Lender &amp; Capital Portal</h1>
+    <p>Collateral &amp; Land Use Analysis for Lenders and Capital Partners</p>
+    <span class="badge">Lender &amp; Capital Portal</span>
     <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v4.2</span>
 </header>
 
@@ -2398,7 +2381,7 @@
 <div class="container">
     <div class="intro-box">
         <h3>How It Works</h3>
-        <p>Enter your parcel details below. The calculator evaluates potential land uses against the four standard HBU tests&mdash;<strong>Legally Permissible</strong>, <strong>Physically Possible</strong>, <strong>Financially Feasible</strong>, and <strong>Maximally Productive</strong>&mdash;then ranks the top 3 uses for your site.</p>
+        <p>Enter parcel details below. This tool helps lenders, capital partners, and developers evaluate potential land uses against the four standard HBU tests&mdash;<strong>Legally Permissible</strong>, <strong>Physically Possible</strong>, <strong>Financially Feasible</strong>, and <strong>Maximally Productive</strong>&mdash;then ranks the top 3 uses to assess collateral quality and upside.</p>
     </div>
 
     <div class="address-section">
@@ -2623,29 +2606,25 @@
             <strong>Disclaimer:</strong> This tool provides a preliminary, educational estimate only. Highest and Best Use analysis for real estate investment or appraisal purposes should be performed by a qualified MAI appraiser or licensed professional. Actual HBU depends on detailed market studies, entitlement feasibility, construction cost analysis, and site-specific due diligence. Zoning codes, overlay districts, and specific plan areas in Los Angeles change frequently — always verify with the LA Department of City Planning (ZIMAS).
         </div>
 
-        <!-- Developer Summary Panel -->
-        <section id="dev-summary-panel" class="dev-summary-panel" style="display:none;">
-          <h2>Developer Summary</h2>
-          <div class="dev-summary-grid">
-            <div class="dev-summary-card">
-              <h3>Quick Offer Range</h3>
-              <p class="dev-offer-text">Based on current assumptions, a reasonable land value band is:</p>
-              <p class="dev-offer-range" id="dev-offer-range">&mdash;</p>
-              <p class="dev-offer-note" id="dev-offer-note" style="font-size:0.85rem;color:var(--text-light);margin-top:0.25rem;"></p>
+        <!-- Lender Credit Snapshot Panel -->
+        <section id="lender-credit-panel" class="lender-credit-panel" style="display:none;">
+          <h2>Credit Snapshot</h2>
+          <div class="lender-credit-grid">
+            <div class="lender-credit-card">
+              <h3>Fit to Mandate</h3>
+              <p id="lender-fit-label">Fit: &mdash;</p>
+              <p id="lender-fit-note" style="font-size:0.85rem;color:var(--text-light);margin-top:0.25rem;"></p>
             </div>
-            <div class="dev-summary-card">
-              <h3>Yield Snapshot</h3>
-              <p id="dev-yield-band">Yield band: &mdash;</p>
-              <p id="dev-risk-band">Risk band: &mdash;</p>
+            <div class="lender-credit-card">
+              <h3>Leverage &amp; Coverage</h3>
+              <p id="lender-ltv-band">Stabilized LTV: &mdash;</p>
+              <p id="lender-dscr-band">DSCR proxy: &mdash;</p>
             </div>
-            <div class="dev-summary-card dev-scenarios">
-              <h3>Scenarios</h3>
-              <div class="dev-scenario-buttons">
-                <button type="button" class="dev-scenario-btn" data-scenario="base">Base</button>
-                <button type="button" class="dev-scenario-btn" data-scenario="high-rent">High Rent</button>
-                <button type="button" class="dev-scenario-btn" data-scenario="high-cost">High Cost</button>
+            <div class="lender-credit-card">
+              <h3>Key Risk Flags</h3>
+              <div id="lender-risk-flags" class="lender-risk-flags">
+                <span>Run an analysis to see risk flags.</span>
               </div>
-              <p id="dev-scenario-summary">Select a scenario to see how key metrics shift.</p>
             </div>
           </div>
         </section>
@@ -2890,7 +2869,7 @@
 <div class="container">
     <div class="intro-box" style="border-left-color:#805ad5;">
         <h3>Contacts Directory</h3>
-        <p>Your <strong>one-stop shop</strong> for all development-related contacts in Los Angeles County. Planning departments, city officials, architects, engineers, contractors, lenders, and consultants. Filter by category or search by name.</p>
+        <p>Your <strong>one-stop shop</strong> for all development and capital-related contacts in Los Angeles County. Planning departments, city officials, architects, engineers, contractors, lenders, and capital partners. Filter by category or search by name.</p>
     </div>
 
     <div style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
@@ -17798,7 +17777,7 @@ function generateInvestorSummary() {
 }
 
 // ============================================================
-//  SHARED DEAL OBJECT & DEVELOPER SUMMARY
+//  SHARED DEAL OBJECT & LENDER CREDIT SNAPSHOT
 // ============================================================
 
 function buildDealObject(overrides) {
@@ -17823,9 +17802,6 @@ function buildDealObject(overrides) {
     opportunityRatio: overrides.opportunityRatio || null,
     easeScore: overrides.easeScore || null,
     overallScore: overrides.overallScore || null,
-    yieldOnCost: overrides.yieldOnCost || null,
-    devMarginPct: overrides.devMarginPct || null,
-    stabilizedValue: overrides.stabilizedValue || null,
     status: overrides.status || 'new',
     developer: overrides.developer || {},
     agent: overrides.agent || {},
@@ -17834,77 +17810,123 @@ function buildDealObject(overrides) {
   return Object.assign({}, base, overrides);
 }
 
-function formatCurrencyRange(low, high) {
-  var fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
-  return fmt.format(low) + ' \u2013 ' + fmt.format(high);
-}
-
-function updateDeveloperSummaryFromDeal(deal) {
+function updateLenderCreditSnapshot(deal) {
   if (!deal) return;
-  var panel = document.getElementById('dev-summary-panel');
+
+  var panel = document.getElementById('lender-credit-panel');
   if (panel) panel.style.display = '';
 
-  var bid = deal.devLandBid || null;
-  var mv = deal.marketValue || null;
-  var offerRangeEl = document.getElementById('dev-offer-range');
-  var offerNoteEl = document.getElementById('dev-offer-note');
-  var yieldBandEl = document.getElementById('dev-yield-band');
-  var riskBandEl = document.getElementById('dev-risk-band');
-  if (!offerRangeEl || !yieldBandEl) return;
+  var fitLabelEl = document.getElementById('lender-fit-label');
+  var fitNoteEl = document.getElementById('lender-fit-note');
+  var ltvBandEl = document.getElementById('lender-ltv-band');
+  var dscrBandEl = document.getElementById('lender-dscr-band');
+  var riskFlagsContainer = document.getElementById('lender-risk-flags');
 
-  if (bid) {
-    var low = bid * 0.9;
-    var high = bid * 1.1;
-    offerRangeEl.textContent = formatCurrencyRange(low, high);
-    offerNoteEl.textContent = mv ? 'Approximate land value band based on current pro forma and HBU output.' : 'Band estimated from developer land bid.';
-  } else {
-    offerRangeEl.textContent = '\u2014';
-    offerNoteEl.textContent = 'Enter pro forma inputs to see a land value band.';
-  }
+  if (!fitLabelEl || !riskFlagsContainer) return;
 
-  var yoc = deal.yieldOnCost || null;
-  if (yoc != null) {
-    if (yoc >= 0.075) {
-      yieldBandEl.textContent = 'Yield band: Strong (\u2265 7.5%)';
-      riskBandEl.textContent = 'Risk band: Higher return / higher complexity.';
-    } else if (yoc >= 0.06) {
-      yieldBandEl.textContent = 'Yield band: Market (6.0\u20137.5%)';
-      riskBandEl.textContent = 'Risk band: Balanced risk/return.';
-    } else {
-      yieldBandEl.textContent = 'Yield band: Thin (< 6.0%)';
-      riskBandEl.textContent = 'Risk band: Lower return / requires strong execution.';
+  var size = deal.lotSizeSqft || 0;
+  var oppRatio = deal.opportunityRatio || null;
+  var tier = deal.sb79Tier || deal.tocTier || null;
+
+  // Compute LTV and DSCR proxies from deal data
+  var ltvProxy = 0.65;
+  var dscrProxy = 1.25;
+  if (deal.stabilizedValue && deal.totalDev) {
+    // Loan amount ~ 65% of cost
+    var loanAmount = deal.totalDev * 0.65;
+    ltvProxy = deal.stabilizedValue > 0 ? loanAmount / deal.stabilizedValue : 0.65;
+    // DSCR proxy: NOI / debt service (assume 6.5% rate, 30yr amort)
+    if (deal.noi && loanAmount > 0) {
+      var monthlyRate = 0.065 / 12;
+      var nPayments = 360;
+      var monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, nPayments)) / (Math.pow(1 + monthlyRate, nPayments) - 1);
+      var annualDebtService = monthlyPayment * 12;
+      dscrProxy = annualDebtService > 0 ? deal.noi / annualDebtService : 1.25;
     }
-  } else {
-    yieldBandEl.textContent = 'Yield band: \u2014';
-    riskBandEl.textContent = 'Risk band: Add pro forma inputs to see guidance.';
   }
-}
 
-function attachDevScenarioHandlers() {
-  var buttons = document.querySelectorAll('.dev-scenario-btn');
-  var summaryEl = document.getElementById('dev-scenario-summary');
-  if (!buttons.length || !summaryEl) return;
-  buttons.forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var scenario = btn.getAttribute('data-scenario');
-      buttons.forEach(function(b) { b.classList.toggle('active', b === btn); });
-      if (scenario === 'base') {
-        summaryEl.textContent = 'Base: current rent, cost, and cap rate assumptions.';
-      } else if (scenario === 'high-rent') {
-        summaryEl.textContent = 'High Rent: +5\u201310% rent scenario. Test upside and how much more you could pay for land.';
-      } else if (scenario === 'high-cost') {
-        summaryEl.textContent = 'High Cost: +10\u201315% cost scenario. See if the deal still pencils under stress.';
-      }
+  // Fit to mandate
+  var fit = 'Borderline';
+  var fitNote = 'Requires credit committee discussion.';
+  if (oppRatio != null && oppRatio >= 1.3 && size >= 10000) {
+    fit = 'Likely Fit';
+    fitNote = 'Strong land economics and scale; likely within mandate for many construction lenders.';
+  } else if (oppRatio != null && oppRatio < 1.0) {
+    fit = 'Outside Box';
+    fitNote = 'Land economics are weak relative to current use; may not justify construction risk.';
+  }
+
+  if (tier && fit === 'Likely Fit') {
+    fitNote += ' SB 79 / TOC positioning may support more aggressive leverage within policy limits.';
+  }
+
+  // LTV / DSCR bands
+  var ltvText = 'Stabilized LTV: \u2014';
+  if (ltvProxy >= 0.7) {
+    ltvText = 'Stabilized LTV: 70%+ (higher leverage band).';
+  } else if (ltvProxy >= 0.6) {
+    ltvText = 'Stabilized LTV: 60\u201370% (typical leverage).';
+  } else {
+    ltvText = 'Stabilized LTV: < 60% (conservative leverage).';
+  }
+
+  var dscrText = 'DSCR proxy: \u2014';
+  if (dscrProxy >= 1.35) {
+    dscrText = 'DSCR proxy: 1.35x+ (strong coverage).';
+  } else if (dscrProxy >= 1.20) {
+    dscrText = 'DSCR proxy: 1.20\u20131.35x (typical coverage).';
+  } else {
+    dscrText = 'DSCR proxy: < 1.20x (tight coverage).';
+  }
+
+  // Risk flags
+  var riskFlags = [];
+  if (deal.zoning && /c2|cm|m1|m2/i.test(deal.zoning)) {
+    riskFlags.push('Entitlement Risk');
+  }
+  if (size >= 40000) {
+    riskFlags.push('Large Deal Size');
+  }
+  if (oppRatio != null && oppRatio < 1.0) {
+    riskFlags.push('Weak Land Economics');
+  }
+  if (deal.devMarginPct != null && deal.devMarginPct < 0) {
+    riskFlags.push('Negative Dev Margin');
+  }
+
+  fitLabelEl.textContent = 'Fit: ' + fit;
+  fitNoteEl.textContent = fitNote;
+  ltvBandEl.textContent = ltvText;
+  dscrBandEl.textContent = dscrText;
+
+  riskFlagsContainer.innerHTML = '';
+  if (!riskFlags.length) {
+    var span = document.createElement('span');
+    span.textContent = 'No major structural flags detected at this pass.';
+    riskFlagsContainer.appendChild(span);
+  } else {
+    riskFlags.forEach(function(flag) {
+      var chip = document.createElement('span');
+      chip.className = 'lender-risk-flag';
+      chip.textContent = flag;
+      riskFlagsContainer.appendChild(chip);
     });
-  });
+  }
+
+  // Save into deal.lender sub-object
+  deal.lender = deal.lender || {};
+  deal.lender.fit = fit;
+  deal.lender.fitNote = fitNote;
+  deal.lender.ltvBand = ltvText;
+  deal.lender.dscrBand = dscrText;
+  deal.lender.riskFlags = riskFlags;
 }
 
-// Build deal object after HBU calc and update dev summary
+// Wrap calculateHBU to build deal + update lender panel
 (function() {
   var _origCalcHBU = calculateHBU;
   calculateHBU = function() {
     _origCalcHBU.apply(this, arguments);
-    // After calculation, build deal from lastResults/lastInputs
     if (typeof lastResults !== 'undefined' && lastResults && lastResults.length > 0 && typeof lastInputs !== 'undefined') {
       var topResult = lastResults[0];
       var inp = lastInputs;
@@ -17912,11 +17934,9 @@ function attachDevScenarioHandlers() {
       var budget = generateBudget(topResult.id, inp, effects);
       var geo = window.lastGeocode || {};
 
-      // Compute residual land value (dev land bid)
       var devCostsExLand = (budget.totalHard || 0) + (budget.totalSoft || 0);
       var devLandBid = Math.max(0, (budget.stabilizedValue || 0) - devCostsExLand);
 
-      // Estimated market value
       var marketValue = 0;
       if (geo.assessedTotal && geo.assessedTotal > 0) {
         marketValue = Math.round(geo.assessedTotal * 1.9);
@@ -17930,40 +17950,43 @@ function attachDevScenarioHandlers() {
       var addrEl = document.getElementById('addressInput');
       if (addrEl) address = addrEl.value.trim();
 
+      // Detect SB79 tier
+      var sb79Tier = null;
+      if (geo.lat && geo.lon && typeof detectSB79Eligibility === 'function') {
+        var sb79 = detectSB79Eligibility(geo.lat, geo.lon);
+        if (sb79 && sb79.tier) sb79Tier = sb79.tier;
+      }
+
       var deal = buildDealObject({
         address: address,
         lat: geo.lat || null,
         lng: geo.lon || null,
         zoning: inp.zoning,
         bestUse: topResult.name,
+        sb79Tier: sb79Tier,
         lotSizeSqft: inp.parcelSize,
         marketValue: marketValue,
         devLandBid: devLandBid,
         opportunityRatio: oppRatio,
         overallScore: topResult.overall,
-        yieldOnCost: budget.yieldOnCost || null,
         devMarginPct: budget.devMargin || null,
         stabilizedValue: budget.stabilizedValue || null,
-        developer: {
-          topUse: topResult.name,
-          topUseId: topResult.id,
-          devMargin: budget.devMargin,
-          yieldOnCost: budget.yieldOnCost,
-          totalDev: budget.totalDev,
+        totalDev: budget.totalDev || null,
+        noi: budget.noi || null,
+        lender: {
           stabilizedValue: budget.stabilizedValue,
-          noi: budget.noi
+          totalDev: budget.totalDev,
+          noi: budget.noi,
+          yieldOnCost: budget.yieldOnCost,
+          devMargin: budget.devMargin
         }
       });
 
-      window.currentDevDeal = deal;
-      updateDeveloperSummaryFromDeal(deal);
+      window.currentLenderDeal = deal;
+      updateLenderCreditSnapshot(deal);
     }
   };
 })();
-
-document.addEventListener('DOMContentLoaded', function() {
-  attachDevScenarioHandlers();
-});
 
 </script>
 

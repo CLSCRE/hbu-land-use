@@ -46,15 +46,16 @@
         .nav-inner {
             max-width: 1200px; margin: 0 auto;
             display: flex; align-items: center; justify-content: space-between;
-            height: 64px;
+            height: 72px;
         }
         .nav-brand {
-            font-weight: 800; font-size: 1.2rem; color: var(--primary-dark);
-            text-decoration: none; display: flex; flex-direction: column; line-height: 1.2;
+            font-weight: 800; font-size: 1.55rem; color: var(--primary-dark);
+            text-decoration: none; display: flex; flex-direction: column; line-height: 1.15;
+            letter-spacing: -0.02em;
         }
         .nav-brand .brand-sub {
-            font-size: 0.65rem; font-weight: 500; color: var(--text-light);
-            letter-spacing: 0.02em;
+            font-size: 0.7rem; font-weight: 600; color: var(--text-light);
+            letter-spacing: 0.06em; text-transform: uppercase; margin-top: 1px;
         }
         .nav-brand .brand-sub a {
             color: var(--text-light); text-decoration: none;
@@ -107,23 +108,48 @@
             background: linear-gradient(180deg, rgba(15,23,42,0.75) 0%, rgba(13,148,136,0.6) 100%);
         }
         .hero-inner {
-            max-width: 1000px; margin: 0 auto; position: relative; z-index: 1;
+            max-width: 1060px; margin: 0 auto; position: relative; z-index: 1;
             text-align: center; padding: 8rem 2rem 5rem; color: var(--white);
         }
+        .hero-brand {
+            margin-bottom: 2rem;
+        }
+        .hero-brand-name {
+            font-size: 3.8rem; font-weight: 800; letter-spacing: -0.03em;
+            line-height: 1; margin-bottom: 0.35rem;
+            background: linear-gradient(135deg, #ffffff 0%, var(--primary-light) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-brand-by {
+            font-size: 0.95rem; font-weight: 600; letter-spacing: 0.15em;
+            text-transform: uppercase; color: rgba(255,255,255,0.6);
+        }
+        .hero-brand-by a {
+            color: rgba(255,255,255,0.85); text-decoration: none;
+            border-bottom: 1px solid rgba(255,255,255,0.25);
+            transition: color .2s, border-color .2s;
+        }
+        .hero-brand-by a:hover { color: var(--white); border-color: var(--white); }
+        .hero-divider {
+            width: 60px; height: 3px; border-radius: 3px;
+            background: var(--primary-light); margin: 1.75rem auto 2rem;
+            opacity: 0.7;
+        }
         .hero h1 {
-            font-size: 3.2rem; font-weight: 800; line-height: 1.15;
-            margin-bottom: 1rem;
+            font-size: 3rem; font-weight: 800; line-height: 1.15;
+            margin-bottom: 1rem; letter-spacing: -0.02em;
         }
         .hero h1 em { font-style: normal; color: var(--primary-light); }
         .hero p.sub {
-            font-size: 1.15rem; color: rgba(255,255,255,0.85);
-            max-width: 620px; margin: 0 auto 3rem; line-height: 1.7;
+            font-size: 1.2rem; color: rgba(255,255,255,0.85);
+            max-width: 640px; margin: 0 auto 3rem; line-height: 1.7;
         }
 
         /* Portal Cards */
         .portal-cards {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
-            max-width: 700px; margin: 0 auto 2.5rem;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+            max-width: 960px; margin: 0 auto 2.5rem;
         }
         .portal-card {
             background: rgba(255,255,255,0.1); backdrop-filter: blur(12px);
@@ -314,11 +340,21 @@
         /* ── FOOTER ── */
         .footer {
             background: var(--text-dark); color: rgba(255,255,255,0.7);
-            padding: 3rem 2rem; text-align: center;
+            padding: 4rem 2rem 3rem; text-align: center;
         }
         .footer-inner { max-width: 1100px; margin: 0 auto; }
-        .footer-links { display: flex; gap: 2rem; justify-content: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
-        .footer-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: .9rem; }
+        .footer-brand {
+            font-size: 1.6rem; font-weight: 800; color: var(--white);
+            letter-spacing: -0.02em; margin-bottom: 0.25rem;
+        }
+        .footer-brand-sub {
+            font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.12em; color: rgba(255,255,255,0.4); margin-bottom: 1.75rem;
+        }
+        .footer-brand-sub a { color: rgba(255,255,255,0.55); text-decoration: none; }
+        .footer-brand-sub a:hover { color: var(--primary-light); }
+        .footer-links { display: flex; gap: 2rem; justify-content: center; margin-bottom: 1.75rem; flex-wrap: wrap; }
+        .footer-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: .9rem; transition: color .2s; }
         .footer-links a:hover { color: var(--primary-light); }
         .footer p { font-size: .85rem; }
         .footer a { color: var(--primary-light); text-decoration: none; }
@@ -329,9 +365,10 @@
             .pain-grid, .features-grid, .pricing-grid, .steps {
                 grid-template-columns: 1fr;
             }
-            .portal-cards { grid-template-columns: 1fr; max-width: 400px; }
+            .portal-cards { grid-template-columns: 1fr; max-width: 420px; }
             .price-card.featured { transform: none; }
-            .hero h1 { font-size: 2.2rem; }
+            .hero-brand-name { font-size: 2.8rem; }
+            .hero h1 { font-size: 2rem; }
             .hero p.sub { font-size: 1.05rem; }
             .section-header h2 { font-size: 1.8rem; }
         }
@@ -339,14 +376,16 @@
         @media (max-width: 640px) {
             .nav-links {
                 display: none; flex-direction: column; position: absolute;
-                top: 64px; left: 0; right: 0; background: var(--white);
+                top: 72px; left: 0; right: 0; background: var(--white);
                 padding: 1.5rem 2rem; border-bottom: 1px solid var(--border);
                 gap: 1.25rem; box-shadow: var(--shadow);
             }
             .nav-links.open { display: flex; }
             .hamburger { display: flex; }
             .hero-inner { padding: 7rem 1.5rem 3rem; }
-            .hero h1 { font-size: 1.8rem; }
+            .hero-brand-name { font-size: 2.2rem; }
+            .hero-brand-by { font-size: 0.8rem; }
+            .hero h1 { font-size: 1.6rem; }
             section { padding: 3.5rem 1.5rem; }
         }
     </style>
@@ -364,7 +403,7 @@
             <li><a href="#features">Features</a></li>
             <li><a href="#pricing">Pricing</a></li>
             <li><a href="#faq">FAQ</a></li>
-            <li><a href="app.html" class="btn btn-primary">Launch Tool</a></li>
+            <li><a href="#role-portals" class="btn btn-primary">Choose Portal</a></li>
         </ul>
         <button class="hamburger" id="hamburger" aria-label="Toggle menu">
             <span></span><span></span><span></span>
@@ -376,10 +415,15 @@
 <section class="hero">
     <div class="hero-bg"></div>
     <div class="hero-inner">
+        <div class="hero-brand">
+            <div class="hero-brand-name">Land to Yield</div>
+            <div class="hero-brand-by">by <a href="https://commerciallendingsolutions.ai" target="_blank" rel="noopener">Commercial Lending Solutions</a></div>
+        </div>
+        <div class="hero-divider"></div>
         <h1>Know Every LA Parcel's Development Potential in <em>60 Seconds</em></h1>
         <p class="sub">Stop spending days on zoning research, legislation lookups, and manual pro formas. Get instant highest-and-best-use scoring for any parcel in LA County.</p>
 
-        <div class="portal-cards">
+        <div class="portal-cards" id="role-portals">
             <a href="agent.html" class="portal-card">
                 <div class="portal-icon">🏠</div>
                 <h3>I'm a Real Estate Agent</h3>
@@ -391,6 +435,12 @@
                 <h3>I'm a Developer</h3>
                 <p>Full feasibility analysis with 27-tab deep dive, pro forma modeling, and investor-ready reports.</p>
                 <span class="portal-arrow">Launch Tool &rarr;</span>
+            </a>
+            <a href="lender.html" class="portal-card">
+                <div class="portal-icon">🏦</div>
+                <h3>I'm a Lender / Capital Partner</h3>
+                <p>Quickly assess collateral quality, use options, and pipeline around any parcel using the same engine your borrowers rely on.</p>
+                <span class="portal-arrow">Enter Lender Portal &rarr;</span>
             </a>
         </div>
 
@@ -618,15 +668,17 @@
 <!-- ── FOOTER ── -->
 <footer class="footer">
     <div class="footer-inner">
+        <div class="footer-brand">Land to Yield</div>
+        <div class="footer-brand-sub">by <a href="https://commerciallendingsolutions.ai" target="_blank" rel="noopener">Commercial Lending Solutions</a></div>
         <div class="footer-links">
-            <a href="privacy.html">Privacy Policy</a>
-            <a href="terms.html">Terms of Service</a>
-            <a href="mailto:contact@landtoyield.com">Contact</a>
             <a href="app.html">Developer Portal</a>
             <a href="agent.html">Agent Portal</a>
+            <a href="lender.html">Lender Portal</a>
+            <a href="privacy.html">Privacy</a>
+            <a href="terms.html">Terms</a>
+            <a href="mailto:contact@landtoyield.com">Contact</a>
         </div>
         <p>&copy; 2025 Land to Yield. All rights reserved.</p>
-        <p style="margin-top:.5rem; font-size:.8rem;">A product by <a href="https://commerciallendingsolutions.ai" target="_blank" rel="noopener">Commercial Lending Solutions</a></p>
     </div>
 </footer>
 
