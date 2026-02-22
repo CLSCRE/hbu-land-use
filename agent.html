@@ -6868,6 +6868,7 @@ function renderScannerResults() {
         <button type="button" class="finder-btn-export" onclick="addSelectionToSaved()" style="margin:0 0.5rem;">Add to Saved</button>
         <button type="button" class="finder-btn-export" onclick="exportCallList()" style="margin:0 0.5rem;">Export Call List</button>
         <button type="button" class="finder-btn-export" onclick="printBatchLetters()" style="margin:0 0.5rem;">Generate Letters</button>
+        <button type="button" class="finder-btn-export" onclick="generateSelectionOnePagers()" style="margin:0 0.5rem;">One-Pager Analysis</button>
         <button type="button" class="finder-btn-export" onclick="clearFinderSelection()">Clear</button>
     </div>`;
 
@@ -6999,6 +7000,91 @@ function openOnePagerFromScan(idx) {
     </div>`;
     modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
     document.body.appendChild(modal);
+}
+
+// ============================================================
+//  BATCH ONE-PAGER ANALYSIS FROM SELECTION
+// ============================================================
+function generateSelectionOnePagers() {
+    const indices = finderSelectedSet.size > 0
+        ? Array.from(finderSelectedSet).sort((a, b) => a - b)
+        : scannerResults.map((_, i) => i);
+    if (indices.length === 0) { alert('No properties selected.'); return; }
+    if (indices.length > 20) { if (!confirm(`Generate one-pagers for ${indices.length} properties? This may take a moment.`)) return; }
+
+    // Generate all one-pager HTML
+    const pages = [];
+    indices.forEach(idx => {
+        const r = scannerResults[idx]; if (!r) return;
+        const prevGeocode = window.lastGeocode;
+        window.lastGeocode = { lat: r.lat, lon: r.lon, assessedTotal: r.landVal + r.impVal };
+        const topResult = {
+            id: r.bestUseId, name: r.bestUse, overall: r.hbuScore,
+            devMarginPct: r.budget ? r.budget.devMargin : 0,
+            legislation: r.legislation || []
+        };
+        const html = generateListingOnePager(topResult, r.inp, r.address);
+        window.lastGeocode = prevGeocode;
+        pages.push({ address: r.address, oppRatio: r.oppRatio, html });
+    });
+    if (pages.length === 0) return;
+
+    // Single property — simple modal
+    if (pages.length === 1) { openOnePagerFromScan(indices[0]); return; }
+
+    // Multi-property — carousel modal
+    let current = 0;
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9990;overflow-y:auto;padding:2rem;';
+
+    function renderPage() {
+        const p = pages[current];
+        modal.innerHTML = `<div style="max-width:800px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <div style="padding:0.75rem 1.5rem;background:#f1f5f9;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+                <span style="font-weight:600;font-size:0.85rem;">${current + 1} of ${pages.length}: ${p.address}</span>
+                <div style="display:flex;gap:0.4rem;align-items:center;">
+                    <button id="opPrev" style="padding:0.4rem 0.8rem;background:${current > 0 ? 'var(--primary)' : '#cbd5e1'};color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">&#9664; Prev</button>
+                    <button id="opNext" style="padding:0.4rem 0.8rem;background:${current < pages.length - 1 ? 'var(--primary)' : '#cbd5e1'};color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Next &#9654;</button>
+                    <button id="opPrint" style="padding:0.4rem 1rem;background:#059669;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Print</button>
+                    <button id="opPrintAll" style="padding:0.4rem 1rem;background:#7c3aed;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Print All (${pages.length})</button>
+                    <button id="opClose" style="padding:0.4rem 1rem;background:#e2e8f0;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Close</button>
+                </div>
+            </div>
+            <div class="onepager-container" id="opContent">${p.html}</div>
+        </div>`;
+        modal.querySelector('#opPrev').onclick = () => { if (current > 0) { current--; renderPage(); } };
+        modal.querySelector('#opNext').onclick = () => { if (current < pages.length - 1) { current++; renderPage(); } };
+        modal.querySelector('#opPrint').onclick = () => { printOnePagerContent(modal.querySelector('#opContent').innerHTML, p.address); };
+        modal.querySelector('#opPrintAll').onclick = () => { printAllOnePagers(pages); };
+        modal.querySelector('#opClose').onclick = () => modal.remove();
+    }
+
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
+    renderPage();
+}
+
+function printOnePagerContent(html, address) {
+    const w = window.open('', '_blank');
+    w.document.write(`<!DOCTYPE html><html><head><title>One-Pager: ${address}</title>
+        <style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;padding:1rem;}
+        @media print { body { padding: 0; } }</style></head>
+        <body><div class="onepager-container">${html}</div>
+        <script>setTimeout(()=>{window.print();},300);<\/script></body></html>`);
+    w.document.close();
+}
+
+function printAllOnePagers(pages) {
+    const w = window.open('', '_blank');
+    const allHtml = pages.map((p, i) =>
+        `<div class="onepager-container" style="${i > 0 ? 'page-break-before:always;' : ''}">${p.html}</div>`
+    ).join('');
+    w.document.write(`<!DOCTYPE html><html><head><title>One-Pager Analysis (${pages.length} Properties)</title>
+        <style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;padding:1rem;}
+        @media print { body { padding: 0; } .onepager-container { page-break-inside: avoid; } }</style></head>
+        <body>${allHtml}
+        <script>setTimeout(()=>{window.print();},500);<\/script></body></html>`);
+    w.document.close();
 }
 
 // ============================================================
