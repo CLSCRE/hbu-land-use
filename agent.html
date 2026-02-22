@@ -1421,6 +1421,60 @@
         .scanner-panel { display: none; }
         .scanner-panel.active { display: block; }
 
+        /* Smart filter bar */
+        .smart-filters { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+        .smart-filters h4 { font-size: 0.82rem; color: var(--text-light); margin-bottom: 0.75rem; font-weight: 600; }
+        .filter-row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; margin-bottom: 0.6rem; }
+        .filter-row:last-child { margin-bottom: 0; }
+        .filter-label { font-size: 0.78rem; font-weight: 600; color: var(--text-light); min-width: 80px; }
+        .tier-btn {
+            padding: 0.35rem 0.75rem; border-radius: 6px; border: 1.5px solid var(--border);
+            background: white; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.15s;
+        }
+        .tier-btn:hover { border-color: var(--primary-light); }
+        .tier-btn.active { color: white; border-color: transparent; }
+        .tier-btn.tier-hot.active { background: #059669; }
+        .tier-btn.tier-strong.active { background: #16a34a; }
+        .tier-btn.tier-moderate.active { background: #ca8a04; }
+        .tier-btn.tier-weak.active { background: #dc2626; }
+        .tier-btn .tier-count { font-weight: 400; opacity: 0.8; margin-left: 0.25rem; }
+        .lot-size-btn {
+            padding: 0.3rem 0.65rem; border-radius: 6px; border: 1.5px solid var(--border);
+            background: white; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.15s;
+        }
+        .lot-size-btn:hover { border-color: var(--primary-light); }
+        .lot-size-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .filter-input-sm {
+            width: 100px; padding: 0.3rem 0.5rem; border: 1.5px solid var(--border); border-radius: 6px;
+            font-size: 0.8rem; font-family: inherit;
+        }
+        .filter-toggle {
+            display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; font-weight: 600;
+            color: var(--text-light); cursor: pointer;
+        }
+        .filter-toggle input { accent-color: var(--primary); }
+
+        /* Prospect status badges */
+        .prospect-status {
+            display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px;
+            font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+        }
+        .ps-not-contacted { background: #e2e8f0; color: #475569; }
+        .ps-contacted { background: #dbeafe; color: #1e40af; }
+        .ps-interested { background: #fef3c7; color: #92400e; }
+        .ps-listed { background: #d1fae5; color: #065f46; }
+        .ps-sold { background: #059669; color: white; }
+        .ps-passed { background: #fee2e2; color: #991b1b; }
+
+        /* Pipeline metrics bar */
+        .pipeline-metrics {
+            display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; padding: 1rem 1.25rem;
+            background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border-radius: 10px; border: 1px solid #bbf7d0;
+        }
+        .pipeline-metric { text-align: center; flex: 1; min-width: 80px; }
+        .pipeline-metric .pm-val { font-size: 1.4rem; font-weight: 800; color: var(--primary-dark); }
+        .pipeline-metric .pm-label { font-size: 0.7rem; color: var(--text-light); font-weight: 600; }
+
         /* Opp ratio cells */
         .opp-strong { background: #dcfce7; color: #166534; font-weight: 700; }
         .opp-moderate { background: #fef9c3; color: #854d0e; font-weight: 600; }
@@ -1888,11 +1942,11 @@
                     <label>Max Lot Size (sq ft)</label>
                     <input type="number" id="finderMaxLot2" value="100000" min="0" step="500">
                 </div>
-                <div class="finder-field">
-                    <label><input type="checkbox" id="filterStrongOnly"> Show only 1.5x+ opportunities</label>
-                </div>
             </div>
         </div>
+
+        <!-- Smart filters — shown after results load -->
+        <div id="smartFilterPanel" style="display:none;"></div>
 
         <button type="button" class="finder-btn-search" id="finderSearchBtn2" onclick="runAreaScan()">Find Opportunities</button>
         <div class="finder-progress" id="finderProgress2">
@@ -2107,12 +2161,31 @@
         <div id="sitesMap" style="width:100%;height:450px;border-radius:10px;border:1.5px solid var(--border);z-index:1;"></div>
     </div>
 
+    <!-- Pipeline Metrics -->
+    <div class="pipeline-metrics" id="pipelineMetrics">
+        <div class="pipeline-metric"><div class="pm-val" id="pmTotal">0</div><div class="pm-label">Total Prospects</div></div>
+        <div class="pipeline-metric"><div class="pm-val" id="pmContacted">0</div><div class="pm-label">Contacted</div></div>
+        <div class="pipeline-metric"><div class="pm-val" id="pmInterested">0</div><div class="pm-label">Interested</div></div>
+        <div class="pipeline-metric"><div class="pm-val" id="pmListed">0</div><div class="pm-label">Listed</div></div>
+        <div class="pipeline-metric"><div class="pm-val" id="pmSold">0</div><div class="pm-label">Sold</div></div>
+        <div class="pipeline-metric"><div class="pm-val" id="pmConversion">0%</div><div class="pm-label">Contact &rarr; Listed</div></div>
+    </div>
+
     <div style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
-            <h2 style="font-size:1.1rem;color:var(--primary);margin:0;">Saved Properties</h2>
+            <h2 style="font-size:1.1rem;color:var(--primary);margin:0;">Prospect Pipeline</h2>
             <span style="font-size:0.82rem;color:var(--text-light);" id="sitesCount">0 properties</span>
+            <select id="filterProspectStatus" onchange="renderAgentSites()" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.78rem;">
+                <option value="">All Statuses</option>
+                <option value="not_contacted">Not Contacted</option>
+                <option value="contacted">Contacted</option>
+                <option value="interested">Interested</option>
+                <option value="listed">Listed</option>
+                <option value="sold">Sold</option>
+                <option value="passed">Passed</option>
+            </select>
             <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;color:var(--text-light);cursor:pointer;">
-                <input type="checkbox" id="filterStrongOpp" onchange="renderAgentSites()" style="accent-color:#059669;"> Show only strong opportunities (1.5x+)
+                <input type="checkbox" id="filterStrongOpp" onchange="renderAgentSites()" style="accent-color:#059669;"> 1.5x+ only
             </label>
             <button type="button" class="btn-lookup" onclick="exportPortfolioCallList()" style="font-size:0.78rem;padding:6px 14px;">Export Call List</button>
             <button type="button" class="btn-lookup" onclick="clearAgentSites()" style="font-size:0.78rem;padding:6px 14px;background:#e53e3e;color:white;">Clear All</button>
@@ -2122,14 +2195,13 @@
                 <thead><tr>
                     <th data-col="score" onclick="sortAgentSites('score')" style="cursor:pointer;">Score</th>
                     <th data-col="address" onclick="sortAgentSites('address')" style="cursor:pointer;">Address</th>
+                    <th data-col="status" onclick="sortAgentSites('status')" style="cursor:pointer;">Status</th>
                     <th data-col="bestUse" onclick="sortAgentSites('bestUse')" style="cursor:pointer;">Best Use</th>
                     <th data-col="lotSize" onclick="sortAgentSites('lotSize')" style="cursor:pointer;">Lot Size</th>
                     <th data-col="asIsValue" onclick="sortAgentSites('asIsValue')" style="cursor:pointer;">Market Value</th>
                     <th data-col="devValue" onclick="sortAgentSites('devValue')" style="cursor:pointer;">Dev Land Bid</th>
-                    <th data-col="uplift" onclick="sortAgentSites('uplift')" style="cursor:pointer;">Premium</th>
-                    <th data-col="margin" onclick="sortAgentSites('margin')" style="cursor:pointer;">Margin</th>
-                    <th data-col="ease" onclick="sortAgentSites('ease')" style="cursor:pointer;">Ease</th>
                     <th data-col="oppRatio" onclick="sortAgentSites('oppRatio')" style="cursor:pointer;">Opp. Ratio</th>
+                    <th data-col="ease" onclick="sortAgentSites('ease')" style="cursor:pointer;">Ease</th>
                     <th data-col="date" onclick="sortAgentSites('date')" style="cursor:pointer;">Date</th>
                     <th style="cursor:default;">Action</th>
                 </tr></thead>
@@ -6355,14 +6427,32 @@ async function geocodeScannerAddress() {
 }
 
 // ============================================================
-//  BATCH OPPORTUNITY SCORING
+//  BATCH OPPORTUNITY SCORING — FAST PATH
 // ============================================================
-async function batchScoreOpportunities(features, centerLat, centerLon) {
+// Fast-path: only evaluate top 3-5 likely uses per parcel based on lot size + zoning
+function getLikelyUses(lotSF, zoning, useType) {
+    // For residential parcels near transit, focus on density plays
+    if (zoning === 'TOD') return ['multifamily_mid','multifamily_high','mixeduse','senior','multifamily_low'];
+    if (lotSF > 20000) return ['multifamily_mid','mixeduse','multifamily_low','hotel','senior'];
+    if (lotSF > 7500) return ['multifamily_low','mixeduse','duplex','multifamily_mid','adu'];
+    if (lotSF > 3000) return ['duplex','multifamily_low','adu','sfr','mixeduse'];
+    return ['adu','sfr','duplex'];
+}
+
+// Process parcels in batches with UI yield
+function yieldToUI() { return new Promise(r => setTimeout(r, 0)); }
+
+async function batchScoreOpportunities(features, centerLat, centerLon, onProgress) {
     const scored = [];
     const useTypes = Array.from(document.querySelectorAll('.finderUseType2:checked')).map(c => c.value);
     const minLot = parseInt(document.getElementById('finderMinLot2').value) || 0;
     const maxLot = parseInt(document.getElementById('finderMaxLot2').value) || 999999;
-    const strongOnly = document.getElementById('filterStrongOnly') && document.getElementById('filterStrongOnly').checked;
+
+    // Pre-compute neighborhood centroids array for faster lookup
+    const nhoods = Object.entries(NEIGHBORHOOD_CENTROIDS);
+
+    const BATCH_SIZE = 50; // Process 50 parcels then yield to UI
+    let processed = 0;
 
     for (let i = 0; i < features.length; i++) {
         const a = features[i].attributes;
@@ -6380,9 +6470,16 @@ async function batchScoreOpportunities(features, centerLat, centerLon) {
         if (useTypes.length > 0 && !useTypes.includes(useType)) continue;
         if (lotSizeSqFt < minLot || lotSizeSqFt > maxLot) continue;
 
-        // Pre-filter: skip parcels unlikely to be opportunities (imp/land > 2.0 for non-vacant)
+        // Pre-filter: skip heavily improved small parcels
         const impRatio = landVal > 0 ? impVal / landVal : (impVal === 0 ? 0 : 999);
-        if (useType !== 'Vacant' && impRatio > 2.0 && lotSizeSqFt < 5000) continue;
+        if (useType !== 'Vacant' && impRatio > 2.5 && lotSizeSqFt < 5000) continue;
+
+        // Find nearest neighborhood
+        let neighborhood = 'dtla'; let minDist = Infinity;
+        for (let n = 0; n < nhoods.length; n++) {
+            const d = Math.abs(lat - nhoods[n][1].lat) + Math.abs(lon - nhoods[n][1].lon); // Manhattan distance (faster)
+            if (d < minDist) { minDist = d; neighborhood = nhoods[n][0]; }
+        }
 
         // Check SB 79 eligibility
         const nearbyTransit = getAllNearbyTransit(lat, lon, 0.75);
@@ -6392,13 +6489,6 @@ async function batchScoreOpportunities(features, centerLat, centerLon) {
             zone = best.zoneKey; allowances = best.allowances; tier = best.tier; bestStation = best.station;
         }
 
-        // Build input for HBU calculation
-        let neighborhood = 'dtla';
-        let minDist = Infinity;
-        for (const [key, c] of Object.entries(NEIGHBORHOOD_CENTROIDS)) {
-            const d = Math.sqrt(Math.pow(lat - c.lat, 2) + Math.pow(lon - c.lon, 2));
-            if (d < minDist) { minDist = d; neighborhood = key; }
-        }
         let zoning = 'C2';
         if ((allowances && allowances.far >= 4.0) || zone === 'adjacent' || zone === 'inner') zoning = 'TOD';
         let transit = 'moderate';
@@ -6414,8 +6504,23 @@ async function batchScoreOpportunities(features, centerLat, centerLon) {
             constFlood: false, constHillside: false, constHistoric: false, constFault: false, constCoastal: false, constParking: false
         };
 
-        // Determine best use
-        const bestUseId = determineBestUse(inp);
+        // FAST PATH: only check 3-5 likely uses instead of all 16
+        const likelyUses = getLikelyUses(lotSizeSqFt, zoning, useType);
+        let bestUseId = likelyUses[0]; let bestScore = 0;
+        for (const uid of likelyUses) {
+            try {
+                const leg = getApplicableLegislation(uid, inp);
+                const eff = stackLegislationEffects(leg);
+                const lgl = scoreLegal(uid, inp, eff);
+                if (lgl <= 0) continue;
+                const phy = scorePhysical(uid, inp);
+                const fin = scoreFinancial(uid, inp, eff);
+                const prd = scoreProductive(uid, inp, eff);
+                const composite = (lgl*25 + phy*25 + fin*30 + prd*20) / 100;
+                if (composite > bestScore) { bestScore = composite; bestUseId = uid; }
+            } catch(e) {}
+        }
+
         const legislation = getApplicableLegislation(bestUseId, inp);
         const effects = stackLegislationEffects(legislation);
         const budget = generateBudget(bestUseId, inp, effects);
@@ -6430,10 +6535,8 @@ async function batchScoreOpportunities(features, centerLat, centerLon) {
         const prop13Mult = 1.9;
         let estimatedMarketValue = assessedTotal > 0 ? Math.round(assessedTotal * prop13Mult) : Math.round((LAND_VALUE_PSF[neighborhood] || 150) * lotSizeSqFt * 1.3);
 
-        // Opportunity ratio
         const oppRatio = estimatedMarketValue > 0 ? residualLandValue / estimatedMarketValue : 0;
-
-        if (strongOnly && oppRatio < 1.5) continue;
+        const premium = residualLandValue - estimatedMarketValue;
 
         const useDef = LAND_USES.find(u => u.id === bestUseId) || { name: bestUseId, icon: '' };
         const bp = BUILDING_PARAMS[bestUseId] || {};
@@ -6443,25 +6546,25 @@ async function batchScoreOpportunities(features, centerLat, centerLon) {
         const avgUnit = bp.avgUnitSF || bp.unitSF || 850;
         const units = bp.unitSF ? Math.max(1, Math.floor(buildableSF * 0.85 / avgUnit)) : 0;
         const stories = bp.stories || Math.min(Math.ceil(effectiveFAR / 0.85), 8);
-
-        // HBU score
-        const legal = scoreLegal(bestUseId, inp, effects);
-        const physical = scorePhysical(bestUseId, inp);
-        const financial = scoreFinancial(bestUseId, inp, effects);
-        const productive = scoreProductive(bestUseId, inp, effects);
-        const hbuScore = Math.round((legal*25 + physical*25 + financial*30 + productive*20)/100);
+        const hbuScore = Math.round(bestScore);
 
         scored.push({
             address, apn, lotSizeSqFt, useType, yearBuilt, landVal, impVal, impRatio,
             lat, lon, zone, allowances, tier, nearbyTransit,
             bestStation, bestUse: useDef.name, bestUseId, oppRatio, estimatedMarketValue,
-            residualLandValue, hbuScore, ease, units, stories,
+            residualLandValue, premium, hbuScore, ease, units, stories,
             sb79Eligible: zone !== 'outside',
             legislation, effects, inp, budget
         });
+
+        // Yield to UI every BATCH_SIZE parcels
+        processed++;
+        if (processed % BATCH_SIZE === 0) {
+            if (onProgress) onProgress(processed, features.length);
+            await yieldToUI();
+        }
     }
 
-    // Sort by opp ratio descending
     scored.sort((a, b) => b.oppRatio - a.oppRatio);
     return scored;
 }
@@ -6469,9 +6572,130 @@ async function batchScoreOpportunities(features, centerLat, centerLon) {
 // ============================================================
 //  RUN AREA SCAN — UNIFIED DISPATCHER
 // ============================================================
-let scannerResults = [];
+let scannerResults = [];     // filtered view
+let allScannerResults = [];  // all scored results (unfiltered)
 let scannerSortCol = 'oppRatio';
 let scannerSortAsc = false;
+
+// Smart filter state
+const smartFilters = {
+    tierHot: true,       // 2x+
+    tierStrong: true,    // 1.5-2x
+    tierModerate: true,  // 1.0-1.5x
+    tierWeak: true,      // <1x
+    minPremium: 0,       // minimum $ premium
+    maxYearBuilt: 0,     // 0 = no filter
+    sb79Only: false,
+    residentialOnly: false,
+    lotSizePreset: 'all' // 'all', 'small', 'medium', 'large'
+};
+
+function applySmartFilters() {
+    scannerResults = allScannerResults.filter(r => {
+        // Tier filters
+        if (r.oppRatio >= 2.0 && !smartFilters.tierHot) return false;
+        if (r.oppRatio >= 1.5 && r.oppRatio < 2.0 && !smartFilters.tierStrong) return false;
+        if (r.oppRatio >= 1.0 && r.oppRatio < 1.5 && !smartFilters.tierModerate) return false;
+        if (r.oppRatio < 1.0 && !smartFilters.tierWeak) return false;
+
+        // Minimum premium
+        if (smartFilters.minPremium > 0 && r.premium < smartFilters.minPremium) return false;
+
+        // Year built
+        if (smartFilters.maxYearBuilt > 0 && r.yearBuilt > 0 && r.yearBuilt > smartFilters.maxYearBuilt) return false;
+
+        // SB 79 only
+        if (smartFilters.sb79Only && !r.sb79Eligible) return false;
+
+        // Residential only
+        if (smartFilters.residentialOnly && r.useType !== 'Residential') return false;
+
+        // Lot size preset
+        if (smartFilters.lotSizePreset === 'small' && (r.lotSizeSqFt < 2500 || r.lotSizeSqFt > 7500)) return false;
+        if (smartFilters.lotSizePreset === 'medium' && (r.lotSizeSqFt < 7500 || r.lotSizeSqFt > 15000)) return false;
+        if (smartFilters.lotSizePreset === 'large' && r.lotSizeSqFt < 15000) return false;
+
+        return true;
+    });
+    finderResults2 = scannerResults;
+}
+
+function onSmartFilterChange() {
+    applySmartFilters();
+    renderSmartFilterPanel();
+    renderScannerResults();
+    addScannerParcelsToMap();
+}
+
+function toggleTier(tier) {
+    smartFilters[tier] = !smartFilters[tier];
+    onSmartFilterChange();
+}
+
+function setLotPreset(preset) {
+    smartFilters.lotSizePreset = smartFilters.lotSizePreset === preset ? 'all' : preset;
+    onSmartFilterChange();
+}
+
+function renderSmartFilterPanel() {
+    const panel = document.getElementById('smartFilterPanel');
+    if (!panel || allScannerResults.length === 0) { if (panel) panel.style.display = 'none'; return; }
+
+    // Count by tier
+    const counts = { hot: 0, strong: 0, moderate: 0, weak: 0 };
+    allScannerResults.forEach(r => {
+        if (r.oppRatio >= 2.0) counts.hot++;
+        else if (r.oppRatio >= 1.5) counts.strong++;
+        else if (r.oppRatio >= 1.0) counts.moderate++;
+        else counts.weak++;
+    });
+
+    panel.style.display = 'block';
+    panel.innerHTML = `<div class="smart-filters">
+        <h4>Smart Filters <span style="font-weight:400;color:var(--primary);">(${scannerResults.length} of ${allScannerResults.length} shown)</span></h4>
+
+        <div class="filter-row">
+            <span class="filter-label">Opportunity</span>
+            <button class="tier-btn tier-hot ${smartFilters.tierHot?'active':''}" onclick="toggleTier('tierHot')">&#128293; Hot 2x+ <span class="tier-count">(${counts.hot})</span></button>
+            <button class="tier-btn tier-strong ${smartFilters.tierStrong?'active':''}" onclick="toggleTier('tierStrong')">&#128170; Strong 1.5x+ <span class="tier-count">(${counts.strong})</span></button>
+            <button class="tier-btn tier-moderate ${smartFilters.tierModerate?'active':''}" onclick="toggleTier('tierModerate')">&#9889; Moderate 1-1.5x <span class="tier-count">(${counts.moderate})</span></button>
+            <button class="tier-btn tier-weak ${smartFilters.tierWeak?'active':''}" onclick="toggleTier('tierWeak')">&#10060; Weak &lt;1x <span class="tier-count">(${counts.weak})</span></button>
+        </div>
+
+        <div class="filter-row">
+            <span class="filter-label">Min Premium</span>
+            <span style="font-size:0.78rem;">$</span>
+            <input type="number" class="filter-input-sm" id="filterMinPremium" value="${smartFilters.minPremium||''}" placeholder="e.g. 200000" min="0" step="50000" onchange="smartFilters.minPremium=parseInt(this.value)||0;onSmartFilterChange();">
+            <button class="lot-size-btn ${smartFilters.minPremium>=100000?'':'active'}" onclick="document.getElementById('filterMinPremium').value='';smartFilters.minPremium=0;onSmartFilterChange();" style="font-size:0.72rem;">Any</button>
+            <button class="lot-size-btn ${smartFilters.minPremium===100000?'active':''}" onclick="document.getElementById('filterMinPremium').value='100000';smartFilters.minPremium=100000;onSmartFilterChange();">$100K+</button>
+            <button class="lot-size-btn ${smartFilters.minPremium===250000?'active':''}" onclick="document.getElementById('filterMinPremium').value='250000';smartFilters.minPremium=250000;onSmartFilterChange();">$250K+</button>
+            <button class="lot-size-btn ${smartFilters.minPremium===500000?'active':''}" onclick="document.getElementById('filterMinPremium').value='500000';smartFilters.minPremium=500000;onSmartFilterChange();">$500K+</button>
+        </div>
+
+        <div class="filter-row">
+            <span class="filter-label">Year Built</span>
+            <button class="lot-size-btn ${smartFilters.maxYearBuilt===0?'active':''}" onclick="smartFilters.maxYearBuilt=0;onSmartFilterChange();">Any</button>
+            <button class="lot-size-btn ${smartFilters.maxYearBuilt===1950?'active':''}" onclick="smartFilters.maxYearBuilt=1950;onSmartFilterChange();">Pre-1950</button>
+            <button class="lot-size-btn ${smartFilters.maxYearBuilt===1960?'active':''}" onclick="smartFilters.maxYearBuilt=1960;onSmartFilterChange();">Pre-1960</button>
+            <button class="lot-size-btn ${smartFilters.maxYearBuilt===1980?'active':''}" onclick="smartFilters.maxYearBuilt=1980;onSmartFilterChange();">Pre-1980</button>
+            <button class="lot-size-btn ${smartFilters.maxYearBuilt===2000?'active':''}" onclick="smartFilters.maxYearBuilt=2000;onSmartFilterChange();">Pre-2000</button>
+        </div>
+
+        <div class="filter-row">
+            <span class="filter-label">Lot Size</span>
+            <button class="lot-size-btn ${smartFilters.lotSizePreset==='all'?'active':''}" onclick="setLotPreset('all')">All Sizes</button>
+            <button class="lot-size-btn ${smartFilters.lotSizePreset==='small'?'active':''}" onclick="setLotPreset('small')">Small (2.5-7.5K sf)</button>
+            <button class="lot-size-btn ${smartFilters.lotSizePreset==='medium'?'active':''}" onclick="setLotPreset('medium')">Medium (7.5-15K sf)</button>
+            <button class="lot-size-btn ${smartFilters.lotSizePreset==='large'?'active':''}" onclick="setLotPreset('large')">Large (15K+ sf)</button>
+        </div>
+
+        <div class="filter-row">
+            <span class="filter-label">Quick</span>
+            <label class="filter-toggle"><input type="checkbox" ${smartFilters.sb79Only?'checked':''} onchange="smartFilters.sb79Only=this.checked;onSmartFilterChange();"> SB 79 Transit Zone Only</label>
+            <label class="filter-toggle"><input type="checkbox" ${smartFilters.residentialOnly?'checked':''} onchange="smartFilters.residentialOnly=this.checked;onSmartFilterChange();"> Residential Only</label>
+        </div>
+    </div>`;
+}
 
 async function runAreaScan() {
     const btn = document.getElementById('finderSearchBtn2');
@@ -6559,15 +6783,22 @@ async function runAreaScan() {
         }
 
         fillEl.style.width = '55%';
-        textEl.textContent = `Scoring ${features.length} parcels... (this may take a moment)`;
+        textEl.textContent = `Scoring ${features.length} parcels...`;
 
-        // Batch score
-        scannerResults = await batchScoreOpportunities(features, centerLat, centerLon);
-        // Also keep in finderResults2 for backward compat with saved list
+        // Batch score with progress callback
+        allScannerResults = await batchScoreOpportunities(features, centerLat, centerLon, (done, total) => {
+            const pct = 55 + Math.round((done / Math.max(total, 1)) * 40);
+            fillEl.style.width = pct + '%';
+            textEl.textContent = `Scoring parcels... ${done}/${total}`;
+        });
+
+        // Apply smart filters for display
+        applySmartFilters();
         finderResults2 = scannerResults;
 
         fillEl.style.width = '100%';
-        textEl.textContent = `Found ${scannerResults.length} opportunities`;
+        textEl.textContent = `Found ${allScannerResults.length} opportunities (${scannerResults.length} shown)`;
+        renderSmartFilterPanel();
         renderScannerResults();
         addScannerParcelsToMap();
 
