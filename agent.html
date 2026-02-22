@@ -1454,11 +1454,12 @@
         }
         .filter-toggle input { accent-color: var(--primary); }
 
-        /* Prospect status badges */
+        /* Prospect status badges / selects */
         .prospect-status {
             display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px;
             font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
         }
+        select.prospect-status { font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; appearance: auto; }
         .ps-not-contacted { background: #e2e8f0; color: #475569; }
         .ps-contacted { background: #dbeafe; color: #1e40af; }
         .ps-interested { background: #fef3c7; color: #92400e; }
@@ -6107,6 +6108,7 @@ function saveToAgentSites(results, inp) {
         devMarginPct: topResult.devMarginPct,
         ease: ease,
         oppRatio: asIsValue > 0 ? devValue / asIsValue : 0,
+        status: 'not_contacted',
         inputs: inp,
         date: new Date().toISOString().slice(0, 10),
     };
@@ -6141,10 +6143,48 @@ function getAttractivenessColor(score) {
     return '#dc2626';
 }
 
+const PROSPECT_STATUSES = {
+    not_contacted: { label: 'Not Contacted', cls: 'ps-not-contacted' },
+    contacted:     { label: 'Contacted',     cls: 'ps-contacted' },
+    interested:    { label: 'Interested',    cls: 'ps-interested' },
+    listed:        { label: 'Listed',        cls: 'ps-listed' },
+    sold:          { label: 'Sold',          cls: 'ps-sold' },
+    passed:        { label: 'Passed',        cls: 'ps-passed' }
+};
+
+function updateProspectStatus(id, newStatus) {
+    const sites = getAgentSites();
+    const site = sites.find(s => s.id === id);
+    if (site) { site.status = newStatus; setAgentSites(sites); renderAgentSites(); }
+}
+
+function updatePipelineMetrics(allSites) {
+    const counts = { not_contacted: 0, contacted: 0, interested: 0, listed: 0, sold: 0, passed: 0 };
+    allSites.forEach(s => { const st = s.status || 'not_contacted'; if (counts[st] !== undefined) counts[st]++; });
+    const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+    el('pmTotal', allSites.length);
+    el('pmContacted', counts.contacted);
+    el('pmInterested', counts.interested);
+    el('pmListed', counts.listed);
+    el('pmSold', counts.sold);
+    const contactedPlus = counts.contacted + counts.interested + counts.listed + counts.sold;
+    const conversion = contactedPlus > 0 ? ((counts.listed + counts.sold) / contactedPlus * 100).toFixed(0) + '%' : '0%';
+    el('pmConversion', conversion);
+}
+
 function renderAgentSites() {
     let sites = getAgentSites();
     const tbody = document.getElementById('sitesTableBody');
     const countEl = document.getElementById('sitesCount');
+
+    // Update pipeline metrics from ALL sites before filtering
+    updatePipelineMetrics(sites);
+
+    // Filter by prospect status
+    const statusFilter = document.getElementById('filterProspectStatus');
+    if (statusFilter && statusFilter.value) {
+        sites = sites.filter(s => (s.status || 'not_contacted') === statusFilter.value);
+    }
 
     // Filter by strong opportunities if checkbox is checked
     const filterEl = document.getElementById('filterStrongOpp');
@@ -6162,12 +6202,11 @@ function renderAgentSites() {
         switch (sitesSortCol) {
             case 'score': va = a.attractiveness; vb = b.attractiveness; break;
             case 'address': va = (a.address||'').toLowerCase(); vb = (b.address||'').toLowerCase(); return sitesSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+            case 'status': va = (a.status||'not_contacted'); vb = (b.status||'not_contacted'); return sitesSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
             case 'bestUse': va = (a.bestUseName||'').toLowerCase(); vb = (b.bestUseName||'').toLowerCase(); return sitesSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
             case 'lotSize': va = a.lotSize||0; vb = b.lotSize||0; break;
             case 'asIsValue': va = a.asIsValue||0; vb = b.asIsValue||0; break;
             case 'devValue': va = a.devValue||0; vb = b.devValue||0; break;
-            case 'uplift': va = a.uplift||0; vb = b.uplift||0; break;
-            case 'margin': va = a.devMarginPct||0; vb = b.devMarginPct||0; break;
             case 'ease': va = a.ease||0; vb = b.ease||0; break;
             case 'oppRatio': va = a.oppRatio||(a.asIsValue>0?a.devValue/a.asIsValue:0); vb = b.oppRatio||(b.asIsValue>0?b.devValue/b.asIsValue:0); break;
             case 'date': va = a.date||''; vb = b.date||''; return sitesSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
@@ -6178,23 +6217,27 @@ function renderAgentSites() {
 
     // Table
     if (sorted.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:2rem;color:#94a3b8;">No properties saved yet. Run an HBU analysis to add properties automatically.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:2rem;color:#94a3b8;">No properties saved yet. Run an HBU analysis to add properties automatically.</td></tr>';
     } else {
         tbody.innerHTML = sorted.map((s, i) => {
             const color = getAttractivenessColor(s.attractiveness);
             const ratio = s.oppRatio || (s.asIsValue > 0 ? s.devValue / s.asIsValue : 0);
             const ratioColor = ratio >= 1.5 ? '#059669' : ratio >= 1.0 ? '#ca8a04' : '#dc2626';
+            const st = s.status || 'not_contacted';
+            const stInfo = PROSPECT_STATUSES[st] || PROSPECT_STATUSES.not_contacted;
+            const statusOptions = Object.entries(PROSPECT_STATUSES).map(([k, v]) =>
+                `<option value="${k}" ${k === st ? 'selected' : ''}>${v.label}</option>`
+            ).join('');
             return `<tr>
                 <td><span style="display:inline-block;width:36px;height:36px;border-radius:50%;background:${color};color:white;font-weight:800;text-align:center;line-height:36px;font-size:0.82rem;">${s.attractiveness}</span></td>
                 <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(s.address||'').replace(/"/g,'&quot;')}">${s.address||'—'}</td>
+                <td><select class="prospect-status ${stInfo.cls}" onchange="updateProspectStatus('${s.id}',this.value)" style="border:none;cursor:pointer;font-size:0.72rem;padding:0.15rem 0.3rem;border-radius:4px;">${statusOptions}</select></td>
                 <td>${s.bestUseIcon||''} ${s.bestUseName||'—'}</td>
                 <td>${(s.lotSize||0).toLocaleString()} SF</td>
                 <td>${fmt(s.asIsValue||0)}</td>
                 <td>${fmt(s.devValue||0)}</td>
-                <td style="color:${(s.uplift||0) >= 0 ? '#059669':'#dc2626'};font-weight:600;">${(s.uplift||0) >= 0 ? '+':''}${fmt(s.uplift||0)}</td>
-                <td style="color:${(s.devMarginPct||0) >= 0.15 ? '#059669' : (s.devMarginPct||0) >= 0 ? '#ca8a04' : '#dc2626'};font-weight:600;">${((s.devMarginPct||0)*100).toFixed(1)}%</td>
-                <td>${s.ease||0}/100</td>
                 <td style="font-weight:700;color:${ratioColor};">${ratio.toFixed(1)}x</td>
+                <td>${s.ease||0}/100</td>
                 <td style="font-size:0.78rem;">${s.date||'—'}</td>
                 <td>
                     <button type="button" class="btn-lookup" style="font-size:0.72rem;padding:4px 10px;" onclick="openListingOnePagerFromData(getAgentSites()[${sites.indexOf(s)}])">One-Pager</button>
@@ -6222,7 +6265,8 @@ function renderAgentSites() {
                 radius: 10, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.9
             }).addTo(sitesMapInstance);
             const popupRatio = s.oppRatio || (s.asIsValue > 0 ? s.devValue / s.asIsValue : 0);
-            marker.bindPopup(`<strong>${s.address}</strong><br>${s.bestUseIcon||''} ${s.bestUseName}<br>Score: ${s.attractiveness}/100<br>Opp. Ratio: <strong style="color:${popupRatio >= 1.5 ? '#059669' : popupRatio >= 1.0 ? '#ca8a04' : '#dc2626'}">${popupRatio.toFixed(1)}x</strong>`);
+            const stLabel = (PROSPECT_STATUSES[s.status] || PROSPECT_STATUSES.not_contacted).label;
+            marker.bindPopup(`<strong>${s.address}</strong><br>${s.bestUseIcon||''} ${s.bestUseName}<br>Score: ${s.attractiveness}/100<br>Opp. Ratio: <strong style="color:${popupRatio >= 1.5 ? '#059669' : popupRatio >= 1.0 ? '#ca8a04' : '#dc2626'}">${popupRatio.toFixed(1)}x</strong><br>Status: ${stLabel}`);
             sitesMapMarkers.push(marker);
             bounds.push([s.lat, s.lon]);
         });
@@ -7010,14 +7054,15 @@ function exportCallList() {
 function exportPortfolioCallList() {
     const sites = getAgentSites();
     if (sites.length === 0) { alert('No properties in your portfolio.'); return; }
-    const headers = ['Address','APN','Lot Size (SF)','Best Use','Dev Value','As-Is Value','Opp. Ratio','HBU Score','Ease','Owner Name','Mailing Address','Phone','Notes','Zillow URL','Assessor URL'];
+    const headers = ['Address','APN','Status','Lot Size (SF)','Best Use','Dev Value','As-Is Value','Opp. Ratio','HBU Score','Ease','Owner Name','Mailing Address','Phone','Notes','Zillow URL','Assessor URL'];
     const rows = sites.map(s => {
         const apnClean = (s.apn || '').replace(/[^0-9]/g, '');
         const enc = encodeURIComponent(s.address || '');
         const ratio = s.oppRatio || (s.asIsValue > 0 ? s.devValue / s.asIsValue : 0);
+        const stLabel = (PROSPECT_STATUSES[s.status] || PROSPECT_STATUSES.not_contacted).label;
         return [
             `"${(s.address || '').replace(/"/g, '""')}"`,
-            apnClean, s.lotSizeSqFt || '', `"${s.bestUse || ''}"`,
+            apnClean, `"${stLabel}"`, s.lotSizeSqFt || '', `"${s.bestUse || ''}"`,
             Math.round(s.devValue || 0), Math.round(s.asIsValue || 0),
             ratio.toFixed(2), s.score || '', s.ease || '',
             '', '', '', '',
