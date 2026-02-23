@@ -2361,6 +2361,49 @@
   color: white;
   border-color: var(--primary);
 }
+/* === Sensitivity Matrix === */
+.sensitivity-matrix-panel{background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.08);padding:1.5rem;margin-top:1.5rem;display:none;}
+.sensitivity-matrix-panel h2{font-size:1.15rem;margin:0 0 .25rem;color:#1a202c;}
+.sensitivity-matrix-panel .panel-subtitle{font-size:.8rem;color:#718096;margin:0 0 1rem;}
+.sens-matrix-table{width:100%;border-collapse:collapse;font-size:.75rem;text-align:center;}
+.sens-matrix-table th,.sens-matrix-table td{padding:6px 4px;border:1px solid #e2e8f0;}
+.sens-matrix-table th{background:#f7fafc;font-weight:600;color:#4a5568;}
+.sens-matrix-table .base-cell{outline:3px solid #1a202c;outline-offset:-2px;font-weight:700;}
+.sens-green{background:#c6f6d5;color:#22543d;}.sens-ltgreen{background:#e6ffed;color:#276749;}
+.sens-yellow{background:#fefcbf;color:#744210;}.sens-orange{background:#feebc8;color:#7b341e;}
+.sens-red{background:#fed7d7;color:#9b2c2c;}
+
+/* === Sources & Uses === */
+.sources-uses-panel{background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.08);padding:1.5rem;margin-top:1.5rem;display:none;}
+.sources-uses-panel h2{font-size:1.15rem;margin:0 0 .25rem;color:#1a202c;}
+.sources-uses-panel .panel-subtitle{font-size:.8rem;color:#718096;margin:0 0 1rem;}
+.su-columns{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+@media(max-width:700px){.su-columns{grid-template-columns:1fr;}}
+.su-col h3{font-size:.95rem;margin:0 0 .5rem;color:#2d3748;border-bottom:2px solid #667eea;padding-bottom:.35rem;}
+.su-table{width:100%;border-collapse:collapse;font-size:.82rem;}
+.su-table td{padding:5px 6px;border-bottom:1px solid #edf2f7;}
+.su-table td:last-child{text-align:right;font-variant-numeric:tabular-nums;}
+.su-table .su-total td{font-weight:700;border-top:2px solid #2d3748;border-bottom:none;font-size:.88rem;}
+.su-table .su-subtotal td{font-weight:600;color:#4a5568;border-top:1px solid #cbd5e0;}
+
+/* === Levered Returns === */
+.levered-returns-panel{background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.08);padding:1.5rem;margin-top:1.5rem;display:none;}
+.levered-returns-panel h2{font-size:1.15rem;margin:0 0 .25rem;color:#1a202c;}
+.levered-returns-panel .panel-subtitle{font-size:.8rem;color:#718096;margin:0 0 1rem;}
+.lr-metrics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem;}
+.lr-metric-card{border-radius:10px;padding:1rem;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+.lr-metric-card .lr-value{font-size:1.35rem;font-weight:700;margin:.25rem 0;}
+.lr-metric-card .lr-label{font-size:.72rem;color:#4a5568;text-transform:uppercase;letter-spacing:.03em;}
+.lr-positive{background:#f0fff4;border:1px solid #c6f6d5;}.lr-positive .lr-value{color:#22543d;}
+.lr-warning{background:#fffff0;border:1px solid #fefcbf;}.lr-warning .lr-value{color:#744210;}
+.lr-negative{background:#fff5f5;border:1px solid #fed7d7;}.lr-negative .lr-value{color:#9b2c2c;}
+.lr-neutral{background:#f7fafc;border:1px solid #e2e8f0;}.lr-neutral .lr-value{color:#2d3748;}
+
+/* === Demo Mode === */
+.demo-banner{position:fixed;top:0;left:0;right:0;z-index:10000;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;text-align:center;padding:8px 0;font-size:.85rem;font-weight:700;letter-spacing:.08em;box-shadow:0 2px 8px rgba(0,0,0,.18);}
+.demo-banner~header{margin-top:36px;}
+.demo-btn{display:inline-block;margin-top:.75rem;padding:.5rem 1.5rem;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;}
+.demo-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(102,126,234,.4);}
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -2376,9 +2419,12 @@
         <div class="auth-error" id="authError"></div>
         <div style="margin-top:0.75rem;font-size:0.75rem;color:#a0aec0;">Enter the access code from your subscription email</div>
         <div style="margin-top:0.75rem;"><a href="index.html#pricing" style="color:#667eea;font-size:0.8rem;text-decoration:none;">Don't have a code? Subscribe here &rarr;</a></div>
+        <div style="margin-top:0.75rem;"><button type="button" class="demo-btn" onclick="activateDemo()">Try Demo &rarr;</button></div>
         <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v4.2</div>
     </div>
 </div>
+
+<div id="demoBanner" class="demo-banner" style="display:none;">DEMO MODE — Sample data for illustration only</div>
 
 <header>
     <h1>Highest &amp; Best Use Calculator</h1>
@@ -2649,6 +2695,28 @@
             </div>
           </div>
         </section>
+
+        <!-- Sensitivity Matrix Panel -->
+        <section id="sensitivity-matrix-panel" class="sensitivity-matrix-panel">
+          <h2>Development Sensitivity Matrix</h2>
+          <p class="panel-subtitle">Dev margin (%) across rent and cost changes — base case highlighted</p>
+          <div id="sensitivity-matrix-grid"></div>
+        </section>
+
+        <!-- Sources & Uses Panel -->
+        <section id="sources-uses-panel" class="sources-uses-panel">
+          <h2>Sources &amp; Uses of Funds</h2>
+          <p class="panel-subtitle">Capital stack breakdown for the top-ranked development scenario</p>
+          <div id="sources-uses-grid"></div>
+        </section>
+
+        <!-- Levered Returns Panel -->
+        <section id="levered-returns-panel" class="levered-returns-panel">
+          <h2>Levered Return Metrics</h2>
+          <p class="panel-subtitle">Projected returns assuming 65% LTC senior debt at 6.5%, 30-yr amortization</p>
+          <div id="levered-returns-grid"></div>
+        </section>
+
 
         <!-- SB 79 Transit Opportunity Map -->
         <div class="map-section" id="mapSection" style="display:none;">
@@ -3043,6 +3111,177 @@ async function checkAuth() {
         document.getElementById('authPassword').value = '';
         document.getElementById('authPassword').focus();
     }
+}
+
+// === Sensitivity Matrix ===
+function renderSensitivityMatrix(budget, useId, inp, effects) {
+  var panel = document.getElementById('sensitivity-matrix-panel');
+  var grid = document.getElementById('sensitivity-matrix-grid');
+  if (\!panel || \!grid || \!budget) return;
+  var steps = [-15, -10, -5, 0, 5, 10, 15];
+  var baseRev = budget.grossRevenue || 0;
+  var baseOpex = budget.opex || 0;
+  var baseTotalDev = budget.totalDev || 0;
+  var baseLand = budget.landCost || 0;
+  var baseHard = budget.totalHard || 0;
+  var baseSoft = budget.totalSoft || 0;
+  var baseCap = budget.capRate || 0.05;
+  function sensColor(m) {
+    if (m >= 25) return 'sens-green';
+    if (m >= 15) return 'sens-ltgreen';
+    if (m >= 5) return 'sens-yellow';
+    if (m >= 0) return 'sens-orange';
+    return 'sens-red';
+  }
+  var html = '<table class="sens-matrix-table"><thead><tr><th></th>';
+  steps.forEach(function(r) { html += '<th>Rent ' + (r >= 0 ? '+' : '') + r + '%</th>'; });
+  html += '</tr></thead><tbody>';
+  steps.forEach(function(c) {
+    html += '<tr><th>Cost ' + (c >= 0 ? '+' : '') + c + '%</th>';
+    steps.forEach(function(r) {
+      var adjRev = baseRev * (1 + r / 100);
+      var adjOpex = baseOpex * (1 + r / 100);
+      var adjNoi = adjRev - adjOpex;
+      var adjStab = baseCap > 0 ? adjNoi / baseCap : 0;
+      var adjHard = baseHard * (1 + c / 100);
+      var adjSoft = baseSoft * (1 + c / 100);
+      var adjTotalDev = baseLand + adjHard + adjSoft;
+      var margin = adjTotalDev > 0 ? ((adjStab - adjTotalDev) / adjTotalDev) * 100 : 0;
+      var cls = sensColor(margin);
+      var isBase = (r === 0 && c === 0);
+      html += '<td class="' + cls + (isBase ? ' base-cell' : '') + '">' + margin.toFixed(1) + '%</td>';
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  grid.innerHTML = html;
+  panel.style.display = '';
+}
+
+// === Sources & Uses ===
+function renderSourcesAndUses(budget, isSimplified) {
+  var panel = document.getElementById('sources-uses-panel');
+  var grid = document.getElementById('sources-uses-grid');
+  if (\!panel || \!grid || \!budget) return;
+  function fmt(n) { return '$' + Math.round(n).toLocaleString(); }
+  var totalDev = budget.totalDev || 0;
+  var seniorDebt = Math.round(totalDev * 0.65);
+  var equity = totalDev - seniorDebt;
+  var html = '<div class="su-columns">';
+  // Uses column
+  html += '<div class="su-col"><h3>Uses of Funds</h3><table class="su-table">';
+  if (isSimplified) {
+    html += '<tr><td>Land Acquisition</td><td>' + fmt(budget.landCost || 0) + '</td></tr>';
+    html += '<tr><td>Hard Costs</td><td>' + fmt(budget.totalHard || 0) + '</td></tr>';
+    html += '<tr><td>Soft Costs</td><td>' + fmt(budget.totalSoft || 0) + '</td></tr>';
+  } else {
+    html += '<tr><td>Land Acquisition</td><td>' + fmt(budget.landCost || 0) + '</td></tr>';
+    html += '<tr class="su-subtotal"><td colspan="2" style="padding-top:8px;">Hard Costs</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Site Work</td><td>' + fmt(budget.siteWork || 0) + '</td></tr>';
+    if (budget.demolition > 0) html += '<tr><td>&nbsp;&nbsp;Demolition</td><td>' + fmt(budget.demolition) + '</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Construction</td><td>' + fmt(budget.construction || 0) + '</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Parking</td><td>' + fmt(budget.parkingCost || 0) + '</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Landscaping</td><td>' + fmt(budget.landscaping || 0) + '</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Contingency (7%)</td><td>' + fmt(budget.hardContingency || 0) + '</td></tr>';
+    html += '<tr class="su-subtotal"><td>Hard Cost Subtotal</td><td>' + fmt(budget.totalHard || 0) + '</td></tr>';
+    html += '<tr class="su-subtotal"><td colspan="2" style="padding-top:8px;">Soft Costs</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Architecture &amp; Engineering</td><td>' + fmt(budget.archEng || 0) + '</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Permits &amp; Fees</td><td>' + fmt(budget.permits || 0) + '</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Legal</td><td>' + fmt(budget.legal || 0) + '</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Financing / Interest Reserve</td><td>' + fmt(budget.financing || 0) + '</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Marketing &amp; Lease-Up</td><td>' + fmt(budget.marketing || 0) + '</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Developer Fee</td><td>' + fmt(budget.devFee || 0) + '</td></tr>';
+    html += '<tr class="su-subtotal"><td>Soft Cost Subtotal</td><td>' + fmt(budget.totalSoft || 0) + '</td></tr>';
+  }
+  html += '<tr class="su-total"><td>Total Uses</td><td>' + fmt(totalDev) + '</td></tr>';
+  html += '</table></div>';
+  // Sources column
+  html += '<div class="su-col"><h3>Sources of Funds</h3><table class="su-table">';
+  html += '<tr><td>Senior Debt (65% LTC)</td><td>' + fmt(seniorDebt) + '</td></tr>';
+  html += '<tr><td>Sponsor Equity (35% LTC)</td><td>' + fmt(equity) + '</td></tr>';
+  html += '<tr class="su-total"><td>Total Sources</td><td>' + fmt(totalDev) + '</td></tr>';
+  html += '</table></div>';
+  html += '</div>';
+  grid.innerHTML = html;
+  panel.style.display = '';
+}
+
+// === Levered Returns ===
+function fmtCompact(n) {
+  if (Math.abs(n) >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M';
+  if (Math.abs(n) >= 1e3) return '$' + (n / 1e3).toFixed(0) + 'K';
+  return '$' + Math.round(n).toLocaleString();
+}
+function renderLeveredReturns(budget) {
+  var panel = document.getElementById('levered-returns-panel');
+  var grid = document.getElementById('levered-returns-grid');
+  if (!panel || !grid || !budget) return;
+  var totalDev = budget.totalDev || 0;
+  var noi = budget.noi || 0;
+  var stabVal = budget.stabilizedValue || 0;
+  var ltc = 0.65, rate = 0.065, amortYrs = 30;
+  var debtAmt = Math.round(totalDev * ltc);
+  var equityAmt = totalDev - debtAmt;
+  // Annual debt service (fully amortizing)
+  var monthlyRate = rate / 12;
+  var nPayments = amortYrs * 12;
+  var monthlyPmt = debtAmt * (monthlyRate * Math.pow(1 + monthlyRate, nPayments)) / (Math.pow(1 + monthlyRate, nPayments) - 1);
+  var annualDS = monthlyPmt * 12;
+  var cashFlowYr1 = noi - annualDS;
+  var dscr = annualDS > 0 ? noi / annualDS : 0;
+  var cashOnCash = equityAmt > 0 ? cashFlowYr1 / equityAmt : 0;
+  var profit = stabVal - totalDev;
+  var equityMultiple = equityAmt > 0 ? (equityAmt + profit) / equityAmt : 0;
+  var unleveredIRR = budget.yieldOnCost || 0;
+  // Simplified levered IRR proxy (equity cash yield + appreciation spread)
+  var leveredIRR = equityAmt > 0 ? (cashFlowYr1 + profit * 0.08) / equityAmt : 0;
+  var grossRev = budget.grossRevenue || 0;
+  var breakeven = grossRev > 0 ? ((budget.opex || 0) + annualDS) / grossRev : 0;
+  var metrics = [
+    { label: 'Unlevered IRR', value: (unleveredIRR * 100).toFixed(1) + '%', sentiment: unleveredIRR >= 0.08 ? 'positive' : unleveredIRR >= 0.05 ? 'warning' : 'negative' },
+    { label: 'Levered IRR', value: (leveredIRR * 100).toFixed(1) + '%', sentiment: leveredIRR >= 0.15 ? 'positive' : leveredIRR >= 0.08 ? 'warning' : 'negative' },
+    { label: 'Equity Multiple', value: equityMultiple.toFixed(2) + 'x', sentiment: equityMultiple >= 2.0 ? 'positive' : equityMultiple >= 1.5 ? 'warning' : 'negative' },
+    { label: 'Cash-on-Cash Yr 1', value: (cashOnCash * 100).toFixed(1) + '%', sentiment: cashOnCash >= 0.08 ? 'positive' : cashOnCash >= 0 ? 'warning' : 'negative' },
+    { label: 'DSCR Year 1', value: dscr.toFixed(2) + 'x', sentiment: dscr >= 1.25 ? 'positive' : dscr >= 1.0 ? 'warning' : 'negative' },
+    { label: 'Breakeven Occ.', value: (breakeven * 100).toFixed(0) + '%', sentiment: breakeven <= 0.75 ? 'positive' : breakeven <= 0.90 ? 'warning' : 'negative' },
+    { label: 'Profit', value: fmtCompact(profit), sentiment: profit > 0 ? 'positive' : profit === 0 ? 'neutral' : 'negative' }
+  ];
+  var html = '';
+  metrics.forEach(function(m) {
+    html += '<div class="lr-metric-card lr-' + m.sentiment + '">';
+    html += '<div class="lr-label">' + m.label + '</div>';
+    html += '<div class="lr-value">' + m.value + '</div>';
+    html += '</div>';
+  });
+  grid.innerHTML = html;
+  panel.style.display = '';
+}
+
+// === Demo Mode ===
+function activateDemo() {
+  // Remove auth overlay
+  var overlay = document.getElementById('authOverlay');
+  if (overlay) overlay.style.display = 'none';
+  // Show demo banner
+  var banner = document.getElementById('demoBanner');
+  if (banner) banner.style.display = '';
+  // Pre-fill form — Developer sample: 6801 Hollywood Blvd
+  var addr = document.getElementById('addressInput');
+  if (addr) addr.value = '6801 Hollywood Blvd, Los Angeles, CA 90028';
+  var ps = document.getElementById('parcelSize');
+  if (ps) ps.value = '18000';
+  var zn = document.getElementById('zoning');
+  if (zn) zn.value = 'R4';
+  var nb = document.getElementById('neighborhood');
+  if (nb) nb.value = 'hollywood';
+  var tr = document.getElementById('transit');
+  if (tr) tr.value = 'adjacent';
+  var ar = document.getElementById('arterial');
+  if (ar) ar.value = 'major';
+  // Trigger calculation after short delay
+  setTimeout(function() {
+    if (typeof calculateHBU === 'function') calculateHBU();
+  }, 300);
 }
 
 // Auto-authenticate on load if stored hash is still valid
@@ -4133,6 +4372,7 @@ const CA_HOUSING_LEGISLATION = [
         detail: 'SB 79 (effective July 1, 2026) is California\'s transit-oriented development bill that overrides local zoning near qualifying heavy and light rail stations. Tier 1 (heavy rail, including all Metro Rail lines) allows 95ft height, 160 du/acre, and 4.5 FAR. Tier 2 (light rail, BRT, qualifying Metrolink) allows 85ft height, 140 du/acre, and 4.0 FAR. Three distance zones apply: Adjacent (within 200ft of station entrance) and Inner (within 1/4 mile) get full tier benefits and zero parking requirements. Outer zone (1/4 to 1/2 mile) is limited to 65ft height and 3.25 FAR, with 0.5 parking spaces per unit. All projects require 15% affordable units. 100% affordable projects receive the full tier benefits regardless of zone. Impact: Unlocks massive upzoning near every Metro station in LA County, making transit-adjacent parcels significantly more valuable for higher-density development.',
         applies: (useId, inp) => {
             if (!window.lastGeocode) return false;
+            if (inp && inp.constHistoric) return false;  // SB 79 excludes historic overlay areas
             if (!['multifamily_low','multifamily_mid','multifamily_high','mixeduse','senior','hotel'].includes(useId)) return false;
             const sb79 = detectSB79Eligibility(window.lastGeocode.lat, window.lastGeocode.lon);
             return sb79.eligible;
@@ -4345,6 +4585,31 @@ const TIMELINE_MONTHS = {
     creative:         { entitlement: 4,  design: 3,  permits: 2, construction: 14, leaseup: 6 },
     adu:              { entitlement: 1,  design: 1,  permits: 2, construction: 8,  leaseup: 1 },
 };
+
+// Scale timeline phases by project size (GSF)
+var TYPICAL_GSF = {
+    sfr: 2500, duplex: 3500, multifamily_low: 35000, multifamily_mid: 80000,
+    multifamily_high: 250000, mixeduse: 50000, retail: 8000, office: 30000,
+    medical: 15000, hotel: 80000, industrial: 25000, selfstorage: 40000,
+    senior: 60000, parking: 50000, creative: 20000, adu: 800
+};
+function getScaledTimeline(useId, gsf) {
+    var tl = TIMELINE_MONTHS[useId] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
+    if (!gsf || gsf <= 0) return { entitlement: tl.entitlement, design: tl.design, permits: tl.permits, construction: tl.construction, leaseup: tl.leaseup };
+    var typical = TYPICAL_GSF[useId] || 30000;
+    var ratio = gsf / typical;
+    // Diminishing returns: scale = ratio^0.35, clamped 0.6x-2.0x
+    var scale = Math.max(0.6, Math.min(2.0, Math.pow(ratio, 0.35)));
+    // Entitlement/permits scale less (process-driven); construction/leaseup scale more (size-driven)
+    var procScale = Math.max(0.8, Math.min(1.5, Math.pow(ratio, 0.2)));
+    return {
+        entitlement: Math.round(tl.entitlement * procScale),
+        design:      Math.round(tl.design * procScale),
+        permits:     Math.round(tl.permits * procScale),
+        construction: Math.round(tl.construction * scale),
+        leaseup:     Math.round(tl.leaseup * scale)
+    };
+}
 
 const USE_COLORS = {
     sfr: '#4a9e5c', duplex: '#5ba86e', multifamily_low: '#3182ce', multifamily_mid: '#2b6cb0',
@@ -4673,6 +4938,8 @@ function calculateHBU() {
         const sb79 = detectSB79Eligibility(lat, lon);
         document.getElementById('mapSection').style.display = 'block';
         initSB79Map(lat, lon);
+        // Pass historic overlay flag so eligibility panel can warn
+        sb79.historicOverlay = inp.constHistoric || false;
         renderSB79Eligibility(sb79);
     }
 }
@@ -5193,7 +5460,7 @@ function computeEaseOfExecution(useId, inp, effects, legalScore) {
     let ease = 50; // base score
 
     // Entitlement timeline — shorter is easier
-    const tl = TIMELINE_MONTHS[useId] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
+    const tl = getScaledTimeline(useId, (typeof computed \!== "undefined" && computed ? computed.gsf : (typeof budget \!== "undefined" && budget ? budget.gsf : 0)));
     const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
     if (totalMo <= 20) ease += 20;
     else if (totalMo <= 35) ease += 10;
@@ -5263,7 +5530,7 @@ function computeRiskLevel(useId, inp, legalScore, physicalScore) {
 
 function generateCardMetricsHTML(useId, inp, effects, result) {
     const budget = generateBudget(useId, inp, effects);
-    const tl = TIMELINE_MONTHS[useId] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
+    const tl = getScaledTimeline(useId, (typeof computed \!== "undefined" && computed ? computed.gsf : (typeof budget \!== "undefined" && budget ? budget.gsf : 0)));
     const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
 
     const irr = approxIRR(budget.devMargin, totalMo);
@@ -6063,7 +6330,7 @@ function openAnalysis(resultIndex) {
     };
 
     const computed = computeFromAssumptions(r.id, inp, assumptions, effects);
-    const tl = TIMELINE_MONTHS[r.id] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
+    const tl = getScaledTimeline(r.id, r.budget ? r.budget.gsf : 0);
     const totalMonths = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
     const neighborhoodText = document.getElementById('neighborhood').selectedOptions[0].text;
 
@@ -6403,6 +6670,28 @@ function renderMapLegend() {
 function renderSB79Eligibility(eligibility) {
     const el = document.getElementById('sb79Eligibility');
     if (!el) return;
+
+    // Historic overlay — parcel is near transit but SB 79 does not apply
+    if (eligibility && eligibility.eligible && eligibility.historicOverlay) {
+        el.style.display = 'block';
+        el.innerHTML = `
+            <h3>SB 79 Eligibility — Your Property</h3>
+            <div style="background:#fff5f5;border:1px solid #fc8181;border-radius:10px;padding:1rem 1.25rem;margin-bottom:0.75rem;">
+                <strong style="color:#c53030;">Historic Overlay — SB 79 Does Not Apply</strong>
+                <p style="font-size:0.85rem;color:#742a2a;margin:0.5rem 0 0;">
+                    This parcel is within ${eligibility.distMiles.toFixed(2)} miles of <strong>${eligibility.station.name}</strong>
+                    (${LINE_LABELS[eligibility.station.line] || eligibility.station.line}), which would normally qualify for
+                    <span class="tier-badge ${eligibility.tier === 1 ? 'tier1' : 'tier2'}" style="font-size:0.8rem;">${eligibility.tierLabel}</span>
+                    ${eligibility.zoneLabel} benefits.
+                    However, <strong>SB 79 excludes properties located within designated historic overlay zones (HPOZs)</strong>.
+                    The zoning density and FAR benefits under SB 79 cannot be applied to this site.
+                    Consider seeking a historic overlay exemption or exploring alternative entitlement pathways.
+                </p>
+            </div>
+        `;
+        return;
+    }
+
     if (!eligibility || !eligibility.eligible) {
         el.style.display = 'none';
         return;
@@ -8767,7 +9056,7 @@ const LA_ENTITLEMENT_FEES = {
     env_review_ce:     { fee: 0,     timeline: 0,  hearing: 'Staff' },
     env_review_mnd:    { fee: 7500,  timeline: 4,  hearing: 'Staff' },
     env_review_eir:    { fee: 85000, timeline: 14, hearing: 'Lead Agency' },
-    building_permit:   { fee: 0,     timeline: 2,  hearing: 'None (over-the-counter)' },
+    building_permit:   { fee: 0,     timeline: 2,  hearing: 'None (over-the-counter)', scaleByGSF: true },
 };
 
 const CEQA_THRESHOLDS = {
@@ -8849,15 +9138,32 @@ function analyzeEntitlementPath(useId, inp, effects) {
 
     for (const a of approvals) {
         const fee = LA_ENTITLEMENT_FEES[a.id] || { fee: 0, timeline: 0, hearing: 'N/A' };
+        // Scale permit timelines by project size
+        var stepMonths = fee.timeline;
+        if (a.id === 'building_permit') {
+            var gsf = inp.parcelSize * (FAR_TYPICAL[useId] || 1);
+            // Small (<10K SF): 2 mo, Medium (<50K): 3-4 mo, Large (<200K): 5-6 mo, Very large: 8+ mo
+            if (gsf > 200000) stepMonths = 8;
+            else if (gsf > 100000) stepMonths = 6;
+            else if (gsf > 50000) stepMonths = 5;
+            else if (gsf > 25000) stepMonths = 4;
+            else if (gsf > 10000) stepMonths = 3;
+            else stepMonths = 2;
+            // Historic overlay adds review time
+            if (inp.constHistoric) stepMonths += 2;
+        }
+        // CUP and site plan review also scale with complexity
+        if (a.id === 'cup' && inp.parcelSize > 30000) stepMonths += 2;
+        if (a.id === 'site_plan_review' && inp.parcelSize > 40000) stepMonths += 2;
         steps.push({
             name: a.name,
             cost: fee.fee,
-            months: fee.timeline,
+            months: stepMonths,
             hearing: fee.hearing,
             color: a.id === 'building_permit' ? '#38a169' : (a.id === 'zone_change' ? '#c53030' : '#805ad5'),
         });
         totalCost += fee.fee;
-        totalMonths += fee.timeline;
+        totalMonths += stepMonths;
     }
 
     // CEQA step
@@ -8902,7 +9208,7 @@ var sensScenario = {
 
 function runSensitivityAnalysis(useId, inp, assumptions, effects, scenarioParams) {
     const base = computeFromAssumptions(useId, inp, assumptions, effects);
-    const tl = TIMELINE_MONTHS[useId] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
+    const tl = getScaledTimeline(useId, (typeof computed \!== "undefined" && computed ? computed.gsf : (typeof budget \!== "undefined" && budget ? budget.gsf : 0)));
     const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
     const baseIRR = approxIRR(base.devMargin, totalMo);
 
@@ -9557,7 +9863,7 @@ function printDeepAnalysis() {
 function renderExecSummaryTab(st) {
     const { prop, inp, bestUse, computed, effects, legislation } = st;
     const use = LAND_USES.find(u => u.id === bestUse);
-    const tl = TIMELINE_MONTHS[bestUse] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
+    const tl = getScaledTimeline(bestUse, (typeof computed \!== "undefined" && computed ? computed.gsf : 0));
     const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
     const irr = approxIRR(computed.devMargin, totalMo);
     const ease = computeEaseOfExecution(bestUse, inp, effects, scoreLegal(bestUse, inp, effects) * 100);
@@ -10688,7 +10994,7 @@ function analyzeTaxImplications(useId, inp, computed) {
     const yearOneTaxSavings = yearOneDepr * 0.37; // top marginal rate
 
     // 8. After-tax IRR
-    const tl = TIMELINE_MONTHS[useId] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
+    const tl = getScaledTimeline(useId, (typeof computed \!== "undefined" && computed ? computed.gsf : (typeof budget \!== "undefined" && budget ? budget.gsf : 0)));
     const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
     const preIRR = approxIRR(computed.devMargin, totalMo);
     const effectiveTaxRate = 0.25; // blended federal+state for CRE
@@ -10959,7 +11265,9 @@ function calculateUnitMix(useId, inp, computed, mixOverride) {
     const stabilizationMonths = [];
     for (const u of units) {
         if (u.count === 0) { stabilizationMonths.push(0); continue; }
-        const monthlyAbsorb = Math.max(1, Math.round(baseMonthlyAbsorption * u.absorptionMult * 0.15));
+        // Cap absorption: max 8-15% of a project's units per month (larger buildings lease slower per-unit)
+        var projectAbsorbCap = Math.max(1, Math.round(totalUnits * (totalUnits <= 20 ? 0.15 : totalUnits <= 50 ? 0.12 : totalUnits <= 100 ? 0.08 : totalUnits <= 200 ? 0.06 : 0.04)));
+        const monthlyAbsorb = Math.min(projectAbsorbCap, Math.max(1, Math.round(baseMonthlyAbsorption * u.absorptionMult * 0.15)));
         stabilizationMonths.push(Math.ceil(u.count / monthlyAbsorb));
     }
     const maxStabilization = Math.max(...stabilizationMonths);
@@ -12702,6 +13010,18 @@ function buildInfrastructureContent() {
         '</tbody></table>' +
     '</div>';
 
+    // Data sources
+    html += '<div style="margin-top:2rem;padding-top:1rem;border-top:1px solid #e2e8f0;font-size:0.75rem;color:#a0aec0;line-height:1.6;">' +
+        '<strong style="color:#718096;">Data Sources & References</strong><br>' +
+        'Electrical: LADWP Power Engineering — distribution grid capacity data, transformer specifications, and Will-Serve requirements per LADWP Rule 21.<br>' +
+        'Sewer: LA Sanitation & Environment (LASAN) — sewer generation rates per LA Plumbing Code Table 11-1; S-permit thresholds per LAMC §64.15.<br>' +
+        'Water: LADWP Water System — demand rates per LA Plumbing Code; Will-Serve letter requirements per LADWP Rule 8.<br>' +
+        'Stormwater: LA LID Ordinance (Ord. 181,899 & 184,248) — 3/4-inch design storm retention; BMP sizing per LA Stormwater Manual (2014, updated 2024).<br>' +
+        'Fire Flow: LAFD Fire Code — required flow rates per CFC Table B105.1(2); hydrant spacing per LAMC §57.507.3.<br>' +
+        'EV Charging: CalGreen Code (2022 Title 24 Part 11) §4.106.4; City of LA local amendment (2023) requiring 100% residential EV-readiness.<br>' +
+        'Cost estimates based on RS Means 2024, LADWP published fee schedules, and Southern California contractor bid data. Site-specific conditions may vary.' +
+    '</div>';
+
     return html;
 }
 
@@ -12768,13 +13088,25 @@ function analyzeEarthwork(useId, inp, computed) {
     var parcelSY = parcelSF / 9;
     var topo = inp.topography || 'flat';
 
-    // Grade differential assumptions by topography
-    var gradeDiff = { flat: 1, moderate: 6, steep: 14, hillside: 28 };
-    var diff = gradeDiff[topo] || 1;
+    // Elevation override from user inputs (if provided)
+    var lowEl = 0, highEl = 0, diff = 0;
+    var elLow = document.getElementById('ew-elev-low');
+    var elHigh = document.getElementById('ew-elev-high');
+    if (elLow && elHigh && parseFloat(elHigh.value) > 0) {
+        lowEl = parseFloat(elLow.value) || 0;
+        highEl = parseFloat(elHigh.value) || 0;
+        diff = Math.abs(highEl - lowEl);
+        if (diff < 1) diff = 1;
+    } else {
+        // Fallback: derive from topography dropdown
+        var gradeDiff = { flat: 1, gentle: 3, moderate: 6, steep: 14, hillside: 28 };
+        diff = gradeDiff[topo] || 1;
+        lowEl = 100; // nominal base elevation
+        highEl = lowEl + diff;
+    }
 
     // Approximate cut/fill volumes (CY = cubic yards)
-    // Volume ~ parcelSF * gradeDiff / 27 (convert CF to CY)
-    var avgDepth = diff; // feet of grade change across site
+    var avgDepth = diff;
     var cutVolume = Math.round(parcelSF * avgDepth * 0.5 / 27);
     var fillVolume = Math.round(parcelSF * avgDepth * 0.35 / 27);
 
@@ -12791,11 +13123,11 @@ function analyzeEarthwork(useId, inp, computed) {
 
     // Retaining wall analysis
     var retainingWall = { needed: false, length: 0, height: 0, area: 0, cost: 0 };
-    if (topo === 'steep' || topo === 'hillside') {
+    if (diff >= 10) {
         retainingWall.needed = true;
         var frontage = inp.frontage || Math.sqrt(parcelSF);
-        retainingWall.length = Math.round(frontage * (topo === 'hillside' ? 2.5 : 1.5));
-        retainingWall.height = topo === 'hillside' ? 16 : 8;
+        retainingWall.length = Math.round(frontage * (diff >= 20 ? 2.5 : 1.5));
+        retainingWall.height = diff >= 20 ? 16 : 8;
         retainingWall.area = retainingWall.length * retainingWall.height;
         retainingWall.cost = Math.round(retainingWall.area * EARTHWORK_COSTS.retainingWall);
     }
@@ -12823,6 +13155,8 @@ function analyzeEarthwork(useId, inp, computed) {
     return {
         topography: topo,
         gradeDifferential: diff,
+        lowElevation: lowEl,
+        highElevation: highEl,
         cutVolume: cutVolume,
         fillVolume: fillVolume,
         netBalance: netBalance,
@@ -12848,56 +13182,88 @@ function analyzeEarthwork(useId, inp, computed) {
 }
 
 function generateEarthworkSVG(earthwork, inp) {
-    var w = 480, h = 220;
+    var w = 480, h = 240;
     var topo = earthwork.topography;
     var diff = earthwork.gradeDifferential;
+    var lowElev = earthwork.lowElevation || 0;
+    var highElev = lowElev + diff;
 
     var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg" style="background:#fafbfc;">';
 
-    // Ground profile - existing grade
-    var groundY1 = 140;
-    var groundY2 = 140 - Math.min(diff * 3, 80);
-    svg += '<polygon points="40,' + h + ' 40,' + groundY1 + ' ' + (w - 40) + ',' + groundY2 + ' ' + (w - 40) + ',' + h + '" fill="#d4a574" opacity="0.4" stroke="#8B6914" stroke-width="1"/>';
-
-    // Proposed grade (flat pad)
+    // Minimum visual height for grade line so diagram is readable
+    var visualDiff = Math.max(diff * 3, 25);
+    var groundY1 = 155;
+    var groundY2 = groundY1 - Math.min(visualDiff, 90);
     var padY = Math.round((groundY1 + groundY2) / 2);
-    svg += '<line x1="40" y1="' + padY + '" x2="' + (w - 40) + '" y2="' + padY + '" stroke="#2b6cb0" stroke-width="2" stroke-dasharray="6,3"/>';
 
-    // Cut zone (above pad line on high side)
+    // Ground profile - existing grade (natural terrain fill)
+    svg += '<polygon points="40,' + h + ' 40,' + groundY1 + ' ' + (w - 40) + ',' + groundY2 + ' ' + (w - 40) + ',' + h + '" fill="#d4a574" opacity="0.35" stroke="#8B6914" stroke-width="1"/>';
+    // Hatching for terrain
+    for (var hx = 60; hx < w - 40; hx += 20) {
+        var hy = groundY1 + (groundY2 - groundY1) * ((hx - 40) / (w - 80));
+        svg += '<line x1="' + hx + '" y1="' + Math.round(hy) + '" x2="' + (hx - 8) + '" y2="' + Math.round(hy + 10) + '" stroke="#8B6914" stroke-width="0.5" opacity="0.3"/>';
+    }
+
+    // Existing grade line (solid)
+    svg += '<line x1="40" y1="' + groundY1 + '" x2="' + (w - 40) + '" y2="' + groundY2 + '" stroke="#8B6914" stroke-width="2"/>';
+    svg += '<text x="' + (w / 2) + '" y="' + (Math.min(groundY1, groundY2) - 2) + '" text-anchor="middle" font-size="8" fill="#8B6914" font-style="italic">EXISTING GRADE</text>';
+
+    // Proposed pad grade (dashed blue)
+    svg += '<line x1="40" y1="' + padY + '" x2="' + (w - 40) + '" y2="' + padY + '" stroke="#2b6cb0" stroke-width="2.5" stroke-dasharray="8,4"/>';
+    svg += '<text x="' + (w / 2) + '" y="' + (padY - 6) + '" text-anchor="middle" font-size="9" fill="#2b6cb0" font-weight="600">PROPOSED PAD GRADE</text>';
+
+    // Cut zone (above pad on high side)
     if (groundY2 < padY) {
         var midX = Math.round(40 + (w - 80) * ((padY - groundY2) / (groundY1 - groundY2)));
-        svg += '<polygon points="' + midX + ',' + padY + ' ' + (w - 40) + ',' + groundY2 + ' ' + (w - 40) + ',' + padY + '" fill="#fc8181" opacity="0.5"/>';
-        svg += '<text x="' + Math.round((midX + w - 40) / 2) + '" y="' + (padY - 8) + '" text-anchor="middle" font-size="10" fill="#c53030" font-weight="600">CUT</text>';
+        svg += '<polygon points="' + midX + ',' + padY + ' ' + (w - 40) + ',' + groundY2 + ' ' + (w - 40) + ',' + padY + '" fill="#fc8181" opacity="0.45" stroke="#c53030" stroke-width="0.5"/>';
+        var cutCx = Math.round((midX + (w - 40) * 2) / 3);
+        var cutCy = Math.round(padY - (padY - groundY2) * 0.35);
+        svg += '<text x="' + cutCx + '" y="' + cutCy + '" text-anchor="middle" font-size="11" fill="#c53030" font-weight="700">CUT</text>';
+        svg += '<text x="' + cutCx + '" y="' + (cutCy + 12) + '" text-anchor="middle" font-size="8" fill="#c53030">' + earthwork.cutVolume.toLocaleString() + ' CY</text>';
     }
 
-    // Fill zone (below pad line on low side)
+    // Fill zone (below pad on low side)
     if (groundY1 > padY) {
         var midX2 = Math.round(40 + (w - 80) * ((padY - groundY2) / (groundY1 - groundY2)));
-        svg += '<polygon points="40,' + groundY1 + ' 40,' + padY + ' ' + midX2 + ',' + padY + '" fill="#68d391" opacity="0.5"/>';
-        svg += '<text x="' + Math.round((40 + midX2) / 2) + '" y="' + (padY + 16) + '" text-anchor="middle" font-size="10" fill="#276749" font-weight="600">FILL</text>';
+        svg += '<polygon points="40,' + groundY1 + ' 40,' + padY + ' ' + midX2 + ',' + padY + '" fill="#68d391" opacity="0.45" stroke="#276749" stroke-width="0.5"/>';
+        var fillCx = Math.round((40 * 2 + midX2) / 3);
+        var fillCy = Math.round(padY + (groundY1 - padY) * 0.55);
+        svg += '<text x="' + fillCx + '" y="' + fillCy + '" text-anchor="middle" font-size="11" fill="#276749" font-weight="700">FILL</text>';
+        svg += '<text x="' + fillCx + '" y="' + (fillCy + 12) + '" text-anchor="middle" font-size="8" fill="#276749">' + earthwork.fillVolume.toLocaleString() + ' CY</text>';
     }
 
-    // Labels
-    svg += '<text x="20" y="' + (groundY1 + 4) + '" font-size="8" fill="#666" text-anchor="end">EL +0\'</text>';
-    svg += '<text x="' + (w - 18) + '" y="' + (groundY2 + 4) + '" font-size="8" fill="#666">EL +' + diff + '\'</text>';
-    svg += '<text x="' + (w / 2) + '" y="' + (padY - 14) + '" text-anchor="middle" font-size="9" fill="#2b6cb0" font-weight="600">PROPOSED PAD GRADE</text>';
+    // Elevation labels with callout lines
+    svg += '<line x1="35" y1="' + groundY1 + '" x2="18" y2="' + groundY1 + '" stroke="#666" stroke-width="0.5"/>';
+    svg += '<text x="16" y="' + (groundY1 + 4) + '" font-size="9" fill="#333" text-anchor="end" font-weight="600">EL ' + lowElev + '\'</text>';
+    svg += '<line x1="' + (w - 35) + '" y1="' + groundY2 + '" x2="' + (w - 18) + '" y2="' + groundY2 + '" stroke="#666" stroke-width="0.5"/>';
+    svg += '<text x="' + (w - 16) + '" y="' + (groundY2 + 4) + '" font-size="9" fill="#333" font-weight="600">EL ' + highElev + '\'</text>';
+    svg += '<line x1="35" y1="' + padY + '" x2="18" y2="' + padY + '" stroke="#2b6cb0" stroke-width="0.5"/>';
+    svg += '<text x="16" y="' + (padY + 4) + '" font-size="8" fill="#2b6cb0" text-anchor="end">PAD ' + Math.round(lowElev + diff / 2) + '\'</text>';
+
+    // Grade differential annotation
+    svg += '<line x1="' + (w - 55) + '" y1="' + groundY2 + '" x2="' + (w - 55) + '" y2="' + groundY1 + '" stroke="#dd6b20" stroke-width="1" stroke-dasharray="3,2"/>';
+    svg += '<text x="' + (w - 55) + '" y="' + Math.round((groundY1 + groundY2) / 2 + 4) + '" text-anchor="middle" font-size="8" fill="#dd6b20" font-weight="600">' + diff + ' ft</text>';
 
     // Retaining wall
     if (earthwork.retainingWall.needed) {
-        svg += '<rect x="' + (w - 48) + '" y="' + groundY2 + '" width="6" height="' + (padY - groundY2 + 20) + '" fill="#805ad5" opacity="0.8"/>';
+        svg += '<rect x="' + (w - 48) + '" y="' + groundY2 + '" width="6" height="' + (padY - groundY2 + 20) + '" fill="#805ad5" opacity="0.8" rx="1"/>';
         svg += '<text x="' + (w - 45) + '" y="' + (groundY2 - 6) + '" font-size="7" fill="#805ad5" font-weight="600">RETAINING WALL</text>';
     }
 
     // Subterranean levels
     if (earthwork.subLevels > 0) {
-        var subTop = padY + 2;
-        var subH = earthwork.subLevels * 18;
-        svg += '<rect x="120" y="' + subTop + '" width="240" height="' + subH + '" fill="#2b6cb0" opacity="0.2" stroke="#2b6cb0" stroke-width="1" stroke-dasharray="4,2"/>';
+        var subTop = padY + 4;
+        var subH = earthwork.subLevels * 20;
+        svg += '<rect x="120" y="' + subTop + '" width="240" height="' + subH + '" fill="#2b6cb0" opacity="0.15" stroke="#2b6cb0" stroke-width="1" stroke-dasharray="4,2" rx="2"/>';
+        for (var sl = 0; sl < earthwork.subLevels; sl++) {
+            svg += '<line x1="120" y1="' + (subTop + sl * 20) + '" x2="360" y2="' + (subTop + sl * 20) + '" stroke="#2b6cb0" stroke-width="0.5" stroke-dasharray="2,2"/>';
+        }
         svg += '<text x="240" y="' + (subTop + subH / 2 + 4) + '" text-anchor="middle" font-size="9" fill="#2b6cb0" font-weight="600">' + earthwork.subLevels + ' SUBTERRANEAN LEVEL' + (earthwork.subLevels > 1 ? 'S' : '') + '</text>';
     }
 
-    // Scale and title
+    // Title
     svg += '<text x="' + (w / 2) + '" y="16" text-anchor="middle" font-size="11" fill="#1a365d" font-weight="700">CROSS-SECTION: CUT & FILL DIAGRAM</text>';
+    // Scale bar
     svg += '<line x1="40" y1="' + (h - 10) + '" x2="140" y2="' + (h - 10) + '" stroke="#999" stroke-width="1"/>';
     svg += '<text x="90" y="' + (h - 2) + '" text-anchor="middle" font-size="7" fill="#999">~100 ft</text>';
 
@@ -12945,7 +13311,15 @@ function renderEarthworkTab(st) {
     // Dynamic controls
     html += '<div class="dt-controls">';
     html += '<div class="dt-controls-title"><span>Unit Costs (editable)</span><button class="dt-reset-btn" onclick="resetEarthwork()">Reset Defaults</button></div>';
-    html += '<div class="dt-controls-grid">';
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem;padding:0.75rem;background:#f7fafc;border-radius:8px;border:1px solid #e2e8f0;">';
+    html += '<div><label style="font-size:0.75rem;font-weight:600;color:#4a5568;display:block;margin-bottom:0.25rem;">Low Corner Elevation (ft)</label>';
+    html += '<input type="number" id="ew-elev-low" value="' + (ew.lowElevation || 100) + '" min="0" max="5000" step="1" style="width:100%;padding:0.35rem 0.5rem;border:1px solid #cbd5e0;border-radius:6px;font-size:0.85rem;" oninput="recalcEarthwork()">';
+    html += '</div>';
+    html += '<div><label style="font-size:0.75rem;font-weight:600;color:#4a5568;display:block;margin-bottom:0.25rem;">High Corner Elevation (ft)</label>';
+    html += '<input type="number" id="ew-elev-high" value="' + (ew.highElevation || (100 + (ew.gradeDifferential || 1))) + '" min="0" max="5000" step="1" style="width:100%;padding:0.35rem 0.5rem;border:1px solid #cbd5e0;border-radius:6px;font-size:0.85rem;" oninput="recalcEarthwork()">';
+    html += '</div>';
+    html += '</div>';
+html += '<div class="dt-controls-grid">';
     var costs = [
         {id:'ew-cut',label:'Cut $/CY',val:ec.cut,min:1,max:30,step:0.5},
         {id:'ew-fill',label:'Fill $/CY',val:ec.fill,min:1,max:20,step:0.5},
@@ -14207,7 +14581,7 @@ function renderComparisonDashboard(saved) {
         var propEffects = stackLegislationEffects(propLeg);
         var propAssumptions = getDefaultAssumptions(propBestUse, propInp, propEffects);
         var propComputed = computeFromAssumptions(propBestUse, propInp, propAssumptions, propEffects);
-        var tl = TIMELINE_MONTHS[propBestUse] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
+        var tl = getScaledTimeline(propBestUse, 0);
         var totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
         var irr = approxIRR(propComputed.devMargin, totalMo);
         var legalScore = scoreLegal(propBestUse, propInp, propEffects);
@@ -14594,7 +14968,7 @@ function generateDesignScenarios(inp, effects) {
         const computed = generateBudget(use.id, inp, eff);
         if (!computed || computed.totalDev <= 0) continue;
 
-        const tl = TIMELINE_MONTHS[use.id] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
+        const tl = getScaledTimeline(use.id, 0);
         const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
         const irr = approxIRR(computed.devMargin, totalMo);
         const legalScore = scoreLegal(use.id, inp, eff);
@@ -14831,7 +15205,7 @@ function expandScenarioDetail(scenarioId) {
     var eff = stackLegislationEffects(legislation);
     var assumptions = getDefaultAssumptions(sc.useId, st.inp, eff);
     var computed = computeFromAssumptions(sc.useId, st.inp, assumptions, eff);
-    var tl = TIMELINE_MONTHS[sc.useId] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
+    var tl = getScaledTimeline(sc.useId, sc.gsf || 0);
     var totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
 
     var html = '<div class="analysis-section" style="margin-top:1rem;border:2px solid #4299e1;border-radius:10px;padding:1.25rem;">';
@@ -15175,7 +15549,7 @@ function recalcCashFlow() {
 
 function renderKPIDashboard(st) {
     const { bestUse, inp, computed, effects } = st;
-    const tl = TIMELINE_MONTHS[bestUse] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
+    const tl = getScaledTimeline(bestUse, (typeof computed \!== "undefined" && computed ? computed.gsf : 0));
     const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
     const irr = approxIRR(computed.devMargin, totalMo);
     const legalScore = scoreLegal(bestUse, inp, effects);
@@ -15512,7 +15886,7 @@ function exportCSVData() {
     if (!st) return;
     const { prop, bestUse, computed, inp } = st;
     const use = LAND_USES.find(u => u.id === bestUse);
-    const tl = TIMELINE_MONTHS[bestUse] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
+    const tl = getScaledTimeline(bestUse, (typeof computed \!== "undefined" && computed ? computed.gsf : 0));
     const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
     const irr = approxIRR(computed.devMargin, totalMo);
 
@@ -17957,6 +18331,11 @@ function attachDevScenarioHandlers() {
 
       window.currentDevDeal = deal;
       updateDeveloperSummaryFromDeal(deal);
+
+      // --- New financial panels ---
+      renderSensitivityMatrix(budget, topResult.id, inp, effects);
+      renderSourcesAndUses(budget, false);
+      renderLeveredReturns(budget);
     }
   };
 })();
@@ -17965,6 +18344,11 @@ document.addEventListener('DOMContentLoaded', function() {
   attachDevScenarioHandlers();
 });
 
+
+// Demo mode URL parameter check
+if (new URLSearchParams(window.location.search).get('demo') === 'true') {
+  document.addEventListener('DOMContentLoaded', function() { activateDemo(); });
+}
 </script>
 
 </body>

@@ -1588,6 +1588,24 @@
   border: 1px solid rgba(0,0,0,0.15);
   font-size: 0.9rem;
 }
+/* === Sources & Uses === */
+.sources-uses-panel{background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.08);padding:1.5rem;margin-top:1.5rem;display:none;}
+.sources-uses-panel h2{font-size:1.15rem;margin:0 0 .25rem;color:#1a202c;}
+.sources-uses-panel .panel-subtitle{font-size:.8rem;color:#718096;margin:0 0 1rem;}
+.su-columns{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+@media(max-width:700px){.su-columns{grid-template-columns:1fr;}}
+.su-col h3{font-size:.95rem;margin:0 0 .5rem;color:#2d3748;border-bottom:2px solid var(--primary-light,#667eea);padding-bottom:.35rem;}
+.su-table{width:100%;border-collapse:collapse;font-size:.82rem;}
+.su-table td{padding:5px 6px;border-bottom:1px solid #edf2f7;}
+.su-table td:last-child{text-align:right;font-variant-numeric:tabular-nums;}
+.su-table .su-total td{font-weight:700;border-top:2px solid #2d3748;border-bottom:none;font-size:.88rem;}
+.su-table .su-subtotal td{font-weight:600;color:#4a5568;border-top:1px solid #cbd5e0;}
+
+/* === Demo Mode === */
+.demo-banner{position:fixed;top:0;left:0;right:0;z-index:10000;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;text-align:center;padding:8px 0;font-size:.85rem;font-weight:700;letter-spacing:.08em;box-shadow:0 2px 8px rgba(0,0,0,.18);}
+.demo-banner~header{margin-top:36px;}
+.demo-btn{display:inline-block;margin-top:.75rem;padding:.5rem 1.5rem;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;}
+.demo-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(102,126,234,.4);}
     </style>
 </head>
 <body>
@@ -1601,9 +1619,12 @@
         <div class="auth-error" id="authError"></div>
         <div style="margin-top:0.75rem;font-size:0.75rem;color:#a0aec0;">Enter the access code from your subscription email</div>
         <div style="margin-top:0.75rem;"><a href="index.html#pricing" style="color:var(--primary-light);font-size:0.8rem;text-decoration:none;">Don't have a code? Subscribe here &rarr;</a></div>
+        <div style="margin-top:0.75rem;"><button type="button" class="demo-btn" onclick="activateDemo()">Try Demo &rarr;</button></div>
         <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v4.2 &middot; Agent Edition</div>
     </div>
 </div>
+
+<div id="demoBanner" class="demo-banner" style="display:none;">DEMO MODE &#8212; Sample data for illustration only</div>
 
 <header>
     <h1>Land to Yield &mdash; Agent Portal</h1>
@@ -1885,6 +1906,14 @@
             </div>
           </div>
         </section>
+
+        <!-- Sources & Uses Panel (Simplified) -->
+        <section id="sources-uses-panel" class="sources-uses-panel">
+          <h2>Sources &amp; Uses of Funds</h2>
+          <p class="panel-subtitle">Estimated capital stack for the top-ranked development scenario</p>
+          <div id="sources-uses-grid"></div>
+        </section>
+
 
         <!-- SB 79 Transit Opportunity Map -->
         <div class="map-section" id="mapSection" style="display:none;">
@@ -2350,6 +2379,81 @@ async function checkAuth() {
 }
 
 // Auto-authenticate on load if stored hash is still valid
+// === Sources & Uses ===
+function renderSourcesAndUses(budget, isSimplified) {
+  var panel = document.getElementById('sources-uses-panel');
+  var grid = document.getElementById('sources-uses-grid');
+  if (!panel || !grid || !budget) return;
+  function fmt(n) { return '$' + Math.round(n).toLocaleString(); }
+  var totalDev = budget.totalDev || 0;
+  var seniorDebt = Math.round(totalDev * 0.65);
+  var equity = totalDev - seniorDebt;
+  var html = '<div class="su-columns">';
+  // Uses column
+  html += '<div class="su-col"><h3>Uses of Funds</h3><table class="su-table">';
+  if (isSimplified) {
+    html += '<tr><td>Land Acquisition</td><td>' + fmt(budget.landCost || 0) + '</td></tr>';
+    html += '<tr><td>Hard Costs</td><td>' + fmt(budget.totalHard || 0) + '</td></tr>';
+    html += '<tr><td>Soft Costs</td><td>' + fmt(budget.totalSoft || 0) + '</td></tr>';
+  } else {
+    html += '<tr><td>Land Acquisition</td><td>' + fmt(budget.landCost || 0) + '</td></tr>';
+    html += '<tr class="su-subtotal"><td colspan="2" style="padding-top:8px;">Hard Costs</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Site Work</td><td>' + fmt(budget.siteWork || 0) + '</td></tr>';
+    if (budget.demolition > 0) html += '<tr><td>&nbsp;&nbsp;Demolition</td><td>' + fmt(budget.demolition) + '</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Construction</td><td>' + fmt(budget.construction || 0) + '</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Parking</td><td>' + fmt(budget.parkingCost || 0) + '</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Landscaping</td><td>' + fmt(budget.landscaping || 0) + '</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Contingency (7%)</td><td>' + fmt(budget.hardContingency || 0) + '</td></tr>';
+    html += '<tr class="su-subtotal"><td>Hard Cost Subtotal</td><td>' + fmt(budget.totalHard || 0) + '</td></tr>';
+    html += '<tr class="su-subtotal"><td colspan="2" style="padding-top:8px;">Soft Costs</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Architecture &amp; Engineering</td><td>' + fmt(budget.archEng || 0) + '</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Permits &amp; Fees</td><td>' + fmt(budget.permits || 0) + '</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Legal</td><td>' + fmt(budget.legal || 0) + '</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Financing / Interest Reserve</td><td>' + fmt(budget.financing || 0) + '</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Marketing &amp; Lease-Up</td><td>' + fmt(budget.marketing || 0) + '</td></tr>';
+    html += '<tr><td>&nbsp;&nbsp;Developer Fee</td><td>' + fmt(budget.devFee || 0) + '</td></tr>';
+    html += '<tr class="su-subtotal"><td>Soft Cost Subtotal</td><td>' + fmt(budget.totalSoft || 0) + '</td></tr>';
+  }
+  html += '<tr class="su-total"><td>Total Uses</td><td>' + fmt(totalDev) + '</td></tr>';
+  html += '</table></div>';
+  // Sources column
+  html += '<div class="su-col"><h3>Sources of Funds</h3><table class="su-table">';
+  html += '<tr><td>Senior Debt (65% LTC)</td><td>' + fmt(seniorDebt) + '</td></tr>';
+  html += '<tr><td>Sponsor Equity (35% LTC)</td><td>' + fmt(equity) + '</td></tr>';
+  html += '<tr class="su-total"><td>Total Sources</td><td>' + fmt(totalDev) + '</td></tr>';
+  html += '</table></div>';
+  html += '</div>';
+  grid.innerHTML = html;
+  panel.style.display = '';
+}
+
+// === Demo Mode ===
+function activateDemo() {
+  // Remove auth overlay
+  var overlay = document.getElementById('authOverlay');
+  if (overlay) overlay.style.display = 'none';
+  // Show demo banner
+  var banner = document.getElementById('demoBanner');
+  if (banner) banner.style.display = '';
+  // Pre-fill form â€” Agent sample: 1423 S Ridgeley Dr (single-family teardown)
+  var addr = document.getElementById('addressInput');
+  if (addr) addr.value = '1423 S Ridgeley Dr, Los Angeles, CA 90019';
+  var ps = document.getElementById('parcelSize');
+  if (ps) ps.value = '7500';
+  var zn = document.getElementById('zoning');
+  if (zn) zn.value = 'R1';
+  var nb = document.getElementById('neighborhood');
+  if (nb) nb.value = 'midcity';
+  var tr = document.getElementById('transit');
+  if (tr) tr.value = 'near';
+  var ar = document.getElementById('arterial');
+  if (ar) ar.value = 'secondary';
+  // Trigger calculation after short delay
+  setTimeout(function() {
+    if (typeof calculateHBU === 'function') calculateHBU();
+  }, 300);
+}
+
 (function() {
     const storedHash = localStorage.getItem('hbu_auth_hash');
     if (storedHash && (storedHash === ADMIN_HASH || VALID_CODES.includes(storedHash))) {
@@ -3683,6 +3787,29 @@ const BUILDING_PARAMS = {
     adu:              { stories: 2,  floorH: 9,  eff: 0.90, unitSF: 600,  parkRatio: 0,    setF: 5,  setS: 4,  opex: 0.30, cap: 0.048 },
 };
 
+// Scale timeline phases by project size (GSF)
+var TYPICAL_GSF = {
+    sfr: 2500, duplex: 3500, multifamily_low: 35000, multifamily_mid: 80000,
+    multifamily_high: 250000, mixeduse: 50000, retail: 8000, office: 30000,
+    medical: 15000, hotel: 80000, industrial: 25000, selfstorage: 40000,
+    senior: 60000, parking: 50000, creative: 20000, adu: 800
+};
+function getScaledTimeline(useId, gsf) {
+    var tl = TIMELINE_MONTHS[useId] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
+    if (!gsf || gsf <= 0) return { entitlement: tl.entitlement, design: tl.design, permits: tl.permits, construction: tl.construction, leaseup: tl.leaseup };
+    var typical = TYPICAL_GSF[useId] || 30000;
+    var ratio = gsf / typical;
+    var scale = Math.max(0.6, Math.min(2.0, Math.pow(ratio, 0.35)));
+    var procScale = Math.max(0.8, Math.min(1.5, Math.pow(ratio, 0.2)));
+    return {
+        entitlement: Math.round(tl.entitlement * procScale),
+        design:      Math.round(tl.design * procScale),
+        permits:     Math.round(tl.permits * procScale),
+        construction: Math.round(tl.construction * scale),
+        leaseup:     Math.round(tl.leaseup * scale)
+    };
+}
+
 const TIMELINE_MONTHS = {
     sfr:              { entitlement: 2,  design: 2,  permits: 2, construction: 10, leaseup: 1 },
     duplex:           { entitlement: 3,  design: 2,  permits: 2, construction: 12, leaseup: 1 },
@@ -4577,7 +4704,7 @@ function computeEaseOfExecution(useId, inp, effects, legalScore) {
     let ease = 50; // base score
 
     // Entitlement timeline — shorter is easier
-    const tl = TIMELINE_MONTHS[useId] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
+    const tl = getScaledTimeline(useId, (typeof computed !== 'undefined' && computed ? computed.gsf : (typeof budget !== 'undefined' && budget ? budget.gsf : 0)));
     const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
     if (totalMo <= 20) ease += 20;
     else if (totalMo <= 35) ease += 10;
@@ -4647,7 +4774,7 @@ function computeRiskLevel(useId, inp, legalScore, physicalScore) {
 
 function generateCardMetricsHTML(useId, inp, effects, result) {
     const budget = generateBudget(useId, inp, effects);
-    const tl = TIMELINE_MONTHS[useId] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
+    const tl = getScaledTimeline(useId, (typeof computed !== 'undefined' && computed ? computed.gsf : (typeof budget !== 'undefined' && budget ? budget.gsf : 0)));
     const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
 
     const irr = approxIRR(budget.devMargin, totalMo);
@@ -5386,7 +5513,7 @@ function openAnalysis(resultIndex) {
     const assumptions = getDefaultAssumptions(r.id, inp, effects);
     analysisState = { resultIndex, useId: r.id, inp, effects, legislation: r.legislation || [], assumptions };
     const computed = computeFromAssumptions(r.id, inp, assumptions, effects);
-    const tl = TIMELINE_MONTHS[r.id] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
+    const tl = getScaledTimeline(r.id, r.budget ? r.budget.gsf : 0);
     const totalMonths = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
     const neighborhoodText = document.getElementById('neighborhood').selectedOptions[0].text;
     document.getElementById('modalTitle').textContent = `${r.icon} ${r.name}`;
@@ -5946,7 +6073,7 @@ function generateListingOnePager(result, inp, address) {
     const avgUnit = bp.avgUnitSF || 850;
     const units = bp.hasUnits !== false ? Math.max(1, Math.floor(buildableSF * 0.85 / avgUnit)) : 0;
     const stories = bp.stories || Math.min(Math.ceil(effectiveFAR / 0.85), 8);
-    const timeline = TIMELINE_MONTHS[result.id] || 36;
+    var tlObj = getScaledTimeline(result.id, result.budget ? result.budget.gsf : 0); var timeline = tlObj.entitlement + tlObj.design + tlObj.permits + tlObj.construction + tlObj.leaseup;
 
     // Ease meter color
     let easeColor = '#ef4444';
@@ -7503,6 +7630,9 @@ function computeAgentListingInsights(deal) {
       var panel = document.getElementById('agent-owner-panel');
       if (panel) panel.style.display = '';
       computeAgentListingInsights(deal);
+
+      // --- Sources & Uses (simplified for agent portal) ---
+      renderSourcesAndUses(budget, true);
     }
   };
 })();
@@ -7521,6 +7651,11 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
+
+// Demo mode URL parameter check
+if (new URLSearchParams(window.location.search).get('demo') === 'true') {
+  document.addEventListener('DOMContentLoaded', function() { activateDemo(); });
+}
 </script>
 </body>
 </html>
