@@ -3091,6 +3091,7 @@ const ADMIN_HASH = '08c5d8c40ac5bd96091f704d10989da4e7b65c5ee36be18b618848c4e91a
 // Subscriber access-code hashes — add SHA-256 hashes here after generating with generateCodeHash()
 const VALID_CODES = [
     '14197a5cc2fdd7254604a791eae2e02bd3e23a448230367ce249fe3192b94b12', // BETA-TEST-2026
+    'c9e6d3a5eadd68eeada23cdde416f8caebcc4960b029bfe62e45ce9952e02e77', // CLS-CRE-2026
 ];
 
 async function sha256(str) {
@@ -3117,7 +3118,7 @@ async function checkAuth() {
 function renderSensitivityMatrix(budget, useId, inp, effects) {
   var panel = document.getElementById('sensitivity-matrix-panel');
   var grid = document.getElementById('sensitivity-matrix-grid');
-  if (\!panel || \!grid || \!budget) return;
+  if (!panel || !grid || !budget) return;
   var steps = [-15, -10, -5, 0, 5, 10, 15];
   var baseRev = budget.grossRevenue || 0;
   var baseOpex = budget.opex || 0;
@@ -3162,7 +3163,7 @@ function renderSensitivityMatrix(budget, useId, inp, effects) {
 function renderSourcesAndUses(budget, isSimplified) {
   var panel = document.getElementById('sources-uses-panel');
   var grid = document.getElementById('sources-uses-grid');
-  if (\!panel || \!grid || \!budget) return;
+  if (!panel || !grid || !budget) return;
   function fmt(n) { return '$' + Math.round(n).toLocaleString(); }
   var totalDev = budget.totalDev || 0;
   var seniorDebt = Math.round(totalDev * 0.65);
@@ -5460,7 +5461,7 @@ function computeEaseOfExecution(useId, inp, effects, legalScore) {
     let ease = 50; // base score
 
     // Entitlement timeline — shorter is easier
-    const tl = getScaledTimeline(useId, (typeof computed \!== "undefined" && computed ? computed.gsf : (typeof budget \!== "undefined" && budget ? budget.gsf : 0)));
+    const tl = getScaledTimeline(useId, (typeof computed !== "undefined" && computed ? computed.gsf : (typeof budget !== "undefined" && budget ? budget.gsf : 0)));
     const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
     if (totalMo <= 20) ease += 20;
     else if (totalMo <= 35) ease += 10;
@@ -5530,7 +5531,7 @@ function computeRiskLevel(useId, inp, legalScore, physicalScore) {
 
 function generateCardMetricsHTML(useId, inp, effects, result) {
     const budget = generateBudget(useId, inp, effects);
-    const tl = getScaledTimeline(useId, (typeof computed \!== "undefined" && computed ? computed.gsf : (typeof budget \!== "undefined" && budget ? budget.gsf : 0)));
+    const tl = getScaledTimeline(useId, (typeof computed !== "undefined" && computed ? computed.gsf : (typeof budget !== "undefined" && budget ? budget.gsf : 0)));
     const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
 
     const irr = approxIRR(budget.devMargin, totalMo);
@@ -9208,7 +9209,7 @@ var sensScenario = {
 
 function runSensitivityAnalysis(useId, inp, assumptions, effects, scenarioParams) {
     const base = computeFromAssumptions(useId, inp, assumptions, effects);
-    const tl = getScaledTimeline(useId, (typeof computed \!== "undefined" && computed ? computed.gsf : (typeof budget \!== "undefined" && budget ? budget.gsf : 0)));
+    const tl = getScaledTimeline(useId, (typeof computed !== "undefined" && computed ? computed.gsf : (typeof budget !== "undefined" && budget ? budget.gsf : 0)));
     const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
     const baseIRR = approxIRR(base.devMargin, totalMo);
 
@@ -9863,7 +9864,7 @@ function printDeepAnalysis() {
 function renderExecSummaryTab(st) {
     const { prop, inp, bestUse, computed, effects, legislation } = st;
     const use = LAND_USES.find(u => u.id === bestUse);
-    const tl = getScaledTimeline(bestUse, (typeof computed \!== "undefined" && computed ? computed.gsf : 0));
+    const tl = getScaledTimeline(bestUse, (typeof computed !== "undefined" && computed ? computed.gsf : 0));
     const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
     const irr = approxIRR(computed.devMargin, totalMo);
     const ease = computeEaseOfExecution(bestUse, inp, effects, scoreLegal(bestUse, inp, effects) * 100);
@@ -10994,7 +10995,7 @@ function analyzeTaxImplications(useId, inp, computed) {
     const yearOneTaxSavings = yearOneDepr * 0.37; // top marginal rate
 
     // 8. After-tax IRR
-    const tl = getScaledTimeline(useId, (typeof computed \!== "undefined" && computed ? computed.gsf : (typeof budget \!== "undefined" && budget ? budget.gsf : 0)));
+    const tl = getScaledTimeline(useId, (typeof computed !== "undefined" && computed ? computed.gsf : (typeof budget !== "undefined" && budget ? budget.gsf : 0)));
     const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
     const preIRR = approxIRR(computed.devMargin, totalMo);
     const effectiveTaxRate = 0.25; // blended federal+state for CRE
@@ -15549,7 +15550,7 @@ function recalcCashFlow() {
 
 function renderKPIDashboard(st) {
     const { bestUse, inp, computed, effects } = st;
-    const tl = getScaledTimeline(bestUse, (typeof computed \!== "undefined" && computed ? computed.gsf : 0));
+    const tl = getScaledTimeline(bestUse, (typeof computed !== "undefined" && computed ? computed.gsf : 0));
     const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
     const irr = approxIRR(computed.devMargin, totalMo);
     const legalScore = scoreLegal(bestUse, inp, effects);
@@ -15886,7 +15887,7 @@ function exportCSVData() {
     if (!st) return;
     const { prop, bestUse, computed, inp } = st;
     const use = LAND_USES.find(u => u.id === bestUse);
-    const tl = getScaledTimeline(bestUse, (typeof computed \!== "undefined" && computed ? computed.gsf : 0));
+    const tl = getScaledTimeline(bestUse, (typeof computed !== "undefined" && computed ? computed.gsf : 0));
     const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
     const irr = approxIRR(computed.devMargin, totalMo);
 
