@@ -3103,7 +3103,6 @@ async function checkAuth() {
     const code = document.getElementById('authPassword').value;
     const hash = await sha256(code);
     if (hash === ADMIN_HASH || VALID_CODES.includes(hash)) {
-        localStorage.setItem('hbu_auth_hash', hash);
         const overlay = document.getElementById('authOverlay');
         overlay.classList.add('fade-out');
         setTimeout(() => overlay.remove(), 500);
@@ -3285,17 +3284,8 @@ function activateDemo() {
   }, 300);
 }
 
-// Auto-authenticate on load if stored hash is still valid
-(function() {
-    const storedHash = localStorage.getItem('hbu_auth_hash');
-    if (storedHash && (storedHash === ADMIN_HASH || VALID_CODES.includes(storedHash))) {
-        const overlay = document.getElementById('authOverlay');
-        if (overlay) overlay.remove();
-    } else {
-        // Clear invalid/revoked hash
-        localStorage.removeItem('hbu_auth_hash');
-    }
-})();
+// Clear any previously stored auth hash — require code every visit during pilot
+localStorage.removeItem('hbu_auth_hash');
 
 // Utility: run in browser console to generate a hash for a new access code
 // Usage: generateCodeHash('YOUR-CODE-HERE')
