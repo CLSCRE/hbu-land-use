@@ -3243,24 +3243,41 @@ function renderLeveredReturns(budget) {
 function activateDemo() {
   var overlay = document.getElementById('authOverlay');
   if (overlay) overlay.style.display = 'none';
-  var banner = document.getElementById('demoBanner');
-  if (banner) banner.style.display = '';
-  // Pre-fill form -- Lender sample: 3401 W Sunset Blvd (mixed-use near transit)
-  var addr = document.getElementById('addressInput');
-  if (addr) addr.value = '3401 W Sunset Blvd, Los Angeles, CA 90026';
-  var ps = document.getElementById('parcelSize');
-  if (ps) ps.value = '12000';
-  var zn = document.getElementById('zoning');
-  if (zn) zn.value = 'C2';
-  var nb = document.getElementById('neighborhood');
-  if (nb) nb.value = 'silverlake';
-  var tr = document.getElementById('transit');
-  if (tr) tr.value = 'adjacent';
-  var ar = document.getElementById('arterial');
-  if (ar) ar.value = 'major';
-  setTimeout(function() {
-    if (typeof calculateHBU === 'function') calculateHBU();
-  }, 300);
+  document.body.innerHTML = '<div style="min-height:100vh;background:linear-gradient(135deg,#1a365d 0%,#2b6cb0 50%,#1a365d 100%);display:flex;align-items:center;justify-content:center;padding:2rem;">'
+    + '<div style="max-width:800px;width:100%;">'
+    + '<div style="text-align:center;margin-bottom:2rem;">'
+    + '<h1 style="color:#fff;font-size:2rem;margin:0 0 0.5rem;">Land to Yield — Lender &amp; Capital Portal</h1>'
+    + '<p style="color:#bee3f8;font-size:1rem;">Preview of what subscribers get access to</p>'
+    + '</div>'
+    + '<div style="display:grid;gap:1.25rem;">'
+    + '<div style="background:#fff;border-radius:12px;padding:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.2);">'
+    + '<h3 style="color:#2b6cb0;margin:0 0 0.75rem;font-size:1.05rem;">Lender Credit Snapshot</h3>'
+    + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;">'
+    + '<div style="text-align:center;"><div style="font-size:0.65rem;color:#718096;text-transform:uppercase;">LTV</div><div style="font-size:1.1rem;font-weight:700;color:#2b6cb0;">62.3%</div></div>'
+    + '<div style="text-align:center;"><div style="font-size:0.65rem;color:#718096;text-transform:uppercase;">DSCR</div><div style="font-size:1.1rem;font-weight:700;color:#38a169;">1.34x</div></div>'
+    + '<div style="text-align:center;"><div style="font-size:0.65rem;color:#718096;text-transform:uppercase;">Debt Yield</div><div style="font-size:1.1rem;font-weight:700;color:#2b6cb0;">8.7%</div></div>'
+    + '<div style="text-align:center;"><div style="font-size:0.65rem;color:#718096;text-transform:uppercase;">Dev Margin</div><div style="font-size:1.1rem;font-weight:700;color:#38a169;">+16.1%</div></div>'
+    + '</div></div>'
+    + '<div style="background:#fff;border-radius:12px;padding:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.2);">'
+    + '<h3 style="color:#2b6cb0;margin:0 0 0.75rem;font-size:1.05rem;">Risk Assessment</h3>'
+    + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;">'
+    + '<div style="background:#f0fff4;border-radius:8px;padding:0.75rem;text-align:center;"><div style="font-size:0.7rem;color:#4a5568;text-transform:uppercase;">Credit Grade</div><div style="font-size:1.2rem;font-weight:700;color:#38a169;">B+</div></div>'
+    + '<div style="background:#ebf8ff;border-radius:8px;padding:0.75rem;text-align:center;"><div style="font-size:0.7rem;color:#4a5568;text-transform:uppercase;">Stabilized Value</div><div style="font-size:1.1rem;font-weight:700;color:#2b6cb0;">$18.2M</div></div>'
+    + '<div style="background:#fffff0;border-radius:8px;padding:0.75rem;text-align:center;"><div style="font-size:0.7rem;color:#4a5568;text-transform:uppercase;">Risk Flags</div><div style="font-size:1.1rem;font-weight:700;color:#d69e2e;">2</div></div>'
+    + '</div></div>'
+    + '<div style="background:#fff;border-radius:12px;padding:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.2);">'
+    + '<h3 style="color:#2b6cb0;margin:0 0 0.5rem;font-size:1.05rem;">Also Included</h3>'
+    + '<ul style="margin:0;padding:0 0 0 1.25rem;color:#4a5568;font-size:0.9rem;line-height:1.8;">'
+    + '<li>27-tab Deep Developability Analysis (construction, earthwork, entitlements, unit mix, and more)</li>'
+    + '<li>Sensitivity Matrix — 7x7 heat map across rent and cost scenarios</li>'
+    + '<li>Sources &amp; Uses capital stack and levered returns</li>'
+    + '<li>SB 79 Transit Opportunity Map with interactive zone overlays</li>'
+    + '<li>Automated risk flag identification and credit grading</li>'
+    + '</ul></div>'
+    + '<div style="text-align:center;margin-top:1rem;">'
+    + '<a href="index.html#pricing" style="display:inline-block;padding:0.85rem 2.5rem;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-radius:10px;font-size:1rem;font-weight:700;text-decoration:none;box-shadow:0 4px 15px rgba(102,126,234,.4);transition:transform .15s;">Subscribe for Full Access &rarr;</a>'
+    + '<p style="color:#bee3f8;font-size:0.8rem;margin-top:0.75rem;">Already have a code? <a href="lender.html" style="color:#fff;text-decoration:underline;">Enter it here</a></p>'
+    + '</div></div></div></div>';
 }
 
 
@@ -8206,6 +8223,7 @@ function exportPipelineSavedCSV() {
 }
 
 function deepAnalyzePipeline() {
+    if (window.isDemoMode) { alert('Deep Analysis is not available in Demo Mode. Subscribe for full access.'); return; }
     // Convert selected pipeline results to saved format and open deep analysis
     var checks = document.querySelectorAll('.pipeline-select:checked');
     if (checks.length === 0) { alert('Select at least one permit site.'); return; }
@@ -8240,6 +8258,7 @@ function deepAnalyzePipeline() {
 }
 
 function deepAnalyzePipelineSaved() {
+    if (window.isDemoMode) { alert('Deep Analysis is not available in Demo Mode. Subscribe for full access.'); return; }
     var saved = getPipelineSaved();
     if (saved.length === 0) { alert('No saved pipeline sites.'); return; }
     // Convert to compatible format for deep analysis
@@ -9490,6 +9509,10 @@ let deepAnalysisState = null;
 let deepAnalysisSelectedProps = []; // boolean array: which saved props are selected for Exec tab
 
 function openDeepAnalysis() {
+    if (window.isDemoMode) {
+        alert('Deep Analysis is not available in Demo Mode. Subscribe for full access.');
+        return;
+    }
     const saved = getSavedList();
     if (saved.length === 0) {
         alert('Save at least one property from the Opportunity Finder to run a Deep Analysis.');

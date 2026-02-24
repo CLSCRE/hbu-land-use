@@ -2429,29 +2429,39 @@ function renderSourcesAndUses(budget, isSimplified) {
 
 // === Demo Mode ===
 function activateDemo() {
-  // Remove auth overlay
   var overlay = document.getElementById('authOverlay');
   if (overlay) overlay.style.display = 'none';
-  // Show demo banner
-  var banner = document.getElementById('demoBanner');
-  if (banner) banner.style.display = '';
-  // Pre-fill form â€” Agent sample: 1423 S Ridgeley Dr (single-family teardown)
-  var addr = document.getElementById('addressInput');
-  if (addr) addr.value = '1423 S Ridgeley Dr, Los Angeles, CA 90019';
-  var ps = document.getElementById('parcelSize');
-  if (ps) ps.value = '7500';
-  var zn = document.getElementById('zoning');
-  if (zn) zn.value = 'R1';
-  var nb = document.getElementById('neighborhood');
-  if (nb) nb.value = 'midcity';
-  var tr = document.getElementById('transit');
-  if (tr) tr.value = 'near';
-  var ar = document.getElementById('arterial');
-  if (ar) ar.value = 'secondary';
-  // Trigger calculation after short delay
-  setTimeout(function() {
-    if (typeof calculateHBU === 'function') calculateHBU();
-  }, 300);
+  document.body.innerHTML = '<div style="min-height:100vh;background:linear-gradient(135deg,#0f766e 0%,#0d9488 50%,#14b8a6 100%);display:flex;align-items:center;justify-content:center;padding:2rem;">'
+    + '<div style="max-width:800px;width:100%;">'
+    + '<div style="text-align:center;margin-bottom:2rem;">'
+    + '<h1 style="color:#fff;font-size:2rem;margin:0 0 0.5rem;">Land to Yield — Agent Portal</h1>'
+    + '<p style="color:#b2f5ea;font-size:1rem;">Preview of what subscribers get access to</p>'
+    + '</div>'
+    + '<div style="display:grid;gap:1.25rem;">'
+    + '<div style="background:#fff;border-radius:12px;padding:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.2);">'
+    + '<h3 style="color:#0d9488;margin:0 0 0.75rem;font-size:1.05rem;">Listing Opportunity Score</h3>'
+    + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;">'
+    + '<div style="background:#f0fff4;border-radius:8px;padding:0.75rem;text-align:center;"><div style="font-size:0.7rem;color:#4a5568;text-transform:uppercase;">Opportunity Ratio</div><div style="font-size:1.3rem;font-weight:700;color:#38a169;">2.4x</div></div>'
+    + '<div style="background:#ebf8ff;border-radius:8px;padding:0.75rem;text-align:center;"><div style="font-size:0.7rem;color:#4a5568;text-transform:uppercase;">Best HBU</div><div style="font-size:1rem;font-weight:700;color:#0d9488;">Duplex / ADU</div></div>'
+    + '<div style="background:#fffff0;border-radius:8px;padding:0.75rem;text-align:center;"><div style="font-size:0.7rem;color:#4a5568;text-transform:uppercase;">Dev Land Bid</div><div style="font-size:1.1rem;font-weight:700;color:#d69e2e;">$1.85M</div></div>'
+    + '</div></div>'
+    + '<div style="background:#fff;border-radius:12px;padding:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.2);">'
+    + '<h3 style="color:#0d9488;margin:0 0 0.75rem;font-size:1.05rem;">Owner Talk Track</h3>'
+    + '<p style="color:#4a5568;font-size:0.9rem;line-height:1.6;margin:0;font-style:italic;">"Your property at 1423 S Ridgeley Dr is zoned R1 on a 7,500 SF lot. Based on our analysis, a developer could build a duplex with ADU, creating a development land bid of $1.85M — that\'s 2.4x the current market value. This is a strong redevelopment opportunity..."</p>'
+    + '</div>'
+    + '<div style="background:#fff;border-radius:12px;padding:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.2);">'
+    + '<h3 style="color:#0d9488;margin:0 0 0.5rem;font-size:1.05rem;">Also Included</h3>'
+    + '<ul style="margin:0;padding:0 0 0 1.25rem;color:#4a5568;font-size:0.9rem;line-height:1.8;">'
+    + '<li>Auto-generated owner talk tracks and listing pitch scripts</li>'
+    + '<li>One-pager analysis PDF export for client presentations</li>'
+    + '<li>Area Scanner — batch-score neighborhoods for prospecting</li>'
+    + '<li>Call list export and letter generator</li>'
+    + '<li>Sources &amp; Uses capital stack summary</li>'
+    + '</ul></div>'
+    + '<div style="text-align:center;margin-top:1rem;">'
+    + '<a href="index.html#pricing" style="display:inline-block;padding:0.85rem 2.5rem;background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;border-radius:10px;font-size:1rem;font-weight:700;text-decoration:none;box-shadow:0 4px 15px rgba(13,148,136,.4);transition:transform .15s;">Subscribe for Full Access &rarr;</a>'
+    + '<p style="color:#b2f5ea;font-size:0.8rem;margin-top:0.75rem;">Already have a code? <a href="agent.html" style="color:#fff;text-decoration:underline;">Enter it here</a></p>'
+    + '</div></div></div></div>';
 }
 
 // Clear any previously stored auth hash — require code every visit during pilot
