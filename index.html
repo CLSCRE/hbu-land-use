@@ -7,22 +7,24 @@
     <meta name="description" content="Instantly score highest-and-best-use for any LA County parcel. SB 79 analysis, 27-tab deep feasibility, pro forma modeling — all in one tool.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #0d9488;
-            --primary-dark: #0f766e;
-            --primary-light: #14b8a6;
-            --accent: #0ea5e9;
-            --bg: #f8fafc;
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #3b82f6;
+            --accent: #f59e0b;
+            --accent-light: #fbbf24;
+            --bg: #ffffff;
+            --bg-alt: #f5f5f7;
             --white: #ffffff;
-            --text: #1e293b;
-            --text-dark: #0f172a;
-            --text-light: #64748b;
-            --border: #e2e8f0;
-            --radius: 12px;
-            --shadow: 0 4px 24px rgba(13,148,136,0.08);
-            --shadow-lg: 0 12px 48px rgba(13,148,136,0.12);
+            --text: #1d1d1f;
+            --text-dark: #000000;
+            --text-light: #86868b;
+            --border: #d2d2d7;
+            --radius: 16px;
+            --shadow: 0 2px 12px rgba(0,0,0,0.06);
+            --shadow-lg: 0 8px 40px rgba(0,0,0,0.10);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -33,14 +35,16 @@
             color: var(--text);
             background: var(--bg);
             line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
 
         /* ── NAV ── */
         .nav {
             position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border);
+            background: rgba(255,255,255,0.80);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
             padding: 0 2rem;
         }
         .nav-inner {
@@ -49,47 +53,68 @@
             height: 72px;
         }
         .nav-brand {
-            font-weight: 800; font-size: 1.55rem; color: var(--primary-dark);
-            text-decoration: none; display: flex; flex-direction: column; line-height: 1.15;
-            letter-spacing: -0.02em;
+            display: flex; align-items: center; gap: .75rem;
         }
-        .nav-brand .brand-sub {
-            font-size: 0.7rem; font-weight: 600; color: var(--text-light);
-            letter-spacing: 0.06em; text-transform: uppercase; margin-top: 1px;
+        .nav-brand-text {
+            font-weight: 900; font-size: 1.7rem; color: var(--text-dark);
+            letter-spacing: -0.05em; line-height: 1;
+            text-decoration: none;
+            background: linear-gradient(135deg, #1d4ed8 0%, #0f172a 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        .nav-brand .brand-sub a {
-            color: var(--text-light); text-decoration: none;
+        .nav-brand-text span {
+            -webkit-text-fill-color: var(--accent); color: var(--accent);
         }
-        .nav-brand .brand-sub a:hover { color: var(--primary); }
+        .nav-divider {
+            width: 1px; height: 32px; background: var(--border);
+        }
+        .nav-powered-row {
+            display: flex; align-items: center; gap: .4rem;
+        }
+        .nav-powered {
+            font-size: 0.55rem; font-weight: 600; color: var(--text-light);
+            letter-spacing: 0.06em; text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .cls-logo {
+            height: 44px; width: auto; opacity: 0.8;
+            transition: opacity .2s; display: block;
+        }
+        .cls-logo:hover { opacity: 1; }
         .nav-links { display: flex; align-items: center; gap: 2rem; list-style: none; }
         .nav-links a {
-            text-decoration: none; color: var(--text); font-size: .9rem; font-weight: 500;
+            text-decoration: none; color: var(--text); font-size: .82rem; font-weight: 500;
             transition: color .2s;
         }
         .nav-links a:hover { color: var(--primary); }
         .btn {
-            display: inline-block; padding: .6rem 1.4rem; border-radius: 8px;
-            font-weight: 600; font-size: .9rem; text-decoration: none;
+            display: inline-block; padding: .55rem 1.3rem; border-radius: 980px;
+            font-weight: 600; font-size: .85rem; text-decoration: none;
             transition: all .2s; cursor: pointer; border: none;
         }
         .btn-primary {
-            background: var(--primary); color: var(--white);
-            box-shadow: 0 2px 8px rgba(13,148,136,0.3);
+            background: var(--white); color: var(--primary-dark);
+            border: 1.5px solid var(--primary-dark);
         }
-        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(13,148,136,0.4); }
+        .btn-primary:hover { background: var(--primary-dark); color: var(--white); }
         .btn-outline {
             background: transparent; color: var(--primary);
-            border: 2px solid var(--primary);
+            border: 1.5px solid var(--primary);
         }
         .btn-outline:hover { background: var(--primary); color: var(--white); }
-        .btn-lg { padding: .85rem 2rem; font-size: 1rem; border-radius: 10px; }
+        .btn-lg { padding: .75rem 2rem; font-size: .95rem; }
+        .btn-dark {
+            background: var(--text-dark); color: var(--white);
+        }
+        .btn-dark:hover { background: #333; }
 
         .hamburger {
             display: none; background: none; border: none; cursor: pointer;
-            flex-direction: column; gap: 5px; padding: 4px;
+            flex-direction: column; gap: 4px; padding: 4px;
         }
         .hamburger span {
-            display: block; width: 24px; height: 2px; background: var(--primary-dark);
+            display: block; width: 18px; height: 1.5px; background: var(--text-dark);
             transition: all .3s;
         }
 
@@ -101,80 +126,75 @@
         }
         .hero-bg {
             position: absolute; inset: 0;
-            background: url('https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1920&q=80') center/cover no-repeat;
+            background: url('https://images.unsplash.com/photo-1515896769750-31548aa180ed?w=1920&q=80') center/cover no-repeat;
         }
         .hero-bg::after {
             content: ''; position: absolute; inset: 0;
-            background: linear-gradient(180deg, rgba(15,23,42,0.75) 0%, rgba(13,148,136,0.6) 100%);
+            background: linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.25) 50%, rgba(0,0,0,0.50) 100%);
         }
         .hero-inner {
             max-width: 1060px; margin: 0 auto; position: relative; z-index: 1;
             text-align: center; padding: 8rem 2rem 5rem; color: var(--white);
         }
         .hero-brand {
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
         .hero-brand-name {
-            font-size: 3.8rem; font-weight: 800; letter-spacing: -0.03em;
-            line-height: 1; margin-bottom: 0.35rem;
-            background: linear-gradient(135deg, #ffffff 0%, var(--primary-light) 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: 4.2rem; font-weight: 900; letter-spacing: -0.04em;
+            line-height: 1; margin-bottom: 0.4rem;
+            color: var(--white);
         }
         .hero-brand-by {
-            font-size: 0.95rem; font-weight: 600; letter-spacing: 0.15em;
-            text-transform: uppercase; color: rgba(255,255,255,0.6);
+            position: absolute; top: 80px; right: 2rem;
         }
         .hero-brand-by a {
-            color: rgba(255,255,255,0.85); text-decoration: none;
-            border-bottom: 1px solid rgba(255,255,255,0.25);
-            transition: color .2s, border-color .2s;
+            display: inline-block;
         }
-        .hero-brand-by a:hover { color: var(--white); border-color: var(--white); }
+        .hero-brand-by .cls-logo-hero {
+            height: 36px; width: auto; opacity: 0.6;
+            transition: opacity .2s;
+            filter: brightness(0) invert(1);
+        }
+        .hero-brand-by .cls-logo-hero:hover { opacity: 1; }
         .hero-divider {
-            width: 60px; height: 3px; border-radius: 3px;
-            background: var(--primary-light); margin: 1.75rem auto 2rem;
-            opacity: 0.7;
+            width: 40px; height: 2px; border-radius: 2px;
+            background: var(--accent-light); margin: 1.5rem auto 1.75rem;
+            opacity: 0.8;
         }
         .hero h1 {
-            font-size: 3rem; font-weight: 800; line-height: 1.15;
-            margin-bottom: 1rem; letter-spacing: -0.02em;
+            font-size: 2.6rem; font-weight: 700; line-height: 1.2;
+            margin-bottom: 1rem; letter-spacing: -0.025em;
+            max-width: 720px; margin-left: auto; margin-right: auto;
         }
-        .hero h1 em { font-style: normal; color: var(--primary-light); }
+        .hero h1 em { font-style: normal; color: var(--accent-light); }
         .hero p.sub {
-            font-size: 1.2rem; color: rgba(255,255,255,0.85);
-            max-width: 640px; margin: 0 auto 3rem; line-height: 1.7;
+            font-size: 1.15rem; color: rgba(255,255,255,0.75);
+            max-width: 580px; margin: 0 auto 3rem; line-height: 1.65;
+            font-weight: 400;
         }
 
         /* Portal Cards */
         .portal-cards {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
-            max-width: 960px; margin: 0 auto 2.5rem;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem;
+            max-width: 900px; margin: 0 auto 2.5rem;
         }
         .portal-card {
-            background: rgba(255,255,255,0.1); backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 16px; padding: 2rem 1.5rem;
-            text-decoration: none; color: var(--white);
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 2rem 1.5rem;
+            text-decoration: none; color: var(--text);
             transition: all .3s; cursor: pointer;
         }
         .portal-card:hover {
-            background: rgba(255,255,255,0.18);
-            transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
         }
-        .portal-icon {
-            font-size: 2.5rem; margin-bottom: 1rem;
-        }
-        .portal-card h3 {
-            font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem;
-        }
-        .portal-card p {
-            font-size: 0.88rem; color: rgba(255,255,255,0.75); line-height: 1.5;
-        }
+        .portal-icon { font-size: 2.2rem; margin-bottom: .75rem; }
+        .portal-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--text-dark); }
+        .portal-card p { font-size: 0.82rem; color: var(--text-light); line-height: 1.5; }
         .portal-arrow {
-            display: inline-block; margin-top: 1rem; font-size: 0.85rem;
-            font-weight: 600; color: var(--primary-light);
+            display: inline-block; margin-top: .85rem; font-size: 0.82rem;
+            font-weight: 600; color: var(--primary);
             transition: transform .2s;
         }
         .portal-card:hover .portal-arrow { transform: translateX(4px); }
@@ -183,124 +203,230 @@
             display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
         }
         .hero-links a {
-            color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.9rem;
+            color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.85rem;
             font-weight: 500; transition: color .2s;
         }
         .hero-links a:hover { color: var(--white); }
 
         /* ── SECTIONS ── */
-        section { padding: 5rem 2rem; }
-        .section-inner { max-width: 1100px; margin: 0 auto; }
+        section { padding: 6rem 2rem; }
+        .section-inner { max-width: 980px; margin: 0 auto; }
         .section-header { text-align: center; margin-bottom: 3.5rem; }
         .section-header h2 {
-            font-size: 2.2rem; color: var(--text-dark); font-weight: 700;
-            margin-bottom: .75rem;
+            font-size: 2.8rem; color: var(--text-dark); font-weight: 800;
+            margin-bottom: .5rem; letter-spacing: -0.03em;
         }
-        .section-header p { color: var(--text-light); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+        .section-header p {
+            color: var(--text-light); font-size: 1.1rem; max-width: 520px; margin: 0 auto;
+            font-weight: 400;
+        }
         .section-label {
-            display: inline-block; font-size: .75rem; font-weight: 700;
-            text-transform: uppercase; letter-spacing: .1em;
-            color: var(--primary); margin-bottom: .75rem;
+            display: inline-block; font-size: .72rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .12em;
+            color: var(--text-light); margin-bottom: .6rem;
+        }
+
+        /* ── PHOTO BANNER ── */
+        .photo-banner {
+            height: 420px; position: relative; overflow: hidden;
+        }
+        .photo-banner img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+        }
+        .photo-banner-text {
+            position: absolute; inset: 0; z-index: 1;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--white); text-align: center; padding: 2rem;
+        }
+        .photo-banner::after {
+            content: ''; position: absolute; inset: 0;
+            background: rgba(0,0,0,0.35);
+        }
+        .photo-banner-text { z-index: 2; }
+        .photo-banner-text h3 {
+            font-size: 2.4rem; font-weight: 800; letter-spacing: -0.03em;
+            margin-bottom: .5rem;
+        }
+        .photo-banner-text p {
+            font-size: 1.05rem; color: rgba(255,255,255,0.8);
+            max-width: 480px; font-weight: 400;
         }
 
         /* ── PAIN POINTS ── */
-        .pain { background: var(--white); }
-        .pain-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+        .pain { background: var(--bg); }
+        .pain-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
         .pain-card {
-            padding: 2rem; border-radius: var(--radius);
-            border: 1px solid var(--border); text-align: center;
+            background: var(--white); padding: 2rem; border-radius: var(--radius);
+            border: 1px solid var(--border);
+            text-align: center;
             transition: transform .2s, box-shadow .2s;
         }
-        .pain-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+        .pain-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
         .pain-icon {
-            width: 56px; height: 56px; border-radius: 14px;
+            width: 52px; height: 52px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 1.25rem; font-size: 1.5rem;
-            background: linear-gradient(135deg, rgba(13,148,136,0.08), rgba(13,148,136,0.15));
+            margin: 0 auto 1.25rem; font-size: 1.35rem;
         }
-        .pain-card h3 { font-size: 1.1rem; color: var(--text-dark); margin-bottom: .5rem; }
-        .pain-card p { color: var(--text-light); font-size: .9rem; line-height: 1.6; }
+        .pain-icon.icon-red { background: #fee2e2; }
+        .pain-icon.icon-orange { background: #ffedd5; }
+        .pain-icon.icon-amber { background: #fef3c7; }
+        .pain-card h3 { font-size: 1.1rem; color: var(--text-dark); margin-bottom: .5rem; font-weight: 700; }
+        .pain-card p { color: var(--text-light); font-size: .88rem; line-height: 1.65; }
 
         /* ── FEATURES ── */
-        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+        .features-section { background: var(--bg-alt); }
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
         .feature-card {
             background: var(--white); padding: 2rem; border-radius: var(--radius);
-            border: 1px solid var(--border); transition: transform .2s, box-shadow .2s;
+            border: 1px solid var(--border);
+            transition: transform .2s, box-shadow .2s;
         }
-        .feature-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+        .feature-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .feature-card h3 { font-size: 1rem; color: var(--text-dark); margin-bottom: .4rem; font-weight: 700; }
+        .feature-card p { color: var(--text-light); font-size: .85rem; line-height: 1.6; }
         .feature-icon {
-            width: 48px; height: 48px; border-radius: 12px;
+            width: 44px; height: 44px; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            margin-bottom: 1.25rem; font-size: 1.3rem;
-            background: linear-gradient(135deg, var(--primary), rgba(13,148,136,0.3));
-            color: var(--white);
+            margin-bottom: 1.15rem; font-size: 1.2rem;
         }
-        .feature-card h3 { font-size: 1.05rem; color: var(--text-dark); margin-bottom: .5rem; }
-        .feature-card p { color: var(--text-light); font-size: .88rem; line-height: 1.6; }
+        .feature-icon.icon-blue { background: #dbeafe; }
+        .feature-icon.icon-indigo { background: #e0e7ff; }
+        .feature-icon.icon-purple { background: #ede9fe; }
+        .feature-icon.icon-amber { background: #fef3c7; }
+        .feature-icon.icon-rose { background: #ffe4e6; }
+        .feature-icon.icon-teal { background: #ccfbf1; }
 
         /* ── HOW IT WORKS ── */
-        .how { background: var(--white); }
-        .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5rem; text-align: center; }
+        .how {
+            position: relative; overflow: hidden;
+            background: var(--text-dark); color: var(--white);
+        }
+        .how-video-bg {
+            position: absolute; inset: 0; z-index: 0;
+            background: url('https://images.unsplash.com/photo-1534190239940-9ba8944ea261?w=1920&q=80') center/cover no-repeat;
+        }
+        .how-video-bg video {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        .how-video-bg::after {
+            content: ''; position: absolute; inset: 0;
+            background: rgba(0,0,0,0.75);
+        }
+        .how .section-inner { position: relative; z-index: 1; }
+        .how .section-header h2 { color: var(--white); }
+        .how .section-header p { color: rgba(255,255,255,0.6); }
+        .how .section-label { color: var(--accent-light); }
+        .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; text-align: center; }
         .step-num {
-            width: 48px; height: 48px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: var(--white); font-weight: 700; font-size: 1.2rem;
+            width: 44px; height: 44px; border-radius: 50%;
+            background: var(--white); color: var(--text-dark);
+            font-weight: 800; font-size: 1.1rem;
             display: flex; align-items: center; justify-content: center;
             margin: 0 auto 1.25rem;
         }
-        .step h3 { font-size: 1.1rem; color: var(--text-dark); margin-bottom: .5rem; }
-        .step p { color: var(--text-light); font-size: .9rem; margin-bottom: 1.25rem; }
+        .step h3 { font-size: 1.05rem; color: var(--white); margin-bottom: .4rem; font-weight: 700; }
+        .step p { color: rgba(255,255,255,0.55); font-size: .85rem; margin-bottom: 1.25rem; }
+
+        /* Mock-up screenshot cards */
         .step-screenshot {
-            background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
-            height: 200px; display: flex; align-items: center; justify-content: center;
-            color: var(--text-light); font-size: .85rem;
+            background: var(--white);
+            border: 1.5px solid var(--text-dark); border-radius: var(--radius);
+            padding: 1rem; text-align: left; min-height: 200px;
         }
+        .mock-bar {
+            display: flex; align-items: center; gap: .4rem;
+            background: var(--bg-alt); border-radius: 8px;
+            padding: .4rem .65rem; margin-bottom: .65rem; font-size: .75rem;
+            color: var(--text-light);
+        }
+        .mock-bar .dot { width: 7px; height: 7px; border-radius: 50%; }
+        .mock-bar .dot-r { background: #ef4444; }
+        .mock-bar .dot-y { background: #eab308; }
+        .mock-bar .dot-g { background: #22c55e; }
+        .mock-bar span.mock-url { margin-left: .4rem; }
+        .mock-line { height: 6px; border-radius: 3px; margin-bottom: .35rem; }
+        .mock-line.w100 { width: 100%; }
+        .mock-line.w75 { width: 75%; }
+        .mock-line.w60 { width: 60%; }
+        .mock-line.w50 { width: 50%; }
+        .mock-line.bg-blue { background: #dbeafe; }
+        .mock-line.bg-purple { background: #ede9fe; }
+        .mock-line.bg-indigo { background: #e0e7ff; }
+        .mock-line.bg-muted { background: var(--bg-alt); }
+        .mock-badge {
+            display: inline-block; padding: .15rem .5rem; border-radius: 6px;
+            font-size: .65rem; font-weight: 600; margin-right: .3rem; margin-bottom: .3rem;
+        }
+        .mock-badge.blue { background: #dbeafe; color: #1d4ed8; }
+        .mock-badge.purple { background: #ede9fe; color: #6d28d9; }
+        .mock-badge.amber { background: #fef3c7; color: #92400e; }
+        .mock-badge.rose { background: #ffe4e6; color: #be123c; }
+        .mock-badge.indigo { background: #e0e7ff; color: #3730a3; }
+        .mock-score { font-size: 1.6rem; font-weight: 800; margin: .4rem 0 .2rem; color: var(--text-dark); }
+        .mock-tabs { display: flex; gap: .3rem; margin-bottom: .65rem; flex-wrap: wrap; }
+        .mock-tab {
+            padding: .15rem .4rem; border-radius: 4px; font-size: .6rem; font-weight: 600;
+            background: var(--bg-alt); color: var(--text-light);
+        }
+        .mock-tab.active { background: #dbeafe; color: #1d4ed8; }
+
+        /* ── PHOTO STRIP ── */
+        .photo-strip {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            height: 320px; overflow: hidden;
+        }
+        .photo-strip-item { position: relative; overflow: hidden; }
+        .photo-strip-item img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+            transition: transform 6s ease;
+        }
+        .photo-strip-item:hover img { transform: scale(1.08); }
 
         /* ── PRICING ── */
         .pricing {
-            background: linear-gradient(170deg, var(--primary-dark) 0%, var(--primary) 50%, var(--primary-light) 100%);
-            color: var(--white);
+            background: var(--bg-alt);
         }
-        .pricing .section-header h2 { color: var(--white); }
-        .pricing .section-header p { color: rgba(255,255,255,0.75); }
-        .pricing .section-label { color: rgba(255,255,255,0.6); }
+        .pricing .section-label { color: var(--primary); }
 
         .founding-banner {
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(8px);
-            color: var(--white); font-weight: 700; text-align: center;
-            padding: .85rem 1.5rem; border-radius: 10px;
-            max-width: 600px; margin: 0 auto 3rem; font-size: 1rem;
-            border: 1px solid rgba(255,255,255,0.2);
+            background: linear-gradient(135deg, #fef3c7, #fff7ed);
+            color: #92400e; font-weight: 700; text-align: center;
+            padding: .85rem 1.5rem; border-radius: var(--radius);
+            max-width: 550px; margin: 0 auto 3rem; font-size: .95rem;
+            border: 1px solid #fde68a;
         }
 
-        .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; align-items: start; }
+        .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; align-items: start; }
         .price-card {
-            background: var(--white); color: var(--text); border-radius: 16px;
+            background: var(--white); color: var(--text); border-radius: var(--radius);
             padding: 2.5rem 2rem; text-align: center; position: relative;
+            border: 1px solid var(--border);
+            transition: transform .2s, box-shadow .2s;
+        }
+        .price-card:hover { box-shadow: var(--shadow-lg); }
+        .price-card.featured {
+            transform: scale(1.04);
+            border: 1.5px solid var(--primary);
             box-shadow: var(--shadow-lg);
         }
-        .price-card.featured {
-            transform: scale(1.05);
-            border: 3px solid var(--primary-light);
-        }
+        .price-card.featured:hover { box-shadow: 0 12px 48px rgba(37,99,235,0.15); }
         .price-badge {
-            position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: var(--white); font-size: .75rem; font-weight: 700;
-            padding: .35rem 1rem; border-radius: 20px; text-transform: uppercase;
+            position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+            background: var(--primary); color: var(--white);
+            font-size: .7rem; font-weight: 700;
+            padding: .3rem .9rem; border-radius: 980px; text-transform: uppercase;
             letter-spacing: .05em;
         }
-        .price-card h3 { font-size: 1.2rem; color: var(--text-dark); margin-bottom: .25rem; }
+        .price-card h3 { font-size: 1.1rem; color: var(--text-dark); margin-bottom: .2rem; font-weight: 700; }
         .price-card .price {
-            font-size: 2.8rem; font-weight: 800; color: var(--primary-dark);
-            margin: .75rem 0 .25rem;
+            font-size: 3rem; font-weight: 900; color: var(--text-dark);
+            margin: .5rem 0 .15rem; letter-spacing: -0.03em;
         }
-        .price-card .price span { font-size: 1rem; font-weight: 400; color: var(--text-light); }
-        .price-card .price-desc { color: var(--text-light); font-size: .85rem; margin-bottom: 1.5rem; }
+        .price-card .price span { font-size: .95rem; font-weight: 400; color: var(--text-light); }
+        .price-card .price-desc { color: var(--text-light); font-size: .82rem; margin-bottom: 1.5rem; }
         .price-features { list-style: none; text-align: left; margin-bottom: 2rem; }
         .price-features li {
-            padding: .45rem 0; font-size: .9rem; color: var(--text);
+            padding: .4rem 0; font-size: .88rem; color: var(--text);
             display: flex; align-items: flex-start; gap: .5rem;
         }
         .price-features li::before {
@@ -309,55 +435,57 @@
         .price-card .btn { width: 100%; text-align: center; }
 
         .per-report {
-            text-align: center; margin-top: 2rem; color: rgba(255,255,255,0.8);
-            font-size: .95rem;
+            text-align: center; margin-top: 2.5rem; color: var(--text-light);
+            font-size: .92rem;
         }
-        .per-report strong { color: var(--primary-light); }
+        .per-report strong { color: var(--text-dark); }
 
         /* ── FAQ ── */
-        .faq { background: var(--white); }
-        .faq-list { max-width: 750px; margin: 0 auto; }
+        .faq { background: var(--bg); }
+        .faq-list { max-width: 680px; margin: 0 auto; }
         .faq-item {
             border-bottom: 1px solid var(--border); padding: 1.25rem 0;
         }
         .faq-q {
             font-weight: 600; color: var(--text-dark); cursor: pointer;
             display: flex; justify-content: space-between; align-items: center;
-            font-size: 1rem; background: none; border: none; width: 100%;
+            font-size: .95rem; background: none; border: none; width: 100%;
             text-align: left; font-family: inherit; padding: 0;
         }
         .faq-q::after {
-            content: '+'; font-size: 1.4rem; color: var(--primary);
+            content: '+'; font-size: 1.3rem; color: var(--text-light);
             transition: transform .2s; flex-shrink: 0; margin-left: 1rem;
         }
-        .faq-item.open .faq-q::after { content: '\2212'; }
+        .faq-item.open .faq-q::after { content: '\2212'; color: var(--primary); }
         .faq-a {
             max-height: 0; overflow: hidden; transition: max-height .3s ease, padding .3s ease;
-            color: var(--text-light); font-size: .92rem; line-height: 1.7;
+            color: var(--text-light); font-size: .88rem; line-height: 1.7;
         }
         .faq-item.open .faq-a { max-height: 300px; padding-top: .75rem; }
 
         /* ── FOOTER ── */
         .footer {
-            background: var(--text-dark); color: rgba(255,255,255,0.7);
-            padding: 4rem 2rem 3rem; text-align: center;
+            background: var(--bg-alt);
+            color: var(--text-light);
+            padding: 3rem 2rem; text-align: center;
+            border-top: 1px solid var(--border);
         }
         .footer-inner { max-width: 1100px; margin: 0 auto; }
         .footer-brand {
-            font-size: 1.6rem; font-weight: 800; color: var(--white);
-            letter-spacing: -0.02em; margin-bottom: 0.25rem;
+            font-size: 1.3rem; font-weight: 700; color: var(--text-dark);
+            letter-spacing: -0.02em; margin-bottom: 0.2rem;
         }
         .footer-brand-sub {
-            font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
-            letter-spacing: 0.12em; color: rgba(255,255,255,0.4); margin-bottom: 1.75rem;
+            font-size: 0.68rem; font-weight: 500; text-transform: uppercase;
+            letter-spacing: 0.1em; color: var(--text-light); margin-bottom: 1.5rem;
         }
-        .footer-brand-sub a { color: rgba(255,255,255,0.55); text-decoration: none; }
-        .footer-brand-sub a:hover { color: var(--primary-light); }
-        .footer-links { display: flex; gap: 2rem; justify-content: center; margin-bottom: 1.75rem; flex-wrap: wrap; }
-        .footer-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: .9rem; transition: color .2s; }
-        .footer-links a:hover { color: var(--primary-light); }
-        .footer p { font-size: .85rem; }
-        .footer a { color: var(--primary-light); text-decoration: none; }
+        .footer-brand-sub a { color: var(--text-light); text-decoration: none; }
+        .footer-brand-sub a:hover { color: var(--primary); }
+        .footer-links { display: flex; gap: 1.75rem; justify-content: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .footer-links a { color: var(--text-light); text-decoration: none; font-size: .82rem; transition: color .2s; }
+        .footer-links a:hover { color: var(--primary); }
+        .footer p { font-size: .78rem; color: #aeaeb2; }
+        .footer a { color: var(--primary); text-decoration: none; }
         .footer a:hover { text-decoration: underline; }
 
         /* ── RESPONSIVE ── */
@@ -365,28 +493,41 @@
             .pain-grid, .features-grid, .pricing-grid, .steps {
                 grid-template-columns: 1fr;
             }
-            .portal-cards { grid-template-columns: 1fr; max-width: 420px; }
+            .portal-cards { grid-template-columns: 1fr; max-width: 380px; }
             .price-card.featured { transform: none; }
-            .hero-brand-name { font-size: 2.8rem; }
-            .hero h1 { font-size: 2rem; }
-            .hero p.sub { font-size: 1.05rem; }
-            .section-header h2 { font-size: 1.8rem; }
+            .hero-brand-name { font-size: 3rem; }
+            .hero h1 { font-size: 1.9rem; }
+            .hero p.sub { font-size: 1rem; }
+            .section-header h2 { font-size: 2rem; }
+            .photo-strip { grid-template-columns: 1fr; height: auto; }
+            .photo-strip-item { height: 220px; }
+            .photo-banner { height: 300px; }
+            .photo-banner-text h3 { font-size: 1.8rem; }
         }
 
         @media (max-width: 640px) {
+            .how-video-bg video { display: none; }
+            .photo-banner { height: 240px; }
+            .photo-banner-text h3 { font-size: 1.4rem; }
             .nav-links {
                 display: none; flex-direction: column; position: absolute;
                 top: 72px; left: 0; right: 0; background: var(--white);
-                padding: 1.5rem 2rem; border-bottom: 1px solid var(--border);
-                gap: 1.25rem; box-shadow: var(--shadow);
+                padding: 1.25rem 2rem; border-bottom: 1px solid var(--border);
+                gap: 1rem; box-shadow: var(--shadow-lg);
             }
             .nav-links.open { display: flex; }
             .hamburger { display: flex; }
+            .nav-brand-text { font-size: 1.4rem; }
+            .cls-logo { height: 36px; }
             .hero-inner { padding: 7rem 1.5rem 3rem; }
-            .hero-brand-name { font-size: 2.2rem; }
-            .hero-brand-by { font-size: 0.8rem; }
-            .hero h1 { font-size: 1.6rem; }
-            section { padding: 3.5rem 1.5rem; }
+            .hero-brand-name { font-size: 2.4rem; }
+            .hero-brand-by { position: static; text-align: center; margin-top: .5rem; }
+            .hero-brand-by .cls-logo-hero { height: 28px; }
+            .hero h1 { font-size: 1.5rem; }
+            section { padding: 4rem 1.5rem; }
+            .photo-strip { grid-template-columns: 1fr; }
+            .photo-strip-item:nth-child(2),
+            .photo-strip-item:nth-child(3) { display: none; }
         }
     </style>
 </head>
@@ -395,10 +536,16 @@
 <!-- ── NAV ── -->
 <nav class="nav">
     <div class="nav-inner">
-        <a href="#" class="nav-brand">
-            Land to Yield
-            <span class="brand-sub">by <a href="https://commerciallendingsolutions.ai" target="_blank" rel="noopener">Commercial Lending Solutions</a></span>
-        </a>
+        <div class="nav-brand">
+            <a href="#" class="nav-brand-text">Land <span>to</span> Yield</a>
+            <div class="nav-divider"></div>
+            <div class="nav-powered-row">
+                <span class="nav-powered">Powered by</span>
+                <a href="https://commerciallendingsolutions.ai" target="_blank" rel="noopener">
+                    <img src="https://commerciallendingsolutions.ai/images/cls-logo-emblem.png" alt="Commercial Lending Solutions" class="cls-logo">
+                </a>
+            </div>
+        </div>
         <ul class="nav-links" id="navLinks">
             <li><a href="#features">Features</a></li>
             <li><a href="#pricing">Pricing</a></li>
@@ -417,11 +564,11 @@
     <div class="hero-inner">
         <div class="hero-brand">
             <div class="hero-brand-name">Land to Yield</div>
-            <div class="hero-brand-by">by <a href="https://commerciallendingsolutions.ai" target="_blank" rel="noopener">Commercial Lending Solutions</a></div>
+            <div class="hero-brand-by"><a href="https://commerciallendingsolutions.ai" target="_blank" rel="noopener"><img src="https://commerciallendingsolutions.ai/images/cls-logo-emblem.png" alt="Commercial Lending Solutions" class="cls-logo-hero"></a></div>
         </div>
         <div class="hero-divider"></div>
-        <h1>Know Every LA Parcel's Development Potential in <em>60 Seconds</em></h1>
-        <p class="sub">Stop spending days on zoning research, legislation lookups, and manual pro formas. Get instant highest-and-best-use scoring for any parcel in LA County.</p>
+        <h1>Know Every LA Parcel's<br>Development Potential in <em>60 Seconds</em></h1>
+        <p class="sub">Stop spending days on zoning research and manual pro formas. Get instant highest-and-best-use scoring for any parcel in LA County.</p>
 
         <div class="portal-cards" id="role-portals">
             <a href="agent.html" class="portal-card">
@@ -439,7 +586,7 @@
             <a href="lender.html" class="portal-card">
                 <div class="portal-icon">🏦</div>
                 <h3>I'm a Lender / Capital Partner</h3>
-                <p>Quickly assess collateral quality, use options, and pipeline around any parcel using the same engine your borrowers rely on.</p>
+                <p>Quickly assess collateral quality, use options, and pipeline around any parcel.</p>
                 <span class="portal-arrow">Enter Lender Portal &rarr;</span>
             </a>
         </div>
@@ -456,67 +603,76 @@
     <div class="section-inner">
         <div class="section-header">
             <div class="section-label">The Problem</div>
-            <h2>Land Use Analysis Shouldn't Take Days</h2>
-            <p>Traditional zoning research is slow, fragmented, and error-prone. Here's what you're dealing with today.</p>
+            <h2>Land use analysis<br>shouldn't take days.</h2>
+            <p>Traditional zoning research is slow, fragmented, and error-prone.</p>
         </div>
         <div class="pain-grid">
             <div class="pain-card">
-                <div class="pain-icon">⏳</div>
+                <div class="pain-icon icon-red">⏳</div>
                 <h3>Zoning Research Takes Days</h3>
                 <p>Cross-referencing zone codes, overlays, and specific plans across multiple city databases burns hours of billable time per parcel.</p>
             </div>
             <div class="pain-card">
-                <div class="pain-icon">📜</div>
+                <div class="pain-icon icon-orange">📜</div>
                 <h3>Legislation Changes Constantly</h3>
                 <p>SB 79, AB 1893, TOC guidelines, ED1 — keeping up with stacking legislation and understanding what applies to each site is a full-time job.</p>
             </div>
             <div class="pain-card">
-                <div class="pain-icon">📊</div>
+                <div class="pain-icon icon-amber">📊</div>
                 <h3>Excel Pro Formas Break</h3>
-                <p>Fragile spreadsheets with hardcoded assumptions lead to errors, version conflicts, and zero sensitivity analysis. One broken formula and the deal falls apart.</p>
+                <p>Fragile spreadsheets with hardcoded assumptions lead to errors, version conflicts, and zero sensitivity analysis.</p>
             </div>
         </div>
     </div>
 </section>
 
+<!-- ── PHOTO BANNER ── -->
+<div class="photo-banner">
+    <img src="https://images.unsplash.com/photo-1580655653885-65763b2597d0?w=1920&q=80" alt="Los Angeles skyline at sunset" loading="lazy">
+    <div class="photo-banner-text">
+        <h3>Built for Los Angeles.</h3>
+        <p>Every parcel. Every zone. Every piece of legislation that affects what you can build.</p>
+    </div>
+</div>
+
 <!-- ── FEATURES ── -->
-<section id="features">
+<section id="features" class="features-section">
     <div class="section-inner">
         <div class="section-header">
             <div class="section-label">Features</div>
-            <h2>Everything You Need for Land Use Decisions</h2>
+            <h2>Everything you need for<br>land use decisions.</h2>
             <p>One tool replaces hours of manual research, multiple databases, and error-prone spreadsheets.</p>
         </div>
         <div class="features-grid">
             <div class="feature-card">
-                <div class="feature-icon">🏆</div>
+                <div class="feature-icon icon-amber">🏆</div>
                 <h3>HBU Scoring Engine</h3>
-                <p>Proprietary algorithm scores every allowable use for a parcel — residential, commercial, mixed-use, industrial — and ranks them by development potential.</p>
+                <p>Proprietary algorithm scores every allowable use — residential, commercial, mixed-use, industrial — and ranks by development potential.</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">🚇</div>
+                <div class="feature-icon icon-blue">🚇</div>
                 <h3>SB 79 Transit Finder</h3>
-                <p>Automatically identifies parcels within SB 79 transit zones with tier classification. Heavy rail, light rail, and commuter rail coverage mapped instantly.</p>
+                <p>Automatically identifies parcels within SB 79 transit zones with tier classification. Heavy rail, light rail, and commuter rail mapped instantly.</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">📋</div>
+                <div class="feature-icon icon-purple">📋</div>
                 <h3>27-Tab Deep Analysis</h3>
-                <p>From zoning to financial feasibility in 27 structured tabs. Every assumption is editable, every calculation is transparent and auditable.</p>
+                <p>From zoning to financial feasibility in 27 structured tabs. Every assumption is editable, every calculation transparent and auditable.</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">⚖️</div>
+                <div class="feature-icon icon-rose">⚖️</div>
                 <h3>Legislation Stacking</h3>
                 <p>Automatically layers applicable state and local legislation — SB 79, TOC, density bonus, ED1, ADU — showing exactly how each affects your site.</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">💰</div>
+                <div class="feature-icon icon-indigo">💰</div>
                 <h3>Pro Forma &amp; Sensitivity</h3>
                 <p>Built-in development pro forma with tornado charts and sensitivity analysis. Adjust assumptions in real time and see how they impact returns.</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">🤝</div>
+                <div class="feature-icon icon-teal">🤝</div>
                 <h3>Investor Module</h3>
-                <p>Generate investor-ready summaries with capital stack modeling, return waterfalls, and exportable PDF reports for your next equity raise.</p>
+                <p>Generate investor-ready summaries with capital stack modeling, return waterfalls, and exportable PDF reports.</p>
             </div>
         </div>
     </div>
@@ -524,10 +680,15 @@
 
 <!-- ── HOW IT WORKS ── -->
 <section class="how" id="how">
+    <div class="how-video-bg">
+        <video autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1534190239940-9ba8944ea261?w=1920&q=80">
+            <source src="https://videos.pexels.com/video-files/855271/855271-hd_1920_1080_30fps.mp4" type="video/mp4">
+        </video>
+    </div>
     <div class="section-inner">
         <div class="section-header">
             <div class="section-label">How It Works</div>
-            <h2>From Address to Analysis in 3 Steps</h2>
+            <h2>From address to analysis<br>in 3 steps.</h2>
             <p>No training required. Enter any LA County address and get actionable development intelligence.</p>
         </div>
         <div class="steps">
@@ -535,30 +696,90 @@
                 <div class="step-num">1</div>
                 <h3>Enter an Address</h3>
                 <p>Type any LA County address or APN. We pull zoning, overlays, lot size, and transit data automatically.</p>
-                <div class="step-screenshot">[ Screenshot — address entry ]</div>
+                <div class="step-screenshot">
+                    <div class="mock-bar">
+                        <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+                        <span class="mock-url">landtoyield.com</span>
+                    </div>
+                    <div style="padding:.4rem">
+                        <div style="background:#f5f5f7;border-radius:8px;padding:.5rem .65rem;margin-bottom:.6rem;color:#86868b;font-size:.75rem;">📍 1234 Wilshire Blvd, Los Angeles, CA 90017</div>
+                        <div class="mock-line w100 bg-muted"></div>
+                        <div class="mock-line w75 bg-muted"></div>
+                        <div style="display:flex;gap:.3rem;margin-top:.4rem;">
+                            <span class="mock-badge blue">R4 Zoning</span>
+                            <span class="mock-badge indigo">TOC Tier 3</span>
+                            <span class="mock-badge purple">SB 79</span>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="step">
                 <div class="step-num">2</div>
                 <h3>Get Your HBU Score</h3>
-                <p>See every allowable land use ranked by development potential with applicable legislation identified instantly.</p>
-                <div class="step-screenshot">[ Screenshot — HBU results ]</div>
+                <p>See every allowable land use ranked by development potential with applicable legislation identified.</p>
+                <div class="step-screenshot">
+                    <div style="padding:.4rem">
+                        <div style="color:#86868b;font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">HBU Score</div>
+                        <div class="mock-score" style="color:#1d4ed8;">94<span style="font-size:.8rem;font-weight:400;color:#86868b">/100</span></div>
+                        <div style="color:#86868b;font-size:.7rem;margin-bottom:.6rem;">Mixed-Use Residential — Highest Potential</div>
+                        <div style="display:flex;gap:.3rem;flex-wrap:wrap;">
+                            <span class="mock-badge amber">Mixed-Use — 94</span>
+                            <span class="mock-badge blue">Multi-Family — 87</span>
+                            <span class="mock-badge purple">Commercial — 72</span>
+                            <span class="mock-badge rose">Industrial — 31</span>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="step">
                 <div class="step-num">3</div>
                 <h3>Run Deep Analysis</h3>
-                <p>Dive into 27 tabs of detailed feasibility — zoning details, financial pro forma, sensitivity analysis, and investor-ready reports.</p>
-                <div class="step-screenshot">[ Screenshot — deep analysis ]</div>
+                <p>Dive into 27 tabs of detailed feasibility — zoning, pro forma, sensitivity analysis, and investor reports.</p>
+                <div class="step-screenshot">
+                    <div style="padding:.4rem">
+                        <div class="mock-tabs">
+                            <span class="mock-tab active">Zoning</span>
+                            <span class="mock-tab">Pro Forma</span>
+                            <span class="mock-tab">Sensitivity</span>
+                            <span class="mock-tab">Investor</span>
+                            <span class="mock-tab">+23</span>
+                        </div>
+                        <div class="mock-line w100 bg-purple"></div>
+                        <div class="mock-line w75 bg-blue"></div>
+                        <div class="mock-line w60 bg-indigo"></div>
+                        <div class="mock-line w100 bg-muted"></div>
+                        <div class="mock-line w50 bg-muted"></div>
+                        <div style="display:flex;gap:.3rem;margin-top:.4rem;">
+                            <span class="mock-badge indigo">FAR 6:1</span>
+                            <span class="mock-badge amber">IRR 18.2%</span>
+                            <span class="mock-badge purple">120 Units</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
+
+<!-- ── PHOTO STRIP ── -->
+<div class="photo-strip">
+    <div class="photo-strip-item">
+        <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=80" alt="Construction site with cranes" loading="lazy">
+    </div>
+    <div class="photo-strip-item">
+        <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80" alt="Glass high-rise looking up" loading="lazy">
+    </div>
+    <div class="photo-strip-item">
+        <img src="https://images.unsplash.com/photo-1460317442991-0ec209397118?w=800&q=80" alt="Luxury apartment exterior" loading="lazy">
+    </div>
+</div>
 
 <!-- ── PRICING ── -->
 <section class="pricing" id="pricing">
     <div class="section-inner">
         <div class="section-header">
             <div class="section-label">Pricing</div>
-            <h2>Simple, Transparent Pricing</h2>
+            <h2>Simple, transparent pricing.</h2>
             <p>Choose the plan that fits your deal flow. Cancel anytime.</p>
         </div>
 
@@ -634,7 +855,7 @@
     <div class="section-inner">
         <div class="section-header">
             <div class="section-label">FAQ</div>
-            <h2>Frequently Asked Questions</h2>
+            <h2>Frequently asked questions.</h2>
         </div>
         <div class="faq-list">
             <div class="faq-item">
@@ -647,7 +868,7 @@
             </div>
             <div class="faq-item">
                 <button class="faq-q">How is this different from CoStar or ZIMAS?</button>
-                <div class="faq-a">CoStar provides market comps and ZIMAS shows base zoning — neither tells you what you can actually build. Our tool layers all applicable legislation (SB 79, TOC, density bonus, ED1, ADU rules), scores every allowable use, and runs financial feasibility — all from a single address lookup. It's the analysis layer that sits on top of the data.</div>
+                <div class="faq-a">CoStar provides market comps and ZIMAS shows base zoning — neither tells you what you can actually build. Our tool layers all applicable legislation (SB 79, TOC, density bonus, ED1, ADU rules), scores every allowable use, and runs financial feasibility — all from a single address lookup.</div>
             </div>
             <div class="faq-item">
                 <button class="faq-q">Can I cancel my subscription anytime?</button>
@@ -669,7 +890,7 @@
 <footer class="footer">
     <div class="footer-inner">
         <div class="footer-brand">Land to Yield</div>
-        <div class="footer-brand-sub">by <a href="https://commerciallendingsolutions.ai" target="_blank" rel="noopener">Commercial Lending Solutions</a></div>
+        <div class="footer-brand-sub"><a href="https://commerciallendingsolutions.ai" target="_blank" rel="noopener"><img src="https://commerciallendingsolutions.ai/images/cls-logo-emblem.png" alt="Commercial Lending Solutions" style="height:28px;width:auto;opacity:0.5;transition:opacity .2s;vertical-align:middle;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='0.5'"></a></div>
         <div class="footer-links">
             <a href="app.html">Developer Portal</a>
             <a href="agent.html">Agent Portal</a>
@@ -678,7 +899,7 @@
             <a href="terms.html">Terms</a>
             <a href="mailto:contact@landtoyield.com">Contact</a>
         </div>
-        <p>&copy; 2025 Land to Yield. All rights reserved.</p>
+        <p>&copy; 2026 Land to Yield. All rights reserved.</p>
     </div>
 </footer>
 

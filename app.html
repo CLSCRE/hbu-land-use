@@ -1990,11 +1990,12 @@
         .market-rent-card .rent-value { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
         .market-rent-card .rent-label { font-size: 0.72rem; color: var(--text-light); }
         .market-rent-card .rent-sub { font-size: 0.68rem; color: #a0aec0; }
+        .massing-tooltip { font-size: 0.78rem; line-height: 1.4; }
         .vacancy-bar {
             height: 20px;
             background: #edf2f7;
             border-radius: 10px;
-            overflow: hidden;
+            overflow: visible;
             position: relative;
             margin: 0.3rem 0;
         }
@@ -2060,6 +2061,90 @@
             font-weight: 700;
             min-width: 45px;
             text-align: right;
+        }
+
+        /* Incentive Summary (Top-3 Result Cards) */
+        .incentive-summary {
+            margin-top: 0.75rem;
+            padding: 0.65rem 0.75rem;
+            background: linear-gradient(135deg, #f0fff4, #ebf8ff);
+            border: 1px solid #c6f6d5;
+            border-radius: 8px;
+        }
+        .incentive-summary-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        .incentive-summary-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #276749;
+        }
+        .incentive-count-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 0.68rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: #c6f6d5;
+            color: #276749;
+        }
+        .incentive-total-benefit {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #276749;
+            margin-bottom: 0.45rem;
+        }
+        .incentive-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.04);
+            font-size: 0.72rem;
+        }
+        .incentive-row:last-child { border-bottom: none; }
+        .incentive-row-name {
+            flex: 1;
+            color: #2d3748;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-right: 6px;
+        }
+        .incentive-row-type {
+            font-size: 0.62rem;
+            font-weight: 600;
+            padding: 1px 6px;
+            border-radius: 4px;
+            background: #ebf8ff;
+            color: #2b6cb0;
+            white-space: nowrap;
+            margin-right: 6px;
+        }
+        .incentive-row-amount {
+            font-weight: 700;
+            color: #276749;
+            white-space: nowrap;
+            min-width: 55px;
+            text-align: right;
+        }
+        .incentive-row.ineligible .incentive-row-name { color: #a0aec0; }
+        .incentive-row.ineligible .incentive-row-type { background: #f7fafc; color: #a0aec0; }
+        .incentive-row.ineligible .incentive-row-amount { color: #cbd5e0; }
+        .incentive-note {
+            font-size: 0.62rem;
+            color: #718096;
+            margin-top: 0.5rem;
+            padding-top: 0.4rem;
+            border-top: 1px dashed #cbd5e0;
+            font-style: italic;
+            line-height: 1.4;
         }
 
         /* Tax & Incentives */
@@ -2404,6 +2489,16 @@
 .demo-banner~header{margin-top:36px;}
 .demo-btn{display:inline-block;margin-top:.75rem;padding:.5rem 1.5rem;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;}
 .demo-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(102,126,234,.4);}
+
+/* === Parcel Lot Lines & Popup === */
+.parcel-popup{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:320px;}
+.parcel-popup .pp-header{font-size:.95rem;font-weight:700;color:#2d3748;margin-bottom:6px;border-bottom:2px solid #667eea;padding-bottom:4px;}
+.parcel-popup .pp-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;font-size:.8rem;}
+.parcel-popup .pp-label{color:#718096;font-weight:600;}
+.parcel-popup .pp-value{color:#2d3748;text-align:right;}
+.parcel-popup .pp-full{grid-column:1/-1;color:#2d3748;font-size:.8rem;margin-top:2px;}
+.parcel-popup .pp-link{display:inline-block;margin-top:8px;color:#667eea;font-weight:600;font-size:.8rem;text-decoration:none;}
+.parcel-popup .pp-link:hover{text-decoration:underline;}
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -2582,8 +2677,8 @@
                         </select>
                     </div>
 
-                    <div class="field">
-                        <label>Site Constraints <span class="hint">(select all that apply)</span></label>
+                    <div class="field" id="field-siteConstraints">
+                        <label>Site Constraints <span class="hint">(select all that apply)</span> <span class="autofill-badge">auto-detected</span></label>
                         <div class="checkbox-group">
                             <label class="checkbox-item"><input type="checkbox" id="constFlood"> Flood Zone</label>
                             <label class="checkbox-item"><input type="checkbox" id="constHillside"> Hillside Ordinance</label>
@@ -3081,7 +3176,115 @@
     For educational and preliminary analysis purposes only.
 </footer>
 
+<script src="shared.js"></script>
 <script>
+// ============================================================
+//  PARCEL LOT LINES — Shared Functions
+// ============================================================
+const PARCEL_QUERY_URL = 'https://public.gis.lacounty.gov/public/rest/services/LACounty_Cache/LACounty_Parcel/MapServer/0/query';
+const PARCEL_OUT_FIELDS = 'APN,SitusFullAddress,UseType,UseDescription,Roll_LandValue,Roll_ImpValue,YearBuilt1,SQFTmain1,Units1,Shape.STArea()';
+const PARCEL_MIN_ZOOM = 16;
+
+function formatParcelCurrency(val) {
+    if (!val && val !== 0) return 'N/A';
+    return '$' + Number(val).toLocaleString('en-US', { maximumFractionDigits: 0 });
+}
+function formatAPN(apn) {
+    if (!apn) return 'N/A';
+    const s = String(apn).replace(/\D/g, '');
+    if (s.length === 10) return s.slice(0,4) + '-' + s.slice(4,7) + '-' + s.slice(7);
+    return apn;
+}
+function buildParcelPopup(attr) {
+    const apn = formatAPN(attr.APN);
+    const addr = attr.SitusFullAddress || 'No address';
+    const use = attr.UseDescription || attr.UseType || 'N/A';
+    const areaFt = attr['Shape.STArea()'] || attr['Shape.STArea'];
+    const lotSqFt = areaFt ? Number(areaFt).toLocaleString('en-US', { maximumFractionDigits: 0 }) : 'N/A';
+    const lotAcres = areaFt ? (Number(areaFt) / 43560).toFixed(3) : null;
+    const land = attr.Roll_LandValue;
+    const imp = attr.Roll_ImpValue;
+    const total = (land || 0) + (imp || 0);
+    const impRatio = total > 0 ? ((imp || 0) / total * 100).toFixed(1) + '%' : 'N/A';
+    const apnClean = String(attr.APN || '').replace(/\D/g, '');
+    return `<div class="parcel-popup">
+        <div class="pp-header">${apn}</div>
+        <div class="pp-full" style="margin-bottom:4px;"><strong>${addr}</strong></div>
+        <div class="pp-grid">
+            <span class="pp-label">Use</span><span class="pp-value">${use}</span>
+            <span class="pp-label">Lot Size</span><span class="pp-value">${lotSqFt} SF${lotAcres ? ' (' + lotAcres + ' ac)' : ''}</span>
+            <span class="pp-label">Land Value</span><span class="pp-value">${formatParcelCurrency(land)}</span>
+            <span class="pp-label">Imp. Value</span><span class="pp-value">${formatParcelCurrency(imp)}</span>
+            <span class="pp-label">Total Assessed</span><span class="pp-value">${formatParcelCurrency(total > 0 ? total : null)}</span>
+            <span class="pp-label">Imp. Ratio</span><span class="pp-value">${impRatio}</span>
+            <span class="pp-label">Year Built</span><span class="pp-value">${attr.YearBuilt1 || 'N/A'}</span>
+            <span class="pp-label">Structure SF</span><span class="pp-value">${attr.SQFTmain1 ? Number(attr.SQFTmain1).toLocaleString() : 'N/A'}</span>
+            <span class="pp-label">Units</span><span class="pp-value">${attr.Units1 || 'N/A'}</span>
+        </div>
+        <a class="pp-link" href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" rel="noopener">View on LA County Assessor &rarr;</a>
+    </div>`;
+}
+async function fetchParcelsByBounds(bounds) {
+    const envelope = `${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}`;
+    let allFeatures = [];
+    let offset = 0;
+    const pageSize = 1000;
+    while (true) {
+        const params = new URLSearchParams({
+            where: '1=1', geometryType: 'esriGeometryEnvelope', geometry: envelope,
+            inSR: '4326', outSR: '4326', outFields: PARCEL_OUT_FIELDS,
+            returnGeometry: 'true', resultRecordCount: String(pageSize),
+            resultOffset: String(offset), f: 'json'
+        });
+        try {
+            const resp = await fetch(PARCEL_QUERY_URL + '?' + params.toString());
+            const data = await resp.json();
+            if (!data.features || data.features.length === 0) break;
+            allFeatures = allFeatures.concat(data.features);
+            if (data.features.length < pageSize) break;
+            offset += pageSize;
+            if (offset > 3000) break;
+        } catch (e) { console.warn('Parcel fetch error:', e); break; }
+    }
+    return allFeatures;
+}
+function drawParcelsOnMap(map, features, parcelLayer) {
+    parcelLayer.clearLayers();
+    features.forEach(f => {
+        if (!f.geometry || !f.geometry.rings) return;
+        const latlngs = f.geometry.rings.map(ring => ring.map(pt => [pt[1], pt[0]]));
+        const poly = L.polygon(latlngs, {
+            color: '#333', weight: 1.5, opacity: 0.8,
+            fillColor: 'transparent', fillOpacity: 0, interactive: true
+        });
+        poly.bindPopup(buildParcelPopup(f.attributes), { maxWidth: 340 });
+        parcelLayer.addLayer(poly);
+    });
+}
+function setupParcelLayer(map) {
+    const parcelLayer = L.layerGroup().addTo(map);
+    let debounceTimer = null;
+    let parcelEnabled = true;
+    function loadParcels() {
+        if (!parcelEnabled || !map.hasLayer(parcelLayer)) return;
+        if (map.getZoom() < PARCEL_MIN_ZOOM) { parcelLayer.clearLayers(); return; }
+        fetchParcelsByBounds(map.getBounds()).then(features => {
+            if (map.getZoom() >= PARCEL_MIN_ZOOM) drawParcelsOnMap(map, features, parcelLayer);
+        });
+    }
+    map.on('moveend', function() {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(loadParcels, 500);
+    });
+    map.on('overlayadd', function(e) {
+        if (e.layer === parcelLayer) { parcelEnabled = true; loadParcels(); }
+    });
+    map.on('overlayremove', function(e) {
+        if (e.layer === parcelLayer) { parcelEnabled = false; parcelLayer.clearLayers(); }
+    });
+    return parcelLayer;
+}
+
 // ============================================================
 //  AUTH GATE
 // ============================================================
@@ -3519,33 +3722,34 @@ const METRO_STATIONS = [
     { lat: 34.0156, lon: -118.4694, name: '26th St/Bergamot', line: 'expo_e', tier: 2, serviceType: 'Light Rail' },
     { lat: 34.0154, lon: -118.4960, name: 'Downtown Santa Monica', line: 'expo_e', tier: 2, serviceType: 'Light Rail' },
     // --- Gold/L Line — LIGHT RAIL (Tier 2): East LA → Azusa/APU ---
-    { lat: 34.0566, lon: -118.2338, name: 'Little Tokyo/Arts District', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0561, lon: -118.2365, name: 'Union Station (Gold)', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0620, lon: -118.2360, name: 'Chinatown', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0672, lon: -118.2350, name: 'Lincoln/Cypress', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0760, lon: -118.2260, name: 'Heritage Square/Arroyo', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0890, lon: -118.2100, name: 'Southwest Museum', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0960, lon: -118.1990, name: 'Highland Park', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1118, lon: -118.1868, name: 'South Pasadena', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1175, lon: -118.1560, name: 'Fillmore', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1285, lon: -118.1340, name: 'Del Mar', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1360, lon: -118.1230, name: 'Memorial Park', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1421, lon: -118.1150, name: 'Lake', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1497, lon: -118.1030, name: 'Allen', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1500, lon: -118.0830, name: 'Sierra Madre Villa', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1520, lon: -118.0520, name: 'Arcadia', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1425, lon: -118.0310, name: 'Monrovia', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1365, lon: -118.0090, name: 'Duarte/City of Hope', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1360, lon: -117.9870, name: 'Irwindale', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1370, lon: -117.9620, name: 'Azusa Downtown', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1380, lon: -117.9440, name: 'APU/Citrus College', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0501, lon: -118.2379, name: 'Little Tokyo/Arts District', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0561, lon: -118.2361, name: 'Union Station (Gold)', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0638, lon: -118.2359, name: 'Chinatown', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0808, lon: -118.2207, name: 'Lincoln/Cypress', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0871, lon: -118.2126, name: 'Heritage Square/Arroyo', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0982, lon: -118.2067, name: 'Southwest Museum', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1111, lon: -118.1930, name: 'Highland Park', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1153, lon: -118.1578, name: 'South Pasadena', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1334, lon: -118.1481, name: 'Fillmore', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1419, lon: -118.1482, name: 'Del Mar', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1485, lon: -118.1475, name: 'Memorial Park', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1519, lon: -118.1325, name: 'Lake', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1475, lon: -118.1134, name: 'Allen', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1485, lon: -118.0815, name: 'Sierra Madre Villa', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1429, lon: -118.0292, name: 'Arcadia', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1332, lon: -118.0035, name: 'Monrovia', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1325, lon: -117.9675, name: 'Duarte/City of Hope', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1288, lon: -117.9333, name: 'Irwindale', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1359, lon: -117.9067, name: 'Azusa Downtown', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1371, lon: -117.8908, name: 'APU/Citrus College', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
     // Gold/L Line East LA branch
-    { lat: 34.0441, lon: -118.2120, name: 'Mariachi Plaza/Boyle Heights', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0395, lon: -118.1938, name: 'Soto', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0335, lon: -118.1770, name: 'Indiana', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0290, lon: -118.1620, name: 'Maravilla', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0245, lon: -118.1475, name: 'East LA Civic Center', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0220, lon: -118.1280, name: 'Atlantic', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0476, lon: -118.2260, name: 'Pico/Aliso', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0475, lon: -118.2191, name: 'Mariachi Plaza/Boyle Heights', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0436, lon: -118.2103, name: 'Soto', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0343, lon: -118.1922, name: 'Indiana', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0425, lon: -118.1595, name: 'Maravilla', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0334, lon: -118.1612, name: 'East LA Civic Center', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0334, lon: -118.1544, name: 'Atlantic', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
     // --- Green/C Line — LIGHT RAIL (Tier 2): Norwalk → Redondo Beach ---
     { lat: 33.9190, lon: -118.0570, name: 'Norwalk', line: 'green_c', tier: 2, serviceType: 'Light Rail' },
     { lat: 33.9198, lon: -118.0940, name: 'Lakewood Blvd', line: 'green_c', tier: 2, serviceType: 'Light Rail' },
@@ -3761,6 +3965,272 @@ function detectSiteCondition(osmClass, osmType) {
     return 'vacant';
 }
 
+// ====================================================================
+//  SITE CONSTRAINT AUTO-DETECTION (heuristics + API refinement)
+// ====================================================================
+
+// --- LA-specific geographic data for constraint heuristics ---
+
+// Known Alquist-Priolo fault trace segments (simplified polyline vertices).
+// Each segment is [lat1, lon1, lat2, lon2]. If a parcel is within ~0.15 mi of any
+// segment, it is likely in a state-designated fault zone.
+const LA_FAULT_SEGMENTS = [
+    // Hollywood Fault (runs roughly E-W through Hollywood)
+    [34.1015, -118.3640, 34.0975, -118.3290],
+    [34.0975, -118.3290, 34.0942, -118.3010],
+    [34.0942, -118.3010, 34.0905, -118.2700],
+    // Santa Monica Fault
+    [34.0490, -118.5100, 34.0430, -118.4700],
+    [34.0430, -118.4700, 34.0370, -118.4350],
+    [34.0370, -118.4350, 34.0310, -118.3960],
+    // Raymond Fault (Pasadena area)
+    [34.1600, -118.1700, 34.1480, -118.1200],
+    [34.1480, -118.1200, 34.1400, -118.0900],
+    // Newport-Inglewood Fault
+    [33.9600, -118.3960, 33.9850, -118.3800],
+    [33.9850, -118.3800, 34.0100, -118.3650],
+    [34.0100, -118.3650, 34.0350, -118.3530],
+    // Sierra Madre Fault
+    [34.1850, -118.1200, 34.1750, -118.0600],
+    [34.1750, -118.0600, 34.1650, -118.0100],
+    // Verdugo Fault
+    [34.2200, -118.2800, 34.2000, -118.2400],
+    [34.2000, -118.2400, 34.1850, -118.2100],
+];
+
+// Neighborhoods / areas within LA Coastal Zone (roughly west of Lincoln Blvd to ocean)
+const COASTAL_NEIGHBORHOODS = [
+    'venice', 'marina_del_rey', 'playa_del_rey', 'westchester',
+    'pacific_palisades', 'malibu', 'san_pedro', 'wilmington',
+];
+// Bounding box: if lon is west of -118.44 AND lat is south of 34.05, likely coastal
+// Also Pacific Palisades / Malibu: lon west of -118.50
+function isCoastalHeuristic(lat, lon, hood) {
+    if (COASTAL_NEIGHBORHOODS.includes(hood)) return true;
+    // Pacific coast strip: within ~0.5 mi of shoreline
+    if (lon < -118.47 && lat < 34.08) return true;  // Venice/MDR/Playa
+    if (lon < -118.52) return true;                   // Palisades/Malibu
+    if (lat < 33.76 && lon < -118.30) return true;   // San Pedro/Pt Fermin
+    return false;
+}
+
+// Hillside Ordinance areas — simplified bounding regions
+const HILLSIDE_REGIONS = [
+    // Hollywood Hills / Mulholland
+    { latMin: 34.105, latMax: 34.160, lonMin: -118.420, lonMax: -118.280 },
+    // Mt Washington / Glassell Park hills
+    { latMin: 34.095, latMax: 34.125, lonMin: -118.230, lonMax: -118.195 },
+    // Baldwin Hills / Kenneth Hahn
+    { latMin: 33.990, latMax: 34.015, lonMin: -118.380, lonMax: -118.340 },
+    // Griffith Park perimeter (not buildable, but adjacent parcels)
+    { latMin: 34.120, latMax: 34.160, lonMin: -118.320, lonMax: -118.260 },
+    // Silver Lake hills (Micheltorena / Crestmont)
+    { latMin: 34.088, latMax: 34.105, lonMin: -118.270, lonMax: -118.250 },
+    // El Sereno hills
+    { latMin: 34.080, latMax: 34.100, lonMin: -118.185, lonMax: -118.160 },
+    // Pacific Palisades / Brentwood hills
+    { latMin: 34.050, latMax: 34.090, lonMin: -118.530, lonMax: -118.470 },
+    // Bel Air / Holmby Hills
+    { latMin: 34.075, latMax: 34.110, lonMin: -118.460, lonMax: -118.420 },
+];
+
+function isHillsideHeuristic(lat, lon) {
+    for (const r of HILLSIDE_REGIONS) {
+        if (lat >= r.latMin && lat <= r.latMax && lon >= r.lonMin && lon <= r.lonMax) return true;
+    }
+    return false;
+}
+
+// HPOZ (Historic Preservation Overlay Zone) neighborhoods
+const HPOZ_NEIGHBORHOODS = [
+    'hancock_park', 'windsor_square', 'west_adams', 'highland_park',
+    'jefferson_park', 'country_club_park', 'carthay',
+    'south_carthay', 'spaulding_square', 'melrose_hill',
+    'vinegar_hill', 'whitley_heights', 'banning',
+];
+
+function isHistoricHeuristic(hood) {
+    return HPOZ_NEIGHBORHOODS.includes(hood);
+}
+
+// Flood zone: areas near major channels and the LA River
+const FLOOD_CORRIDORS = [
+    // LA River — simplified centerline segments [lat, lon] with 0.15 mi buffer
+    { lat: 34.145, lon: -118.260 }, // Glendale Narrows
+    { lat: 34.115, lon: -118.245 }, // Elysian Valley / Frogtown
+    { lat: 34.085, lon: -118.230 }, // Lincoln Heights / Cypress Park
+    { lat: 34.060, lon: -118.220 }, // Boyle Heights
+    { lat: 34.030, lon: -118.210 }, // Vernon
+    { lat: 33.980, lon: -118.200 }, // South Gate
+    { lat: 33.940, lon: -118.195 }, // Lynwood / Compton
+    { lat: 33.900, lon: -118.210 }, // Carson
+    { lat: 33.770, lon: -118.215 }, // Long Beach (river mouth)
+    // Ballona Creek
+    { lat: 33.980, lon: -118.420 }, // Culver City
+    { lat: 33.975, lon: -118.440 }, // MDR / Playa Vista
+    // Tujunga Wash
+    { lat: 34.200, lon: -118.370 }, // Sun Valley
+    { lat: 34.175, lon: -118.355 }, // North Hollywood
+    // Dominguez Channel
+    { lat: 33.870, lon: -118.260 }, // Carson / Torrance
+    // Compton Creek
+    { lat: 33.905, lon: -118.220 },
+];
+const FLOOD_BUFFER_MI = 0.20; // ~1,000 ft from channel centerline
+
+function isFloodHeuristic(lat, lon) {
+    for (const pt of FLOOD_CORRIDORS) {
+        if (haversine(lat, lon, pt.lat, pt.lon) <= FLOOD_BUFFER_MI) return true;
+    }
+    return false;
+}
+
+// Distance from point to line segment (returns miles)
+function pointToSegmentDist(lat, lon, lat1, lon1, lat2, lon2) {
+    // Project onto segment in degree space (approximate at LA latitude)
+    const dx = lon2 - lon1, dy = lat2 - lat1;
+    const lenSq = dx * dx + dy * dy;
+    if (lenSq === 0) return haversine(lat, lon, lat1, lon1);
+    let t = ((lon - lon1) * dx + (lat - lat1) * dy) / lenSq;
+    t = Math.max(0, Math.min(1, t));
+    const projLat = lat1 + t * dy, projLon = lon1 + t * dx;
+    return haversine(lat, lon, projLat, projLon);
+}
+
+function isFaultHeuristic(lat, lon) {
+    const FAULT_BUFFER_MI = 0.15; // ~800 ft Alquist-Priolo zone width
+    for (const seg of LA_FAULT_SEGMENTS) {
+        if (pointToSegmentDist(lat, lon, seg[0], seg[1], seg[2], seg[3]) <= FAULT_BUFFER_MI) return true;
+    }
+    return false;
+}
+
+// Master heuristic function — returns which checkboxes to pre-check
+function detectSiteConstraints(lat, lon, hood) {
+    return {
+        constFlood:    isFloodHeuristic(lat, lon),
+        constHillside: isHillsideHeuristic(lat, lon),
+        constHistoric: isHistoricHeuristic(hood),
+        constFault:    isFaultHeuristic(lat, lon),
+        constCoastal:  isCoastalHeuristic(lat, lon, hood),
+    };
+}
+
+// Apply constraint heuristic results to checkboxes
+function applyConstraintDetection(constraints) {
+    var anySet = false;
+    ['constFlood', 'constHillside', 'constHistoric', 'constFault', 'constCoastal'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el && constraints[id]) { el.checked = true; anySet = true; }
+        else if (el) { el.checked = false; }
+    });
+    if (anySet) markAutofill('siteConstraints');
+    return anySet;
+}
+
+// --- GIS API refinement (runs in background after heuristics) ---
+
+async function fetchConstraintsFromGIS(lat, lon) {
+    var results = { constFlood: null, constHillside: null, constHistoric: null, constFault: null, constCoastal: null };
+
+    // All queries use ZIMAS / LA City Planning ArcGIS REST services
+    var queries = [];
+
+    // 1. Flood Zone — FEMA National Flood Hazard Layer
+    queries.push(
+        fetch('https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/28/query?' +
+            'geometry=' + lon + ',' + lat + '&geometryType=esriGeometryPoint&inSR=4326' +
+            '&spatialRel=esriSpatialRelIntersects&outFields=FLD_ZONE&returnGeometry=false&f=json')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.features && data.features.length > 0) {
+                var zone = data.features[0].attributes.FLD_ZONE || '';
+                // A, AE, AH, AO, V, VE = flood zone; X = minimal risk
+                results.constFlood = /^[AV]/.test(zone);
+            }
+        }).catch(function() {})
+    );
+
+    // 2. Hillside Ordinance — ZIMAS specific plan overlay
+    queries.push(
+        fetch('https://zimas.lacity.org/arcgis/rest/services/zma/specific_plan/MapServer/1117/query?' +
+            'geometry=' + lon + ',' + lat + '&geometryType=esriGeometryPoint&inSR=4326' +
+            '&spatialRel=esriSpatialRelIntersects&outFields=APTS_NAME&returnGeometry=false&f=json')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.features && data.features.length > 0) {
+                var name = (data.features[0].attributes.APTS_NAME || '').toLowerCase();
+                results.constHillside = name.indexOf('hillside') >= 0 || name.indexOf('baseline') >= 0;
+            }
+        }).catch(function() {})
+    );
+
+    // 3. Historic (HPOZ) — ZIMAS HPOZ overlay
+    queries.push(
+        fetch('https://zimas.lacity.org/arcgis/rest/services/zma/hpoz/MapServer/1116/query?' +
+            'geometry=' + lon + ',' + lat + '&geometryType=esriGeometryPoint&inSR=4326' +
+            '&spatialRel=esriSpatialRelIntersects&outFields=OBJECTID&returnGeometry=false&f=json')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.features && data.features.length > 0) {
+                results.constHistoric = true;
+            }
+        }).catch(function() {})
+    );
+
+    // 4. Fault Zone — CGS Alquist-Priolo layer
+    queries.push(
+        fetch('https://zimas.lacity.org/arcgis/rest/services/zma/fault_zone/MapServer/1107/query?' +
+            'geometry=' + lon + ',' + lat + '&geometryType=esriGeometryPoint&inSR=4326' +
+            '&spatialRel=esriSpatialRelIntersects&outFields=OBJECTID&returnGeometry=false&f=json')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.features && data.features.length > 0) {
+                results.constFault = true;
+            }
+        }).catch(function() {})
+    );
+
+    // 5. Coastal Zone — CA Coastal Commission boundary
+    queries.push(
+        fetch('https://zimas.lacity.org/arcgis/rest/services/zma/coastal/MapServer/1105/query?' +
+            'geometry=' + lon + ',' + lat + '&geometryType=esriGeometryPoint&inSR=4326' +
+            '&spatialRel=esriSpatialRelIntersects&outFields=OBJECTID&returnGeometry=false&f=json')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.features && data.features.length > 0) {
+                results.constCoastal = true;
+            }
+        }).catch(function() {})
+    );
+
+    await Promise.all(queries);
+    return results;
+}
+
+// Refine heuristic results with GIS API data (called in background)
+async function refineConstraintsFromGIS(lat, lon) {
+    try {
+        var gis = await fetchConstraintsFromGIS(lat, lon);
+        var updated = false;
+        ['constFlood', 'constHillside', 'constHistoric', 'constFault', 'constCoastal'].forEach(function(id) {
+            if (gis[id] !== null) {
+                var el = document.getElementById(id);
+                if (el && el.checked !== gis[id]) {
+                    el.checked = gis[id];
+                    updated = true;
+                }
+            }
+        });
+        if (updated) {
+            markAutofill('siteConstraints');
+            addStatus('<br><span class="status-item ok">Site constraints refined from GIS data</span>');
+        }
+    } catch (e) {
+        console.warn('GIS constraint refinement failed:', e);
+    }
+}
+
 // Estimate zoning when ZIMAS is blocked (fallback heuristic)
 function estimateZoningFallback(addressString, addressDetails, neighborhood) {
     const lower = (addressString || '').toLowerCase();
@@ -3889,7 +4359,12 @@ async function fetchParcelInfo(lat, lon) {
             if (!area && data.features[0].geometry && data.features[0].geometry.rings) {
                 area = computePolygonArea(data.features[0].geometry.rings, data.spatialReference);
             }
-            return { area, attrs };
+            // Store geometry + spatial reference for massing satellite overlay
+            var _geometry = null;
+            if (data.features[0].geometry && data.features[0].geometry.rings) {
+                _geometry = { rings: data.features[0].geometry.rings, spatialReference: data.spatialReference };
+            }
+            return { area, attrs, _geometry };
         }
         return null;
     } catch (e) {
@@ -4043,6 +4518,11 @@ async function lookupAddress() {
         filledCount++;
         statusParts.push(`<span class="status-item ok">Lot: ${Math.round(parcelResult.area).toLocaleString()} SF</span>`);
 
+        // Store parcel geometry for satellite massing overlay
+        if (parcelResult._geometry) {
+            window.lastParcelGeometry = parcelResult._geometry;
+        }
+
         // Estimate frontage
         const est = estimateFrontage(parcelResult.area);
         document.getElementById('frontage').value = est;
@@ -4076,8 +4556,25 @@ async function lookupAddress() {
     markAutofill('siteCondition');
     filledCount++;
 
+    // Auto-detect site constraints (instant heuristics)
+    const constraints = detectSiteConstraints(coords.lat, coords.lon, hood);
+    const anyConstraints = applyConstraintDetection(constraints);
+    if (anyConstraints) {
+        const detected = [];
+        if (constraints.constFlood) detected.push('Flood Zone');
+        if (constraints.constHillside) detected.push('Hillside');
+        if (constraints.constHistoric) detected.push('Historic (HPOZ)');
+        if (constraints.constFault) detected.push('Fault Zone');
+        if (constraints.constCoastal) detected.push('Coastal Zone');
+        statusParts.push('<span class="status-item warn">Constraints detected: ' + detected.join(', ') + ' (verify &amp; override if needed)</span>');
+        filledCount++;
+    }
+
     // Show status
     setStatus(statusParts.join('<br>'));
+
+    // Refine constraints from GIS APIs in background (non-blocking)
+    refineConstraintsFromGIS(coords.lat, coords.lon);
 
     // Show autofill notice
     if (filledCount > 0) {
@@ -5535,6 +6032,117 @@ function computeRiskLevel(useId, inp, legalScore, physicalScore) {
     return { level: 'Low', color: '#276749', bg: '#f0fff4' };
 }
 
+// Time-horizon metadata for each incentive program.
+// 'years' = raw financialImpact spans this many years (divide to annualize).
+// 'annual' = already an annual figure. 'oneTime' = a single event benefit.
+var INCENTIVE_PERIODS = {
+    toc:          { type: 'oneTime',  label: 'One-Time' },
+    densityBonus: { type: 'oneTime',  label: 'One-Time' },
+    lihtc:        { type: 'multi',    years: 10, label: '10-Yr Credit' },
+    welfare:      { type: 'annual',   label: 'Annual' },
+    eifd:         { type: 'multi',    years: 30, label: '30-Yr Revenue' },
+    oz:           { type: 'oneTime',  label: 'One-Time' },
+    nmtc:         { type: 'multi',    years: 7,  label: '7-Yr Credit' },
+    htc:          { type: 'oneTime',  label: 'One-Time' },
+    sb35:         { type: 'oneTime',  label: 'One-Time' },
+    mills:        { type: 'annual',   label: 'Annual' }
+};
+
+function getIncentiveAnnual(inc) {
+    var p = INCENTIVE_PERIODS[inc.id];
+    if (!p) return { annual: inc.financialImpact, period: { type: 'oneTime', label: 'One-Time' } };
+    if (p.type === 'multi') return { annual: Math.round(inc.financialImpact / p.years), period: p };
+    // 'annual' values are already per-year; 'oneTime' stays as-is for display but won't be annualized in total
+    return { annual: inc.financialImpact, period: p };
+}
+
+function getIncentivesSummaryForUse(useId, inp, effects) {
+    var budget = generateBudget(useId, inp, effects);
+    var st = {
+        computed: {
+            totalDev: budget.totalDev,
+            noi: budget.noi,
+            totalHard: budget.totalHard,
+            stabilizedValue: budget.stabilizedValue,
+            units: budget.units || 0,
+            capRate: budget.capRate,
+            landCost: budget.landCost
+        },
+        inp: inp
+    };
+    var defs = getIncentiveDefinitions(st);
+    var eligible = defs.filter(function(d) { return d.eligible; });
+
+    // Separate one-time vs recurring for the summary totals
+    var oneTimeTotal = 0;
+    var annualTotal = 0;
+    eligible.forEach(function(d) {
+        var info = getIncentiveAnnual(d);
+        if (info.period.type === 'oneTime') {
+            oneTimeTotal += d.financialImpact;
+        } else {
+            annualTotal += info.annual;
+        }
+    });
+    return { all: defs, eligible: eligible, oneTimeTotal: oneTimeTotal, annualTotal: annualTotal, count: eligible.length };
+}
+
+function generateIncentiveSummaryHTML(useId, inp, effects) {
+    var summary = getIncentivesSummaryForUse(useId, inp, effects);
+    if (summary.count === 0) {
+        return '<div class="incentive-summary" style="background:#f7fafc;border-color:#e2e8f0;"><div class="incentive-summary-header"><span class="incentive-summary-title" style="color:#718096;">Incentive Programs</span><span class="incentive-count-badge" style="background:#e2e8f0;color:#718096;">0 eligible</span></div><div style="font-size:0.72rem;color:#a0aec0;">No incentive programs applicable for this use type.</div></div>';
+    }
+    var html = '<div class="incentive-summary">';
+    html += '<div class="incentive-summary-header">';
+    html += '<span class="incentive-summary-title">Applicable Incentive Programs</span>';
+    html += '<span class="incentive-count-badge">' + summary.count + ' of ' + summary.all.length + ' eligible</span>';
+    html += '</div>';
+
+    // Show separate one-time and annual totals
+    html += '<div style="display:flex;gap:0.75rem;margin-bottom:0.45rem;flex-wrap:wrap;">';
+    if (summary.oneTimeTotal > 0) {
+        html += '<div class="incentive-total-benefit" style="margin-bottom:0;">One-Time: ' + formatCompactDollars(summary.oneTimeTotal) + '</div>';
+    }
+    if (summary.annualTotal > 0) {
+        html += '<div class="incentive-total-benefit" style="margin-bottom:0;">' + formatCompactDollars(summary.annualTotal) + '<span style="font-size:0.68rem;font-weight:500;color:#4a5568;"> /yr est.</span></div>';
+    }
+    html += '</div>';
+
+    // Show eligible programs sorted by annualized impact
+    var sorted = summary.eligible.slice().sort(function(a, b) {
+        return getIncentiveAnnual(b).annual - getIncentiveAnnual(a).annual;
+    });
+    sorted.forEach(function(inc) {
+        var info = getIncentiveAnnual(inc);
+        var displayAmt = info.annual;
+        var suffix = '';
+        if (info.period.type === 'annual') suffix = ' /yr';
+        else if (info.period.type === 'multi') suffix = ' /yr';
+        // one-time shows no suffix
+
+        html += '<div class="incentive-row">';
+        html += '<span class="incentive-row-name">' + inc.name.split('(')[0].trim() + '</span>';
+        html += '<span class="incentive-row-type">' + info.period.label + '</span>';
+        html += '<span class="incentive-row-amount">' + formatCompactDollars(displayAmt) + suffix + '</span>';
+        html += '</div>';
+    });
+    // Show up to 3 ineligible as grayed out
+    var ineligible = summary.all.filter(function(d) { return !d.eligible; });
+    ineligible.slice(0, 3).forEach(function(inc) {
+        html += '<div class="incentive-row ineligible">';
+        html += '<span class="incentive-row-name">' + inc.name.split('(')[0].trim() + '</span>';
+        html += '<span class="incentive-row-type">Not Eligible</span>';
+        html += '<span class="incentive-row-amount">—</span>';
+        html += '</div>';
+    });
+    if (ineligible.length > 3) {
+        html += '<div style="font-size:0.65rem;color:#a0aec0;padding-top:2px;">+' + (ineligible.length - 3) + ' more not eligible</div>';
+    }
+    html += '<div class="incentive-note">Estimates use rule-of-thumb formulas (% of dev cost, NOI, or hard costs) — not project-specific underwriting. Actual benefits depend on program applications, allocations, and compliance. Programs may be stackable — see Deep Analysis for full Incentive Matrix.</div>';
+    html += '</div>';
+    return html;
+}
+
 function generateCardMetricsHTML(useId, inp, effects, result) {
     const budget = generateBudget(useId, inp, effects);
     const tl = getScaledTimeline(useId, (typeof computed !== "undefined" && computed ? computed.gsf : (typeof budget !== "undefined" && budget ? budget.gsf : 0)));
@@ -5588,7 +6196,8 @@ function generateCardMetricsHTML(useId, inp, effects, result) {
                     </span>
                 </div>
             </div>
-        </div>`;
+        </div>
+        ${generateIncentiveSummaryHTML(useId, inp, effects)}`;
 }
 
 function generateRisksHTML(useId, inp) {
@@ -6071,6 +6680,8 @@ function renderReturnsSection(computed) {
     const perUnit = (v) => hasUnits ? `$${Math.round(v / computed.units).toLocaleString()}/unit` : '';
     const perNSF = (v) => `$${(v / (computed.revenueNSF || computed.nsf || 1)).toFixed(2)}/SF`;
 
+    const fmtMo = (v) => fmt(Math.round(v / 12));
+
     return `<div class="returns-grid">
         <div class="return-card"><div class="return-value">${(computed.yieldOnCost * 100).toFixed(1)}%</div><div class="return-label">Yield on Cost</div></div>
         <div class="return-card"><div class="return-value">${(computed.capRate * 100).toFixed(1)}%</div><div class="return-label">Market Cap Rate</div></div>
@@ -6078,16 +6689,186 @@ function renderReturnsSection(computed) {
         <div class="return-card"><div class="return-value" style="color:${marginColor}">${(computed.devMargin * 100).toFixed(0)}%</div><div class="return-label">Development Margin</div></div>
     </div>
     <table class="budget-table">
-        <thead><tr><th>Revenue &amp; Returns</th><th>Annual</th><th>${hasUnits ? '$/Unit' : '$/NSF'}</th></tr></thead>
+        <thead><tr><th>Revenue &amp; Returns</th><th>Monthly</th><th>Annual</th><th>${hasUnits ? '$/Unit' : '$/NSF'}</th></tr></thead>
         <tbody>
-        <tr><td>Gross Revenue (${(computed.revenueNSF || computed.nsf || 0).toLocaleString()} NSF &times; $${computed.revenuePSF}/SF)</td><td>${fmt(computed.grossRevenue)}</td><td class="dim">${hasUnits ? perUnit(computed.grossRevenue) : perNSF(computed.grossRevenue)}</td></tr>
-        <tr><td>Less: Operating Expenses (${computed.grossRevenue > 0 ? Math.round(computed.opex / computed.grossRevenue * 100) : 0}%)</td><td>(${fmt(computed.opex)})</td><td class="dim">${hasUnits ? '(' + perUnit(computed.opex).replace('$','$') + ')' : '(' + perNSF(computed.opex) + ')'}</td></tr>
-        <tr class="subtotal"><td>Net Operating Income (NOI)</td><td>${fmt(computed.noi)}</td><td>${hasUnits ? perUnit(computed.noi) : perNSF(computed.noi)}</td></tr>
-        <tr><td>Stabilized Value (NOI &divide; ${(computed.capRate * 100).toFixed(1)}% cap)</td><td>${fmt(computed.stabilizedValue)}</td><td class="dim">${hasUnits ? '$' + Math.round(computed.stabilizedValue / computed.units).toLocaleString() + '/unit' : '$' + Math.round(computed.stabilizedValue / (computed.gsf || 1)).toLocaleString() + '/GSF'}</td></tr>
-        <tr><td>Total Development Cost</td><td>${fmt(computed.totalDev)}</td><td class="dim">${hasUnits ? '$' + Math.round(computed.totalDev / computed.units).toLocaleString() + '/unit' : '$' + Math.round(computed.totalDev / (computed.gsf || 1)).toLocaleString() + '/GSF'}</td></tr>
-        <tr class="subtotal"><td>Development Profit / (Loss)</td><td><strong style="color:${marginColor}">${fmt(computed.stabilizedValue - computed.totalDev)}</strong></td><td><strong style="color:${marginColor}">${(computed.devMargin * 100).toFixed(0)}%</strong></td></tr>
+        <tr><td>Gross Revenue (${(computed.revenueNSF || computed.nsf || 0).toLocaleString()} NSF &times; $${computed.revenuePSF}/SF)</td><td class="dim">${fmtMo(computed.grossRevenue)}</td><td>${fmt(computed.grossRevenue)}</td><td class="dim">${hasUnits ? perUnit(computed.grossRevenue) : perNSF(computed.grossRevenue)}</td></tr>
+        <tr><td>Less: Operating Expenses (${computed.grossRevenue > 0 ? Math.round(computed.opex / computed.grossRevenue * 100) : 0}%)</td><td class="dim">(${fmtMo(computed.opex)})</td><td>(${fmt(computed.opex)})</td><td class="dim">${hasUnits ? '(' + perUnit(computed.opex).replace('$','$') + ')' : '(' + perNSF(computed.opex) + ')'}</td></tr>
+        <tr class="subtotal"><td>Net Operating Income (NOI)</td><td>${fmtMo(computed.noi)}</td><td>${fmt(computed.noi)}</td><td>${hasUnits ? perUnit(computed.noi) : perNSF(computed.noi)}</td></tr>
+        <tr><td>Stabilized Value (NOI &divide; ${(computed.capRate * 100).toFixed(1)}% cap)</td><td class="dim">—</td><td>${fmt(computed.stabilizedValue)}</td><td class="dim">${hasUnits ? '$' + Math.round(computed.stabilizedValue / computed.units).toLocaleString() + '/unit' : '$' + Math.round(computed.stabilizedValue / (computed.gsf || 1)).toLocaleString() + '/GSF'}</td></tr>
+        <tr><td>Total Development Cost</td><td class="dim">—</td><td>${fmt(computed.totalDev)}</td><td class="dim">${hasUnits ? '$' + Math.round(computed.totalDev / computed.units).toLocaleString() + '/unit' : '$' + Math.round(computed.totalDev / (computed.gsf || 1)).toLocaleString() + '/GSF'}</td></tr>
+        <tr class="subtotal"><td>Development Profit / (Loss)</td><td class="dim">—</td><td><strong style="color:${marginColor}">${fmt(computed.stabilizedValue - computed.totalDev)}</strong></td><td><strong style="color:${marginColor}">${(computed.devMargin * 100).toFixed(0)}%</strong></td></tr>
         </tbody>
     </table>`;
+}
+
+// === Satellite Massing Map ===
+var _massingSatMap = null;
+function renderMassingSatelliteMap(useId, inp, computed, containerId) {
+    var container = document.getElementById(containerId);
+    if (!container) return;
+    // Destroy previous instance
+    if (_massingSatMap) { try { _massingSatMap.remove(); } catch(e){} _massingSatMap = null; }
+    container.innerHTML = '';
+
+    var geo = window.lastGeocode;
+    if (!geo || !geo.lat) {
+        container.innerHTML = '<div style="padding:1rem;color:#718096;font-size:0.82rem;text-align:center;">Look up an address first to display satellite overlay.</div>';
+        return;
+    }
+
+    var map = L.map(container, { zoomControl: true, attributionControl: false }).setView([geo.lat, geo.lon], 18);
+    _massingSatMap = map;
+
+    var satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri', maxZoom: 20, maxNativeZoom: 18
+    });
+    var streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OSM', maxZoom: 19
+    });
+    satLayer.addTo(map);
+    L.control.layers({ 'Satellite': satLayer, 'Street': streetLayer }, {}, { position: 'topright' }).addTo(map);
+
+    var color = USE_COLORS[useId] || '#3182ce';
+    var params = BUILDING_PARAMS[useId] || {};
+    var setF = params.setF || 0;
+    var setS = params.setS || 0;
+
+    // Helper: convert Web Mercator / State Plane rings to WGS84 lat/lng
+    function ringsToLatLngs(geom) {
+        var sr = geom.spatialReference || {};
+        var wkid = sr.wkid || sr.latestWkid || 4326;
+        return geom.rings.map(function(ring) {
+            return ring.map(function(pt) {
+                if (wkid === 4326) return [pt[1], pt[0]];
+                if (wkid === 102100 || wkid === 3857) {
+                    // Web Mercator to WGS84
+                    var lng = (pt[0] / 20037508.34) * 180;
+                    var lat = (pt[1] / 20037508.34) * 180;
+                    lat = 180 / Math.PI * (2 * Math.atan(Math.exp(lat * Math.PI / 180)) - Math.PI / 2);
+                    return [lat, lng];
+                }
+                if (wkid === 2229 || wkid === 102645) {
+                    // NAD83 State Plane CA Zone 5 (US feet) — approximate conversion
+                    var x = pt[0]; var y = pt[1];
+                    // Use approximate linear transform centered on LA
+                    var lng0 = -118.25; var lat0 = 34.05;
+                    var ftPerDegLon = 288200; var ftPerDegLat = 364000;
+                    // Origin offsets for State Plane CA Zone 5
+                    var xOrigin = 6561666.667; var yOrigin = 1640416.667;
+                    var lng2 = lng0 + (x - xOrigin) / ftPerDegLon;
+                    var lat2 = lat0 + (y - yOrigin) / ftPerDegLat;
+                    return [lat2, lng2];
+                }
+                // Fallback: assume WGS84
+                return [pt[1], pt[0]];
+            });
+        });
+    }
+
+    // Draw parcel boundary if available
+    var parcelLatLngs = null;
+    if (window.lastParcelGeometry && window.lastParcelGeometry.rings) {
+        parcelLatLngs = ringsToLatLngs(window.lastParcelGeometry);
+        var parcelPoly = L.polygon(parcelLatLngs, {
+            color: '#38a169', weight: 2, dashArray: '6, 4',
+            fillColor: 'transparent', fillOpacity: 0, interactive: false
+        }).addTo(map);
+        map.fitBounds(parcelPoly.getBounds().pad(0.15));
+    }
+
+    // Build footprint rectangle
+    var footprintSF = computed.buildingFootprint || (computed.gsf / (computed.stories || 1));
+    var stories = computed.stories || params.stories || 1;
+    var bldgHeight = computed.buildingHeight || (stories * (params.floorH || 10));
+
+    // Calculate footprint dimensions (assume ~2:1 aspect ratio)
+    var fpWidth = Math.sqrt(footprintSF / 2); // short side
+    var fpDepth = fpWidth * 2; // long side (depth along lot)
+
+    // Convert feet to degrees at LA latitude
+    var ftPerDegLat = 364000; // ~1 degree lat in feet at 34°N
+    var ftPerDegLon = 288200; // ~1 degree lon in feet at 34°N
+
+    // Position building within parcel
+    var fpCenter;
+    if (parcelLatLngs && parcelLatLngs[0] && parcelLatLngs[0].length >= 3) {
+        // Find parcel centroid and bounding box
+        var ring = parcelLatLngs[0];
+        var minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
+        var cLat = 0, cLng = 0;
+        for (var i = 0; i < ring.length; i++) {
+            cLat += ring[i][0]; cLng += ring[i][1];
+            if (ring[i][0] < minLat) minLat = ring[i][0];
+            if (ring[i][0] > maxLat) maxLat = ring[i][0];
+            if (ring[i][1] < minLng) minLng = ring[i][1];
+            if (ring[i][1] > maxLng) maxLng = ring[i][1];
+        }
+        cLat /= ring.length; cLng /= ring.length;
+
+        // Determine lot orientation: assume front=south (street side = min lat)
+        // Offset centroid toward center considering setbacks
+        var setFDeg = setF / ftPerDegLat;
+        var setSDeg = setS / ftPerDegLon;
+        fpCenter = [cLat + setFDeg * 0.3, cLng]; // slight offset from true center toward rear
+    } else {
+        fpCenter = [geo.lat, geo.lon];
+    }
+
+    var halfW = (fpWidth / 2) / ftPerDegLon;
+    var halfD = (fpDepth / 2) / ftPerDegLat;
+
+    var fpRect = [
+        [fpCenter[0] - halfD, fpCenter[1] - halfW],
+        [fpCenter[0] - halfD, fpCenter[1] + halfW],
+        [fpCenter[0] + halfD, fpCenter[1] + halfW],
+        [fpCenter[0] + halfD, fpCenter[1] - halfW],
+    ];
+
+    // Draw setback zone (hatched area between parcel edge and building)
+    if (parcelLatLngs && (setF > 0 || setS > 0)) {
+        // Show setback as a subtle shaded area
+        L.polygon(parcelLatLngs, {
+            color: 'transparent', weight: 0,
+            fillColor: '#fbd38d', fillOpacity: 0.15, interactive: false
+        }).addTo(map);
+    }
+
+    // Draw building footprint
+    var fpPoly = L.polygon(fpRect, {
+        color: color, weight: 2, opacity: 0.9,
+        fillColor: color, fillOpacity: 0.45,
+    }).addTo(map);
+
+    // Tooltip with building info
+    fpPoly.bindTooltip(
+        '<strong>Proposed Building</strong><br>' +
+        'Footprint: ' + Math.round(footprintSF).toLocaleString() + ' SF<br>' +
+        'Stories: ' + stories + ' (' + Math.round(bldgHeight) + ' ft)<br>' +
+        'GSF: ' + (computed.gsf || 0).toLocaleString() + ' SF<br>' +
+        (setF > 0 || setS > 0 ? 'Setbacks: ' + setF + '\' front / ' + setS + '\' side' : ''),
+        { permanent: false, direction: 'top', className: 'massing-tooltip' }
+    );
+
+    // Add labels overlay
+    var labelHtml = '<div style="background:rgba(255,255,255,0.9);padding:4px 8px;border-radius:4px;font-size:0.72rem;line-height:1.4;box-shadow:0 1px 4px rgba(0,0,0,0.2);">' +
+        '<strong style="color:' + color + ';">' + Math.round(footprintSF).toLocaleString() + ' SF footprint</strong><br>' +
+        stories + ' stories / ' + Math.round(bldgHeight) + ' ft' +
+        (setF > 0 ? '<br>Front setback: ' + setF + '\'' : '') +
+        (setS > 0 ? '<br>Side setback: ' + setS + '\'' : '') +
+        '</div>';
+    L.marker([fpRect[2][0] + 0.00002, fpCenter[1]], {
+        icon: L.divIcon({ html: labelHtml, className: '', iconSize: [160, 60], iconAnchor: [80, 60] }),
+        interactive: false
+    }).addTo(map);
+
+    // Re-fit bounds after everything is drawn
+    if (parcelLatLngs) {
+        map.fitBounds(L.polygon(parcelLatLngs).getBounds().pad(0.2));
+    }
+
+    // Invalidate size after a tick (modal may still be rendering)
+    setTimeout(function() { map.invalidateSize(); }, 200);
+    setTimeout(function() { map.invalidateSize(); }, 600);
 }
 
 function renderSVGs(useId, inp, computed) {
@@ -6137,6 +6918,9 @@ function _recalcAnalysisImpl() {
 
     const svgEl = document.getElementById('sect-svg');
     if (svgEl) svgEl.innerHTML = renderSVGs(st.useId, st.inp, computed);
+
+    // Update satellite massing map
+    renderMassingSatelliteMap(st.useId, st.inp, computed, 'massingMapContainer');
 }
 
 function renderDeepAssumptions(assumptions, hasUnits, useId, computed) {
@@ -6354,7 +7138,7 @@ function openAnalysis(resultIndex) {
     html += `<div class="analysis-section">${renderAssumptions(assumptions, hasUnits)}</div>`;
 
     // --- Conceptual Renderings (re-rendered) ---
-    html += `<div class="analysis-section"><h3>Conceptual Massing Study</h3><div class="rendering-container" id="sect-svg">${renderSVGs(r.id, inp, computed)}</div></div>`;
+    html += `<div class="analysis-section"><h3>Conceptual Massing Study</h3><div class="rendering-container" id="sect-svg">${renderSVGs(r.id, inp, computed)}</div><div id="massingMapContainer" style="height:320px;margin-top:1rem;border-radius:8px;overflow:hidden;border:1px solid var(--border);"></div></div>`;
 
     // --- Line Item Budget (re-rendered) ---
     html += `<div class="analysis-section"><h3>Development Pro Forma &mdash; Line Item Budget</h3><div id="sect-budget">${renderBudgetTable(computed, inp)}</div></div>`;
@@ -6394,17 +7178,93 @@ function openAnalysis(resultIndex) {
     document.getElementById('analysisModal').style.display = 'block';
     document.body.style.overflow = 'hidden';
     document.getElementById('analysisModal').scrollTop = 0;
+
+    // Render satellite massing map after DOM is ready
+    setTimeout(function() {
+        renderMassingSatelliteMap(r.id, inp, computed, 'massingMapContainer');
+    }, 300);
 }
 
 function closeAnalysis() {
+    // Cleanup satellite map
+    if (_massingSatMap) { try { _massingSatMap.remove(); } catch(e){} _massingSatMap = null; }
     document.getElementById('analysisModal').style.display = 'none';
     document.body.style.overflow = '';
 }
 
+function snapshotMapsForPrint() {
+    // Convert Leaflet map canvases to static images for print
+    var maps = document.querySelectorAll('#massingMapContainer, #deepMassingMapContainer');
+    var snapshots = [];
+    maps.forEach(function(container) {
+        if (!container || container.offsetHeight === 0) return;
+        var leafletContainer = container.querySelector('.leaflet-container');
+        if (!leafletContainer) return;
+        try {
+            // Use leaflet's tile pane to create a composite image via canvas
+            var mapRect = leafletContainer.getBoundingClientRect();
+            var canvas = document.createElement('canvas');
+            canvas.width = mapRect.width * 2;
+            canvas.height = mapRect.height * 2;
+            var ctx = canvas.getContext('2d');
+            ctx.scale(2, 2);
+            ctx.fillStyle = '#e2e8f0';
+            ctx.fillRect(0, 0, mapRect.width, mapRect.height);
+
+            // Draw tile images
+            var tiles = leafletContainer.querySelectorAll('.leaflet-tile-loaded');
+            tiles.forEach(function(tile) {
+                try {
+                    var tileRect = tile.getBoundingClientRect();
+                    var dx = tileRect.left - mapRect.left;
+                    var dy = tileRect.top - mapRect.top;
+                    ctx.drawImage(tile, dx, dy, tileRect.width, tileRect.height);
+                } catch(e) { /* cross-origin tile */ }
+            });
+
+            // Draw SVG overlays (polygons, markers)
+            var svgPane = leafletContainer.querySelector('.leaflet-overlay-pane svg');
+            if (svgPane) {
+                var svgStr = new XMLSerializer().serializeToString(svgPane);
+                var svgBlob = new Blob([svgStr], { type: 'image/svg+xml' });
+                var img = new Image();
+                var url = URL.createObjectURL(svgBlob);
+                // Sync draw — may not work for all browsers
+                img.src = url;
+            }
+
+            // Create static image replacement
+            var dataUrl = canvas.toDataURL('image/png');
+            var staticImg = document.createElement('img');
+            staticImg.src = dataUrl;
+            staticImg.style.cssText = 'width:100%;height:auto;border-radius:8px;';
+            staticImg.className = 'print-map-snapshot';
+
+            // Hide map, show image
+            leafletContainer.style.display = 'none';
+            container.appendChild(staticImg);
+            snapshots.push({ container: container, leaflet: leafletContainer, img: staticImg });
+        } catch(e) {
+            console.warn('Map snapshot failed:', e);
+        }
+    });
+    return snapshots;
+}
+
+function restoreMapsAfterPrint(snapshots) {
+    if (!snapshots) return;
+    snapshots.forEach(function(s) {
+        if (s.img && s.img.parentNode) s.img.parentNode.removeChild(s.img);
+        if (s.leaflet) s.leaflet.style.display = '';
+    });
+}
+
 function printAnalysis() {
+    var snapshots = snapshotMapsForPrint();
     document.body.classList.add('printing-analysis');
     window.print();
     document.body.classList.remove('printing-analysis');
+    restoreMapsAfterPrint(snapshots);
 }
 
 
@@ -6453,10 +7313,19 @@ function initSB79Map(lat, lon) {
     sb79StationRadii = {};
 
     sb79Map = L.map('sb79Map').setView([lat, lon], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    sb79Map.createPane('finderMarkersPane');
+    sb79Map.getPane('finderMarkersPane').style.zIndex = 650;
+    var sb79Street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
         maxZoom: 18,
-    }).addTo(sb79Map);
+    });
+    var sb79Satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri',
+        maxZoom: 18,
+    });
+    sb79Street.addTo(sb79Map);
+    var sb79ParcelLayer = setupParcelLayer(sb79Map);
+    L.control.layers({'Street': sb79Street, 'Satellite': sb79Satellite}, {'Lot Lines': sb79ParcelLayer}, {position: 'topright'}).addTo(sb79Map);
 
     // Layer groups
     sb79Layers.tier1 = L.layerGroup().addTo(sb79Map);
@@ -6565,12 +7434,10 @@ function attachZoneClickHandler(mapInstance) {
     mapInstance.getContainer().addEventListener('click', function(evt) {
         // Small delay to let Leaflet process its own events first (marker popups etc.)
         setTimeout(function() {
-            // If a Leaflet popup is already open from a marker click, don't override it
+            // If a Leaflet popup is already open from a marker click, don't override it.
+            // This protects station popups, property popups, AND parcel/finder popups.
             if (mapInstance._popup && mapInstance._popup.isOpen && mapInstance._popup.isOpen()) {
-                // Check if this popup was opened by a station marker (has station-popup class)
-                var content = mapInstance._popup.getContent ? mapInstance._popup.getContent() : '';
-                if (typeof content === 'string' && content.indexOf('station-popup') >= 0) return;
-                if (typeof content === 'string' && content.indexOf('Your Property') >= 0) return;
+                return;
             }
 
             // Convert pixel click position to lat/lng
@@ -7245,8 +8112,9 @@ function addFinderParcelsToMap(station) {
         else if (r.impRatio < 1.0) color = '#dd6b20'; // warm
 
         const marker = L.circleMarker([r.lat, r.lon], {
-            radius: 5, fillColor: color, color: '#fff',
-            weight: 1, opacity: 0.9, fillOpacity: 0.8,
+            radius: 8, fillColor: color, color: '#fff',
+            weight: 1.5, opacity: 0.9, fillOpacity: 0.85,
+            pane: 'finderMarkersPane',
         });
 
         const allow = r.allowances;
@@ -7673,9 +8541,15 @@ function initPipelineMap() {
     if (pipelineMapInstance) { pipelineMapInstance.remove(); pipelineMapInstance = null; }
 
     pipelineMapInstance = L.map('pipelineMap').setView([34.05, -118.25], 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    var pipelineStreet = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors', maxZoom: 18,
-    }).addTo(pipelineMapInstance);
+    });
+    var pipelineSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri', maxZoom: 18,
+    });
+    pipelineStreet.addTo(pipelineMapInstance);
+    var pipelineParcelLayer = setupParcelLayer(pipelineMapInstance);
+    L.control.layers({'Street': pipelineStreet, 'Satellite': pipelineSatellite}, {'Lot Lines': pipelineParcelLayer}, {position: 'topright'}).addTo(pipelineMapInstance);
 
     pipelineMarkerLayer = L.layerGroup().addTo(pipelineMapInstance);
 
@@ -8383,10 +9257,19 @@ function initFinderMap() {
     if (finderMapInstance) { finderMapInstance.remove(); finderMapInstance = null; }
 
     finderMapInstance = L.map('finderMap').setView([34.05, -118.25], 10);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    finderMapInstance.createPane('finderMarkersPane');
+    finderMapInstance.getPane('finderMarkersPane').style.zIndex = 650;
+    var finderStreet = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
         maxZoom: 18,
-    }).addTo(finderMapInstance);
+    });
+    var finderSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri',
+        maxZoom: 18,
+    });
+    finderStreet.addTo(finderMapInstance);
+    var finderParcelLyr = setupParcelLayer(finderMapInstance);
+    L.control.layers({'Street': finderStreet, 'Satellite': finderSatellite}, {'Lot Lines': finderParcelLyr}, {position: 'topright'}).addTo(finderMapInstance);
 
     // Add all station markers
     const seenCoords = new Set();
@@ -8717,8 +9600,9 @@ function addFinderParcelsToMap2(station) {
         else if (r.impRatio < 1.0) color = '#dd6b20';
 
         const marker = L.circleMarker([r.lat, r.lon], {
-            radius: 5, fillColor: color, color: '#fff',
-            weight: 1, opacity: 0.9, fillOpacity: 0.8,
+            radius: 8, fillColor: color, color: '#fff',
+            weight: 1.5, opacity: 0.9, fillOpacity: 0.85,
+            pane: 'finderMarkersPane',
         });
 
         const allow = r.allowances;
@@ -9647,38 +10531,19 @@ function renderDeepTabPanels(skipTab0) {
         for (let i = panels.length - 1; i >= 1; i--) {
             panels[i].remove();
         }
+        // Reset lazy render state — invalidate all tabs
+        window._deepTabRendered = {};
         let html = '';
-        // Due Diligence
-        html += renderMarketCompsTab(st);
-        html += renderEnvironmentalTab(st);
-        html += renderEarthworkTab(st);
-        html += renderInfrastructureTab(st);
-        html += renderCommunityRiskTab(st);
-        // Entitlements
-        html += renderEntitlementTab(st);
-        html += renderRHNATab(st);
-        html += renderAffordableTab(st);
-        html += renderDevAgreementTab(st);
-        // Design
-        html += renderGenerativeDesignTab(st);
-        html += renderEnhancedSitePlanTab(st);
-        html += renderUnitMixTab(st);
-        html += renderParkingTab(st);
-        html += renderConstructionTab(st);
-        // Financial
-        html += renderSensitivityTab(st);
-        html += renderKPIDashboard(st);
-        // Export (last)
-        [renderPublicFinanceTab, renderTaxIncentivesTab, renderIncentiveMatrixTab, renderP3StructuringTab,
-         renderInvestorModuleTab,
-         renderDevTimelineTab, renderCashFlowModelTab, renderFiscalImpactTab, renderAssetStrategyTab,
-         renderExportTab
-        ].forEach(function(fn) {
-            try { html += fn(st); } catch(e) {
-                console.error('Error in tab render:', e);
-                html += '<div class="deep-tab-panel"><div class="analysis-section"><p style="color:#c53030;">Error: ' + e.message + '</p></div></div>';
-            }
-        });
+        var RENDERERS = window._deepTabRenderers || [];
+        var eagerRecalc = 5;
+        for (var ri = 1; ri <= Math.min(eagerRecalc, RENDERERS.length - 1); ri++) {
+            try { html += RENDERERS[ri](st); }
+            catch(e) { html += '<div class="deep-tab-panel"><div class="analysis-section"><p style="color:#c53030;">Error: ' + e.message + '</p></div></div>'; }
+            window._deepTabRendered[ri] = true;
+        }
+        for (var rli = eagerRecalc + 1; rli < RENDERERS.length; rli++) {
+            html += '<div class="deep-tab-panel" data-lazy-tab="' + rli + '"><div class="analysis-section" style="text-align:center;padding:3rem;"><div class="loading" style="font-size:0.85rem;">Loading...</div></div></div>';
+        }
         container.insertAdjacentHTML('beforeend', html);
         return;
     }
@@ -9720,70 +10585,52 @@ function renderDeepTabPanels(skipTab0) {
         html += renderExecSummaryTab(st);
     }
 
-    // --- Due Diligence ---
-    // Tab 1: Market Comps
-    html += renderMarketCompsTab(st);
-    // Tab 2: Environmental Constraints & Stormwater
-    html += renderEnvironmentalTab(st);
-    // Tab 3: Cut & Fill / Earthwork Analysis
-    html += renderEarthworkTab(st);
-    // Tab 4: Infrastructure & Utility Assessment
-    html += renderInfrastructureTab(st);
-    // Tab 5: Community & Political Risk
-    html += renderCommunityRiskTab(st);
-
-    // --- Entitlements ---
-    // Tab 6: Entitlement Pathway
-    html += renderEntitlementTab(st);
-    // Tab 7: RHNA Compliance
-    html += renderRHNATab(st);
-    // Tab 8: Affordable Compliance
-    html += renderAffordableTab(st);
-    // Tab 9: Dev Agreement
-    html += renderDevAgreementTab(st);
-
-    // --- Design ---
-    // Tab 10: Generative Design Engine
-    html += renderGenerativeDesignTab(st);
-    // Tab 11: Enhanced Site Plan & 3D Massing
-    html += renderEnhancedSitePlanTab(st);
-    // Tab 12: Unit Mix Optimizer
-    html += renderUnitMixTab(st);
-    // Tab 13: Parking Design & Layout Analyzer
-    html += renderParkingTab(st);
-    // Tab 14: Construction Type & Code Compliance
-    html += renderConstructionTab(st);
-
-    // --- Financial ---
-    // Tab 15: Pro Forma & Scenarios
-    html += renderSensitivityTab(st);
-    // Tab 16: KPI Dashboard
-    html += renderKPIDashboard(st);
-
-    // Remaining tabs wrapped in try-catch
-    var newTabRenderers = [
-        // Financial (cont.)
-        { name: 'Public Finance', fn: renderPublicFinanceTab },
-        { name: 'Tax & Incentives', fn: renderTaxIncentivesTab },
-        { name: 'Incentive Matrix', fn: renderIncentiveMatrixTab },
-        { name: 'P3 Structuring', fn: renderP3StructuringTab },
-        { name: 'Investor Module', fn: renderInvestorModuleTab },
-        // Stabilized Asset
-        { name: 'Dev Timeline', fn: renderDevTimelineTab },
-        { name: '10-Yr Cash Flow', fn: renderCashFlowModelTab },
-        { name: 'Fiscal Impact', fn: renderFiscalImpactTab },
-        { name: 'Asset Strategy', fn: renderAssetStrategyTab },
-        // Export
-        { name: 'Export & Reports', fn: renderExportTab },
+    // Lazy rendering: only render tabs 1-4 eagerly, rest on demand
+    var DEEP_TAB_RENDERERS = [
+        null, // Tab 0 handled above
+        renderMarketCompsTab,       // 1
+        renderEnvironmentalTab,     // 2
+        renderEarthworkTab,         // 3
+        renderInfrastructureTab,    // 4
+        renderCommunityRiskTab,     // 5
+        renderEntitlementTab,       // 6
+        renderRHNATab,              // 7
+        renderAffordableTab,        // 8
+        renderDevAgreementTab,      // 9
+        renderGenerativeDesignTab,  // 10
+        renderEnhancedSitePlanTab,  // 11
+        renderUnitMixTab,           // 12
+        renderParkingTab,           // 13
+        renderConstructionTab,      // 14
+        renderSensitivityTab,       // 15
+        renderKPIDashboard,         // 16
+        renderPublicFinanceTab,     // 17
+        renderTaxIncentivesTab,     // 18
+        renderIncentiveMatrixTab,   // 19
+        renderP3StructuringTab,     // 20
+        renderInvestorModuleTab,    // 21
+        renderDevTimelineTab,       // 22
+        renderCashFlowModelTab,     // 23
+        renderFiscalImpactTab,      // 24
+        renderAssetStrategyTab,     // 25
+        renderExportTab,            // 26
     ];
-    newTabRenderers.forEach(function(t) {
-        try {
-            html += t.fn(st);
-        } catch(e) {
-            console.error('Error rendering ' + t.name + ':', e);
-            html += '<div class="deep-tab-panel"><div class="analysis-section"><h3>' + t.name + '</h3><p style="color:#c53030;">Error rendering tab: ' + e.message + '</p></div></div>';
-        }
-    });
+    // Store globally for lazy access
+    window._deepTabRenderers = DEEP_TAB_RENDERERS;
+    window._deepTabRendered = {};
+
+    // Eagerly render first few tabs (visible on open)
+    var eagerCount = 5; // tabs 1-4 (most likely to be viewed first)
+    for (var ti = 1; ti <= Math.min(eagerCount, DEEP_TAB_RENDERERS.length - 1); ti++) {
+        try { html += DEEP_TAB_RENDERERS[ti](st); }
+        catch(e) { html += '<div class="deep-tab-panel"><div class="analysis-section"><p style="color:#c53030;">Error: ' + e.message + '</p></div></div>'; }
+        window._deepTabRendered[ti] = true;
+    }
+
+    // Placeholder panels for lazy tabs
+    for (var lti = eagerCount + 1; lti < DEEP_TAB_RENDERERS.length; lti++) {
+        html += '<div class="deep-tab-panel" data-lazy-tab="' + lti + '"><div class="analysis-section" style="text-align:center;padding:3rem;"><div class="loading" style="font-size:0.85rem;">Loading...</div></div></div>';
+    }
 
     document.getElementById('deepTabPanels').innerHTML = html;
 }
@@ -9791,12 +10638,60 @@ function renderDeepTabPanels(skipTab0) {
 function switchDeepTab(idx) {
     const panels = document.querySelectorAll('#deepTabPanels .deep-tab-panel');
     const btns = document.querySelectorAll('#deepTabs .deep-tab-btn');
+
+    // Lazy render if this tab hasn't been rendered yet
+    if (window._deepTabRenderers && !window._deepTabRendered[idx] && window._deepTabRenderers[idx] && deepAnalysisState) {
+        var panel = panels[idx];
+        if (panel && panel.hasAttribute('data-lazy-tab')) {
+            try {
+                var rendered = window._deepTabRenderers[idx](deepAnalysisState);
+                // Create temp container to parse HTML
+                var temp = document.createElement('div');
+                temp.innerHTML = rendered;
+                var newPanel = temp.firstElementChild;
+                if (newPanel) {
+                    panel.parentNode.replaceChild(newPanel, panel);
+                    // Re-query panels after DOM change
+                    var updatedPanels = document.querySelectorAll('#deepTabPanels .deep-tab-panel');
+                    updatedPanels.forEach((p, i) => p.classList.toggle('active', i === idx));
+                    btns.forEach((b, i) => {
+                        if (!b.classList.contains('coming-soon')) b.classList.toggle('active', i === idx);
+                    });
+                    window._deepTabRendered[idx] = true;
+                    // Post-render hooks
+                    if (idx === 11) {
+                        setTimeout(function() {
+                            var st = deepAnalysisState;
+                            if (st.bestUse && st.inp && st.computed) {
+                                renderMassingSatelliteMap(st.bestUse, st.inp, st.computed, 'deepMassingMapContainer');
+                            }
+                        }, 250);
+                    }
+                    return;
+                }
+            } catch(e) {
+                console.error('Lazy tab render error (tab ' + idx + '):', e);
+                panel.innerHTML = '<div class="analysis-section"><p style="color:#c53030;">Error: ' + e.message + '</p></div>';
+            }
+            window._deepTabRendered[idx] = true;
+        }
+    }
+
     panels.forEach((p, i) => p.classList.toggle('active', i === idx));
     btns.forEach((b, i) => {
         if (!b.classList.contains('coming-soon')) {
             b.classList.toggle('active', i === idx);
         }
     });
+    // Render satellite massing map when Site Plan & 3D tab is shown
+    if (idx === 11 && deepAnalysisState) {
+        setTimeout(function() {
+            var st = deepAnalysisState;
+            if (st.bestUse && st.inp && st.computed) {
+                renderMassingSatelliteMap(st.bestUse, st.inp, st.computed, 'deepMassingMapContainer');
+            }
+        }, 250);
+    }
 }
 
 function selectDeepProperty(index) {
@@ -9865,7 +10760,9 @@ function closeDeepAnalysis() {
 }
 
 function printDeepAnalysis() {
+    var snapshots = snapshotMapsForPrint();
     window.print();
+    restoreMapsAfterPrint(snapshots);
 }
 
 
@@ -10519,7 +11416,50 @@ function renderAffordableTab(st) {
 //  SKILL 25: MARKET COMPS & INTELLIGENCE
 // ============================================================
 
-const MARKET_RENTS_2025 = {
+var MARKET_DATA_META = {
+    vintage: 'Q4 2024 – Q1 2025',
+    sources: 'CoStar, Apartments.com, Zillow Rental Index, LA County Assessor',
+    lastUpdated: '2025-02-01',
+};
+
+// Try to load fresh market data from external JSON
+// Falls back silently to the hardcoded defaults below
+(function loadMarketDataJSON() {
+    fetch('market-data.json?v=' + Date.now()).then(function(r) {
+        if (!r.ok) throw new Error('Not found');
+        return r.json();
+    }).then(function(data) {
+        if (data.meta && data.meta.version) {
+            MARKET_DATA_META.vintage = data.meta.vintage || MARKET_DATA_META.vintage;
+            MARKET_DATA_META.sources = data.meta.sources || MARKET_DATA_META.sources;
+            MARKET_DATA_META.lastUpdated = data.meta.lastUpdated || MARKET_DATA_META.lastUpdated;
+        }
+        if (data.rents) {
+            for (var nh in data.rents) {
+                if (MARKET_RENTS_2025[nh]) Object.assign(MARKET_RENTS_2025[nh], data.rents[nh]);
+                else MARKET_RENTS_2025[nh] = data.rents[nh];
+            }
+        }
+        if (data.vacancy) {
+            for (var nh2 in data.vacancy) {
+                if (VACANCY_RATES[nh2]) Object.assign(VACANCY_RATES[nh2], data.vacancy[nh2]);
+                else VACANCY_RATES[nh2] = data.vacancy[nh2];
+            }
+        }
+        if (data.landComps) {
+            for (var nh3 in data.landComps) {
+                if (COMP_LAND_SALES[nh3]) Object.assign(COMP_LAND_SALES[nh3], data.landComps[nh3]);
+                else COMP_LAND_SALES[nh3] = data.landComps[nh3];
+            }
+        }
+        console.log('Market data loaded from JSON (vintage: ' + MARKET_DATA_META.vintage + ')');
+    }).catch(function() {
+        // Silent fallback — use hardcoded constants
+    });
+})();
+
+// Using var (not const) so the JSON loader above can update values
+var MARKET_RENTS_2025 = {
     // Monthly asking rents by neighborhood and unit type (2025 LA market)
     dtla:         { studio: 1950, br1: 2550, br2: 3400, br3: 4200, retail_psf: 42, office_psf: 48 },
     hollywood:    { studio: 2100, br1: 2800, br2: 3650, br3: 4500, retail_psf: 48, office_psf: 52 },
@@ -10541,7 +11481,7 @@ const MARKET_RENTS_2025 = {
     boyleheights: { studio: 1350, br1: 1750, br2: 2300, br3: 2850, retail_psf: 26, office_psf: 28 },
 };
 
-const VACANCY_RATES = {
+var VACANCY_RATES = {
     dtla:         { residential: 0.072, retail: 0.085, office: 0.185, trend: 'improving' },
     hollywood:    { residential: 0.055, retail: 0.062, office: 0.145, trend: 'stable' },
     koreatown:    { residential: 0.048, retail: 0.070, office: 0.160, trend: 'stable' },
@@ -10562,7 +11502,7 @@ const VACANCY_RATES = {
     boyleheights: { residential: 0.055, retail: 0.088, office: 0.190, trend: 'improving' },
 };
 
-const ABSORPTION_DATA = {
+var ABSORPTION_DATA = {
     // Annual absorption rate — % of new units absorbed per year by submarket
     dtla:         { residential: 0.82, retail: 0.70, office: 0.55, newSupplyUnits: 2800 },
     hollywood:    { residential: 0.88, retail: 0.78, office: 0.62, newSupplyUnits: 1500 },
@@ -10585,7 +11525,7 @@ const ABSORPTION_DATA = {
 };
 
 // Comparable land sales $/SF by neighborhood (recent transactions 2024-2025)
-const COMP_LAND_SALES = {
+var COMP_LAND_SALES = {
     dtla:         { low: 200, median: 275, high: 400, sampleSize: 18, trend: '+8% YoY' },
     hollywood:    { low: 180, median: 260, high: 380, sampleSize: 14, trend: '+5% YoY' },
     koreatown:    { low: 140, median: 210, high: 320, sampleSize: 22, trend: '+12% YoY' },
@@ -10661,6 +11601,12 @@ function renderMarketCompsTab(st) {
 
     let html = `<div class="deep-tab-panel">`;
 
+    // Data vintage banner
+    html += `<div style="background:#ebf8ff;border:1px solid #90cdf4;border-radius:6px;padding:0.5rem 1rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;">
+        <span style="color:#2b6cb0;"><strong>Market Data Vintage:</strong> ${MARKET_DATA_META.vintage}</span>
+        <span style="color:#718096;">Sources: ${MARKET_DATA_META.sources}</span>
+    </div>`;
+
     // Market Support Score
     const supportColor = market.marketSupport >= 70 ? '#276749' : market.marketSupport >= 45 ? '#b7791f' : '#c53030';
     const supportBg = market.marketSupport >= 70 ? '#38a169' : market.marketSupport >= 45 ? '#ecc94b' : '#fc8181';
@@ -10714,7 +11660,7 @@ function renderMarketCompsTab(st) {
         </div>
     </div>`;
     html += `<div style="font-size:0.72rem;color:#718096;margin-top:0.4rem;">
-        Default rents sourced from CoStar, Apartments.com, and Zillow Rental Index for ${nhLabel} submarket (2024-2025 avg).
+        Default rents sourced from ${MARKET_DATA_META.sources} for ${nhLabel} submarket (${MARKET_DATA_META.vintage}).
         Edit any value above to override with your own market data.
     </div>`;
 
@@ -10730,22 +11676,28 @@ function renderMarketCompsTab(st) {
     html += `</div>`;
 
     // Vacancy & Absorption
-    html += `<div class="analysis-section"><h3>Vacancy Rates & Absorption</h3>`;
+    html += `<div class="analysis-section"><h3>Vacancy Rates & Absorption
+        <span style="font-size:0.7rem;color:#718096;font-weight:400;margin-left:0.5rem;">(click values to edit)</span>
+    </h3>`;
     html += `<div class="exec-summary-grid">`;
     const vTypes = [
-        { label: 'Residential', rate: market.vacancy.residential, color: '#3182ce' },
-        { label: 'Retail', rate: market.vacancy.retail, color: '#dd6b20' },
-        { label: 'Office', rate: market.vacancy.office, color: '#805ad5' },
+        { label: 'Residential', key: 'residential', rate: market.vacancy.residential, color: '#3182ce' },
+        { label: 'Retail', key: 'retail', rate: market.vacancy.retail, color: '#dd6b20' },
+        { label: 'Office', key: 'office', rate: market.vacancy.office, color: '#805ad5' },
     ];
     for (const v of vTypes) {
         const barColor = v.rate < 0.06 ? '#38a169' : v.rate < 0.10 ? '#ecc94b' : '#fc8181';
-        html += `<div class="exec-summary-card">
+        html += `<div class="exec-summary-card" id="mc-vacancy-card-${v.key}">
             <h4>${v.label} Vacancy</h4>
             <div class="vacancy-bar">
-                <div class="vacancy-fill" style="width:${Math.min(v.rate * 100 * 3, 100)}%;background:${barColor};"></div>
-                <span class="vacancy-label" style="color:${v.rate < 0.08 ? '#276749' : '#c53030'}">${(v.rate * 100).toFixed(1)}%</span>
+                <div class="vacancy-fill" id="mc-vacancy-fill-${v.key}" style="width:${Math.min(v.rate * 100 * 3, 100)}%;background:${barColor};"></div>
+                <span class="vacancy-label" style="color:${v.rate < 0.08 ? '#276749' : '#c53030'}">
+                    <input type="number" class="market-comp-input" id="mc-vacancy-${v.key}" value="${(v.rate * 100).toFixed(1)}" step="0.5" min="0" max="50"
+                        style="width:52px;font-size:inherit;font-weight:inherit;border:1px dashed #cbd5e0;border-radius:4px;text-align:center;padding:1px 3px;color:inherit;background:rgba(255,255,255,0.85);"
+                        oninput="updateVacancyDisplay('${v.key}')">%
+                </span>
             </div>
-            <div class="exec-metric-sub">${v.rate < 0.05 ? 'Very tight — favors developers' : v.rate < 0.08 ? 'Healthy market' : v.rate < 0.12 ? 'Moderate vacancy' : 'Elevated vacancy — caution'}</div>
+            <div class="exec-metric-sub" id="mc-vacancy-desc-${v.key}">${v.rate < 0.05 ? 'Very tight — favors developers' : v.rate < 0.08 ? 'Healthy market' : v.rate < 0.12 ? 'Moderate vacancy' : 'Elevated vacancy — caution'}</div>
         </div>`;
     }
     html += `</div>`;
@@ -10758,7 +11710,7 @@ function renderMarketCompsTab(st) {
     html += `</div>`;
 
     // Comparable Land Sales
-    html += `<div class="analysis-section"><h3>Comparable Land Sales — ${nhLabel}</h3>`;
+    html += `<div class="analysis-section"><h3>Comparable Land Sales — ${nhLabel} <span style="font-size:0.68rem;color:#718096;font-weight:400;">(${MARKET_DATA_META.vintage})</span></h3>`;
     const lc = market.landComps;
     html += `<table class="market-comp-table"><thead><tr>
         <th>Metric</th><th>Low</th><th>Median</th><th>High</th><th>Your Assumption</th>
@@ -10830,6 +11782,86 @@ function renderMarketCompsTab(st) {
 
     html += `</div>`;
     return html;
+}
+
+function updateVacancyDisplay(key) {
+    var input = document.getElementById('mc-vacancy-' + key);
+    if (!input) return;
+    var pct = parseFloat(input.value) || 0;
+    var rate = pct / 100;
+
+    // Update bar fill
+    var fill = document.getElementById('mc-vacancy-fill-' + key);
+    if (fill) {
+        fill.style.width = Math.min(pct * 3, 100) + '%';
+        fill.style.background = rate < 0.06 ? '#38a169' : rate < 0.10 ? '#ecc94b' : '#fc8181';
+    }
+
+    // Update description text
+    var desc = document.getElementById('mc-vacancy-desc-' + key);
+    if (desc) {
+        desc.textContent = rate < 0.05 ? 'Very tight — favors developers' : rate < 0.08 ? 'Healthy market' : rate < 0.12 ? 'Moderate vacancy' : 'Elevated vacancy — caution';
+    }
+
+    // Update label color
+    var label = input.parentElement;
+    if (label) label.style.color = rate < 0.08 ? '#276749' : '#c53030';
+
+    // Recalculate market support score
+    recalcMarketSupportScore();
+}
+
+function recalcMarketSupportScore() {
+    var st = deepAnalysisState || analysisState;
+    if (!st || !st.bestUse || !st.inp) return;
+
+    var useId = st.bestUse || st.useId;
+    var isResidential = ['sfr','duplex','multifamily_low','multifamily_mid','multifamily_high','mixeduse','senior','adu'].includes(useId);
+    var isRetail = ['retail'].includes(useId);
+
+    // Read edited vacancy values
+    var resEl = document.getElementById('mc-vacancy-residential');
+    var retEl = document.getElementById('mc-vacancy-retail');
+    var offEl = document.getElementById('mc-vacancy-office');
+
+    var resRate = resEl ? parseFloat(resEl.value) / 100 : 0.05;
+    var retRate = retEl ? parseFloat(retEl.value) / 100 : 0.05;
+    var offRate = offEl ? parseFloat(offEl.value) / 100 : 0.10;
+
+    var vacancyRate = isResidential ? resRate : (isRetail ? retRate : offRate);
+
+    // Get absorption and demand data
+    var nh = st.inp.neighborhood;
+    var absorption = ABSORPTION_DATA[nh] || ABSORPTION_DATA.dtla;
+    var absorptionRate = isResidential ? absorption.residential : (isRetail ? absorption.retail : absorption.office);
+    var demandRow = NEIGHBORHOOD_DEMAND[nh];
+    var demand = demandRow ? (demandRow[useId] || 0.7) : 0.7;
+
+    // Read edited rents for alignment check
+    var mc1br = document.getElementById('mc-1br');
+    var marketMonthly = mc1br ? parseFloat(mc1br.value) : 0;
+    var params = BUILDING_PARAMS[useId];
+    var computed = st.computed;
+    var modeledMonthly = params && params.unitSF && computed ? Math.round(computed.revenuePSF * params.unitSF / 12) : 0;
+    var rentAlignment = modeledMonthly > 0 && marketMonthly > 0 ? Math.min(marketMonthly / modeledMonthly, 1.5) : 1.0;
+
+    var marketSupport = Math.min(100, Math.round(
+        (demand * 35) + (absorptionRate * 30) + ((1 - vacancyRate) * 20) + (rentAlignment > 0.9 ? 15 : rentAlignment * 15)
+    ));
+
+    // Update score display
+    var scoreEl = document.querySelector('.market-support-score');
+    var fillEl = document.querySelector('.market-support-fill');
+    if (scoreEl) {
+        var supportColor = marketSupport >= 70 ? '#276749' : marketSupport >= 45 ? '#b7791f' : '#c53030';
+        scoreEl.textContent = marketSupport + '/100';
+        scoreEl.style.color = supportColor;
+    }
+    if (fillEl) {
+        var supportBg = marketSupport >= 70 ? '#38a169' : marketSupport >= 45 ? '#ecc94b' : '#fc8181';
+        fillEl.style.width = marketSupport + '%';
+        fillEl.style.background = supportBg;
+    }
 }
 
 
@@ -14569,6 +15601,12 @@ function renderEnhancedSitePlanTab(st) {
     }
     html += '</div>';
 
+    // Satellite Massing Overlay
+    html += '<div style="margin-top:1.5rem;">';
+    html += '<h4 style="color:var(--primary);margin-bottom:0.75rem;">Satellite Massing Overlay</h4>';
+    html += '<div id="deepMassingMapContainer" style="height:360px;border-radius:8px;overflow:hidden;border:1px solid var(--border);"></div>';
+    html += '</div>';
+
     html += '</div>'; // end right panel
     html += '</div>'; // end configurator-layout
 
@@ -15529,6 +16567,10 @@ function buildCashFlowTable(c) {
     html += '</tbody></table></div>';
     html += '<div style="font-size:0.68rem;color:#718096;margin-top:0.3rem;">★ = Optimal exit year by IRR. Exit cap: ' + (exitCap * 100).toFixed(2) + '%. Disposition cost: 2.5%.</div>';
 
+    // Canvas chart: NOI, Cash Flow, and DSCR over 10 years
+    html += '<h4 style="font-size:0.85rem;margin:1.25rem 0 0.5rem;">Cash Flow Visualization</h4>';
+    html += '<div style="position:relative;height:280px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:0.5rem;"><canvas id="cfChart" style="width:100%;height:100%;"></canvas></div>';
+
     // NOI growth chart (text-based bar)
     html += '<h4 style="font-size:0.85rem;margin:1.25rem 0 0.5rem;">NOI Growth Trajectory</h4>';
     var maxNOI = years[9].noi;
@@ -15543,7 +16585,160 @@ function buildCashFlowTable(c) {
     html += '</div>';
 
     html += '<div style="font-size:0.72rem;color:#718096;margin-top:1.25rem;">Source: Proprietary cash flow model | Assumptions: ' + (revGrowth * 100).toFixed(1) + '% revenue growth, ' + (expGrowth * 100).toFixed(1) + '% expense growth, ' + (vacancyRate * 100).toFixed(0) + '% vacancy, ' + (mgmtRate * 100).toFixed(0) + '% mgmt fee, ' + (capexRate * 100).toFixed(0) + '% CapEx reserve</div>';
+
+    // Render chart after DOM insertion
+    setTimeout(function() { drawCashFlowChart(years); }, 100);
     return html;
+}
+
+function drawCashFlowChart(years) {
+    var canvas = document.getElementById('cfChart');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var dpr = window.devicePixelRatio || 1;
+    var rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    var W = rect.width, H = rect.height;
+
+    // Margins
+    var ml = 70, mr = 60, mt = 30, mb = 40;
+    var cW = W - ml - mr, cH = H - mt - mb;
+
+    // Data extraction
+    var noiData = years.map(function(y) { return y.noi; });
+    var cfData = years.map(function(y) { return y.cashFlowADS; });
+    var dscrData = years.map(function(y) { return y.dscr; });
+
+    // Y-axis range for $ values
+    var allVals = noiData.concat(cfData);
+    var yMin = Math.min(0, Math.min.apply(null, allVals)) * 1.05;
+    var yMax = Math.max.apply(null, allVals) * 1.15;
+    if (yMax === yMin) yMax = yMin + 1;
+
+    // DSCR axis range
+    var dscrMin = 0;
+    var dscrMax = Math.max(2.5, Math.max.apply(null, dscrData) * 1.1);
+
+    function toX(i) { return ml + (i / 9) * cW; }
+    function toY(v) { return mt + cH - ((v - yMin) / (yMax - yMin)) * cH; }
+    function toDscrY(v) { return mt + cH - ((v - dscrMin) / (dscrMax - dscrMin)) * cH; }
+
+    var fmtK = function(v) {
+        if (Math.abs(v) >= 1e6) return '$' + (v / 1e6).toFixed(1) + 'M';
+        if (Math.abs(v) >= 1e3) return '$' + (v / 1e3).toFixed(0) + 'K';
+        return '$' + Math.round(v);
+    };
+
+    // Background
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid lines
+    ctx.strokeStyle = '#edf2f7';
+    ctx.lineWidth = 1;
+    var steps = 5;
+    for (var g = 0; g <= steps; g++) {
+        var gv = yMin + (yMax - yMin) * g / steps;
+        var gy = toY(gv);
+        ctx.beginPath(); ctx.moveTo(ml, gy); ctx.lineTo(W - mr, gy); ctx.stroke();
+        // Left axis label
+        ctx.fillStyle = '#718096'; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
+        ctx.fillText(fmtK(gv), ml - 8, gy + 3);
+    }
+
+    // Zero line
+    if (yMin < 0) {
+        ctx.strokeStyle = '#cbd5e0'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(ml, toY(0)); ctx.lineTo(W - mr, toY(0)); ctx.stroke();
+    }
+
+    // X-axis labels
+    ctx.fillStyle = '#718096'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+    for (var xi = 0; xi < 10; xi++) {
+        ctx.fillText('Yr ' + (xi + 1), toX(xi), H - mb + 18);
+    }
+
+    // Axis labels
+    ctx.save(); ctx.translate(14, mt + cH / 2); ctx.rotate(-Math.PI / 2);
+    ctx.fillStyle = '#4a5568'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('NOI / Cash Flow ($)', 0, 0); ctx.restore();
+
+    ctx.save(); ctx.translate(W - 12, mt + cH / 2); ctx.rotate(Math.PI / 2);
+    ctx.fillStyle = '#805ad5'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('DSCR (x)', 0, 0); ctx.restore();
+
+    // Draw NOI bars (semi-transparent)
+    var barW = cW / 10 * 0.35;
+    for (var bi = 0; bi < 10; bi++) {
+        var bx = toX(bi) - barW;
+        var by = toY(noiData[bi]);
+        var bh = toY(0) - by;
+        ctx.fillStyle = 'rgba(56,161,105,0.25)';
+        ctx.fillRect(bx, by, barW * 2, bh);
+        ctx.strokeStyle = 'rgba(56,161,105,0.5)'; ctx.lineWidth = 1;
+        ctx.strokeRect(bx, by, barW * 2, bh);
+    }
+
+    // Draw Cash Flow line
+    ctx.strokeStyle = '#3182ce'; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (var ci = 0; ci < 10; ci++) {
+        var cx = toX(ci), cy = toY(cfData[ci]);
+        if (ci === 0) ctx.moveTo(cx, cy); else ctx.lineTo(cx, cy);
+    }
+    ctx.stroke();
+    // Cash flow dots
+    for (var di = 0; di < 10; di++) {
+        ctx.beginPath(); ctx.arc(toX(di), toY(cfData[di]), 4, 0, Math.PI * 2);
+        ctx.fillStyle = cfData[di] >= 0 ? '#3182ce' : '#e53e3e'; ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+
+    // Draw DSCR line (right axis)
+    ctx.strokeStyle = '#805ad5'; ctx.lineWidth = 2; ctx.setLineDash([5, 3]);
+    ctx.beginPath();
+    for (var si = 0; si < 10; si++) {
+        var sx = toX(si), sy = toDscrY(Math.min(dscrData[si], dscrMax));
+        if (si === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+    // DSCR dots
+    for (var ri = 0; ri < 10; ri++) {
+        ctx.beginPath(); ctx.arc(toX(ri), toDscrY(Math.min(dscrData[ri], dscrMax)), 3, 0, Math.PI * 2);
+        ctx.fillStyle = '#805ad5'; ctx.fill();
+    }
+
+    // DSCR right axis labels
+    ctx.fillStyle = '#805ad5'; ctx.font = '10px sans-serif'; ctx.textAlign = 'left';
+    for (var dg = 0; dg <= 4; dg++) {
+        var dv = dscrMin + (dscrMax - dscrMin) * dg / 4;
+        ctx.fillText(dv.toFixed(1) + 'x', W - mr + 8, toDscrY(dv) + 3);
+    }
+
+    // DSCR 1.2x threshold line
+    ctx.strokeStyle = 'rgba(128,90,213,0.3)'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(ml, toDscrY(1.2)); ctx.lineTo(W - mr, toDscrY(1.2)); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(128,90,213,0.5)'; ctx.font = '9px sans-serif';
+    ctx.fillText('1.2x min', W - mr + 8, toDscrY(1.2) - 5);
+
+    // Legend
+    var lx = ml + 8, ly = mt + 6;
+    ctx.fillStyle = 'rgba(56,161,105,0.25)'; ctx.fillRect(lx, ly, 14, 10);
+    ctx.strokeStyle = 'rgba(56,161,105,0.5)'; ctx.lineWidth = 1; ctx.strokeRect(lx, ly, 14, 10);
+    ctx.fillStyle = '#4a5568'; ctx.font = '10px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('NOI', lx + 18, ly + 9);
+
+    ctx.strokeStyle = '#3182ce'; ctx.lineWidth = 2.5; ctx.beginPath();
+    ctx.moveTo(lx + 55, ly + 5); ctx.lineTo(lx + 70, ly + 5); ctx.stroke();
+    ctx.beginPath(); ctx.arc(lx + 62.5, ly + 5, 3, 0, Math.PI * 2); ctx.fillStyle = '#3182ce'; ctx.fill();
+    ctx.fillStyle = '#4a5568'; ctx.fillText('Cash Flow ADS', lx + 74, ly + 9);
+
+    ctx.strokeStyle = '#805ad5'; ctx.lineWidth = 2; ctx.setLineDash([5, 3]); ctx.beginPath();
+    ctx.moveTo(lx + 170, ly + 5); ctx.lineTo(lx + 185, ly + 5); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = '#4a5568'; ctx.fillText('DSCR', lx + 190, ly + 9);
 }
 
 function recalcCashFlow() {
@@ -15881,7 +17076,9 @@ function generateFullPDFReport() {
         p.style.pageBreakBefore = 'always';
     });
     if (panels[0]) panels[0].style.pageBreakBefore = 'avoid';
+    var snapshots = snapshotMapsForPrint();
     window.print();
+    restoreMapsAfterPrint(snapshots);
     // Restore tab visibility and remove cover
     setTimeout(function() {
         var coverEl = document.getElementById('pdfCoverPage');

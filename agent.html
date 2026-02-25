@@ -1606,6 +1606,16 @@
 .demo-banner~header{margin-top:36px;}
 .demo-btn{display:inline-block;margin-top:.75rem;padding:.5rem 1.5rem;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;}
 .demo-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(102,126,234,.4);}
+
+/* === Parcel Lot Lines & Popup === */
+.parcel-popup{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:320px;}
+.parcel-popup .pp-header{font-size:.95rem;font-weight:700;color:#2d3748;margin-bottom:6px;border-bottom:2px solid #667eea;padding-bottom:4px;}
+.parcel-popup .pp-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;font-size:.8rem;}
+.parcel-popup .pp-label{color:#718096;font-weight:600;}
+.parcel-popup .pp-value{color:#2d3748;text-align:right;}
+.parcel-popup .pp-full{grid-column:1/-1;color:#2d3748;font-size:.8rem;margin-top:2px;}
+.parcel-popup .pp-link{display:inline-block;margin-top:8px;color:#667eea;font-weight:600;font-size:.8rem;text-decoration:none;}
+.parcel-popup .pp-link:hover{text-decoration:underline;}
     </style>
 </head>
 <body>
@@ -2346,7 +2356,115 @@
     &copy; 2026 CLS CRE &mdash; Land to Yield. All rights reserved. For educational and professional use only.
 </footer>
 
+<script src="shared.js"></script>
 <script>
+// ============================================================
+//  PARCEL LOT LINES — Shared Functions
+// ============================================================
+const PARCEL_QUERY_URL = 'https://public.gis.lacounty.gov/public/rest/services/LACounty_Cache/LACounty_Parcel/MapServer/0/query';
+const PARCEL_OUT_FIELDS = 'APN,SitusFullAddress,UseType,UseDescription,Roll_LandValue,Roll_ImpValue,YearBuilt1,SQFTmain1,Units1,Shape.STArea()';
+const PARCEL_MIN_ZOOM = 16;
+
+function formatParcelCurrency(val) {
+    if (!val && val !== 0) return 'N/A';
+    return '$' + Number(val).toLocaleString('en-US', { maximumFractionDigits: 0 });
+}
+function formatAPN(apn) {
+    if (!apn) return 'N/A';
+    const s = String(apn).replace(/\D/g, '');
+    if (s.length === 10) return s.slice(0,4) + '-' + s.slice(4,7) + '-' + s.slice(7);
+    return apn;
+}
+function buildParcelPopup(attr) {
+    const apn = formatAPN(attr.APN);
+    const addr = attr.SitusFullAddress || 'No address';
+    const use = attr.UseDescription || attr.UseType || 'N/A';
+    const areaFt = attr['Shape.STArea()'] || attr['Shape.STArea'];
+    const lotSqFt = areaFt ? Number(areaFt).toLocaleString('en-US', { maximumFractionDigits: 0 }) : 'N/A';
+    const lotAcres = areaFt ? (Number(areaFt) / 43560).toFixed(3) : null;
+    const land = attr.Roll_LandValue;
+    const imp = attr.Roll_ImpValue;
+    const total = (land || 0) + (imp || 0);
+    const impRatio = total > 0 ? ((imp || 0) / total * 100).toFixed(1) + '%' : 'N/A';
+    const apnClean = String(attr.APN || '').replace(/\D/g, '');
+    return `<div class="parcel-popup">
+        <div class="pp-header">${apn}</div>
+        <div class="pp-full" style="margin-bottom:4px;"><strong>${addr}</strong></div>
+        <div class="pp-grid">
+            <span class="pp-label">Use</span><span class="pp-value">${use}</span>
+            <span class="pp-label">Lot Size</span><span class="pp-value">${lotSqFt} SF${lotAcres ? ' (' + lotAcres + ' ac)' : ''}</span>
+            <span class="pp-label">Land Value</span><span class="pp-value">${formatParcelCurrency(land)}</span>
+            <span class="pp-label">Imp. Value</span><span class="pp-value">${formatParcelCurrency(imp)}</span>
+            <span class="pp-label">Total Assessed</span><span class="pp-value">${formatParcelCurrency(total > 0 ? total : null)}</span>
+            <span class="pp-label">Imp. Ratio</span><span class="pp-value">${impRatio}</span>
+            <span class="pp-label">Year Built</span><span class="pp-value">${attr.YearBuilt1 || 'N/A'}</span>
+            <span class="pp-label">Structure SF</span><span class="pp-value">${attr.SQFTmain1 ? Number(attr.SQFTmain1).toLocaleString() : 'N/A'}</span>
+            <span class="pp-label">Units</span><span class="pp-value">${attr.Units1 || 'N/A'}</span>
+        </div>
+        <a class="pp-link" href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" rel="noopener">View on LA County Assessor &rarr;</a>
+    </div>`;
+}
+async function fetchParcelsByBounds(bounds) {
+    const envelope = `${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}`;
+    let allFeatures = [];
+    let offset = 0;
+    const pageSize = 1000;
+    while (true) {
+        const params = new URLSearchParams({
+            where: '1=1', geometryType: 'esriGeometryEnvelope', geometry: envelope,
+            inSR: '4326', outSR: '4326', outFields: PARCEL_OUT_FIELDS,
+            returnGeometry: 'true', resultRecordCount: String(pageSize),
+            resultOffset: String(offset), f: 'json'
+        });
+        try {
+            const resp = await fetch(PARCEL_QUERY_URL + '?' + params.toString());
+            const data = await resp.json();
+            if (!data.features || data.features.length === 0) break;
+            allFeatures = allFeatures.concat(data.features);
+            if (data.features.length < pageSize) break;
+            offset += pageSize;
+            if (offset > 3000) break;
+        } catch (e) { console.warn('Parcel fetch error:', e); break; }
+    }
+    return allFeatures;
+}
+function drawParcelsOnMap(map, features, parcelLayer) {
+    parcelLayer.clearLayers();
+    features.forEach(f => {
+        if (!f.geometry || !f.geometry.rings) return;
+        const latlngs = f.geometry.rings.map(ring => ring.map(pt => [pt[1], pt[0]]));
+        const poly = L.polygon(latlngs, {
+            color: '#333', weight: 1.5, opacity: 0.8,
+            fillColor: 'transparent', fillOpacity: 0, interactive: true
+        });
+        poly.bindPopup(buildParcelPopup(f.attributes), { maxWidth: 340 });
+        parcelLayer.addLayer(poly);
+    });
+}
+function setupParcelLayer(map) {
+    const parcelLayer = L.layerGroup().addTo(map);
+    let debounceTimer = null;
+    let parcelEnabled = true;
+    function loadParcels() {
+        if (!parcelEnabled || !map.hasLayer(parcelLayer)) return;
+        if (map.getZoom() < PARCEL_MIN_ZOOM) { parcelLayer.clearLayers(); return; }
+        fetchParcelsByBounds(map.getBounds()).then(features => {
+            if (map.getZoom() >= PARCEL_MIN_ZOOM) drawParcelsOnMap(map, features, parcelLayer);
+        });
+    }
+    map.on('moveend', function() {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(loadParcels, 500);
+    });
+    map.on('overlayadd', function(e) {
+        if (e.layer === parcelLayer) { parcelEnabled = true; loadParcels(); }
+    });
+    map.on('overlayremove', function(e) {
+        if (e.layer === parcelLayer) { parcelEnabled = false; parcelLayer.clearLayers(); }
+    });
+    return parcelLayer;
+}
+
 // ============================================================
 //  AUTH GATE
 // ============================================================
@@ -2679,33 +2797,34 @@ const METRO_STATIONS = [
     { lat: 34.0156, lon: -118.4694, name: '26th St/Bergamot', line: 'expo_e', tier: 2, serviceType: 'Light Rail' },
     { lat: 34.0154, lon: -118.4960, name: 'Downtown Santa Monica', line: 'expo_e', tier: 2, serviceType: 'Light Rail' },
     // --- Gold/L Line — LIGHT RAIL (Tier 2): East LA → Azusa/APU ---
-    { lat: 34.0566, lon: -118.2338, name: 'Little Tokyo/Arts District', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0561, lon: -118.2365, name: 'Union Station (Gold)', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0620, lon: -118.2360, name: 'Chinatown', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0672, lon: -118.2350, name: 'Lincoln/Cypress', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0760, lon: -118.2260, name: 'Heritage Square/Arroyo', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0890, lon: -118.2100, name: 'Southwest Museum', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0960, lon: -118.1990, name: 'Highland Park', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1118, lon: -118.1868, name: 'South Pasadena', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1175, lon: -118.1560, name: 'Fillmore', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1285, lon: -118.1340, name: 'Del Mar', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1360, lon: -118.1230, name: 'Memorial Park', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1421, lon: -118.1150, name: 'Lake', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1497, lon: -118.1030, name: 'Allen', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1500, lon: -118.0830, name: 'Sierra Madre Villa', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1520, lon: -118.0520, name: 'Arcadia', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1425, lon: -118.0310, name: 'Monrovia', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1365, lon: -118.0090, name: 'Duarte/City of Hope', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1360, lon: -117.9870, name: 'Irwindale', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1370, lon: -117.9620, name: 'Azusa Downtown', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1380, lon: -117.9440, name: 'APU/Citrus College', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0501, lon: -118.2379, name: 'Little Tokyo/Arts District', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0561, lon: -118.2361, name: 'Union Station (Gold)', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0638, lon: -118.2359, name: 'Chinatown', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0808, lon: -118.2207, name: 'Lincoln/Cypress', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0871, lon: -118.2126, name: 'Heritage Square/Arroyo', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0982, lon: -118.2067, name: 'Southwest Museum', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1111, lon: -118.1930, name: 'Highland Park', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1153, lon: -118.1578, name: 'South Pasadena', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1334, lon: -118.1481, name: 'Fillmore', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1419, lon: -118.1482, name: 'Del Mar', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1485, lon: -118.1475, name: 'Memorial Park', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1519, lon: -118.1325, name: 'Lake', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1475, lon: -118.1134, name: 'Allen', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1485, lon: -118.0815, name: 'Sierra Madre Villa', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1429, lon: -118.0292, name: 'Arcadia', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1332, lon: -118.0035, name: 'Monrovia', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1325, lon: -117.9675, name: 'Duarte/City of Hope', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1288, lon: -117.9333, name: 'Irwindale', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1359, lon: -117.9067, name: 'Azusa Downtown', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.1371, lon: -117.8908, name: 'APU/Citrus College', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
     // Gold/L Line East LA branch
-    { lat: 34.0441, lon: -118.2120, name: 'Mariachi Plaza/Boyle Heights', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0395, lon: -118.1938, name: 'Soto', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0335, lon: -118.1770, name: 'Indiana', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0290, lon: -118.1620, name: 'Maravilla', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0245, lon: -118.1475, name: 'East LA Civic Center', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0220, lon: -118.1280, name: 'Atlantic', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0476, lon: -118.2260, name: 'Pico/Aliso', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0475, lon: -118.2191, name: 'Mariachi Plaza/Boyle Heights', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0436, lon: -118.2103, name: 'Soto', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0343, lon: -118.1922, name: 'Indiana', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0425, lon: -118.1595, name: 'Maravilla', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0334, lon: -118.1612, name: 'East LA Civic Center', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
+    { lat: 34.0334, lon: -118.1544, name: 'Atlantic', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
     // --- Green/C Line — LIGHT RAIL (Tier 2): Norwalk → Redondo Beach ---
     { lat: 33.9190, lon: -118.0570, name: 'Norwalk', line: 'green_c', tier: 2, serviceType: 'Light Rail' },
     { lat: 33.9198, lon: -118.0940, name: 'Lakewood Blvd', line: 'green_c', tier: 2, serviceType: 'Light Rail' },
@@ -4866,10 +4985,16 @@ function initSB79Map(lat, lon) {
     sb79StationRadii = {};
 
     sb79Map = L.map('sb79Map').setView([lat, lon], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    var sb79Street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
         maxZoom: 18,
-    }).addTo(sb79Map);
+    });
+    var sb79Satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri'
+    });
+    sb79Street.addTo(sb79Map);
+    var sb79ParcelLayer = setupParcelLayer(sb79Map);
+    L.control.layers({'Street': sb79Street, 'Satellite': sb79Satellite}, {'Lot Lines': sb79ParcelLayer}, {position: 'topright'}).addTo(sb79Map);
 
     // Layer groups
     sb79Layers.tier1 = L.layerGroup().addTo(sb79Map);
@@ -5715,7 +5840,11 @@ function initPipelineMap() {
     const mapEl = document.getElementById('pipelineMap'); if (!mapEl) return;
     if (pipelineMapInstance) { pipelineMapInstance.remove(); pipelineMapInstance = null; }
     pipelineMapInstance = L.map('pipelineMap').setView([34.05, -118.25], 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 18 }).addTo(pipelineMapInstance);
+    var pipelineStreet = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 18 });
+    var pipelineSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri' });
+    pipelineStreet.addTo(pipelineMapInstance);
+    var pipelineParcelLayer = setupParcelLayer(pipelineMapInstance);
+    L.control.layers({'Street': pipelineStreet, 'Satellite': pipelineSatellite}, {'Lot Lines': pipelineParcelLayer}, {position: 'topright'}).addTo(pipelineMapInstance);
     pipelineMarkerLayer = L.layerGroup().addTo(pipelineMapInstance);
     pipelineMapInstance.on('click', function(e) { setPipelineSearchCenter(e.latlng.lat, e.latlng.lng, `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`); });
     renderPipelineMapLegend();
@@ -5927,7 +6056,11 @@ function initFinderMap() {
     const mapEl = document.getElementById('finderMap'); if (!mapEl) return;
     if (finderMapInstance) { finderMapInstance.remove(); finderMapInstance = null; }
     finderMapInstance = L.map('finderMap').setView([34.05, -118.25], 10);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 18 }).addTo(finderMapInstance);
+    var finderStreet = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 18 });
+    var finderSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri' });
+    finderStreet.addTo(finderMapInstance);
+    var finderParcelLyr = setupParcelLayer(finderMapInstance);
+    L.control.layers({'Street': finderStreet, 'Satellite': finderSatellite}, {'Lot Lines': finderParcelLyr}, {position: 'topright'}).addTo(finderMapInstance);
     const seenCoords = new Set();
     METRO_STATIONS.forEach((s, idx) => { const key = `${s.lat.toFixed(4)},${s.lon.toFixed(4)},${s.line}`; if (seenCoords.has(key)) return; seenCoords.add(key); const color = LINE_COLORS[s.line]||'#718096'; const icon = L.divIcon({ html: `<div style="background:${color};width:10px;height:10px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>`, iconSize: [10,10], iconAnchor: [5,5], className: '' }); const marker = L.marker([s.lat, s.lon], { icon }).bindPopup(`<strong>${s.name}</strong><br>${LINE_LABELS[s.line]||s.line}`).on('click', () => { selectFinderStation2(idx); drawFinderStationRadii(s); }); marker.addTo(finderMapInstance); });
     attachZoneClickHandler(finderMapInstance); renderFinderMapLegend(); populateFinderStations2();
@@ -6334,9 +6467,15 @@ let sitesSortAsc = false;
 function initSitesMap() {
     if (sitesMapInitialized) return;
     sitesMapInstance = L.map('sitesMap', { scrollWheelZoom: true }).setView([34.05, -118.25], 11);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    var sitesStreet = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 19
-    }).addTo(sitesMapInstance);
+    });
+    var sitesSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri'
+    });
+    sitesStreet.addTo(sitesMapInstance);
+    var sitesParcelLayer = setupParcelLayer(sitesMapInstance);
+    L.control.layers({'Street': sitesStreet, 'Satellite': sitesSatellite}, {'Lot Lines': sitesParcelLayer}, {position: 'topright'}).addTo(sitesMapInstance);
     sitesMapInitialized = true;
     renderAgentSites();
 }
