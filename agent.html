@@ -2361,9 +2361,7 @@
 // ============================================================
 //  PARCEL LOT LINES — Shared Functions
 // ============================================================
-const PARCEL_QUERY_URL = 'https://public.gis.lacounty.gov/public/rest/services/LACounty_Cache/LACounty_Parcel/MapServer/0/query';
-const PARCEL_OUT_FIELDS = 'APN,SitusFullAddress,UseType,UseDescription,Roll_LandValue,Roll_ImpValue,YearBuilt1,SQFTmain1,Units1,Shape.STArea()';
-const PARCEL_MIN_ZOOM = 16;
+// PARCEL_QUERY_URL, PARCEL_OUT_FIELDS, PARCEL_MIN_ZOOM — now in shared.js
 
 function formatParcelCurrency(val) {
     if (!val && val !== 0) return 'N/A';
@@ -2466,37 +2464,9 @@ function setupParcelLayer(map) {
 }
 
 // ============================================================
-//  AUTH GATE
 // ============================================================
-// Master admin password hash (original password still works)
-const ADMIN_HASH = '08c5d8c40ac5bd96091f704d10989da4e7b65c5ee36be18b618848c4e91a22af';
-
-// Subscriber access-code hashes — add SHA-256 hashes here after generating with generateCodeHash()
-const VALID_CODES = [
-    '14197a5cc2fdd7254604a791eae2e02bd3e23a448230367ce249fe3192b94b12', // BETA-TEST-2026
-    'c9e6d3a5eadd68eeada23cdde416f8caebcc4960b029bfe62e45ce9952e02e77', // CLS-CRE-2026
-];
-
-async function sha256(str) {
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-async function checkAuth() {
-    const code = document.getElementById('authPassword').value;
-    const hash = await sha256(code);
-    if (hash === ADMIN_HASH || VALID_CODES.includes(hash)) {
-        const overlay = document.getElementById('authOverlay');
-        overlay.classList.add('fade-out');
-        setTimeout(() => overlay.remove(), 500);
-    } else {
-        document.getElementById('authError').textContent = 'Invalid access code. Please try again.';
-        document.getElementById('authPassword').value = '';
-        document.getElementById('authPassword').focus();
-    }
-}
-
-// Auto-authenticate on load if stored hash is still valid
+//  AUTH GATE — handled by shared.js (ADMIN_HASH, VALID_CODES, sha256, checkAuth)
+// ============================================================
 // === Sources & Uses ===
 function renderSourcesAndUses(budget, isSimplified) {
   var panel = document.getElementById('sources-uses-panel');
@@ -6744,14 +6714,14 @@ function initDrawingTools() {
 // ============================================================
 //  AREA QUERY FUNCTIONS
 // ============================================================
-const PARCEL_API_URL = 'https://public.gis.lacounty.gov/public/rest/services/LACounty_Cache/LACounty_Parcel/MapServer/0/query';
-const PARCEL_OUT_FIELDS = 'APN,SitusFullAddress,UseType,UseDescription,UseCode,Roll_LandValue,Roll_ImpValue,YearBuilt1,SQFTmain1,Units1,CENTER_LAT,CENTER_LON,Shape.STArea()';
+var PARCEL_API_URL = 'https://public.gis.lacounty.gov/public/rest/services/LACounty_Cache/LACounty_Parcel/MapServer/0/query';
+var PARCEL_OUT_FIELDS_EXTENDED = 'APN,SitusFullAddress,UseType,UseDescription,UseCode,Roll_LandValue,Roll_ImpValue,YearBuilt1,SQFTmain1,Units1,CENTER_LAT,CENTER_LON,Shape.STArea()';
 
 async function queryParcelsByRadius(lat, lon, radiusMeters, onProgress) {
     const radiusFt = radiusMeters * 3.28084;
     const allFeatures = []; let offset = 0; const pageSize = 1000;
     while (true) {
-        const params = new URLSearchParams({ geometry: `${lon},${lat}`, geometryType: 'esriGeometryPoint', inSR: '4326', spatialRel: 'esriSpatialRelIntersects', distance: radiusFt, units: 'esriSRUnit_Foot', outFields: PARCEL_OUT_FIELDS, returnGeometry: false, resultOffset: offset, resultRecordCount: pageSize, f: 'json' });
+        const params = new URLSearchParams({ geometry: `${lon},${lat}`, geometryType: 'esriGeometryPoint', inSR: '4326', spatialRel: 'esriSpatialRelIntersects', distance: radiusFt, units: 'esriSRUnit_Foot', outFields: PARCEL_OUT_FIELDS_EXTENDED, returnGeometry: false, resultOffset: offset, resultRecordCount: pageSize, f: 'json' });
         const resp = await fetch(`${PARCEL_API_URL}?${params}`); if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json(); if (data.error) throw new Error(data.error.message || 'GIS API error');
         const features = data.features || []; allFeatures.push(...features);
@@ -6764,7 +6734,7 @@ async function queryParcelsByRadius(lat, lon, radiusMeters, onProgress) {
 async function queryParcelsByBbox(south, west, north, east, onProgress) {
     const allFeatures = []; let offset = 0; const pageSize = 1000;
     while (true) {
-        const params = new URLSearchParams({ geometry: `${west},${south},${east},${north}`, geometryType: 'esriGeometryEnvelope', inSR: '4326', spatialRel: 'esriSpatialRelIntersects', outFields: PARCEL_OUT_FIELDS, returnGeometry: false, resultOffset: offset, resultRecordCount: pageSize, f: 'json' });
+        const params = new URLSearchParams({ geometry: `${west},${south},${east},${north}`, geometryType: 'esriGeometryEnvelope', inSR: '4326', spatialRel: 'esriSpatialRelIntersects', outFields: PARCEL_OUT_FIELDS_EXTENDED, returnGeometry: false, resultOffset: offset, resultRecordCount: pageSize, f: 'json' });
         const resp = await fetch(`${PARCEL_API_URL}?${params}`); if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json(); if (data.error) throw new Error(data.error.message || 'GIS API error');
         const features = data.features || []; allFeatures.push(...features);
@@ -6783,7 +6753,7 @@ async function queryParcelsByPolygon(latlngs, onProgress) {
     const geomJson = JSON.stringify({ rings, spatialReference: { wkid: 4326 } });
     const allFeatures = []; let offset = 0; const pageSize = 1000;
     while (true) {
-        const params = new URLSearchParams({ geometry: geomJson, geometryType: 'esriGeometryPolygon', inSR: '4326', spatialRel: 'esriSpatialRelIntersects', outFields: PARCEL_OUT_FIELDS, returnGeometry: false, resultOffset: offset, resultRecordCount: pageSize, f: 'json' });
+        const params = new URLSearchParams({ geometry: geomJson, geometryType: 'esriGeometryPolygon', inSR: '4326', spatialRel: 'esriSpatialRelIntersects', outFields: PARCEL_OUT_FIELDS_EXTENDED, returnGeometry: false, resultOffset: offset, resultRecordCount: pageSize, f: 'json' });
         const resp = await fetch(`${PARCEL_API_URL}?${params}`); if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json(); if (data.error) throw new Error(data.error.message || 'GIS API error');
         const features = data.features || []; allFeatures.push(...features);
