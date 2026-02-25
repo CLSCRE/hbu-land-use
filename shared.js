@@ -8,22 +8,12 @@
 // ============================================================
 
 // --- Auth ---
-if (typeof sha256 === 'undefined') {
-    var ADMIN_HASH = '08c5d8c40ac5bd96091f704d10989da4e7b65c5ee36be18b618848c4e91a22af';
-    var VALID_CODES = [
-        '14197a5cc2fdd7254604a791eae2e02bd3e23a448230367ce249fe3192b94b12',
-        'c9e6d3a5eadd68eeada23cdde416f8caebcc4960b029bfe62e45ce9952e02e77',
-    ];
+if (typeof checkAuth === 'undefined') {
+    var VALID_CODES = ['Clscre@123456'];
 
-    async function sha256(str) {
-        var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-        return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
-    }
-
-    async function checkAuth() {
+    function checkAuth() {
         var code = document.getElementById('authPassword').value;
-        var hash = await sha256(code);
-        if (hash === ADMIN_HASH || VALID_CODES.includes(hash)) {
+        if (VALID_CODES.indexOf(code) !== -1) {
             var overlay = document.getElementById('authOverlay');
             overlay.classList.add('fade-out');
             setTimeout(function() { overlay.remove(); }, 500);
