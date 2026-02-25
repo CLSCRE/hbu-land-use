@@ -7,23 +7,21 @@
 //  coexist with inline versions during migration.
 // ============================================================
 
-// --- Auth ---
+// --- Auth (temporarily disabled) ---
 if (typeof checkAuth === 'undefined') {
-    var VALID_CODES = ['Clscre@123456'];
-
     function checkAuth() {
-        var code = document.getElementById('authPassword').value;
-        if (VALID_CODES.indexOf(code) !== -1) {
-            var overlay = document.getElementById('authOverlay');
+        var overlay = document.getElementById('authOverlay');
+        if (overlay) {
             overlay.classList.add('fade-out');
             setTimeout(function() { overlay.remove(); }, 500);
-        } else {
-            document.getElementById('authError').textContent = 'Invalid access code. Please try again.';
-            document.getElementById('authPassword').value = '';
-            document.getElementById('authPassword').focus();
         }
     }
 }
+// Auto-dismiss auth overlay on load
+document.addEventListener('DOMContentLoaded', function() {
+    var overlay = document.getElementById('authOverlay');
+    if (overlay) { overlay.remove(); }
+});
 
 // --- Parcel Layer ---
 if (typeof PARCEL_QUERY_URL === 'undefined') {
