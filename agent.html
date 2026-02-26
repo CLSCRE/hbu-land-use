@@ -935,7 +935,8 @@
         .station-popup .popup-allowances { margin-top: 0.4rem; font-size: 0.78rem; }
         .station-popup .popup-allowances span { display: block; }
         @media print { .map-section { display: none !important; } }
-        @media (max-width: 768px) { #sb79Map { height: 350px; } }
+        @media (max-width: 768px) { #sb79Map, #finderMap, #pipelineMap, #sitesMap { height: 350px !important; } }
+        @media (max-width: 480px) { #sb79Map, #finderMap, #pipelineMap, #sitesMap { height: 260px !important; } }
 
         /* ===== Tab Bar ===== */
         .tab-bar {
@@ -1618,6 +1619,37 @@
 .parcel-popup .pp-full{grid-column:1/-1;color:#2d3748;font-size:.8rem;margin-top:2px;}
 .parcel-popup .pp-link{display:inline-block;margin-top:8px;color:#667eea;font-weight:600;font-size:.8rem;text-decoration:none;}
 .parcel-popup .pp-link:hover{text-decoration:underline;}
+
+/* === Mobile Responsiveness === */
+@media (max-width: 768px) {
+    html { font-size: 17px; }
+    header { padding: 1.25rem 1rem; }
+    .container { padding: 1.25rem 0.75rem; }
+    .tab-btn { font-size: 0.78rem; padding: 0.7rem 0.6rem; }
+    .details-table, .su-table { font-size: 0.75rem; }
+    .details-table td, .details-table th, .su-table td { padding: 0.3rem 0.4rem; }
+    .auth-box { padding: 1.75rem 1.25rem; max-width: 320px; }
+    .auth-box h2 { font-size: 1.2rem; }
+    .finder-table { font-size: 0.75rem; }
+    .finder-table th, .finder-table td { padding: 0.35rem 0.4rem; }
+}
+@media (max-width: 480px) {
+    html { font-size: 16px; }
+    header { padding: 1rem 0.75rem; }
+    header h1 { font-size: 1.25rem; }
+    .container { padding: 1rem 0.5rem; }
+    .section { padding: 1rem; border-radius: 8px; }
+    .tab-btn { font-size: 0.68rem; padding: 0.55rem 0.35rem; }
+    .auth-box { padding: 1.5rem 1rem; max-width: 280px; }
+    .auth-box h2 { font-size: 1.1rem; }
+    .auth-btn { padding: 0.6rem 1.5rem; font-size: 0.88rem; }
+    .finder-table { font-size: 0.7rem; }
+    .finder-table th, .finder-table td { padding: 0.25rem 0.3rem; }
+    .details-table, .su-table { font-size: 0.7rem; }
+    .modal-body { padding: 1rem; }
+    .program-grid { gap: 0.5rem; }
+    .returns-grid { gap: 0.5rem; }
+}
     </style>
 </head>
 <body>
@@ -1626,6 +1658,7 @@
     <div class="auth-box">
         <h2>Land to Yield</h2>
         <p>Agent Portal</p>
+        <p style="font-size:0.88rem;color:#4a5568;margin-bottom:1rem;">Enter Your Password</p>
         <input type="password" id="authPassword" placeholder="Access Code" onkeydown="if(event.key==='Enter')checkAuth();">
         <button type="button" class="auth-btn" onclick="checkAuth()">Enter</button>
         <div class="auth-error" id="authError"></div>
@@ -1635,6 +1668,36 @@
         <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v4.2 &middot; Agent Edition</div>
     </div>
 </div>
+<script>
+(function() {
+    var AUTH_HASH = '6ca13d52ca70c883e0f0bb101e425a89e8624de51db2d2392593af6a84118090';
+    function _sha256(msg) {
+        return crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg)).then(function(buf) {
+            return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2,'0'); }).join('');
+        });
+    }
+    if (sessionStorage.getItem('hbu_auth') === 'ok') {
+        var ov = document.getElementById('authOverlay');
+        if (ov) ov.remove();
+    }
+    window.checkAuth = window.checkAuth || function() {
+        var inp = document.getElementById('authPassword');
+        var err = document.getElementById('authError');
+        var code = (inp ? inp.value : '').trim();
+        if (!code) { if (err) err.textContent = 'Please enter an access code.'; return; }
+        _sha256(code).then(function(hash) {
+            if (hash === AUTH_HASH) {
+                sessionStorage.setItem('hbu_auth', 'ok');
+                var overlay = document.getElementById('authOverlay');
+                if (overlay) { overlay.classList.add('fade-out'); setTimeout(function() { overlay.remove(); }, 500); }
+            } else {
+                if (err) err.textContent = 'Invalid access code.';
+                if (inp) { inp.value = ''; inp.focus(); }
+            }
+        });
+    };
+})();
+</script>
 
 <div id="demoBanner" class="demo-banner" style="display:none;">DEMO MODE &#8212; Sample data for illustration only</div>
 
@@ -1689,6 +1752,11 @@
                     <div class="field" id="field-parcelSize">
                         <label>Parcel Size (sq ft) <span class="autofill-badge">auto-filled</span></label>
                         <input type="number" id="parcelSize" value="10000" min="500" max="5000000" step="100">
+                    </div>
+
+                    <div class="field" id="field-ownProperty" style="display:flex;align-items:center;gap:8px;margin:-4px 0 4px 0;">
+                        <input type="checkbox" id="ownProperty" style="width:auto;margin:0;">
+                        <label for="ownProperty" style="margin:0;font-size:0.92em;cursor:pointer;">I currently own this property <span id="assessedValueLabel" style="color:#718096;font-size:0.85em;"></span></label>
                     </div>
 
                     <div class="field" id="field-frontage">
@@ -2053,6 +2121,14 @@
                     </div>
                 </div>
                 <div class="finder-field">
+                    <label>Residential Type</label>
+                    <select id="finderResType2">
+                        <option value="all">All Residential</option>
+                        <option value="SFR" selected>Single Family / 2-4 Units (easier to acquire)</option>
+                        <option value="MFR">Multi-Family 5+ Units</option>
+                    </select>
+                </div>
+                <div class="finder-field">
                     <label>Min Lot Size (sq ft)</label>
                     <input type="number" id="finderMinLot2" value="2500" min="0" step="500">
                 </div>
@@ -2365,6 +2441,19 @@
 // ============================================================
 // PARCEL_QUERY_URL, PARCEL_OUT_FIELDS, PARCEL_MIN_ZOOM — now in shared.js
 
+// Toast notification for map interactions (avoids scrolling away from map)
+function showMapToast(msg) {
+    var existing = document.getElementById('mapToast');
+    if (existing) existing.remove();
+    var toast = document.createElement('div');
+    toast.id = 'mapToast';
+    toast.textContent = msg;
+    toast.style.cssText = 'position:fixed;top:18px;left:50%;transform:translateX(-50%);background:#2d3748;color:#fff;padding:8px 20px;border-radius:6px;font-size:0.88rem;z-index:100000;box-shadow:0 2px 8px rgba(0,0,0,.25);pointer-events:none;opacity:0;transition:opacity 0.3s;';
+    document.body.appendChild(toast);
+    requestAnimationFrame(function() { toast.style.opacity = '1'; });
+    setTimeout(function() { toast.style.opacity = '0'; setTimeout(function() { toast.remove(); }, 350); }, 2500);
+}
+
 function formatParcelCurrency(val) {
     if (!val && val !== 0) return 'N/A';
     return '$' + Number(val).toLocaleString('en-US', { maximumFractionDigits: 0 });
@@ -2555,7 +2644,7 @@ function activateDemo() {
 }
 
 // Clear any previously stored auth hash — require code every visit during pilot
-localStorage.removeItem('hbu_auth_hash');
+// Auth handled by shared.js
 
 // Utility: run in browser console to generate a hash for a new access code
 // Usage: generateCodeHash('YOUR-CODE-HERE')
@@ -3339,6 +3428,20 @@ async function lookupAddress() {
         }
     }
 
+    // Capture assessor roll values for land cost default
+    window.lastAssessedTotal = 0;
+    if (parcelResult && parcelResult.attrs) {
+        const _rl = parseFloat(parcelResult.attrs.Roll_LandValue) || 0;
+        const _ri = parseFloat(parcelResult.attrs.Roll_ImpValue) || 0;
+        window.lastAssessedTotal = _rl + _ri;
+    }
+    var _avLabel = document.getElementById('assessedValueLabel');
+    if (_avLabel) {
+        _avLabel.textContent = window.lastAssessedTotal > 0
+            ? '(Assessed: $' + window.lastAssessedTotal.toLocaleString() + ')'
+            : '';
+    }
+
     // Apply parcel size
     if (parcelResult && parcelResult.error === 'cors') {
         statusParts.push(`<span class="status-item warn">Parcel size: County GIS blocked by browser — enter manually</span>`);
@@ -4036,8 +4139,11 @@ function scoreFinancial(useId, inp, effects) {
     const buildableSF = inp.parcelSize * far;
     const nsf = buildableSF * (params ? params.eff : 0.82);
     const landValuePSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
-    // ADU is an addition — no land acquisition cost
-    const landCost = useId === 'adu' ? 0 : inp.parcelSize * landValuePSF;
+    // Land cost: use assessor value if available, checkbox zeroes it out
+    const _ownProp = document.getElementById('ownProperty');
+    const landCost = (_ownProp && _ownProp.checked) ? 0
+        : (window.lastAssessedTotal > 0) ? window.lastAssessedTotal
+        : (useId === 'adu' ? 0 : inp.parcelSize * landValuePSF);
 
     // Build cost with parking reduction from legislation
     let buildCostPerSF = BUILD_COST_PSF[useId] || 300;
@@ -4516,8 +4622,10 @@ function renderResults(results, inp) {
     // Show print button
     document.getElementById('btnPrint').classList.add('visible');
 
-    // Scroll to results
-    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Only scroll to results if not in multi-site mode
+    if (!window._multiSiteMode) {
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
 function exportPDF() {
@@ -4614,8 +4722,11 @@ function generateBudget(useId, inp, effects) {
     const parkingCostPerSpace = PARKING_COST_MAP[useId] || 35000;
 
     const landValuePSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
-    // ADU is an addition to an existing lot — no land acquisition needed
-    const landCost = useId === 'adu' ? 0 : inp.parcelSize * landValuePSF;
+    // Land cost: use assessor value if available, checkbox zeroes it out
+    const _ownProp2 = document.getElementById('ownProperty');
+    const landCost = (_ownProp2 && _ownProp2.checked) ? 0
+        : (window.lastAssessedTotal > 0) ? window.lastAssessedTotal
+        : (useId === 'adu' ? 0 : inp.parcelSize * landValuePSF);
 
     // Hard costs — Site work broken into sub-components
     const siteWorkBreakdown = calcSiteWorkBreakdown(useId, inp, gsf);
@@ -5400,7 +5511,11 @@ function computeFromAssumptions(useId, inp, assumptions, effects) {
     const revenueNSF = hasUnits ? assumptions.unitsOrNSF * params.unitSF : assumptions.unitsOrNSF;
     const parkingSpaces = assumptions.parkingSpaces;
     const landValuePSF = assumptions.landValuePSF;
-    const landCost = useId === 'adu' ? 0 : inp.parcelSize * landValuePSF;
+    // Land cost: use assessor value if available, checkbox zeroes it out
+    const _ownProp3 = document.getElementById('ownProperty');
+    const landCost = (_ownProp3 && _ownProp3.checked) ? 0
+        : (window.lastAssessedTotal > 0) ? window.lastAssessedTotal
+        : (useId === 'adu' ? 0 : inp.parcelSize * landValuePSF);
     let siteWorkBreakdown;
     if (assumptions.siteWorkOverride !== undefined && assumptions.siteWorkOverride !== null) {
         siteWorkBreakdown = { total: assumptions.siteWorkOverride, grading: 0, utilities: 0, erosion: 0, soilPrep: 0, clearing: 0, isOverride: true };
@@ -5652,6 +5767,47 @@ let finderSortCol2 = 'impRatio';
 let finderSortAsc2 = true;
 let finderParcelLayer2 = null;
 let finderSelectedSet = new Set();
+let finderHighlightCircles = new Map();
+
+function toggleFinderMapSelect(idx) {
+    const r = finderResults2[idx];
+    if (!r || !finderMapInstance) return;
+    if (finderSelectedSet.has(idx)) {
+        finderSelectedSet.delete(idx);
+        if (finderHighlightCircles.has(idx)) { finderMapInstance.removeLayer(finderHighlightCircles.get(idx)); finderHighlightCircles.delete(idx); }
+    } else {
+        finderSelectedSet.add(idx);
+        const ring = L.circle([r.lat, r.lon], { radius: 25, color: '#0d9488', weight: 3, fillColor: '#0d9488', fillOpacity: 0.15, interactive: false }).addTo(finderMapInstance);
+        finderHighlightCircles.set(idx, ring);
+    }
+    const cb = document.querySelector('.finder-row-check[data-idx="' + idx + '"]');
+    if (cb) cb.checked = finderSelectedSet.has(idx);
+    const allCb = document.getElementById('finderSelectAll');
+    if (allCb) { const total = document.querySelectorAll('.finder-row-check').length; allCb.checked = finderSelectedSet.size === total && total > 0; }
+    updateSelectionBar();
+    updateMapExecuteBtn();
+}
+function updateMapExecuteBtn() {
+    let btn = document.getElementById('mapExecuteBtn');
+    if (finderSelectedSet.size > 0) {
+        if (!btn && finderMapInstance) {
+            const mapEl = finderMapInstance.getContainer();
+            btn = document.createElement('button'); btn.id = 'mapExecuteBtn'; btn.type = 'button';
+            btn.style.cssText = 'position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:1000;padding:8px 20px;background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;border:none;border-radius:8px;font-size:0.88rem;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(13,148,136,0.4);transition:transform 0.15s;';
+            btn.onmouseenter = function() { btn.style.transform = 'translateX(-50%) translateY(-2px)'; };
+            btn.onmouseleave = function() { btn.style.transform = 'translateX(-50%)'; };
+            btn.onclick = function() { addSelectionToSaved(); clearFinderHighlightCircles(); };
+            mapEl.appendChild(btn);
+        }
+        if (btn) btn.textContent = 'Add ' + finderSelectedSet.size + ' to Saved List';
+    } else { if (btn) btn.remove(); }
+}
+function clearFinderHighlightCircles() {
+    finderHighlightCircles.forEach(function(c) { if (finderMapInstance) finderMapInstance.removeLayer(c); });
+    finderHighlightCircles.clear();
+    var btn = document.getElementById('mapExecuteBtn'); if (btn) btn.remove();
+}
+
 let sitesMapInitialized = false;
 let sitesMapInstance = null;
 
@@ -5974,6 +6130,18 @@ function classifyParcelUseType(useType, useDesc, useCode) {
     if (ut.includes('industr') || ud.includes('industr') || ud.includes('warehouse') || uc.startsWith('3') || uc.startsWith('4')) return 'Industrial';
     return 'Commercial';
 }
+// Sub-classify residential parcels: Single Family, Multi-Family, or Other
+function classifyResidentialType(useType, useDesc, useCode, units) {
+    const ud = (useDesc || '').toLowerCase();
+    const uc = (useCode || '').toString();
+    const u = parseInt(units) || 0;
+    if (ud.includes('single') || ud.includes('sfr') || ud.includes('one family') || uc === '0100' || uc === '0101') return 'SFR';
+    if (ud.includes('duplex') || ud.includes('triplex') || ud.includes('fourplex') || ud.includes('2 units') || ud.includes('3 units') || ud.includes('4 units') || (u >= 2 && u <= 4)) return 'SFR';
+    if (ud.includes('apart') || ud.includes('condo') || ud.includes('multi') || ud.includes('5+') || uc.startsWith('03') || uc.startsWith('04') || u >= 5) return 'MFR';
+    if (u <= 1) return 'SFR';
+    return 'MFR';
+}
+
 function classifySB79Zone(parcelLat, parcelLon, stationLat, stationLon) { const dist = haversine(parcelLat, parcelLon, stationLat, stationLon); if (dist <= SB79_ZONES.adjacent.maxDist) return { key: 'adjacent', dist }; if (dist <= SB79_ZONES.inner.maxDist) return { key: 'inner', dist }; if (dist <= SB79_ZONES.outer.maxDist) return { key: 'outer', dist }; return { key: 'outside', dist }; }
 function getSB79Allowances(tier, zoneKey) { const tierData = SB79_TIERS[tier]; const zone = SB79_ZONES[zoneKey]; if (!tierData || !zone) return null; return { height: Math.round(tierData.height * zone.heightMult), density: Math.round(tierData.density * zone.heightMult), far: parseFloat((tierData.far * zone.heightMult).toFixed(2)), parking: zone.parking }; }
 
@@ -6008,11 +6176,14 @@ function filterAndScoreResults(features, station, filters) {
         const address = a.SitusFullAddress || 'No address'; const apn = a.APN || '';
         const zoneInfo = classifySB79Zone(lat, lon, station.lat, station.lon); if (zoneInfo.key === 'outside') continue;
         if (filters.selectedZones && filters.selectedZones.length > 0 && !filters.selectedZones.includes(zoneInfo.key)) continue;
+        const units = parseInt(a.Units1) || 0;
+        const resSubType = useType === 'Residential' ? classifyResidentialType(a.UseType, a.UseDescription, a.UseCode, units) : null;
         if (filters.minLot && lotSizeSqFt < filters.minLot) continue; if (filters.maxLot && lotSizeSqFt > filters.maxLot) continue;
         if (filters.useTypes.length > 0 && !filters.useTypes.includes(useType)) continue;
+        if (filters.resType && filters.resType !== 'all' && useType === 'Residential' && resSubType !== filters.resType) continue;
         const allowances = getSB79Allowances(station.tier, zoneInfo.key);
         var nearbyTransit = getAllNearbyTransit(lat, lon, 0.75);
-        var resultObj = { address, apn, lotSizeSqFt, useType, yearBuilt, landVal, impVal, impRatio, lat, lon, zone: zoneInfo.key, zoneDist: zoneInfo.dist, allowances, tier: station.tier, nearbyTransit };
+        var resultObj = { address, apn, lotSizeSqFt, useType, resSubType, yearBuilt, landVal, impVal, impRatio, lat, lon, zone: zoneInfo.key, zoneDist: zoneInfo.dist, allowances, tier: station.tier, nearbyTransit };
         var legInfo = getLegislationForResult(resultObj); resultObj.legislation = legInfo.bills; resultObj.legislationEffects = legInfo.effects;
         results.push(resultObj);
     }
@@ -6052,7 +6223,8 @@ async function runStandaloneSearch() {
     const radiusFt = Math.max(...selectedRadii); const useTypes = Array.from(document.querySelectorAll('.finderUseType2:checked')).map(c => c.value);
     const minLot = parseInt(document.getElementById('finderMinLot2').value)||0; const maxLot = parseInt(document.getElementById('finderMaxLot2').value)||999999;
     const selectedZones = []; if (selectedRadii.includes(200)) selectedZones.push('adjacent'); if (selectedRadii.includes(1320)) selectedZones.push('inner'); if (selectedRadii.includes(2640)) selectedZones.push('outer');
-    const filters = { useTypes, minLot, maxLot, maxRatio: null, yearBefore: null, selectedZones }; finderSelectedSet.clear();
+    const resType = (document.getElementById('finderResType2') || {}).value || 'all';
+    const filters = { useTypes, resType, minLot, maxLot, maxRatio: null, yearBefore: null, selectedZones }; finderSelectedSet.clear();
     const progressEl = document.getElementById('finderProgress2'); const fillEl = document.getElementById('finderProgressFill2'); const textEl = document.getElementById('finderProgressText2'); const btn = document.getElementById('finderSearchBtn2');
     progressEl.classList.add('active'); fillEl.style.width = '0%'; textEl.textContent = 'Querying parcels near ' + station.name + '...'; btn.disabled = true; document.getElementById('finderResultsArea2').innerHTML = '';
     drawFinderStationRadii(station);
@@ -6074,21 +6246,22 @@ function renderFinderResults2(station) {
     let html = `<div id="finderSelectionBar" class="selection-bar" style="display:none;"><span id="finderSelCount">0</span><button type="button" class="finder-btn-export" onclick="addSelectionToSaved()" style="margin:0 0.5rem;">Add to Saved</button><button type="button" class="finder-btn-export" onclick="clearFinderSelection()">Clear</button></div>`;
     html += `<div class="finder-summary">${finderResults2.length} opportunities near <strong>${station.name}</strong></div>`;
     html += `<div class="finder-table-wrapper"><table class="finder-table" id="finderTable2"><thead><tr><th onclick="event.stopPropagation();toggleSelectAll()"><input type="checkbox" id="finderSelectAll" onclick="event.stopPropagation();toggleSelectAll()"></th><th onclick="sortFinderTable2('address')">Address</th><th onclick="sortFinderTable2('apn')">APN</th><th onclick="sortFinderTable2('lotSizeSqFt')">Lot Size</th><th onclick="sortFinderTable2('useType')">Use</th><th onclick="sortFinderTable2('yearBuilt')">Year</th><th onclick="sortFinderTable2('landVal')">Land Val</th><th onclick="sortFinderTable2('impVal')">Imp Val</th><th onclick="sortFinderTable2('impRatio')">Imp/Land</th><th onclick="sortFinderTable2('zone')">Zone</th><th>Allowances</th><th>Links</th></tr></thead><tbody>`;
-    finderResults2.forEach((r, i) => { const allow = r.allowances; const allowStr = allow ? `${allow.height}ft/${allow.density}du/${allow.far}FAR` : '-'; const checked = finderSelectedSet.has(i) ? 'checked' : ''; const enc = encodeURIComponent(r.address); const apnClean = (r.apn||'').replace(/[^0-9]/g,''); html += `<tr onclick="highlightFinderParcel2(${i})" id="finderRow2_${i}"><td onclick="event.stopPropagation()"><input type="checkbox" class="finder-row-check" data-idx="${i}" ${checked} onchange="onFinderCheckChange()"></td><td>${r.address}</td><td>${r.apn}</td><td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString()+' sf' : '-'}</td><td>${r.useType}</td><td>${r.yearBuilt > 0 ? r.yearBuilt : '-'}</td><td>${f(r.landVal)}</td><td>${f(r.impVal)}</td><td class="${ratioClass(r.impRatio)}">${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'}</td><td>${zoneBadge(r.zone)}</td><td style="font-size:0.75rem;">${allowStr}</td><td><span class="prop-links" onclick="event.stopPropagation()"><a href="https://www.zillow.com/homes/${enc}_rb/" target="_blank">Z</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank">LA</a></span></td></tr>`; });
+    finderResults2.forEach((r, i) => { const allow = r.allowances; const allowStr = allow ? `${allow.height}ft/${allow.density}du/${allow.far}FAR` : '-'; const checked = finderSelectedSet.has(i) ? 'checked' : ''; const enc = encodeURIComponent(r.address); const apnClean = (r.apn||'').replace(/[^0-9]/g,''); html += `<tr onclick="highlightFinderParcel2(${i})" id="finderRow2_${i}"><td onclick="event.stopPropagation()"><input type="checkbox" class="finder-row-check" data-idx="${i}" ${checked} onchange="onFinderCheckChange()"></td><td>${r.address}</td><td>${r.apn}</td><td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString()+' sf' : '-'}</td><td>${r.useType}${r.resSubType ? ' <span style="color:#718096;font-size:0.78em;">(' + r.resSubType + ')</span>' : ''}</td><td>${r.yearBuilt > 0 ? r.yearBuilt : '-'}</td><td>${f(r.landVal)}</td><td>${f(r.impVal)}</td><td class="${ratioClass(r.impRatio)}">${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'}</td><td>${zoneBadge(r.zone)}</td><td style="font-size:0.75rem;">${allowStr}</td><td><span class="prop-links" onclick="event.stopPropagation()"><a href="https://www.zillow.com/homes/${enc}_rb/" target="_blank">Z</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank">LA</a></span></td></tr>`; });
     html += '</tbody></table></div>';
     html += `<button type="button" class="finder-btn-export" onclick="exportFinderCSV2()">Export CSV (${finderResults2.length})</button>`;
     area.innerHTML = html; updateSelectionBar();
 }
 function sortFinderTable2(col) { if (finderSortCol2 === col) finderSortAsc2 = !finderSortAsc2; else { finderSortCol2 = col; finderSortAsc2 = true; } finderResults2.sort((a,b) => { let va = a[col], vb = b[col]; if (typeof va === 'string') { va = va.toLowerCase(); vb = (vb||'').toLowerCase(); return finderSortAsc2 ? va.localeCompare(vb) : vb.localeCompare(va); } va = va||0; vb = vb||0; return finderSortAsc2 ? va - vb : vb - va; }); const station = METRO_STATIONS[parseInt(document.getElementById('finderStation2').value)]; renderFinderResults2(station); }
-function addFinderParcelsToMap2(station) { if (!finderMapInstance) return; if (finderParcelLayer2) finderMapInstance.removeLayer(finderParcelLayer2); finderParcelLayer2 = L.layerGroup().addTo(finderMapInstance); finderResults2.forEach((r, i) => { if (!r.lat || !r.lon) return; let color = '#38a169'; if (r.impRatio < 0.5) color = '#e53e3e'; else if (r.impRatio < 1.0) color = '#dd6b20'; const marker = L.circleMarker([r.lat, r.lon], { radius: 5, fillColor: color, color: '#fff', weight: 1, opacity: 0.9, fillOpacity: 0.8 }); marker.bindPopup(`<strong>${r.address}</strong><br>APN: ${r.apn}<br>Lot: ${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString()+' sf' : '-'}<br>Imp/Land: ${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'}`); marker.on('click', () => { const row = document.getElementById('finderRow2_'+i); if (row) { row.classList.add('highlighted'); row.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }); marker.addTo(finderParcelLayer2); }); }
+function addFinderParcelsToMap2(station) { if (!finderMapInstance) return; if (finderParcelLayer2) finderMapInstance.removeLayer(finderParcelLayer2); clearFinderHighlightCircles(); finderParcelLayer2 = L.layerGroup().addTo(finderMapInstance); finderResults2.forEach((r, i) => { if (!r.lat || !r.lon) return; let color = '#38a169'; if (r.impRatio < 0.5) color = '#e53e3e'; else if (r.impRatio < 1.0) color = '#dd6b20'; const marker = L.circleMarker([r.lat, r.lon], { radius: 5, fillColor: color, color: '#fff', weight: 1, opacity: 0.9, fillOpacity: 0.8 }); marker.bindTooltip(`<strong>${r.address}</strong><br>Imp/Land: ${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'}`, { direction: 'top', offset: [0, -8] }); marker.on('click', () => { toggleFinderMapSelect(i); const sel = finderSelectedSet.has(i); showMapToast(sel ? ('Selected — ' + (r.address || r.apn)) : ('Deselected — ' + (r.address || r.apn))); }); marker.addTo(finderParcelLayer2); }); }
 function highlightFinderParcel2(idx) { const r = finderResults2[idx]; if (!r || !finderMapInstance) return; document.querySelectorAll('#finderTable2 tr.highlighted').forEach(tr => tr.classList.remove('highlighted')); const row = document.getElementById('finderRow2_'+idx); if (row) row.classList.add('highlighted'); finderMapInstance.setView([r.lat, r.lon], 17); }
 function exportFinderCSV2() { if (finderResults2.length === 0) return; const headers = ['Address','APN','Lot Size','Use','Year','Land Value','Imp Value','Imp/Land','Zone','Height','Density','FAR','Lat','Lon']; const rows = finderResults2.map(r => { const a = r.allowances||{}; return [`"${(r.address||'').replace(/"/g,'""')}"`,r.apn,r.lotSizeSqFt,r.useType,r.yearBuilt||'',r.landVal,r.impVal,r.impRatio < 100 ? r.impRatio.toFixed(3):'',r.zone,a.height||'',a.density||'',a.far||'',r.lat,r.lon].join(','); }); const csv = [headers.join(','), ...rows].join('\n'); const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `sb79-opportunities-${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(url); }
 
 // Selection & Saved List
-function onFinderCheckChange() { finderSelectedSet.clear(); document.querySelectorAll('.finder-row-check:checked').forEach(cb => finderSelectedSet.add(parseInt(cb.dataset.idx))); const allCb = document.getElementById('finderSelectAll'); if (allCb) allCb.checked = finderSelectedSet.size === document.querySelectorAll('.finder-row-check').length && finderSelectedSet.size > 0; updateSelectionBar(); }
-function toggleSelectAll() { const allCb = document.getElementById('finderSelectAll'); const checks = document.querySelectorAll('.finder-row-check'); const shouldCheck = allCb ? allCb.checked : false; finderSelectedSet.clear(); checks.forEach(cb => { cb.checked = shouldCheck; if (shouldCheck) finderSelectedSet.add(parseInt(cb.dataset.idx)); }); updateSelectionBar(); }
+function syncMapCirclesFromCheckboxes() { finderHighlightCircles.forEach(function(c, idx) { if (!finderSelectedSet.has(idx) && finderMapInstance) { finderMapInstance.removeLayer(c); finderHighlightCircles.delete(idx); } }); finderSelectedSet.forEach(function(idx) { if (!finderHighlightCircles.has(idx) && finderMapInstance) { const r = finderResults2[idx]; if (r && r.lat && r.lon) { const ring = L.circle([r.lat, r.lon], { radius: 25, color: '#0d9488', weight: 3, fillColor: '#0d9488', fillOpacity: 0.15, interactive: false }).addTo(finderMapInstance); finderHighlightCircles.set(idx, ring); } } }); updateMapExecuteBtn(); }
+function onFinderCheckChange() { finderSelectedSet.clear(); document.querySelectorAll('.finder-row-check:checked').forEach(cb => finderSelectedSet.add(parseInt(cb.dataset.idx))); const allCb = document.getElementById('finderSelectAll'); if (allCb) allCb.checked = finderSelectedSet.size === document.querySelectorAll('.finder-row-check').length && finderSelectedSet.size > 0; updateSelectionBar(); syncMapCirclesFromCheckboxes(); }
+function toggleSelectAll() { const allCb = document.getElementById('finderSelectAll'); const checks = document.querySelectorAll('.finder-row-check'); const shouldCheck = allCb ? allCb.checked : false; finderSelectedSet.clear(); checks.forEach(cb => { cb.checked = shouldCheck; if (shouldCheck) finderSelectedSet.add(parseInt(cb.dataset.idx)); }); updateSelectionBar(); syncMapCirclesFromCheckboxes(); }
 function updateSelectionBar() { const bar = document.getElementById('finderSelectionBar'); if (!bar) return; if (finderSelectedSet.size > 0) { bar.style.display = 'flex'; document.getElementById('finderSelCount').textContent = finderSelectedSet.size + ' selected'; } else bar.style.display = 'none'; }
-function clearFinderSelection() { finderSelectedSet.clear(); document.querySelectorAll('.finder-row-check').forEach(cb => cb.checked = false); const allCb = document.getElementById('finderSelectAll'); if (allCb) allCb.checked = false; updateSelectionBar(); }
+function clearFinderSelection() { finderSelectedSet.clear(); clearFinderHighlightCircles(); document.querySelectorAll('.finder-row-check').forEach(cb => cb.checked = false); const allCb = document.getElementById('finderSelectAll'); if (allCb) allCb.checked = false; updateSelectionBar(); }
 function addSelectionToSaved() { if (finderSelectedSet.size === 0) return; const saved = getSavedList(); const existingApns = new Set(saved.map(s => s.apn)); let added = 0; finderSelectedSet.forEach(idx => { const r = finderResults2[idx]; if (r && !existingApns.has(r.apn)) { saved.push({ address: r.address, apn: r.apn, lotSizeSqFt: r.lotSizeSqFt, useType: r.useType, yearBuilt: r.yearBuilt, landVal: r.landVal, impVal: r.impVal, impRatio: r.impRatio, zone: r.zone, allowances: r.allowances, lat: r.lat, lon: r.lon, tier: r.tier }); added++; } }); setSavedList(saved); clearFinderSelection(); renderSavedList(); if (added > 0) { const panel = document.getElementById('savedListPanel'); if (panel) panel.scrollIntoView({ behavior: 'smooth' }); } }
 function getSavedList() { try { return JSON.parse(localStorage.getItem('sb79_saved_list')) || []; } catch { return []; } }
 function setSavedList(list) { localStorage.setItem('sb79_saved_list', JSON.stringify(list)); }
@@ -6800,6 +6973,7 @@ function yieldToUI() { return new Promise(r => setTimeout(r, 0)); }
 async function batchScoreOpportunities(features, centerLat, centerLon, onProgress) {
     const scored = [];
     const useTypes = Array.from(document.querySelectorAll('.finderUseType2:checked')).map(c => c.value);
+    const resType = (document.getElementById('finderResType2') || {}).value || 'all';
     const minLot = parseInt(document.getElementById('finderMinLot2').value) || 0;
     const maxLot = parseInt(document.getElementById('finderMaxLot2').value) || 999999;
 
@@ -6821,8 +6995,13 @@ async function batchScoreOpportunities(features, centerLat, centerLon, onProgres
         const address = a.SitusFullAddress || 'No address';
         const apn = a.APN || '';
 
+        // Sub-classify residential parcels
+        const resUnits = parseInt(a.Units1) || 0;
+        const resSubType = useType === 'Residential' ? classifyResidentialType(a.UseType, a.UseDescription, a.UseCode, resUnits) : null;
+
         // Apply basic filters
         if (useTypes.length > 0 && !useTypes.includes(useType)) continue;
+        if (resType && resType !== 'all' && useType === 'Residential' && resSubType !== resType) continue;
         if (lotSizeSqFt < minLot || lotSizeSqFt > maxLot) continue;
 
         // Pre-filter: skip heavily improved small parcels
@@ -6904,7 +7083,7 @@ async function batchScoreOpportunities(features, centerLat, centerLon, onProgres
         const hbuScore = Math.round(bestScore);
 
         scored.push({
-            address, apn, lotSizeSqFt, useType, yearBuilt, landVal, impVal, impRatio,
+            address, apn, lotSizeSqFt, useType, resSubType, yearBuilt, landVal, impVal, impRatio,
             lat, lon, zone, allowances, tier, nearbyTransit,
             bestStation, bestUse: useDef.name, bestUseId, oppRatio, estimatedMarketValue,
             residualLandValue, premium, hbuScore, ease, units, stories,
@@ -7210,7 +7389,7 @@ function renderScannerResults() {
             <td>${r.address}</td>
             <td><span style="font-size:0.78rem;">${r.apn}</span> <button class="btn-copy-apn" onclick="event.stopPropagation();copyAPN('${apnClean}')" title="Copy APN">&#128203;</button></td>
             <td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString() + ' sf' : '-'}</td>
-            <td>${r.useType}</td>
+            <td>${r.useType}${r.resSubType ? ' <span style="color:#718096;font-size:0.78em;">(' + r.resSubType + ')</span>' : ''}</td>
             <td><span class="opp-badge ${oppClass(r.oppRatio)}">${ratioStr}</span></td>
             <td>${fmt(r.estimatedMarketValue)}</td>
             <td>${fmt(r.residualLandValue)}</td>
@@ -7267,7 +7446,7 @@ function addScannerParcelsToMap() {
         else color = '#dc2626';
         const marker = L.circleMarker([r.lat, r.lon], { radius: 5, fillColor: color, color: '#fff', weight: 1, opacity: 0.9, fillOpacity: 0.8 });
         marker.bindPopup(`<strong>${r.address}</strong><br>Opp. Ratio: ${r.oppRatio.toFixed(1)}x<br>Dev Bid: $${Math.round(r.residualLandValue).toLocaleString()}<br>Best Use: ${r.bestUse}`);
-        marker.on('click', () => { const row = document.getElementById('finderRow2_' + i); if (row) { row.classList.add('highlighted'); row.scrollIntoView({ behavior: 'smooth', block: 'center' }); } });
+        marker.on('click', () => { const row = document.getElementById('finderRow2_' + i); if (row) { row.classList.add('highlighted'); showMapToast('Site selected — ' + (r.address || r.apn)); } });
         marker.addTo(finderParcelLayer2);
     });
 }
@@ -7332,7 +7511,8 @@ function generateSelectionOnePagers() {
         const topResult = {
             id: r.bestUseId, name: r.bestUse, overall: r.hbuScore,
             devMarginPct: r.budget ? r.budget.devMargin : 0,
-            legislation: r.legislation || []
+            legislation: r.legislation || [],
+            budget: r.budget || null
         };
         const html = generateListingOnePager(topResult, r.inp, r.address);
         window.lastGeocode = prevGeocode;

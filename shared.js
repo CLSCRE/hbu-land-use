@@ -7,20 +7,46 @@
 //  coexist with inline versions during migration.
 // ============================================================
 
-// --- Auth (temporarily disabled) ---
-if (typeof checkAuth === 'undefined') {
-    function checkAuth() {
+// --- Auth Gate ---
+var VALID_HASHES = [
+    '6ca13d52ca70c883e0f0bb101e425a89e8624de51db2d2392593af6a84118090',
+];
+
+async function sha256(message) {
+    var msgBuffer = new TextEncoder().encode(message);
+    var hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    var hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+}
+
+async function checkAuth() {
+    var input = document.getElementById('authPassword');
+    var errEl = document.getElementById('authError');
+    var code = (input ? input.value : '').trim();
+    if (!code) {
+        if (errEl) errEl.textContent = 'Please enter an access code.';
+        return;
+    }
+    var hash = await sha256(code);
+    if (VALID_HASHES.indexOf(hash) !== -1) {
+        sessionStorage.setItem('hbu_auth', 'ok');
         var overlay = document.getElementById('authOverlay');
         if (overlay) {
             overlay.classList.add('fade-out');
             setTimeout(function() { overlay.remove(); }, 500);
         }
+    } else {
+        if (errEl) errEl.textContent = 'Invalid access code.';
+        if (input) { input.value = ''; input.focus(); }
     }
 }
-// Auto-dismiss auth overlay on load
+
+// Auto-grant if already authenticated this session
 document.addEventListener('DOMContentLoaded', function() {
-    var overlay = document.getElementById('authOverlay');
-    if (overlay) { overlay.remove(); }
+    if (sessionStorage.getItem('hbu_auth') === 'ok') {
+        var overlay = document.getElementById('authOverlay');
+        if (overlay) overlay.remove();
+    }
 });
 
 // --- Parcel Layer ---

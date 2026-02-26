@@ -1371,7 +1371,8 @@
         .station-popup .popup-allowances { margin-top: 0.4rem; font-size: 0.78rem; }
         .station-popup .popup-allowances span { display: block; }
         @media print { .map-section { display: none !important; } }
-        @media (max-width: 768px) { #sb79Map, #finderMap { height: 350px; } }
+        @media (max-width: 768px) { #sb79Map, #finderMap, #pipelineMap { height: 350px !important; } }
+        @media (max-width: 480px) { #sb79Map, #finderMap, #pipelineMap, #massingMapContainer { height: 260px !important; } }
 
         /* Tab Bar */
         .tab-bar {
@@ -2356,33 +2357,44 @@
 
         /* === Deep Analysis Mobile Responsiveness === */
         @media (max-width: 768px) {
+            html { font-size: 17px; }
+            header { padding: 1.25rem 1rem; }
+            header p { font-size: 0.85rem; }
+            .container { padding: 1.25rem 0.75rem; }
             .deep-tab-panel { padding: 1rem; }
             .dt-controls-grid { grid-template-columns: 1fr !important; }
             .dt-slider-row { flex-wrap: wrap; }
             .dt-slider-row input[type="range"] { min-width: 0; flex: 1; }
             .dt-slider-row input[type="number"] { width: 60px !important; flex-shrink: 0; }
-            /* Scenario table */
             .scenario-table { font-size: 0.72rem; }
             .scenario-table th, .scenario-table td { padding: 0.4rem 0.3rem; }
-            /* Tornado SVG scales via viewBox — no mobile overrides needed */
-            /* Heatmap SVG scales via viewBox — no mobile overrides needed */
-            /* Comparison tables */
             .afford-comparison-table { font-size: 0.72rem; }
             .afford-comparison-table th, .afford-comparison-table td { padding: 0.3rem 0.4rem; }
-            /* Sensitivity sliders grid */
             .sens-scenario-grid { grid-template-columns: 1fr !important; }
-            /* Breakeven cards */
             .breakeven-grid { grid-template-columns: 1fr !important; }
-            /* KPI grid */
             .kpi-grid { grid-template-columns: 1fr !important; }
-            /* Deep tab navigation — horizontal scroll */
-            #deepTabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            /* Deep tab navigation — horizontal scroll with fade hint */
+            #deepTabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
+                scrollbar-width: thin; }
             .deep-tab-btn { white-space: nowrap; flex-shrink: 0; font-size: 0.65rem; padding: 0.4rem 0.6rem; }
-            /* Summary cards */
+            .deep-tab-group-label { font-size: 0.5rem; padding: 0.2rem 0.3rem 0; }
             .exec-metric-lg { font-size: 1.3rem; }
+            /* Tables — ensure horizontal scroll */
+            .budget-table, .market-comp-table, .details-table, .comparison-table { font-size: 0.75rem; }
+            .budget-table td, .budget-table th, .market-comp-table td, .market-comp-table th { padding: 0.3rem 0.4rem; }
+            /* Auth overlay mobile */
+            .auth-box { padding: 1.75rem 1.25rem; max-width: 320px; }
+            .auth-box h2 { font-size: 1.2rem; }
         }
         @media (max-width: 480px) {
+            html { font-size: 16px; }
+            header { padding: 1rem 0.75rem; }
+            header h1 { font-size: 1.25rem; }
+            header p { font-size: 0.78rem; }
+            .container { padding: 1rem 0.5rem; }
+            .section { padding: 1rem; border-radius: 8px; }
             .deep-tab-panel { padding: 0.5rem; }
+            .deep-tab-btn { font-size: 0.6rem; padding: 0.35rem 0.5rem; }
             .analysis-section { padding: 0.75rem !important; }
             .analysis-section h3 { font-size: 0.9rem; }
             .exec-summary-grid { gap: 0.75rem; }
@@ -2390,6 +2402,15 @@
             .exec-metric-lg { font-size: 1.1rem; }
             .scenario-table { font-size: 0.65rem; }
             .breakeven-card { padding: 0.75rem; }
+            /* Tab bar main */
+            .tab-btn { padding: 0.6rem 0.5rem; font-size: 0.78rem; }
+            /* Auth overlay small phones */
+            .auth-box { padding: 1.5rem 1rem; max-width: 280px; }
+            .auth-box h2 { font-size: 1.1rem; }
+            .auth-btn { padding: 0.6rem 1.5rem; font-size: 0.88rem; }
+            /* Finder table */
+            .finder-table { font-size: 0.72rem; }
+            .finder-table th, .finder-table td { padding: 0.3rem; }
         }
 
 /* Developer Summary Panel */
@@ -2512,6 +2533,7 @@
     <div class="auth-box">
         <h2>Land to Yield</h2>
         <p>HBU Land Use Calculator</p>
+        <p style="font-size:0.88rem;color:#4a5568;margin-bottom:1rem;">Enter Your Password</p>
         <input type="password" id="authPassword" placeholder="Access Code" onkeydown="if(event.key==='Enter')checkAuth();">
         <button type="button" class="auth-btn" onclick="checkAuth()">Enter</button>
         <div class="auth-error" id="authError"></div>
@@ -2521,6 +2543,37 @@
         <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v4.2</div>
     </div>
 </div>
+<script>
+// Inline auth fallback — works even if shared.js fails to load
+(function() {
+    var AUTH_HASH = '6ca13d52ca70c883e0f0bb101e425a89e8624de51db2d2392593af6a84118090';
+    function _sha256(msg) {
+        return crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg)).then(function(buf) {
+            return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2,'0'); }).join('');
+        });
+    }
+    if (sessionStorage.getItem('hbu_auth') === 'ok') {
+        var ov = document.getElementById('authOverlay');
+        if (ov) ov.remove();
+    }
+    window.checkAuth = window.checkAuth || function() {
+        var inp = document.getElementById('authPassword');
+        var err = document.getElementById('authError');
+        var code = (inp ? inp.value : '').trim();
+        if (!code) { if (err) err.textContent = 'Please enter an access code.'; return; }
+        _sha256(code).then(function(hash) {
+            if (hash === AUTH_HASH) {
+                sessionStorage.setItem('hbu_auth', 'ok');
+                var overlay = document.getElementById('authOverlay');
+                if (overlay) { overlay.classList.add('fade-out'); setTimeout(function() { overlay.remove(); }, 500); }
+            } else {
+                if (err) err.textContent = 'Invalid access code.';
+                if (inp) { inp.value = ''; inp.focus(); }
+            }
+        });
+    };
+})();
+</script>
 
 <div id="demoBanner" class="demo-banner" style="display:none;">DEMO MODE — Sample data for illustration only</div>
 
@@ -2570,6 +2623,11 @@
                     <div class="field" id="field-parcelSize">
                         <label>Parcel Size (sq ft) <span class="autofill-badge">auto-filled</span></label>
                         <input type="number" id="parcelSize" value="10000" min="500" max="5000000" step="100">
+                    </div>
+
+                    <div class="field" id="field-ownProperty" style="display:flex;align-items:center;gap:8px;margin:-4px 0 4px 0;">
+                        <input type="checkbox" id="ownProperty" style="width:auto;margin:0;">
+                        <label for="ownProperty" style="margin:0;font-size:0.92em;cursor:pointer;">I currently own this property <span id="assessedValueLabel" style="color:#718096;font-size:0.85em;"></span></label>
                     </div>
 
                     <div class="field" id="field-frontage">
@@ -2877,6 +2935,14 @@
                 </div>
             </div>
             <div class="finder-field">
+                <label>Residential Type</label>
+                <select id="finderResType2">
+                    <option value="all">All Residential</option>
+                    <option value="SFR" selected>Single Family / 2-4 Units (easier to acquire)</option>
+                    <option value="MFR">Multi-Family 5+ Units</option>
+                </select>
+            </div>
+            <div class="finder-field">
                 <label>Min Lot Size (sq ft)</label>
                 <input type="number" id="finderMinLot2" value="2500" min="0" step="500">
             </div>
@@ -3111,38 +3177,40 @@
                 <button class="deep-tab-btn active" onclick="switchDeepTab(0)">Executive Summary</button>
             </div>
             <div class="deep-tab-group">
+                <button class="deep-tab-btn" onclick="switchDeepTab(1)">Pro Forma &amp; Scenarios</button>
+            </div>
+            <div class="deep-tab-group">
                 <div class="deep-tab-group-label">Due Diligence</div>
                 <div class="deep-tab-group-btns">
-                    <button class="deep-tab-btn" onclick="switchDeepTab(1)">Market Comps</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(2)">Environmental</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(3)">Earthwork</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(4)">Infrastructure</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(5)">Community Risk</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(2)">Market Comps</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(3)">Environmental</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(4)">Earthwork</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(5)">Infrastructure</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(6)">Community Risk</button>
                 </div>
             </div>
             <div class="deep-tab-group">
                 <div class="deep-tab-group-label">Entitlements</div>
                 <div class="deep-tab-group-btns">
-                    <button class="deep-tab-btn" onclick="switchDeepTab(6)">Entitlement Pathway</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(7)">RHNA Compliance</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(8)">Affordable Compliance</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(9)">Dev Agreement</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(7)">Entitlement Pathway</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(8)">RHNA Compliance</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(9)">Affordable Compliance</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(10)">Dev Agreement</button>
                 </div>
             </div>
             <div class="deep-tab-group">
                 <div class="deep-tab-group-label">Design</div>
                 <div class="deep-tab-group-btns">
-                    <button class="deep-tab-btn" onclick="switchDeepTab(10)">Generative Design</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(11)">Site Plan &amp; 3D</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(12)">Unit Mix</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(13)">Parking Design</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(14)">Construction &amp; Code</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(11)">Generative Design</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(12)">Site Plan &amp; 3D</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(13)">Unit Mix</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(14)">Parking Design</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(15)">Construction &amp; Code</button>
                 </div>
             </div>
             <div class="deep-tab-group">
                 <div class="deep-tab-group-label">Financial</div>
                 <div class="deep-tab-group-btns">
-                    <button class="deep-tab-btn" onclick="switchDeepTab(15)">Pro Forma &amp; Scenarios</button>
                     <button class="deep-tab-btn" onclick="switchDeepTab(16)">KPI Dashboard</button>
                     <button class="deep-tab-btn" onclick="switchDeepTab(17)">Public Finance</button>
                     <button class="deep-tab-btn" onclick="switchDeepTab(18)">Tax &amp; Incentives</button>
@@ -3185,6 +3253,19 @@
 //  PARCEL LOT LINES — Shared Functions
 // ============================================================
 // PARCEL_QUERY_URL, PARCEL_OUT_FIELDS, PARCEL_MIN_ZOOM — now in shared.js
+
+// Toast notification for map interactions (avoids scrolling away from map)
+function showMapToast(msg) {
+    var existing = document.getElementById('mapToast');
+    if (existing) existing.remove();
+    var toast = document.createElement('div');
+    toast.id = 'mapToast';
+    toast.textContent = msg;
+    toast.style.cssText = 'position:fixed;top:18px;left:50%;transform:translateX(-50%);background:#2d3748;color:#fff;padding:8px 20px;border-radius:6px;font-size:0.88rem;z-index:100000;box-shadow:0 2px 8px rgba(0,0,0,.25);pointer-events:none;opacity:0;transition:opacity 0.3s;';
+    document.body.appendChild(toast);
+    requestAnimationFrame(function() { toast.style.opacity = '1'; });
+    setTimeout(function() { toast.style.opacity = '0'; setTimeout(function() { toast.remove(); }, 350); }, 2500);
+}
 
 function formatParcelCurrency(val) {
     if (!val && val !== 0) return 'N/A';
@@ -3478,7 +3559,7 @@ function activateDemo() {
 }
 
 // Clear any previously stored auth hash — require code every visit during pilot
-localStorage.removeItem('hbu_auth_hash');
+// Auth handled by shared.js
 
 // Utility: run in browser console to generate a hash for a new access code
 // Usage: generateCodeHash('YOUR-CODE-HERE')
@@ -4478,6 +4559,21 @@ async function lookupAddress() {
         }
     }
 
+    // Capture assessor roll values for land cost default
+    window.lastAssessedTotal = 0;
+    if (parcelResult && parcelResult.attrs) {
+        const _rl = parseFloat(parcelResult.attrs.Roll_LandValue) || 0;
+        const _ri = parseFloat(parcelResult.attrs.Roll_ImpValue) || 0;
+        window.lastAssessedTotal = _rl + _ri;
+    }
+    // Update the assessed value label next to the ownership checkbox
+    var _avLabel = document.getElementById('assessedValueLabel');
+    if (_avLabel) {
+        _avLabel.textContent = window.lastAssessedTotal > 0
+            ? '(Assessed: $' + window.lastAssessedTotal.toLocaleString() + ')'
+            : '';
+    }
+
     // Apply parcel size
     if (parcelResult && parcelResult.error === 'cors') {
         statusParts.push(`<span class="status-item warn">Parcel size: County GIS blocked by browser — enter manually</span>`);
@@ -5203,8 +5299,11 @@ function scoreFinancial(useId, inp, effects) {
     const buildableSF = inp.parcelSize * far;
     const nsf = buildableSF * (params ? params.eff : 0.82);
     const landValuePSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
-    // ADU is an addition — no land acquisition cost
-    const landCost = useId === 'adu' ? 0 : inp.parcelSize * landValuePSF;
+    // Land cost: use assessor value if available, checkbox zeroes it out
+    const _ownProp = document.getElementById('ownProperty');
+    const landCost = (_ownProp && _ownProp.checked) ? 0
+        : (window.lastAssessedTotal > 0) ? window.lastAssessedTotal
+        : (useId === 'adu' ? 0 : inp.parcelSize * landValuePSF);
 
     // Build cost with parking reduction from legislation
     let buildCostPerSF = BUILD_COST_PSF[useId] || 300;
@@ -5657,8 +5756,10 @@ function renderResults(results, inp) {
     // Show print button
     document.getElementById('btnPrint').classList.add('visible');
 
-    // Scroll to results
-    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Only scroll to results if not in multi-site mode
+    if (!window._multiSiteMode) {
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
 function exportPDF() {
@@ -5755,8 +5856,11 @@ function generateBudget(useId, inp, effects) {
     const parkingCostPerSpace = PARKING_COST_MAP[useId] || 35000;
 
     const landValuePSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
-    // ADU is an addition to an existing lot — no land acquisition needed
-    const landCost = useId === 'adu' ? 0 : inp.parcelSize * landValuePSF;
+    // Land cost: use assessor value if available, checkbox zeroes it out
+    const _ownProp2 = document.getElementById('ownProperty');
+    const landCost = (_ownProp2 && _ownProp2.checked) ? 0
+        : (window.lastAssessedTotal > 0) ? window.lastAssessedTotal
+        : (useId === 'adu' ? 0 : inp.parcelSize * landValuePSF);
 
     // Hard costs — Site work broken into sub-components
     const siteWorkBreakdown = calcSiteWorkBreakdown(useId, inp, gsf);
@@ -6304,8 +6408,11 @@ function computeFromAssumptions(useId, inp, assumptions, effects) {
     const parkingSpaces = assumptions.parkingSpaces;
 
     const landValuePSF = assumptions.landValuePSF;
-    // ADU is an addition — no land acquisition cost
-    const landCost = useId === 'adu' ? 0 : inp.parcelSize * landValuePSF;
+    // Land cost: use assessor value if available, checkbox zeroes it out
+    const _ownProp3 = document.getElementById('ownProperty');
+    const landCost = (_ownProp3 && _ownProp3.checked) ? 0
+        : (window.lastAssessedTotal > 0) ? window.lastAssessedTotal
+        : (useId === 'adu' ? 0 : inp.parcelSize * landValuePSF);
 
     // Hard costs — Site work with user-overridable sub-components
     let siteWorkBreakdown;
@@ -7695,6 +7802,22 @@ function classifyParcelUseType(useType, useDesc, useCode) {
     return 'Commercial'; // default
 }
 
+// Sub-classify residential parcels: Single Family, Multi-Family, or Other
+function classifyResidentialType(useType, useDesc, useCode, units) {
+    const ud = (useDesc || '').toLowerCase();
+    const uc = (useCode || '').toString();
+    const u = parseInt(units) || 0;
+    // Single Family patterns
+    if (ud.includes('single') || ud.includes('sfr') || ud.includes('one family') || uc === '0100' || uc === '0101') return 'SFR';
+    // Duplex / small multi
+    if (ud.includes('duplex') || ud.includes('triplex') || ud.includes('fourplex') || ud.includes('2 units') || ud.includes('3 units') || ud.includes('4 units') || (u >= 2 && u <= 4)) return 'SFR'; // 2-4 units still easier to acquire
+    // Large multi-family
+    if (ud.includes('apart') || ud.includes('condo') || ud.includes('multi') || ud.includes('5+') || uc.startsWith('03') || uc.startsWith('04') || u >= 5) return 'MFR';
+    // If only 0 or 1 unit, likely SFR
+    if (u <= 1) return 'SFR';
+    return 'MFR';
+}
+
 function classifySB79Zone(parcelLat, parcelLon, stationLat, stationLon) {
     const dist = haversine(parcelLat, parcelLon, stationLat, stationLon);
     if (dist <= SB79_ZONES.adjacent.maxDist) return { key: 'adjacent', dist };
@@ -7868,10 +7991,14 @@ function filterAndScoreResults(features, station, filters) {
         // If specific zones are selected, filter to only those zones
         if (filters.selectedZones && filters.selectedZones.length > 0 && !filters.selectedZones.includes(zoneInfo.key)) continue;
 
+        // Sub-classify residential parcels
+        const resSubType = useType === 'Residential' ? classifyResidentialType(a.UseType, a.UseDescription, a.UseCode, units) : null;
+
         // Apply filters
         if (filters.minLot && lotSizeSqFt < filters.minLot) continue;
         if (filters.maxLot && lotSizeSqFt > filters.maxLot) continue;
         if (filters.useTypes.length > 0 && !filters.useTypes.includes(useType)) continue;
+        if (filters.resType && filters.resType !== 'all' && useType === 'Residential' && resSubType !== filters.resType) continue;
         if (filters.maxRatio !== null && impRatio > filters.maxRatio) continue;
         if (filters.yearBefore && yearBuilt > 0 && yearBuilt >= filters.yearBefore) continue;
 
@@ -7882,7 +8009,7 @@ function filterAndScoreResults(features, station, filters) {
 
         // Get all applicable CA housing legislation
         var resultObj = {
-            address: address, apn: apn, lotSizeSqFt: lotSizeSqFt, useType: useType,
+            address: address, apn: apn, lotSizeSqFt: lotSizeSqFt, useType: useType, resSubType: resSubType,
             yearBuilt: yearBuilt, landVal: landVal, impVal: impVal,
             impRatio: impRatio, sqft: sqft, units: units, lat: lat, lon: lon,
             zone: zoneInfo.key, zoneDist: zoneInfo.dist,
@@ -8113,7 +8240,8 @@ function addFinderParcelsToMap(station) {
             const row = document.getElementById('finderRow' + i);
             if (row) {
                 row.classList.add('highlighted');
-                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Show toast instead of scrolling away from map
+                showMapToast('Site selected — ' + (r.address || r.apn));
             }
         });
 
@@ -8297,6 +8425,68 @@ let finderResults2 = [];
 let finderSortCol2 = 'impRatio';
 let finderSortAsc2 = true;
 let finderSelectedSet = new Set();
+let finderHighlightCircles = new Map(); // idx -> L.circle for map selection rings
+
+function toggleFinderMapSelect(idx) {
+    const r = finderResults2[idx];
+    if (!r || !finderMapInstance) return;
+    if (finderSelectedSet.has(idx)) {
+        // Deselect
+        finderSelectedSet.delete(idx);
+        if (finderHighlightCircles.has(idx)) {
+            finderMapInstance.removeLayer(finderHighlightCircles.get(idx));
+            finderHighlightCircles.delete(idx);
+        }
+    } else {
+        // Select — add highlight ring
+        finderSelectedSet.add(idx);
+        const ring = L.circle([r.lat, r.lon], {
+            radius: 25, color: '#805ad5', weight: 3,
+            fillColor: '#805ad5', fillOpacity: 0.15,
+            interactive: false,
+        }).addTo(finderMapInstance);
+        finderHighlightCircles.set(idx, ring);
+    }
+    // Sync checkbox in table
+    const cb = document.querySelector('.finder-row-check[data-idx="' + idx + '"]');
+    if (cb) cb.checked = finderSelectedSet.has(idx);
+    const allCb = document.getElementById('finderSelectAll');
+    if (allCb) {
+        const total = document.querySelectorAll('.finder-row-check').length;
+        allCb.checked = finderSelectedSet.size === total && total > 0;
+    }
+    updateSelectionBar();
+    updateMapExecuteBtn();
+}
+
+function updateMapExecuteBtn() {
+    let btn = document.getElementById('mapExecuteBtn');
+    if (finderSelectedSet.size > 0) {
+        if (!btn && finderMapInstance) {
+            const mapEl = finderMapInstance.getContainer();
+            btn = document.createElement('button');
+            btn.id = 'mapExecuteBtn';
+            btn.type = 'button';
+            btn.style.cssText = 'position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:1000;padding:8px 20px;background:linear-gradient(135deg,#805ad5,#6b46c1);color:#fff;border:none;border-radius:8px;font-size:0.88rem;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(128,90,213,0.4);transition:transform 0.15s;';
+            btn.onmouseenter = function() { btn.style.transform = 'translateX(-50%) translateY(-2px)'; };
+            btn.onmouseleave = function() { btn.style.transform = 'translateX(-50%)'; };
+            btn.onclick = function() { addSelectionToSaved(); clearFinderHighlightCircles(); };
+            mapEl.appendChild(btn);
+        }
+        if (btn) btn.textContent = 'Add ' + finderSelectedSet.size + ' to Saved List';
+    } else {
+        if (btn) btn.remove();
+    }
+}
+
+function clearFinderHighlightCircles() {
+    finderHighlightCircles.forEach(function(circle) {
+        if (finderMapInstance) finderMapInstance.removeLayer(circle);
+    });
+    finderHighlightCircles.clear();
+    var btn = document.getElementById('mapExecuteBtn');
+    if (btn) btn.remove();
+}
 
 function switchTab(tab) {
     activeTab = tab;
@@ -9395,6 +9585,7 @@ async function runStandaloneSearch() {
     const radiusFt = Math.max(...selectedRadii);
     const useChecks = document.querySelectorAll('.finderUseType2:checked');
     const useTypes = Array.from(useChecks).map(c => c.value);
+    const resType = (document.getElementById('finderResType2') || {}).value || 'all';
     const minLot = parseInt(document.getElementById('finderMinLot2').value) || 0;
     const maxLot = parseInt(document.getElementById('finderMaxLot2').value) || 999999;
 
@@ -9404,7 +9595,7 @@ async function runStandaloneSearch() {
     if (selectedRadii.includes(1320)) selectedZones.push('inner');
     if (selectedRadii.includes(2640)) selectedZones.push('outer');
 
-    const filters = { useTypes, minLot, maxLot, maxRatio: null, yearBefore: null, selectedZones };
+    const filters = { useTypes, resType, minLot, maxLot, maxRatio: null, yearBefore: null, selectedZones };
 
     finderSelectedSet.clear();
 
@@ -9507,7 +9698,7 @@ function renderFinderResults2(station) {
             <td>${r.address}</td>
             <td>${r.apn}</td>
             <td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString() + ' sf' : '-'}</td>
-            <td>${r.useType}</td>
+            <td>${r.useType}${r.resSubType ? ' <span style="color:#718096;font-size:0.78em;">(' + r.resSubType + ')</span>' : ''}</td>
             <td>${r.yearBuilt > 0 ? r.yearBuilt : '-'}</td>
             <td>${fmt(r.landVal)}</td>
             <td>${fmt(r.impVal)}</td>
@@ -9560,6 +9751,7 @@ function addFinderParcelsToMap2(station) {
     if (finderParcelLayer2) {
         finderMapInstance.removeLayer(finderParcelLayer2);
     }
+    clearFinderHighlightCircles();
     finderParcelLayer2 = L.layerGroup().addTo(finderMapInstance);
 
     finderResults2.forEach((r, i) => {
@@ -9578,23 +9770,12 @@ function addFinderParcelsToMap2(station) {
         const allowStr = allow ? `Height: ${allow.height}ft | Density: ${allow.density}du/ac | FAR: ${allow.far}` : '';
         const encAddr = encodeURIComponent(r.address);
         const apnClean = (r.apn || '').replace(/[^0-9]/g, '');
-        marker.bindPopup(`<div style="font-size:0.82rem;">
-            <strong>${r.address}</strong><br>
-            APN: ${r.apn}<br>
-            Use: ${r.useType} | Lot: ${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString() + ' sf' : '-'}<br>
-            Imp/Land Ratio: <strong>${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'}</strong><br>
-            Land: $${(r.landVal || 0).toLocaleString()} | Imp: $${(r.impVal || 0).toLocaleString()}<br>
-            <em>SB 79 Zone: ${r.zone} ${allowStr ? '| ' + allowStr : ''}</em><br>
-            <span style="font-size:0.78rem;"><a href="https://www.zillow.com/homes/${encAddr}_rb/" target="_blank">Zillow</a> | <a href="https://www.redfin.com/search?q=${encAddr}" target="_blank">Redfin</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank">LA Assessor</a></span>
-        </div>`);
+        marker.bindTooltip(`<strong>${r.address}</strong><br>Imp/Land: ${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'} | Lot: ${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString() + ' sf' : '-'}`, { direction: 'top', offset: [0, -8] });
 
         marker.on('click', () => {
-            document.querySelectorAll('#finderTable2 tr.highlighted').forEach(tr => tr.classList.remove('highlighted'));
-            const row = document.getElementById('finderRow2_' + i);
-            if (row) {
-                row.classList.add('highlighted');
-                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+            toggleFinderMapSelect(i);
+            const sel = finderSelectedSet.has(i);
+            showMapToast(sel ? ('Selected — ' + (r.address || r.apn)) : ('Deselected — ' + (r.address || r.apn)));
         });
 
         marker.addTo(finderParcelLayer2);
@@ -9681,6 +9862,29 @@ function exportFinderCSV2() {
 
 // === Selection & Saved List ===
 
+function syncMapCirclesFromCheckboxes() {
+    // Remove circles for deselected, add for newly selected
+    finderHighlightCircles.forEach(function(circle, idx) {
+        if (!finderSelectedSet.has(idx) && finderMapInstance) {
+            finderMapInstance.removeLayer(circle);
+            finderHighlightCircles.delete(idx);
+        }
+    });
+    finderSelectedSet.forEach(function(idx) {
+        if (!finderHighlightCircles.has(idx) && finderMapInstance) {
+            const r = finderResults2[idx];
+            if (r && r.lat && r.lon) {
+                const ring = L.circle([r.lat, r.lon], {
+                    radius: 25, color: '#805ad5', weight: 3,
+                    fillColor: '#805ad5', fillOpacity: 0.15, interactive: false,
+                }).addTo(finderMapInstance);
+                finderHighlightCircles.set(idx, ring);
+            }
+        }
+    });
+    updateMapExecuteBtn();
+}
+
 function onFinderCheckChange() {
     finderSelectedSet.clear();
     document.querySelectorAll('.finder-row-check:checked').forEach(cb => {
@@ -9692,6 +9896,7 @@ function onFinderCheckChange() {
         allCb.checked = finderSelectedSet.size === total && total > 0;
     }
     updateSelectionBar();
+    syncMapCirclesFromCheckboxes();
 }
 
 function toggleSelectAll() {
@@ -9704,6 +9909,7 @@ function toggleSelectAll() {
         if (shouldCheck) finderSelectedSet.add(parseInt(cb.dataset.idx));
     });
     updateSelectionBar();
+    syncMapCirclesFromCheckboxes();
 }
 
 function updateSelectionBar() {
@@ -9720,6 +9926,7 @@ function updateSelectionBar() {
 
 function clearFinderSelection() {
     finderSelectedSet.clear();
+    clearFinderHighlightCircles();
     document.querySelectorAll('.finder-row-check').forEach(cb => cb.checked = false);
     const allCb = document.getElementById('finderSelectAll');
     if (allCb) allCb.checked = false;
@@ -10557,21 +10764,21 @@ function renderDeepTabPanels(skipTab0) {
     // Lazy rendering: only render tabs 1-4 eagerly, rest on demand
     var DEEP_TAB_RENDERERS = [
         null, // Tab 0 handled above
-        renderMarketCompsTab,       // 1
-        renderEnvironmentalTab,     // 2
-        renderEarthworkTab,         // 3
-        renderInfrastructureTab,    // 4
-        renderCommunityRiskTab,     // 5
-        renderEntitlementTab,       // 6
-        renderRHNATab,              // 7
-        renderAffordableTab,        // 8
-        renderDevAgreementTab,      // 9
-        renderGenerativeDesignTab,  // 10
-        renderEnhancedSitePlanTab,  // 11
-        renderUnitMixTab,           // 12
-        renderParkingTab,           // 13
-        renderConstructionTab,      // 14
-        renderSensitivityTab,       // 15
+        renderSensitivityTab,       // 1  Pro Forma & Scenarios
+        renderMarketCompsTab,       // 2
+        renderEnvironmentalTab,     // 3
+        renderEarthworkTab,         // 4
+        renderInfrastructureTab,    // 5
+        renderCommunityRiskTab,     // 6
+        renderEntitlementTab,       // 7
+        renderRHNATab,              // 8
+        renderAffordableTab,        // 9
+        renderDevAgreementTab,      // 10
+        renderGenerativeDesignTab,  // 11
+        renderEnhancedSitePlanTab,  // 12
+        renderUnitMixTab,           // 13
+        renderParkingTab,           // 14
+        renderConstructionTab,      // 15
         renderKPIDashboard,         // 16
         renderPublicFinanceTab,     // 17
         renderTaxIncentivesTab,     // 18
@@ -10589,7 +10796,7 @@ function renderDeepTabPanels(skipTab0) {
     window._deepTabRendered = {};
 
     // Eagerly render first few tabs (visible on open)
-    var eagerCount = 5; // tabs 1-4 (most likely to be viewed first)
+    var eagerCount = 6; // tabs 1-5 (Pro Forma + first 4 due diligence)
     for (var ti = 1; ti <= Math.min(eagerCount, DEEP_TAB_RENDERERS.length - 1); ti++) {
         try { html += DEEP_TAB_RENDERERS[ti](st); }
         catch(e) { html += '<div class="deep-tab-panel"><div class="analysis-section"><p style="color:#c53030;">Error: ' + e.message + '</p></div></div>'; }
