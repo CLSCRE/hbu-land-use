@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head><title>OG Image Generator</title></head>
+<body style="margin:0;padding:20px;background:#333;">
+<h2 style="color:white;font-family:sans-serif;">Right-click the image below and "Save Image As" → og-image.png</h2>
+<canvas id="canvas" width="1200" height="630" style="border:1px solid #555;display:block;margin-top:10px;"></canvas>
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+// Background gradient
+const bg = ctx.createLinearGradient(0, 0, 1200, 630);
+bg.addColorStop(0, '#0f172a');
+bg.addColorStop(1, '#1e3a5f');
+ctx.fillStyle = bg;
+ctx.fillRect(0, 0, 1200, 630);
+
+// Skyline silhouette
+ctx.fillStyle = 'rgba(30, 41, 59, 0.4)';
+const buildings = [
+  [50,420,60,210],[120,380,45,250],[175,350,70,280],[255,400,50,230],
+  [315,320,55,310],[380,370,40,260],[430,340,80,290],[520,390,50,240],
+  [580,300,65,330],[655,360,45,270],[710,330,75,300],[795,380,55,250],
+  [860,350,60,280],[930,400,45,230],[985,310,70,320],[1065,370,50,260],[1125,340,75,290]
+];
+buildings.forEach(([x,y,w,h]) => ctx.fillRect(x,y,w,h));
+
+// Brand name
+ctx.textAlign = 'center';
+ctx.font = '900 72px Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+ctx.fillStyle = 'white';
+ctx.fillText('Land', 490, 200);
+ctx.fillStyle = '#fbbf24';
+ctx.fillText('to', 575, 200);
+ctx.fillStyle = 'white';
+ctx.fillText('Yield', 680, 200);
+
+// Divider
+ctx.fillStyle = 'rgba(251, 191, 36, 0.8)';
+ctx.beginPath();
+ctx.roundRect(540, 225, 120, 3, 1.5);
+ctx.fill();
+
+// Tagline
+ctx.font = '500 28px Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+ctx.fillStyle = 'rgba(255,255,255,0.85)';
+ctx.fillText('Instant HBU Analysis for LA County', 600, 290);
+
+// Subtitle
+ctx.font = '400 18px Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+ctx.fillStyle = 'rgba(255,255,255,0.5)';
+ctx.fillText('What consultants charge thousands for, delivered in seconds.', 600, 340);
+
+// Feature badges
+const badges = ['27-Tab Analysis', 'SB 79 Transit', 'Pro Forma'];
+const badgeX = [320, 530, 740];
+badges.forEach((text, i) => {
+  ctx.fillStyle = 'rgba(37, 99, 235, 0.3)';
+  ctx.beginPath();
+  ctx.roundRect(badgeX[i], 382, 140, 36, 18);
+  ctx.fill();
+  ctx.font = '600 14px Inter, sans-serif';
+  ctx.fillStyle = '#93c5fd';
+  ctx.fillText(text, badgeX[i] + 70, 405);
+});
+
+// URL
+ctx.font = '500 16px Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+ctx.fillStyle = 'rgba(255,255,255,0.35)';
+ctx.fillText('landtoyield.com', 600, 570);
+</script>
+</body>
+</html>

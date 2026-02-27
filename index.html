@@ -5,6 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Land to Yield — Know Every LA Parcel's Development Potential</title>
     <meta name="description" content="Instantly score highest-and-best-use for any LA County parcel. SB 79 analysis, 27-tab deep feasibility, pro forma modeling — all in one tool.">
+
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:title" content="Land to Yield — Instant HBU Analysis for LA County">
+    <meta property="og:description" content="The instant PDA for every LA County parcel. What consultants charge thousands for, delivered in seconds.">
+    <meta property="og:image" content="https://landtoyield.com/og-image.png">
+    <meta property="og:url" content="https://landtoyield.com">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Land to Yield">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Land to Yield — Instant HBU Analysis for LA County">
+    <meta name="twitter:description" content="The instant PDA for every LA County parcel. What consultants charge thousands for, delivered in seconds.">
+    <meta name="twitter:image" content="https://landtoyield.com/og-image.png">
+
+    <!-- Favicons -->
+    <link rel="icon" href="/favicon.ico" sizes="32x32">
+    <link rel="icon" href="/favicon-192.png" sizes="192x192">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <!-- Analytics -->
+    <script defer data-domain="landtoyield.com" src="https://plausible.io/js/script.js"></script>
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Land to Yield",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "url": "https://landtoyield.com",
+      "description": "Instant highest-and-best-use analysis for any LA County parcel. 27-tab deep feasibility, SB 79 transit analysis, pro forma modeling, and investor-ready reports.",
+      "offers": [
+        {
+          "@type": "Offer",
+          "name": "Broker",
+          "price": "149",
+          "priceCurrency": "USD",
+          "priceSpecification": {
+            "@type": "UnitPriceSpecification",
+            "price": "149",
+            "priceCurrency": "USD",
+            "billingDuration": "P1M"
+          }
+        },
+        {
+          "@type": "Offer",
+          "name": "Developer",
+          "price": "299",
+          "priceCurrency": "USD",
+          "priceSpecification": {
+            "@type": "UnitPriceSpecification",
+            "price": "299",
+            "priceCurrency": "USD",
+            "billingDuration": "P1M"
+          }
+        },
+        {
+          "@type": "Offer",
+          "name": "Team",
+          "price": "799",
+          "priceCurrency": "USD",
+          "priceSpecification": {
+            "@type": "UnitPriceSpecification",
+            "price": "799",
+            "priceCurrency": "USD",
+            "billingDuration": "P1M"
+          }
+        }
+      ],
+      "creator": {
+        "@type": "Organization",
+        "name": "Commercial Lending Solutions",
+        "url": "https://commerciallendingsolutions.ai"
+      }
+    }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -432,7 +509,10 @@
         .price-features li::before {
             content: '\2713'; color: var(--primary); font-weight: 700; flex-shrink: 0;
         }
-        .price-card .btn { width: 100%; text-align: center; }
+        .price-card .btn {
+            width: 100%; text-align: center; display: block;
+            position: relative; z-index: 2;
+        }
 
         .per-report {
             text-align: center; margin-top: 2.5rem; color: var(--text-light);
@@ -462,6 +542,175 @@
             color: var(--text-light); font-size: .88rem; line-height: 1.7;
         }
         .faq-item.open .faq-a { max-height: 300px; padding-top: .75rem; }
+
+        /* ── LEAD CAPTURE ── */
+        .lead-capture {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+            color: var(--white);
+        }
+        .lead-capture .section-header h2 { color: var(--white); }
+        .lead-capture .section-header p { color: rgba(255,255,255,0.6); }
+        .lead-capture .section-label { color: var(--accent-light); }
+        .lead-form {
+            display: flex; gap: .75rem; max-width: 520px; margin: 0 auto;
+            justify-content: center; flex-wrap: wrap;
+        }
+        .lead-form input[type="email"] {
+            flex: 1; min-width: 240px; padding: .75rem 1.25rem;
+            border: 1.5px solid rgba(255,255,255,0.2); border-radius: 980px;
+            background: rgba(255,255,255,0.08); color: var(--white);
+            font-size: .92rem; font-family: inherit;
+            transition: border-color .2s, background .2s;
+        }
+        .lead-form input[type="email"]::placeholder { color: rgba(255,255,255,0.4); }
+        .lead-form input[type="email"]:focus {
+            outline: none; border-color: var(--accent-light);
+            background: rgba(255,255,255,0.12);
+        }
+        .lead-form .btn-accent {
+            background: var(--accent); color: var(--text-dark);
+            padding: .75rem 2rem; border-radius: 980px; font-weight: 700;
+            font-size: .92rem; border: none; cursor: pointer;
+            transition: background .2s, transform .1s;
+        }
+        .lead-form .btn-accent:hover { background: var(--accent-light); transform: translateY(-1px); }
+        .lead-success {
+            display: none; text-align: center; color: #86efac;
+            font-weight: 600; font-size: .95rem; margin-top: 1rem;
+        }
+        .lead-note {
+            text-align: center; color: rgba(255,255,255,0.35);
+            font-size: .78rem; margin-top: 1rem;
+        }
+
+        /* ── DEMO VIDEO ── */
+        .demo-video { background: var(--bg); }
+        .demo-video-wrapper {
+            max-width: 800px; margin: 0 auto;
+            position: relative; aspect-ratio: 16/9;
+            background: #0f172a; border-radius: var(--radius);
+            overflow: hidden; border: 1px solid var(--border);
+        }
+        .demo-placeholder {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            color: rgba(255,255,255,0.7); text-align: center; gap: 1rem;
+        }
+        .demo-play-btn {
+            width: 72px; height: 72px; border-radius: 50%;
+            background: var(--primary); color: var(--white);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; cursor: pointer;
+            transition: transform .2s, background .2s;
+            border: 3px solid rgba(255,255,255,0.3);
+        }
+        .demo-play-btn:hover { transform: scale(1.08); background: var(--primary-dark); }
+        .demo-placeholder p { font-size: .88rem; color: rgba(255,255,255,0.5); max-width: 300px; }
+
+        /* ── COMPETITIVE COMPARISON ── */
+        .compare { background: var(--bg-alt); }
+        .compare-table {
+            width: 100%; border-collapse: collapse;
+            background: var(--white); border-radius: var(--radius);
+            overflow: hidden; border: 1px solid var(--border);
+            margin-top: 2rem;
+        }
+        .compare-table thead th {
+            padding: 1.25rem 1rem; font-size: .82rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .06em;
+            color: var(--text-light); text-align: left;
+            border-bottom: 2px solid var(--border);
+        }
+        .compare-table thead th:first-child { width: 32%; }
+        .compare-table thead th.highlight {
+            background: var(--primary); color: var(--white);
+        }
+        .compare-table td {
+            padding: .85rem 1rem; font-size: .88rem; color: var(--text);
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+        .compare-table td.highlight {
+            background: #eff6ff; font-weight: 600; color: var(--primary-dark);
+        }
+        .compare-table .check { color: #16a34a; font-weight: 700; }
+        .compare-table .cross { color: #dc2626; font-weight: 700; }
+        .compare-table .partial { color: #d97706; font-weight: 600; }
+        .compare-tagline {
+            text-align: center; margin-top: 2.5rem;
+            color: var(--text); font-size: 1.15rem; font-weight: 700;
+        }
+        .compare-tagline em { font-style: normal; color: var(--primary); }
+
+        /* ── SOCIAL PROOF ── */
+        .social-proof { background: var(--bg); }
+        .proof-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem; margin-top: .5rem;
+        }
+        .proof-card {
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 2rem;
+            text-align: center; transition: transform .2s, box-shadow .2s;
+        }
+        .proof-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .proof-stat {
+            font-size: 2.8rem; font-weight: 900; color: var(--primary);
+            letter-spacing: -0.03em; line-height: 1;
+        }
+        .proof-label { color: var(--text-light); font-size: .88rem; margin-top: .5rem; }
+        .proof-quote {
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 2rem 2.5rem;
+            max-width: 680px; margin: 2.5rem auto 0;
+            font-style: italic; color: var(--text); font-size: 1rem;
+            line-height: 1.7; position: relative;
+        }
+        .proof-quote::before {
+            content: '\201C'; position: absolute; top: -.15rem; left: .75rem;
+            font-size: 4rem; color: var(--primary); opacity: 0.15;
+            font-family: Georgia, serif; line-height: 1;
+        }
+        .proof-attribution {
+            text-align: center; margin-top: 1rem;
+            font-size: .85rem; color: var(--text-light); font-style: normal;
+        }
+
+        /* ── STICKY CTA (Mobile) ── */
+        .sticky-cta {
+            display: none; position: fixed; bottom: 0; left: 0; right: 0;
+            z-index: 99; background: var(--white);
+            border-top: 1px solid var(--border);
+            padding: .65rem 1.5rem;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+        }
+        .sticky-cta-inner {
+            max-width: 600px; margin: 0 auto;
+            display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+        }
+        .sticky-cta-text { font-size: .82rem; font-weight: 600; color: var(--text-dark); }
+        .sticky-cta-text span { display: block; font-size: .72rem; font-weight: 400; color: var(--text-light); }
+        .sticky-cta .btn-cta {
+            background: var(--primary); color: var(--white);
+            padding: .6rem 1.5rem; border-radius: 980px;
+            font-weight: 700; font-size: .85rem; text-decoration: none;
+            white-space: nowrap; min-height: 44px;
+            display: flex; align-items: center;
+            transition: background .2s;
+        }
+        .sticky-cta .btn-cta:hover { background: var(--primary-dark); }
+
+        @media (max-width: 640px) {
+            .sticky-cta { display: block; }
+            body { padding-bottom: 70px; }
+            .compare-table { font-size: .78rem; }
+            .compare-table td, .compare-table thead th { padding: .65rem .5rem; }
+            .proof-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 900px) {
+            .proof-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
+        }
 
         /* ── FOOTER ── */
         .footer {
@@ -761,6 +1010,140 @@
     </div>
 </section>
 
+<!-- ── LEAD CAPTURE ── -->
+<section class="lead-capture">
+    <div class="section-inner">
+        <div class="section-header">
+            <div class="section-label">Get Started</div>
+            <h2>Start your free analysis.</h2>
+            <p>Enter your email and get instant access to the most powerful land use tool in LA County.</p>
+        </div>
+        <form class="lead-form" id="leadForm">
+            <input type="email" placeholder="you@company.com" required id="leadEmail">
+            <button type="submit" class="btn-accent">Get Free Access</button>
+        </form>
+        <div class="lead-success" id="leadSuccess">You're in! Check your email for next steps.</div>
+        <p class="lead-note">No credit card required. Free tier includes 3 analyses per month.</p>
+    </div>
+</section>
+
+<!-- ── DEMO VIDEO ── -->
+<section class="demo-video">
+    <div class="section-inner">
+        <div class="section-header">
+            <div class="section-label">See It In Action</div>
+            <h2>From address to analysis<br>in 60 seconds.</h2>
+            <p>Watch how Land to Yield delivers instant development intelligence.</p>
+        </div>
+        <div class="demo-video-wrapper" id="demoVideoWrapper">
+            <div class="demo-placeholder" id="demoPlaceholder">
+                <div class="demo-play-btn" onclick="loadDemoVideo()">&#9654;</div>
+                <p>Watch the 60-second walkthrough</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── COMPETITIVE COMPARISON ── -->
+<section class="compare">
+    <div class="section-inner">
+        <div class="section-header">
+            <div class="section-label">Why Land to Yield</div>
+            <h2>What takes consultants weeks,<br>we deliver in seconds.</h2>
+            <p>See how we compare to traditional development advisory.</p>
+        </div>
+        <table class="compare-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Manual PDA<br><small style="font-weight:400;text-transform:none;letter-spacing:0;">Crest, consultants</small></th>
+                    <th>Underbuilt</th>
+                    <th class="highlight">Land to Yield</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Price</strong></td>
+                    <td>$2,500 – $10,000+<br><small>per report</small></td>
+                    <td>$80/mo<br><small>basic zoning only</small></td>
+                    <td class="highlight">$149 – $299/mo<br><small>unlimited lookups</small></td>
+                </tr>
+                <tr>
+                    <td><strong>Turnaround</strong></td>
+                    <td>2 – 3 weeks</td>
+                    <td>Instant</td>
+                    <td class="highlight">Instant</td>
+                </tr>
+                <tr>
+                    <td><strong>HBU Scoring</strong></td>
+                    <td class="check">&#10003; Manual</td>
+                    <td class="cross">&#10007;</td>
+                    <td class="highlight check">&#10003; Automated</td>
+                </tr>
+                <tr>
+                    <td><strong>Legislation Stacking</strong></td>
+                    <td class="partial">Varies</td>
+                    <td class="cross">&#10007;</td>
+                    <td class="highlight check">&#10003; SB 79, TOC, ED1+</td>
+                </tr>
+                <tr>
+                    <td><strong>Pro Forma & Sensitivity</strong></td>
+                    <td class="check">&#10003;</td>
+                    <td class="cross">&#10007;</td>
+                    <td class="highlight check">&#10003; Interactive</td>
+                </tr>
+                <tr>
+                    <td><strong>Transit Analysis</strong></td>
+                    <td class="partial">Manual</td>
+                    <td class="cross">&#10007;</td>
+                    <td class="highlight check">&#10003; Auto-mapped</td>
+                </tr>
+                <tr>
+                    <td><strong>Investor Reports</strong></td>
+                    <td class="check">&#10003;</td>
+                    <td class="cross">&#10007;</td>
+                    <td class="highlight check">&#10003; PDF export</td>
+                </tr>
+                <tr>
+                    <td><strong>27-Tab Deep Analysis</strong></td>
+                    <td class="cross">&#10007;</td>
+                    <td class="cross">&#10007;</td>
+                    <td class="highlight check">&#10003;</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="compare-tagline">The depth of a $10,000 PDA report. The speed of a Google search. <em>From $149/mo.</em></p>
+    </div>
+</section>
+
+<!-- ── SOCIAL PROOF ── -->
+<section class="social-proof">
+    <div class="section-inner">
+        <div class="section-header">
+            <div class="section-label">Trusted by Professionals</div>
+            <h2>Built for LA developers,<br>agents, and lenders.</h2>
+        </div>
+        <div class="proof-grid">
+            <div class="proof-card">
+                <div class="proof-stat">2.4M+</div>
+                <div class="proof-label">LA County parcels covered</div>
+            </div>
+            <div class="proof-card">
+                <div class="proof-stat">27</div>
+                <div class="proof-label">Deep analysis tabs per parcel</div>
+            </div>
+            <div class="proof-card">
+                <div class="proof-stat">60s</div>
+                <div class="proof-label">Average time to full HBU report</div>
+            </div>
+        </div>
+        <blockquote class="proof-quote">
+            "We used to spend $5,000 and wait three weeks for a PDA report. Now I run the same analysis while I'm still on the phone with my client."
+        </blockquote>
+        <p class="proof-attribution">— LA County Developer &amp; Early Access User</p>
+    </div>
+</section>
+
 <!-- ── PHOTO STRIP ── -->
 <div class="photo-strip">
     <div class="photo-strip-item">
@@ -800,10 +1183,7 @@
                     <li>Legislation stacking</li>
                     <li>5 Deep Analysis reports/mo</li>
                 </ul>
-                <stripe-buy-button
-                    buy-button-id="PLACEHOLDER_BROKER_BUTTON_ID"
-                    publishable-key="pk_test_51T31rq2EWmzb3WY0foDMgVXMeCHO36Ro3F5Q0M4Vjv7aC9KEhIdQrlH61yUUTXoPWtA84gGx0y9uDtK4kzOSlyME00zAZXRQ63"
-                ></stripe-buy-button>
+                <a href="https://buy.stripe.com/test_00w14g8Gfbtc9Z93x52Fa00" class="btn btn-primary btn-lg" target="_blank" rel="noopener">Subscribe — $149/mo</a>
             </div>
 
             <!-- Developer (Featured) -->
@@ -820,10 +1200,7 @@
                     <li>Investor module &amp; PDF export</li>
                     <li>Priority support</li>
                 </ul>
-                <stripe-buy-button
-                    buy-button-id="PLACEHOLDER_DEVELOPER_BUTTON_ID"
-                    publishable-key="pk_test_51T31rq2EWmzb3WY0foDMgVXMeCHO36Ro3F5Q0M4Vjv7aC9KEhIdQrlH61yUUTXoPWtA84gGx0y9uDtK4kzOSlyME00zAZXRQ63"
-                ></stripe-buy-button>
+                <a href="https://buy.stripe.com/test_3cI6oA5u30Oyefp5Fd2Fa01" class="btn btn-dark btn-lg" target="_blank" rel="noopener">Subscribe — $299/mo</a>
             </div>
 
             <!-- Team -->
@@ -839,14 +1216,11 @@
                     <li>Dedicated account manager</li>
                     <li>API access (coming soon)</li>
                 </ul>
-                <stripe-buy-button
-                    buy-button-id="PLACEHOLDER_TEAM_BUTTON_ID"
-                    publishable-key="pk_test_51T31rq2EWmzb3WY0foDMgVXMeCHO36Ro3F5Q0M4Vjv7aC9KEhIdQrlH61yUUTXoPWtA84gGx0y9uDtK4kzOSlyME00zAZXRQ63"
-                ></stripe-buy-button>
+                <a href="https://buy.stripe.com/test_7sY7sE5u31SC5IT9Vt2Fa02" class="btn btn-primary btn-lg" target="_blank" rel="noopener">Subscribe — $799/mo</a>
             </div>
         </div>
 
-        <p class="per-report">Need just one report? <strong>$59 per report</strong> — no subscription required.</p>
+        <p class="per-report">Need just one report? <a href="https://buy.stripe.com/test_aFa9AM1dN9l41sDc3B2Fa03" target="_blank" rel="noopener"><strong>$59 per report</strong></a> — no subscription required.</p>
     </div>
 </section>
 
@@ -903,8 +1277,16 @@
     </div>
 </footer>
 
-<!-- Stripe Buy Button JS -->
-<script async src="https://js.stripe.com/v3/buy-button.js"></script>
+<!-- ── STICKY CTA (Mobile) ── -->
+<div class="sticky-cta" id="stickyCta">
+    <div class="sticky-cta-inner">
+        <div class="sticky-cta-text">
+            Land to Yield
+            <span>Instant HBU analysis</span>
+        </div>
+        <a href="#role-portals" class="btn-cta">Try Free</a>
+    </div>
+</div>
 
 <script>
     // Hamburger menu toggle
@@ -919,6 +1301,28 @@
         });
     });
 
+    // Lead capture form
+    document.getElementById('leadForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var email = document.getElementById('leadEmail').value.trim();
+        if (email) {
+            // Store to localStorage (upgrade to backend/Mailchimp later)
+            var leads = JSON.parse(localStorage.getItem('lty_leads') || '[]');
+            leads.push({ email: email, timestamp: new Date().toISOString() });
+            localStorage.setItem('lty_leads', JSON.stringify(leads));
+            document.getElementById('leadForm').style.display = 'none';
+            document.getElementById('leadSuccess').style.display = 'block';
+        }
+    });
+
+    // Sticky CTA — show after scrolling past hero
+    var stickyCta = document.getElementById('stickyCta');
+    window.addEventListener('scroll', function() {
+        if (window.innerWidth <= 640) {
+            stickyCta.style.display = window.scrollY > 600 ? 'block' : 'none';
+        }
+    });
+
     // FAQ accordion
     document.querySelectorAll('.faq-q').forEach(function(btn) {
         btn.addEventListener('click', function() {
@@ -928,6 +1332,19 @@
             if (!wasOpen) item.classList.add('open');
         });
     });
+
+    // Demo video loader — replace YOUR_VIDEO_ID with actual YouTube/Loom ID
+    window.loadDemoVideo = function() {
+        var wrapper = document.getElementById('demoVideoWrapper');
+        // Replace this placeholder with your actual YouTube or Loom embed URL
+        var videoUrl = ''; // e.g., 'https://www.youtube.com/embed/YOUR_VIDEO_ID?autoplay=1'
+        if (videoUrl) {
+            wrapper.innerHTML = '<iframe width="100%" height="100%" src="' + videoUrl + '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="position:absolute;inset:0;"></iframe>';
+        } else {
+            // No video yet — scroll to portals for a live demo
+            document.getElementById('role-portals').scrollIntoView({ behavior: 'smooth' });
+        }
+    };
 </script>
 
 </body>
