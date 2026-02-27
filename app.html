@@ -3193,46 +3193,48 @@
                 <button class="deep-tab-btn active" onclick="switchDeepTab(0)">Executive Summary</button>
             </div>
             <div class="deep-tab-group">
-                <button class="deep-tab-btn" onclick="switchDeepTab(1)">Pro Forma &amp; Scenarios</button>
+                <button class="deep-tab-btn" onclick="switchDeepTab(1)">Investor Module</button>
+            </div>
+            <div class="deep-tab-group">
+                <button class="deep-tab-btn" onclick="switchDeepTab(2)">Pro Forma &amp; Scenarios</button>
             </div>
             <div class="deep-tab-group">
                 <div class="deep-tab-group-label">Due Diligence</div>
                 <div class="deep-tab-group-btns">
-                    <button class="deep-tab-btn" onclick="switchDeepTab(2)">Market Comps</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(3)">Environmental</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(4)">Earthwork</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(5)">Infrastructure</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(6)">Community Risk</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(3)">Market Comps</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(4)">Environmental</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(5)">Earthwork</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(6)">Infrastructure</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(7)">Community Risk</button>
                 </div>
             </div>
             <div class="deep-tab-group">
                 <div class="deep-tab-group-label">Entitlements</div>
                 <div class="deep-tab-group-btns">
-                    <button class="deep-tab-btn" onclick="switchDeepTab(7)">Entitlement Pathway</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(8)">RHNA Compliance</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(9)">Affordable Compliance</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(10)">Dev Agreement</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(8)">Entitlement Pathway</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(9)">RHNA Compliance</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(10)">Affordable Compliance</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(11)">Dev Agreement</button>
                 </div>
             </div>
             <div class="deep-tab-group">
                 <div class="deep-tab-group-label">Design</div>
                 <div class="deep-tab-group-btns">
-                    <button class="deep-tab-btn" onclick="switchDeepTab(11)">Generative Design</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(12)">Site Plan &amp; 3D</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(13)">Unit Mix</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(14)">Parking Design</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(15)">Construction &amp; Code</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(12)">Generative Design</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(13)">Site Plan &amp; 3D</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(14)">Unit Mix</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(15)">Parking Design</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(16)">Construction &amp; Code</button>
                 </div>
             </div>
             <div class="deep-tab-group">
                 <div class="deep-tab-group-label">Financial</div>
                 <div class="deep-tab-group-btns">
-                    <button class="deep-tab-btn" onclick="switchDeepTab(16)">KPI Dashboard</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(17)">Public Finance</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(18)">Tax &amp; Incentives</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(19)">Incentive Matrix</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(20)">P3 Structuring</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(21)">Investor Module</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(17)">KPI Dashboard</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(18)">Public Finance</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(19)">Tax &amp; Incentives</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(20)">Incentive Matrix</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(21)">P3 Structuring</button>
                 </div>
             </div>
             <div class="deep-tab-group">
@@ -8058,6 +8060,10 @@ function filterAndScoreResults(features, station, filters) {
         resultObj.legislationEffects = legInfo.effects;
         resultObj.legislationCount = legInfo.bills.length;
 
+        // Estimated market value (Prop 13 adjusted)
+        var assessedTotal = landVal + impVal;
+        resultObj.estimatedMarketValue = assessedTotal > 0 ? Math.round(assessedTotal * 1.9) : 0;
+
         results.push(resultObj);
     }
     return results;
@@ -8149,7 +8155,7 @@ function renderFinderResults(station) {
             <th onclick="sortFinderTable('lotSizeSqFt')">Lot Size</th>
             <th onclick="sortFinderTable('useType')">Use</th>
             <th onclick="sortFinderTable('yearBuilt')">Year Built</th>
-            <th onclick="sortFinderTable('landVal')">Land Value</th>
+            <th onclick="sortFinderTable('estimatedMarketValue')">Est. Market Value</th>
             <th onclick="sortFinderTable('impRatio')" class="${finderSortCol === 'impRatio' ? (finderSortAsc ? 'sort-asc' : 'sort-desc') : ''}">Imp/Land</th>
             <th onclick="sortFinderTable('zone')">SB 79 Zone</th>
             <th>Allowances</th>
@@ -8171,7 +8177,7 @@ function renderFinderResults(station) {
             <td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString() + ' sf' : '-'}</td>
             <td>${r.useType}</td>
             <td>${r.yearBuilt > 0 ? r.yearBuilt : '-'}</td>
-            <td>${fmt(r.landVal)}</td>
+            <td>${fmt(r.estimatedMarketValue)}</td>
             <td class="${ratioClass(r.impRatio)}">${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'}</td>
             <td>${zoneBadge(r.zone)}</td>
             <td style="font-size:0.75rem;">${allowStr}</td>
@@ -8859,31 +8865,84 @@ function guessStage(s) {
     return 'submitted';
 }
 
-// --- Historic Districts (HPOZ) Overlay ---
+// --- Historic Districts (HPOZ) + Historic Monuments Overlay ---
 async function fetchHistoricOverlay(map, layerGroup) {
-    var url = 'https://arcgis.gis.lacounty.gov/arcgis/rest/services/DRP/Open_Data/MapServer/35/query';
     var bounds = map.getBounds();
     var bbox = bounds.getWest() + ',' + bounds.getSouth() + ',' + bounds.getEast() + ',' + bounds.getNorth();
-    var params = '?where=1%3D1&outFields=Name,Status_Code_Description,Year_Designated&geometryType=esriGeometryEnvelope'
-        + '&geometry=' + encodeURIComponent(bbox)
-        + '&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&f=geojson&resultRecordCount=500';
+    var geomParam = '&geometryType=esriGeometryEnvelope&geometry=' + encodeURIComponent(bbox)
+        + '&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&f=geojson';
+
+    // 1) LA City HPOZs — 36 official Historic Preservation Overlay Zones (Miracle Mile, Hancock Park, etc.)
+    var hpozUrl = 'https://services5.arcgis.com/7nsPwEMP38bSkCjy/arcgis/rest/services/Historic_Preservation_Overlay_Zones/FeatureServer/5/query'
+        + '?where=1%3D1&outFields=NAME' + geomParam + '&resultRecordCount=100';
+
+    // 2) LA City Historic-Cultural Monuments (HCMs) — 1,335 individual landmarks
+    var hcmUrl = 'https://services5.arcgis.com/7nsPwEMP38bSkCjy/arcgis/rest/services/Historic_Cultural_Monuments/FeatureServer/4/query'
+        + '?where=1%3D1&outFields=NAME,MNT_NUM,LOCATION,DATE_ACTIVE' + geomParam + '&resultRecordCount=500';
+
+    // 3) LA County historic resources (unincorporated areas + county landmarks)
+    var countyUrl = 'https://arcgis.gis.lacounty.gov/arcgis/rest/services/DRP/Open_Data/MapServer/35/query'
+        + '?where=1%3D1&outFields=Name,Status_Code_Description,Year_Designated' + geomParam + '&resultRecordCount=500';
+
     try {
-        var resp = await fetch(url + params);
-        if (!resp.ok) return;
-        var data = await resp.json();
-        if (!data.features) return;
-        L.geoJSON(data, {
-            style: function() {
-                return { color: '#be185d', weight: 3, fillColor: '#f472b6', fillOpacity: 0.30, dashArray: '8,6' };
-            },
-            onEachFeature: function(feature, layer) {
-                var p = feature.properties || {};
-                layer.bindPopup('<strong>' + (p.Name || 'Historic Resource') + '</strong><br>'
-                    + (p.Status_Code_Description || '') + '<br>'
-                    + (p.Year_Designated ? 'Designated: ' + p.Year_Designated : '')
-                    + '<br><em style="color:#b83280;font-size:0.82rem;">SB 79 may be limited in historic districts</em>');
+        var results = await Promise.allSettled([fetch(hpozUrl), fetch(hcmUrl), fetch(countyUrl)]);
+
+        // HPOZ districts — bright pink fill, very visible
+        if (results[0].status === 'fulfilled' && results[0].value.ok) {
+            var hpozData = await results[0].value.json();
+            if (hpozData.features && hpozData.features.length > 0) {
+                L.geoJSON(hpozData, {
+                    style: function() {
+                        return { color: '#be185d', weight: 3.5, fillColor: '#f472b6', fillOpacity: 0.32, dashArray: '10,6' };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        var p = feature.properties || {};
+                        layer.bindPopup('<div style="min-width:180px;"><strong style="color:#be185d;font-size:1rem;">HPOZ: ' + (p.NAME || 'Historic District') + '</strong>'
+                            + '<br><span style="font-size:0.82rem;">Historic Preservation Overlay Zone</span>'
+                            + '<br><em style="color:#be185d;font-size:0.82rem;">SB 79 density may be reduced up to 50% here</em></div>');
+                    }
+                }).addTo(layerGroup);
             }
-        }).addTo(layerGroup);
+        }
+
+        // HCM individual monuments — small orange markers/outlines
+        if (results[1].status === 'fulfilled' && results[1].value.ok) {
+            var hcmData = await results[1].value.json();
+            if (hcmData.features && hcmData.features.length > 0) {
+                L.geoJSON(hcmData, {
+                    style: function() {
+                        return { color: '#d97706', weight: 2, fillColor: '#fbbf24', fillOpacity: 0.25 };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        var p = feature.properties || {};
+                        layer.bindPopup('<strong style="color:#d97706;">HCM #' + (p.MNT_NUM || '') + ': ' + (p.NAME || 'Historic Monument') + '</strong>'
+                            + (p.LOCATION ? '<br>' + p.LOCATION : '')
+                            + (p.DATE_ACTIVE ? '<br>Designated: ' + p.DATE_ACTIVE : '')
+                            + '<br><em style="color:#d97706;font-size:0.82rem;">Historic-Cultural Monument</em>');
+                    }
+                }).addTo(layerGroup);
+            }
+        }
+
+        // County historic resources — purple dashed outlines
+        if (results[2].status === 'fulfilled' && results[2].value.ok) {
+            var countyData = await results[2].value.json();
+            if (countyData.features && countyData.features.length > 0) {
+                L.geoJSON(countyData, {
+                    style: function() {
+                        return { color: '#7c3aed', weight: 2, fillColor: '#a78bfa', fillOpacity: 0.20, dashArray: '5,5' };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        var p = feature.properties || {};
+                        layer.bindPopup('<strong style="color:#7c3aed;">' + (p.Name || 'Historic Resource') + '</strong>'
+                            + (p.Status_Code_Description ? '<br>' + p.Status_Code_Description : '')
+                            + (p.Year_Designated ? '<br>Designated: ' + p.Year_Designated : '')
+                            + '<br><em style="color:#7c3aed;font-size:0.82rem;">LA County Historic Resource</em>');
+                    }
+                }).addTo(layerGroup);
+            }
+        }
+
         // Reload when map moves
         map.off('moveend.historic');
         map.on('moveend.historic', function() {
@@ -9762,8 +9821,7 @@ function renderFinderResults2(station) {
             <th onclick="sortFinderTable2('lotSizeSqFt')">Lot Size</th>
             <th onclick="sortFinderTable2('useType')">Use</th>
             <th onclick="sortFinderTable2('yearBuilt')">Year Built</th>
-            <th onclick="sortFinderTable2('landVal')">Land Value</th>
-            <th onclick="sortFinderTable2('impVal')">Imp Value</th>
+            <th onclick="sortFinderTable2('estimatedMarketValue')">Est. Market Value</th>
             <th onclick="sortFinderTable2('impRatio')" class="${finderSortCol2 === 'impRatio' ? (finderSortAsc2 ? 'sort-asc' : 'sort-desc') : ''}">Imp/Land</th>
             <th onclick="sortFinderTable2('zone')">SB 79 Zone</th>
             <th>Allowances</th>
@@ -9781,8 +9839,7 @@ function renderFinderResults2(station) {
             <td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString() + ' sf' : '-'}</td>
             <td>${r.useType}${r.resSubType ? ' <span style="color:#718096;font-size:0.78em;">(' + r.resSubType + ')</span>' : ''}</td>
             <td>${r.yearBuilt > 0 ? r.yearBuilt : '-'}</td>
-            <td>${fmt(r.landVal)}</td>
-            <td>${fmt(r.impVal)}</td>
+            <td>${fmt(r.estimatedMarketValue)}</td>
             <td class="${ratioClass(r.impRatio)}">${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'}</td>
             <td>${zoneBadge(r.zone)}</td>
             <td style="font-size:0.75rem;">${allowStr}</td>
@@ -10903,27 +10960,27 @@ function renderDeepTabPanels(skipTab0) {
     // Lazy rendering: only render tabs 1-4 eagerly, rest on demand
     var DEEP_TAB_RENDERERS = [
         null, // Tab 0 handled above
-        renderSensitivityTab,       // 1  Pro Forma & Scenarios
-        renderMarketCompsTab,       // 2
-        renderEnvironmentalTab,     // 3
-        renderEarthworkTab,         // 4
-        renderInfrastructureTab,    // 5
-        renderCommunityRiskTab,     // 6
-        renderEntitlementTab,       // 7
-        renderRHNATab,              // 8
-        renderAffordableTab,        // 9
-        renderDevAgreementTab,      // 10
-        renderGenerativeDesignTab,  // 11
-        renderEnhancedSitePlanTab,  // 12
-        renderUnitMixTab,           // 13
-        renderParkingTab,           // 14
-        renderConstructionTab,      // 15
-        renderKPIDashboard,         // 16
-        renderPublicFinanceTab,     // 17
-        renderTaxIncentivesTab,     // 18
-        renderIncentiveMatrixTab,   // 19
-        renderP3StructuringTab,     // 20
-        renderInvestorModuleTab,    // 21
+        renderInvestorModuleTab,    // 1  Investor Module
+        renderSensitivityTab,       // 2  Pro Forma & Scenarios
+        renderMarketCompsTab,       // 3
+        renderEnvironmentalTab,     // 4
+        renderEarthworkTab,         // 5
+        renderInfrastructureTab,    // 6
+        renderCommunityRiskTab,     // 7
+        renderEntitlementTab,       // 8
+        renderRHNATab,              // 9
+        renderAffordableTab,        // 10
+        renderDevAgreementTab,      // 11
+        renderGenerativeDesignTab,  // 12
+        renderEnhancedSitePlanTab,  // 13
+        renderUnitMixTab,           // 14
+        renderParkingTab,           // 15
+        renderConstructionTab,      // 16
+        renderKPIDashboard,         // 17
+        renderPublicFinanceTab,     // 18
+        renderTaxIncentivesTab,     // 19
+        renderIncentiveMatrixTab,   // 20
+        renderP3StructuringTab,     // 21
         renderDevTimelineTab,       // 22
         renderCashFlowModelTab,     // 23
         renderFiscalImpactTab,      // 24

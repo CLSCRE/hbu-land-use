@@ -6058,36 +6058,62 @@ function normalizePipelineRecord(raw, source) {
     return { permit_nbr: raw.permit_nbr || raw.pcis_permit || raw.permit_number || '', address: raw.address || raw.address_street || raw.project_address || '', permit_type: typeKey, permit_type_label: (raw.permit_type || raw.type || raw.permit_type_desc || 'Building').replace(/^\w/, c => c.toUpperCase()), stage, status_raw: raw.status_desc || raw.status || '', valuation: parseFloat(raw.valuation || raw.project_valuation || 0) || 0, date: raw.issue_date || raw.submitted_date || raw.status_date || raw.filed_date || '', zone: raw.zone || raw.existing_zoning || '', description: raw.work_description || raw.project_description || raw.description || '', lat, lon, source };
 }
 function guessStage(s) { if (/submit|appli/i.test(s)) return 'submitted'; if (/plan.*check|pcis/i.test(s)) return 'plan_check'; if (/issue/i.test(s)) return 'issued'; if (/inspect/i.test(s)) return 'inspection'; if (/final/i.test(s)) return 'finaled'; if (/co |certificate|occupan/i.test(s)) return 'coo'; return 'submitted'; }
-// --- Historic Districts (HPOZ) Overlay ---
+// --- Historic Districts (HPOZ) + Historic Monuments Overlay ---
 async function fetchHistoricOverlay(map, layerGroup) {
-    var url = 'https://arcgis.gis.lacounty.gov/arcgis/rest/services/DRP/Open_Data/MapServer/35/query';
     var bounds = map.getBounds();
     var bbox = bounds.getWest() + ',' + bounds.getSouth() + ',' + bounds.getEast() + ',' + bounds.getNorth();
-    var params = '?where=1%3D1&outFields=Name,Status_Code_Description,Year_Designated&geometryType=esriGeometryEnvelope'
-        + '&geometry=' + encodeURIComponent(bbox)
-        + '&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&f=geojson&resultRecordCount=500';
+    var geomParam = '&geometryType=esriGeometryEnvelope&geometry=' + encodeURIComponent(bbox)
+        + '&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&f=geojson';
+
+    var hpozUrl = 'https://services5.arcgis.com/7nsPwEMP38bSkCjy/arcgis/rest/services/Historic_Preservation_Overlay_Zones/FeatureServer/5/query'
+        + '?where=1%3D1&outFields=NAME' + geomParam + '&resultRecordCount=100';
+    var hcmUrl = 'https://services5.arcgis.com/7nsPwEMP38bSkCjy/arcgis/rest/services/Historic_Cultural_Monuments/FeatureServer/4/query'
+        + '?where=1%3D1&outFields=NAME,MNT_NUM,LOCATION,DATE_ACTIVE' + geomParam + '&resultRecordCount=500';
+    var countyUrl = 'https://arcgis.gis.lacounty.gov/arcgis/rest/services/DRP/Open_Data/MapServer/35/query'
+        + '?where=1%3D1&outFields=Name,Status_Code_Description,Year_Designated' + geomParam + '&resultRecordCount=500';
+
     try {
-        var resp = await fetch(url + params);
-        if (!resp.ok) return;
-        var data = await resp.json();
-        if (!data.features) return;
-        L.geoJSON(data, {
-            style: function() {
-                return { color: '#be185d', weight: 3, fillColor: '#f472b6', fillOpacity: 0.30, dashArray: '8,6' };
-            },
-            onEachFeature: function(feature, layer) {
-                var p = feature.properties || {};
-                layer.bindPopup('<strong>' + (p.Name || 'Historic Resource') + '</strong><br>'
-                    + (p.Status_Code_Description || '') + '<br>'
-                    + (p.Year_Designated ? 'Designated: ' + p.Year_Designated : '')
-                    + '<br><em style="color:#b83280;font-size:0.82rem;">SB 79 may be limited in historic districts</em>');
+        var results = await Promise.allSettled([fetch(hpozUrl), fetch(hcmUrl), fetch(countyUrl)]);
+
+        if (results[0].status === 'fulfilled' && results[0].value.ok) {
+            var hpozData = await results[0].value.json();
+            if (hpozData.features && hpozData.features.length > 0) {
+                L.geoJSON(hpozData, {
+                    style: function() { return { color: '#be185d', weight: 3.5, fillColor: '#f472b6', fillOpacity: 0.32, dashArray: '10,6' }; },
+                    onEachFeature: function(feature, layer) {
+                        var p = feature.properties || {};
+                        layer.bindPopup('<div style="min-width:180px;"><strong style="color:#be185d;font-size:1rem;">HPOZ: ' + (p.NAME || 'Historic District') + '</strong><br><span style="font-size:0.82rem;">Historic Preservation Overlay Zone</span><br><em style="color:#be185d;font-size:0.82rem;">SB 79 density may be reduced up to 50% here</em></div>');
+                    }
+                }).addTo(layerGroup);
             }
-        }).addTo(layerGroup);
+        }
+        if (results[1].status === 'fulfilled' && results[1].value.ok) {
+            var hcmData = await results[1].value.json();
+            if (hcmData.features && hcmData.features.length > 0) {
+                L.geoJSON(hcmData, {
+                    style: function() { return { color: '#d97706', weight: 2, fillColor: '#fbbf24', fillOpacity: 0.25 }; },
+                    onEachFeature: function(feature, layer) {
+                        var p = feature.properties || {};
+                        layer.bindPopup('<strong style="color:#d97706;">HCM #' + (p.MNT_NUM || '') + ': ' + (p.NAME || 'Historic Monument') + '</strong>' + (p.LOCATION ? '<br>' + p.LOCATION : '') + (p.DATE_ACTIVE ? '<br>Designated: ' + p.DATE_ACTIVE : '') + '<br><em style="color:#d97706;font-size:0.82rem;">Historic-Cultural Monument</em>');
+                    }
+                }).addTo(layerGroup);
+            }
+        }
+        if (results[2].status === 'fulfilled' && results[2].value.ok) {
+            var countyData = await results[2].value.json();
+            if (countyData.features && countyData.features.length > 0) {
+                L.geoJSON(countyData, {
+                    style: function() { return { color: '#7c3aed', weight: 2, fillColor: '#a78bfa', fillOpacity: 0.20, dashArray: '5,5' }; },
+                    onEachFeature: function(feature, layer) {
+                        var p = feature.properties || {};
+                        layer.bindPopup('<strong style="color:#7c3aed;">' + (p.Name || 'Historic Resource') + '</strong>' + (p.Status_Code_Description ? '<br>' + p.Status_Code_Description : '') + (p.Year_Designated ? '<br>Designated: ' + p.Year_Designated : '') + '<br><em style="color:#7c3aed;font-size:0.82rem;">LA County Historic Resource</em>');
+                    }
+                }).addTo(layerGroup);
+            }
+        }
+
         map.off('moveend.historic');
-        map.on('moveend.historic', function() {
-            layerGroup.clearLayers();
-            fetchHistoricOverlay(map, layerGroup);
-        });
+        map.on('moveend.historic', function() { layerGroup.clearLayers(); fetchHistoricOverlay(map, layerGroup); });
     } catch (e) {
         console.warn('Historic overlay fetch failed:', e);
     }
