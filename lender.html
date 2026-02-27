@@ -2296,6 +2296,14 @@
             .budget-table td, .budget-table th, .market-comp-table td, .market-comp-table th { padding: 0.3rem 0.4rem; }
             .auth-box { padding: 1.75rem 1.25rem; max-width: 320px; }
             .auth-box h2 { font-size: 1.2rem; }
+            .finder-controls { grid-template-columns: 1fr !important; gap: 0.6rem; }
+            .finder-field[style*="grid-column"] { grid-column: span 1 !important; }
+            .finder-checks { gap: 0.4rem 0.75rem; }
+            .finder-checks label { font-size: 0.78rem; }
+            .finder-field select, .finder-field input[type="number"], .finder-field input[type="text"] { font-size: 0.82rem; padding: 0.45rem 0.5rem; }
+            .finder-field label { font-size: 0.75rem; }
+            .saved-list-actions { gap: 0.35rem !important; flex-wrap: wrap !important; }
+            .saved-list-actions .saved-btn { font-size: 0.72rem; padding: 0.35rem 0.6rem; }
         }
         @media (max-width: 480px) {
             html { font-size: 16px; }
@@ -8089,7 +8097,7 @@ async function fetchHistoricOverlay(map, layerGroup) {
         if (!data.features) return;
         L.geoJSON(data, {
             style: function() {
-                return { color: '#b83280', weight: 2, fillColor: '#b83280', fillOpacity: 0.18, dashArray: '5,5' };
+                return { color: '#be185d', weight: 3, fillColor: '#f472b6', fillOpacity: 0.30, dashArray: '8,6' };
             },
             onEachFeature: function(feature, layer) {
                 var p = feature.properties || {};
