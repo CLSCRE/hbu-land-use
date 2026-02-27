@@ -2768,6 +2768,12 @@
                 <span>Run an analysis to see risk flags.</span>
               </div>
             </div>
+            <div class="lender-credit-card">
+              <h3>Entitlement Risk</h3>
+              <p id="lender-entitlement-score" style="font-size:1.4rem;font-weight:800;margin-bottom:0.25rem;">—</p>
+              <p id="lender-entitlement-pathway" style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.25rem;"></p>
+              <p id="lender-entitlement-note" style="font-size:0.82rem;color:var(--text-light);"></p>
+            </div>
           </div>
         </section>
 
@@ -3937,6 +3943,58 @@ function detectSiteCondition(osmClass, osmType) {
     return 'vacant';
 }
 
+// Detect jurisdiction from coordinates + Nominatim address details
+const JURISDICTIONS = [
+    { name: 'Beverly Hills', lat: 34.0736, lon: -118.4004, radius: 1.8, note: 'Beverly Hills Municipal Code applies — different density/height rules than LA.' },
+    { name: 'Santa Monica', lat: 34.0195, lon: -118.4912, radius: 2.5, note: 'Santa Monica zoning code applies — rent control, strict height limits, Coastal Zone overlay likely.' },
+    { name: 'West Hollywood', lat: 34.0900, lon: -118.3617, radius: 1.2, note: 'West Hollywood Municipal Code applies — strong rent stabilization, unique zoning districts.' },
+    { name: 'Culver City', lat: 34.0211, lon: -118.3965, radius: 2.0, note: 'Culver City zoning applies — TOD incentives near Expo Line, distinct fee schedules.' },
+    { name: 'Glendale', lat: 34.1425, lon: -118.2551, radius: 3.0, note: 'Glendale Municipal Code applies — own specific plan areas and development standards.' },
+    { name: 'Burbank', lat: 34.1808, lon: -118.3090, radius: 2.8, note: 'Burbank zoning code applies — media district incentives, own entitlement process.' },
+    { name: 'Pasadena', lat: 34.1478, lon: -118.1445, radius: 3.5, note: 'Pasadena zoning code applies — historic preservation focus, Central District Specific Plan.' },
+    { name: 'Inglewood', lat: 33.9617, lon: -118.3531, radius: 2.5, note: 'Inglewood zoning applies — SoFi Stadium area incentives, own development review.' },
+    { name: 'Long Beach', lat: 33.7701, lon: -118.1937, radius: 5.0, note: 'Long Beach Municipal Code applies — own zoning, PD districts, and Coastal Zone rules.' },
+    { name: 'Malibu', lat: 34.0259, lon: -118.7798, radius: 8.0, note: 'City of Malibu — Coastal Commission jurisdiction, severe height/density limits, LCP applies.' },
+    { name: 'Torrance', lat: 33.8358, lon: -118.3406, radius: 3.0, note: 'Torrance zoning code applies — own development standards and review process.' },
+    { name: 'Hawthorne', lat: 33.9164, lon: -118.3526, radius: 1.5, note: 'Hawthorne zoning applies — distinct fee schedule and entitlement process.' },
+    { name: 'Carson', lat: 33.8317, lon: -118.2620, radius: 2.5, note: 'Carson Municipal Code applies — own specific plans and environmental review.' },
+    { name: 'Redondo Beach', lat: 33.8492, lon: -118.3884, radius: 2.0, note: 'Redondo Beach zoning code applies — Coastal Zone, own height/density standards.' },
+    { name: 'Pomona', lat: 34.0551, lon: -117.7500, radius: 3.5, note: 'Pomona zoning code applies — own downtown specific plan and development incentives.' },
+];
+const LA_CITY_CENTER = { lat: 34.0522, lon: -118.2437 };
+const LA_CITY_APPROX_RADIUS = 15;
+
+function detectJurisdiction(lat, lon, addressDetails) {
+    if (addressDetails) {
+        const city = (addressDetails.city || addressDetails.town || addressDetails.municipality || '').toLowerCase().trim();
+        if (city) {
+            for (const j of JURISDICTIONS) {
+                if (city.includes(j.name.toLowerCase())) {
+                    return { jurisdiction: j.name, isLA: false, note: j.note };
+                }
+            }
+            if (city.includes('los angeles')) {
+                return { jurisdiction: 'City of Los Angeles', isLA: true, note: 'City of LA zoning (LAMC) applies. ZIMAS is the authoritative zoning source.' };
+            }
+        }
+        const county = (addressDetails.county || '').toLowerCase();
+        if (county.includes('los angeles') && !city) {
+            return { jurisdiction: 'Unincorporated LA County', isLA: false, note: 'Unincorporated LA County — County zoning code applies, not City of LA. Different entitlement process through County DRP.' };
+        }
+    }
+    for (const j of JURISDICTIONS) {
+        const d = haversine(lat, lon, j.lat, j.lon);
+        if (d < j.radius) {
+            return { jurisdiction: j.name, isLA: false, note: j.note };
+        }
+    }
+    const dLA = haversine(lat, lon, LA_CITY_CENTER.lat, LA_CITY_CENTER.lon);
+    if (dLA < LA_CITY_APPROX_RADIUS) {
+        return { jurisdiction: 'City of Los Angeles', isLA: true, note: 'City of LA zoning (LAMC) applies. ZIMAS is the authoritative zoning source.' };
+    }
+    return { jurisdiction: 'Unincorporated LA County', isLA: false, note: 'Unincorporated LA County — County zoning code applies, not City of LA. Different entitlement process through County DRP.' };
+}
+
 // Estimate zoning when ZIMAS is blocked (fallback heuristic)
 function estimateZoningFallback(addressString, addressDetails, neighborhood) {
     const lower = (addressString || '').toLowerCase();
@@ -4256,6 +4314,16 @@ async function lookupAddress() {
     const hood = detectNeighborhood(coords.lat, coords.lon, coords.address);
     document.getElementById('neighborhood').value = hood;
     markAutofill('neighborhood');
+    filledCount++;
+
+    // Detect jurisdiction
+    const jurisdiction = detectJurisdiction(coords.lat, coords.lon, coords.address);
+    window._lastJurisdiction = jurisdiction;
+    if (!jurisdiction.isLA) {
+        statusParts.push('<span class="status-item warn">Jurisdiction: <strong>' + jurisdiction.jurisdiction + '</strong> — ' + jurisdiction.note + '</span>');
+    } else {
+        statusParts.push('<span class="status-item ok">Jurisdiction: City of Los Angeles</span>');
+    }
     filledCount++;
 
     // Detect transit
@@ -5163,7 +5231,7 @@ function renderResults(results, inp) {
 
     // Summary
     document.getElementById('resultsSummary').textContent =
-        `Analysis for a ${inp.parcelSize.toLocaleString()} SF parcel, zoned ${inp.zoning}, in ${document.getElementById('neighborhood').selectedOptions[0].text}.`;
+        `Analysis for a ${inp.parcelSize.toLocaleString()} SF parcel, zoned ${inp.zoning}, in ${document.getElementById('neighborhood').selectedOptions[0].text}. Jurisdiction: ${(window._lastJurisdiction || {}).jurisdiction || 'City of Los Angeles'}.`;
 
     // Feasibility warning banner
     const topMargin = results[0] ? results[0].devMarginPct : 0;
@@ -18761,6 +18829,81 @@ function updateLenderCreditSnapshot(deal) {
       chip.textContent = flag;
       riskFlagsContainer.appendChild(chip);
     });
+  }
+
+  // Entitlement Risk Scoring
+  var entScoreEl = document.getElementById('lender-entitlement-score');
+  var entPathEl = document.getElementById('lender-entitlement-pathway');
+  var entNoteEl = document.getElementById('lender-entitlement-note');
+  if (entScoreEl) {
+    var entScore = 85; // Start high (by-right baseline)
+    var entPathway = 'By-Right (Ministerial)';
+    var entNotes = [];
+    var zoning = (deal.zoning || '').toUpperCase();
+
+    // Discretionary approval risk
+    var isDiscretionary = /C2|CM|M1|M2|PF|OS|A1|A2/.test(zoning);
+    var isCUP = /C1|C4|CR|CW|P|PB/.test(zoning);
+    if (isDiscretionary) {
+      entScore -= 30;
+      entPathway = 'Discretionary (Zone Change likely)';
+      entNotes.push('Zone may require zone change or general plan amendment');
+    } else if (isCUP) {
+      entScore -= 15;
+      entPathway = 'Conditional (CUP required)';
+      entNotes.push('Conditional use permit likely needed');
+    }
+
+    // SB 79 / state legislation override
+    if (deal.sb79Tier) {
+      entScore = Math.min(entScore + 20, 95);
+      entPathway = 'Ministerial (SB 79)';
+      entNotes.push('SB 79 enables ministerial processing — bypasses CEQA');
+    }
+
+    // Overlay/constraint penalties
+    var inp = (typeof lastInputs !== 'undefined') ? lastInputs : {};
+    if (inp.constHistoric) {
+      entScore -= 20;
+      entNotes.push('Historic overlay (HPOZ/HCM) — preservation board review, design restrictions');
+    }
+    if (inp.constCoastal) {
+      entScore -= 15;
+      entNotes.push('Coastal Zone — California Coastal Commission jurisdiction');
+    }
+    if (inp.constHillside) {
+      entScore -= 10;
+      entNotes.push('Hillside ordinance — grading limits, retaining walls, geotechnical review');
+    }
+    if (inp.constFault) {
+      entScore -= 5;
+      entNotes.push('Fault zone — Alquist-Priolo setbacks, seismic study required');
+    }
+
+    // Jurisdiction penalty
+    var jur = window._lastJurisdiction || { isLA: true };
+    if (!jur.isLA) {
+      entScore -= 10;
+      entNotes.push(jur.jurisdiction + ' — different entitlement process than City of LA');
+    }
+
+    // Large project complexity
+    if (size >= 40000) {
+      entScore -= 5;
+      entNotes.push('Large parcel — site plan review and traffic study likely');
+    }
+
+    entScore = Math.max(5, Math.min(95, entScore));
+
+    var entColor = entScore >= 70 ? '#38a169' : entScore >= 45 ? '#d69e2e' : '#c53030';
+    var entLabel = entScore >= 70 ? 'Low Risk' : entScore >= 45 ? 'Moderate Risk' : 'High Risk';
+
+    entScoreEl.innerHTML = '<span style="color:' + entColor + ';">' + entScore + '/100</span> <span style="font-size:0.82rem;font-weight:600;color:' + entColor + ';">' + entLabel + '</span>';
+    entPathEl.textContent = 'Pathway: ' + entPathway;
+    entNoteEl.innerHTML = entNotes.length > 0 ? entNotes.map(function(n) { return '<span style="display:block;font-size:0.78rem;margin-top:0.15rem;">&bull; ' + n + '</span>'; }).join('') : '<span style="font-size:0.78rem;">No significant entitlement obstacles detected.</span>';
+
+    deal.lender.entitlementScore = entScore;
+    deal.lender.entitlementPathway = entPathway;
   }
 
   // Save into deal.lender sub-object

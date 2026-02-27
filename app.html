@@ -4650,6 +4650,16 @@ async function lookupAddress() {
     markAutofill('neighborhood');
     filledCount++;
 
+    // Detect jurisdiction
+    const jurisdiction = detectJurisdiction(coords.lat, coords.lon, coords.address);
+    window._lastJurisdiction = jurisdiction;
+    if (!jurisdiction.isLA) {
+        statusParts.push('<span class="status-item warn">Jurisdiction: <strong>' + jurisdiction.jurisdiction + '</strong> — ' + jurisdiction.note + '</span>');
+    } else {
+        statusParts.push('<span class="status-item ok">Jurisdiction: City of Los Angeles</span>');
+    }
+    filledCount++;
+
     // Detect transit
     const transit = detectTransitProximity(coords.lat, coords.lon);
     document.getElementById('transit').value = transit;
@@ -4697,6 +4707,63 @@ async function lookupAddress() {
     btn.textContent = 'Look Up';
 }
 
+
+// Detect jurisdiction from coordinates + Nominatim address details
+// Flags whether parcel is City of LA, Beverly Hills, Santa Monica, Malibu, etc.
+const JURISDICTIONS = [
+    { name: 'Beverly Hills', lat: 34.0736, lon: -118.4004, radius: 1.8, note: 'Beverly Hills Municipal Code applies — different density/height rules than LA.' },
+    { name: 'Santa Monica', lat: 34.0195, lon: -118.4912, radius: 2.5, note: 'Santa Monica zoning code applies — rent control, strict height limits, Coastal Zone overlay likely.' },
+    { name: 'West Hollywood', lat: 34.0900, lon: -118.3617, radius: 1.2, note: 'West Hollywood Municipal Code applies — strong rent stabilization, unique zoning districts.' },
+    { name: 'Culver City', lat: 34.0211, lon: -118.3965, radius: 2.0, note: 'Culver City zoning applies — TOD incentives near Expo Line, distinct fee schedules.' },
+    { name: 'Glendale', lat: 34.1425, lon: -118.2551, radius: 3.0, note: 'Glendale Municipal Code applies — own specific plan areas and development standards.' },
+    { name: 'Burbank', lat: 34.1808, lon: -118.3090, radius: 2.8, note: 'Burbank zoning code applies — media district incentives, own entitlement process.' },
+    { name: 'Pasadena', lat: 34.1478, lon: -118.1445, radius: 3.5, note: 'Pasadena zoning code applies — historic preservation focus, Central District Specific Plan.' },
+    { name: 'Inglewood', lat: 33.9617, lon: -118.3531, radius: 2.5, note: 'Inglewood zoning applies — SoFi Stadium area incentives, own development review.' },
+    { name: 'Long Beach', lat: 33.7701, lon: -118.1937, radius: 5.0, note: 'Long Beach Municipal Code applies — own zoning, PD districts, and Coastal Zone rules.' },
+    { name: 'Malibu', lat: 34.0259, lon: -118.7798, radius: 8.0, note: 'City of Malibu — Coastal Commission jurisdiction, severe height/density limits, LCP applies.' },
+    { name: 'Torrance', lat: 33.8358, lon: -118.3406, radius: 3.0, note: 'Torrance zoning code applies — own development standards and review process.' },
+    { name: 'Hawthorne', lat: 33.9164, lon: -118.3526, radius: 1.5, note: 'Hawthorne zoning applies — distinct fee schedule and entitlement process.' },
+    { name: 'Carson', lat: 33.8317, lon: -118.2620, radius: 2.5, note: 'Carson Municipal Code applies — own specific plans and environmental review.' },
+    { name: 'Redondo Beach', lat: 33.8492, lon: -118.3884, radius: 2.0, note: 'Redondo Beach zoning code applies — Coastal Zone, own height/density standards.' },
+    { name: 'Pomona', lat: 34.0551, lon: -117.7500, radius: 3.5, note: 'Pomona zoning code applies — own downtown specific plan and development incentives.' },
+];
+const LA_CITY_CENTER = { lat: 34.0522, lon: -118.2437 };
+const LA_CITY_APPROX_RADIUS = 15; // miles — rough bounding for City of LA
+
+function detectJurisdiction(lat, lon, addressDetails) {
+    // Check Nominatim city field first (most accurate)
+    if (addressDetails) {
+        const city = (addressDetails.city || addressDetails.town || addressDetails.municipality || '').toLowerCase().trim();
+        if (city) {
+            for (const j of JURISDICTIONS) {
+                if (city.includes(j.name.toLowerCase())) {
+                    return { jurisdiction: j.name, isLA: false, note: j.note };
+                }
+            }
+            if (city.includes('los angeles')) {
+                return { jurisdiction: 'City of Los Angeles', isLA: true, note: 'City of LA zoning (LAMC) applies. ZIMAS is the authoritative zoning source.' };
+            }
+        }
+        // Check for unincorporated
+        const county = (addressDetails.county || '').toLowerCase();
+        if (county.includes('los angeles') && !city) {
+            return { jurisdiction: 'Unincorporated LA County', isLA: false, note: 'Unincorporated LA County — County zoning code applies, not City of LA. Different entitlement process through County DRP.' };
+        }
+    }
+    // Fall back to centroid distance matching
+    for (const j of JURISDICTIONS) {
+        const d = haversine(lat, lon, j.lat, j.lon);
+        if (d < j.radius) {
+            return { jurisdiction: j.name, isLA: false, note: j.note };
+        }
+    }
+    // Default: if within LA metro area, assume City of LA
+    const dLA = haversine(lat, lon, LA_CITY_CENTER.lat, LA_CITY_CENTER.lon);
+    if (dLA < LA_CITY_APPROX_RADIUS) {
+        return { jurisdiction: 'City of Los Angeles', isLA: true, note: 'City of LA zoning (LAMC) applies. ZIMAS is the authoritative zoning source.' };
+    }
+    return { jurisdiction: 'Unincorporated LA County', isLA: false, note: 'Unincorporated LA County — County zoning code applies, not City of LA. Different entitlement process through County DRP.' };
+}
 
 // ============================================================
 //  LA-Specific Data & Scoring Engine
@@ -5574,7 +5641,7 @@ function renderResults(results, inp) {
 
     // Summary
     document.getElementById('resultsSummary').textContent =
-        `Analysis for a ${inp.parcelSize.toLocaleString()} SF parcel, zoned ${inp.zoning}, in ${document.getElementById('neighborhood').selectedOptions[0].text}.`;
+        `Analysis for a ${inp.parcelSize.toLocaleString()} SF parcel, zoned ${inp.zoning}, in ${document.getElementById('neighborhood').selectedOptions[0].text}. Jurisdiction: ${(window._lastJurisdiction || {}).jurisdiction || 'City of Los Angeles'}.`;
 
     // Feasibility warning banner
     const topMargin = results[0] ? results[0].devMarginPct : 0;
@@ -11336,6 +11403,71 @@ function renderEntitlementTab(st) {
             </div>
         </div>
     </div>`;
+
+    // Required Consultants
+    const consultants = [];
+    consultants.push({ name: 'Land Use Attorney', reason: 'Entitlement strategy, hearing representation, conditions negotiation', est: '$15,000 – $45,000' });
+    if (!entitlement.isMinisterial) {
+        consultants.push({ name: 'Entitlement Consultant / Expediter', reason: 'City planning liaison, application prep, hearing management', est: '$10,000 – $25,000' });
+    }
+    if (inp.constHistoric) {
+        consultants.push({ name: 'Historic Preservation Consultant', reason: 'HPOZ/HCM review, Secretary of Interior Standards compliance', est: '$8,000 – $20,000' });
+    }
+    if (entitlement.ceqa.type === 'mnd' || entitlement.ceqa.type === 'eir') {
+        consultants.push({ name: 'Environmental Consultant', reason: 'CEQA analysis, technical studies (Phase I/II, noise, air quality, bio)', est: entitlement.ceqa.type === 'eir' ? '$80,000 – $200,000' : '$20,000 – $50,000' });
+    }
+    const params = BUILDING_PARAMS[bestUse];
+    const baseFAR = FAR_TYPICAL[bestUse] || 1.0;
+    let far = baseFAR;
+    if (effects) { far = baseFAR * (1 + effects.densityBonus); if (effects.minFAR > 0) far = Math.max(far, effects.minFAR); }
+    const gsf = Math.round(inp.parcelSize * far);
+    const units = params && params.unitSF ? Math.max(1, Math.floor(Math.round(gsf * (params.eff || 0.82)) / params.unitSF)) : 0;
+    if (gsf > 50000) {
+        consultants.push({ name: 'Traffic Engineer', reason: 'Traffic impact study, trip generation analysis, VMT assessment', est: '$15,000 – $40,000' });
+    }
+    consultants.push({ name: 'Geotechnical Engineer (Soils)', reason: 'Foundation design, soil bearing capacity, liquefaction risk', est: '$5,000 – $15,000' });
+    if (inp.constHillside) {
+        consultants.push({ name: 'Geologist / Slope Stability', reason: 'Hillside ordinance compliance, landslide risk assessment', est: '$10,000 – $25,000' });
+    }
+    if (inp.constCoastal) {
+        consultants.push({ name: 'Coastal Engineer', reason: 'Coastal Commission compliance, sea level rise, shoreline access', est: '$10,000 – $30,000' });
+    }
+    if (inp.parcelSize > 10000 || units > 10) {
+        consultants.push({ name: 'Arborist', reason: 'Protected tree survey, oak/heritage tree assessment, removal permits', est: '$3,000 – $8,000' });
+    }
+    consultants.push({ name: 'Civil Engineer', reason: 'Grading plan, stormwater/LID, utility connections, B-permit', est: '$10,000 – $25,000' });
+    consultants.push({ name: 'Title Company', reason: 'Title report, CC&Rs, easement review', est: '$2,000 – $5,000' });
+
+    html += `<h4 style="font-size:0.88rem;color:var(--primary);margin:1.5rem 0 0.75rem;">Required Consultants</h4>`;
+    html += `<table class="entitle-cost-table"><thead><tr><th>Consultant</th><th>Reason</th><th>Est. Cost Range</th></tr></thead><tbody>`;
+    for (const c of consultants) {
+        html += `<tr><td><strong>${c.name}</strong></td><td style="font-size:0.82rem;">${c.reason}</td><td>${c.est}</td></tr>`;
+    }
+    html += `</tbody></table>`;
+
+    // City Impact Fees
+    const jur = window._lastJurisdiction || { jurisdiction: 'City of Los Angeles', isLA: true };
+    const schoolFee = Math.round(gsf * 4.79); // LAUSD Level II fee ~$4.79/SF
+    const parkFee = units > 0 ? Math.round(units * 7500) : 0; // Quimby/park fee ~$7,500/unit
+    const artsFee = Math.round(gsf > 0 ? gsf * 1.57 : 0); // Arts fee ~$1.57/SF commercial; residential ~$1.10/SF
+    const trafficFee = gsf > 50000 ? Math.round(gsf * 3.25) : 0; // Traffic mitigation for large projects
+    const surchargeFee = Math.round(gsf * 0.67); // Building permit surcharge
+    const totalImpact = schoolFee + parkFee + artsFee + trafficFee + surchargeFee;
+
+    html += `<h4 style="font-size:0.88rem;color:var(--primary);margin:1.5rem 0 0.75rem;">Estimated City Impact Fees</h4>`;
+    if (!jur.isLA) {
+        html += `<div style="background:#fff5f5;border:1px solid #feb2b2;border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.85rem;color:#c53030;">
+            <strong>Note:</strong> This parcel is in <strong>${jur.jurisdiction}</strong>. Fee estimates below are based on City of LA schedules and may differ significantly. Verify with ${jur.jurisdiction}'s planning department.
+        </div>`;
+    }
+    html += `<table class="entitle-cost-table"><tbody>`;
+    html += `<tr><td>School Fees (LAUSD Level II)</td><td>${fmt(schoolFee)}</td><td style="font-size:0.78rem;color:var(--text-light);">$4.79/SF &times; ${gsf.toLocaleString()} GSF</td></tr>`;
+    if (parkFee > 0) html += `<tr><td>Park / Quimby Fee</td><td>${fmt(parkFee)}</td><td style="font-size:0.78rem;color:var(--text-light);">$7,500/unit &times; ${units} units</td></tr>`;
+    html += `<tr><td>Arts Development Fee</td><td>${fmt(artsFee)}</td><td style="font-size:0.78rem;color:var(--text-light);">$1.57/SF &times; ${gsf.toLocaleString()} GSF</td></tr>`;
+    if (trafficFee > 0) html += `<tr><td>Traffic Mitigation Fee</td><td>${fmt(trafficFee)}</td><td style="font-size:0.78rem;color:var(--text-light);">$3.25/SF &times; ${gsf.toLocaleString()} GSF</td></tr>`;
+    html += `<tr><td>Building Permit Surcharge</td><td>${fmt(surchargeFee)}</td><td style="font-size:0.78rem;color:var(--text-light);">$0.67/SF &times; ${gsf.toLocaleString()} GSF</td></tr>`;
+    html += `<tr class="total-row"><td><strong>Total Estimated Impact Fees</strong></td><td><strong>${fmt(totalImpact)}</strong></td><td></td></tr>`;
+    html += `</tbody></table>`;
 
     html += `</div></div>`;
     return html;
