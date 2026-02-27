@@ -2971,8 +2971,10 @@
             <div class="saved-list-actions">
                 <button type="button" class="saved-btn saved-btn-deep" onclick="openDeepAnalysis()">Deep Analysis</button>
                 <button type="button" class="saved-btn" onclick="combineContiguousParcels()" style="background:#805ad5;color:#fff;" id="combineBtn" title="Select 2-4 contiguous parcels to combine">Combine Parcels</button>
-                <button type="button" class="saved-btn saved-btn-export" onclick="exportSavedCSV()">Export to Excel</button>
-                <button type="button" class="saved-btn saved-btn-clear" onclick="clearSavedList()">Clear All</button>
+                <button type="button" class="saved-btn saved-btn-export" onclick="exportSavedCSV()">Export CSV</button>
+                <button type="button" class="saved-btn" onclick="saveNamedList()" style="background:#d97706;color:#fff;" title="Save this list with a name for later recall">Save List</button>
+                <button type="button" class="saved-btn" onclick="loadNamedList()" style="background:#7c3aed;color:#fff;" title="Load a previously saved list">Load List</button>
+                <button type="button" class="saved-btn saved-btn-clear" onclick="clearSavedList()">Clear</button>
             </div>
         </div>
         <div class="finder-table-wrapper">
@@ -10171,6 +10173,64 @@ function exportSavedCSV() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+}
+
+// --- Named List Save / Load ---
+function getSavedNamedLists() {
+    try { return JSON.parse(localStorage.getItem('sb79_named_lists')) || {}; } catch { return {}; }
+}
+
+function saveNamedList() {
+    const saved = getSavedList();
+    if (saved.length === 0) { alert('No properties to save.'); return; }
+    const name = prompt('Enter a name for this list:', 'My List ' + new Date().toLocaleDateString());
+    if (!name) return;
+    const lists = getSavedNamedLists();
+    lists[name] = { properties: saved, savedAt: new Date().toISOString(), count: saved.length };
+    localStorage.setItem('sb79_named_lists', JSON.stringify(lists));
+    alert('List "' + name + '" saved with ' + saved.length + ' properties.');
+}
+
+function loadNamedList() {
+    const lists = getSavedNamedLists();
+    const names = Object.keys(lists);
+    if (names.length === 0) { alert('No saved lists found.'); return; }
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9990;display:flex;align-items:center;justify-content:center;';
+    let listHtml = names.map((n) => {
+        const l = lists[n];
+        const date = l.savedAt ? new Date(l.savedAt).toLocaleDateString() : '';
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0.8rem;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:0.5rem;cursor:pointer;transition:background 0.15s;" onmouseenter="this.style.background='#f1f5f9'" onmouseleave="this.style.background='white'" onclick="doLoadNamedList('${n.replace(/'/g,"\\'")}');this.closest('[data-modal]').remove();">
+            <div><strong>${n}</strong><br><span style="font-size:0.8rem;color:#718096;">${l.count} properties &mdash; saved ${date}</span></div>
+            <button onclick="event.stopPropagation();deleteNamedList('${n.replace(/'/g,"\\'")}');this.closest('[data-modal]').remove();loadNamedList();" style="padding:0.3rem 0.7rem;background:#ef4444;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.75rem;">Delete</button>
+        </div>`;
+    }).join('');
+    modal.setAttribute('data-modal', '1');
+    modal.innerHTML = `<div style="background:white;border-radius:16px;padding:1.5rem;max-width:450px;width:90%;max-height:70vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <h3 style="margin:0 0 1rem;font-size:1.1rem;">Load a Saved List</h3>
+        ${listHtml}
+        <div style="text-align:right;margin-top:1rem;"><button onclick="this.closest('[data-modal]').remove()" style="padding:0.4rem 1.2rem;background:#e2e8f0;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Cancel</button></div>
+    </div>`;
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
+}
+
+function doLoadNamedList(name) {
+    const lists = getSavedNamedLists();
+    if (!lists[name]) return;
+    const current = getSavedList();
+    if (current.length > 0 && !confirm('Replace current list with "' + name + '"? (Current list has ' + current.length + ' properties)')) return;
+    setSavedList(lists[name].properties || []);
+    renderSavedList();
+    const panel = document.getElementById('savedListPanel');
+    if (panel) panel.scrollIntoView({ behavior: 'smooth' });
+}
+
+function deleteNamedList(name) {
+    if (!confirm('Delete saved list "' + name + '"?')) return;
+    const lists = getSavedNamedLists();
+    delete lists[name];
+    localStorage.setItem('sb79_named_lists', JSON.stringify(lists));
 }
 
 // Load saved list on page init

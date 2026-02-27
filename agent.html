@@ -2159,10 +2159,14 @@
         <h2>Saved Properties</h2>
         <div class="saved-list-header">
             <span id="savedListCount">0 properties</span>
-            <div class="saved-list-actions">
-                <button type="button" class="saved-btn" onclick="combineContiguousParcels()" style="background:#805ad5;color:#fff;" id="combineBtn" title="Select 2-4 contiguous parcels to combine">Combine Parcels</button>
-                <button type="button" class="saved-btn saved-btn-export" onclick="exportSavedCSV()">Export to Excel</button>
-                <button type="button" class="saved-btn saved-btn-clear" onclick="clearSavedList()">Clear All</button>
+            <div class="saved-list-actions" style="flex-wrap:wrap;gap:0.4rem;">
+                <button type="button" class="saved-btn" onclick="batchOnePagers()" style="background:#2563eb;color:#fff;" title="Generate one-pager for each saved property">One-Pagers</button>
+                <button type="button" class="saved-btn" onclick="batchLetters()" style="background:#059669;color:#fff;" title="Generate prospecting letters for all saved">Letters</button>
+                <button type="button" class="saved-btn" onclick="combineContiguousParcels()" style="background:#805ad5;color:#fff;" id="combineBtn" title="Select 2-4 contiguous parcels to combine">Combine</button>
+                <button type="button" class="saved-btn saved-btn-export" onclick="exportSavedCSV()">Export CSV</button>
+                <button type="button" class="saved-btn" onclick="saveNamedList()" style="background:#d97706;color:#fff;" title="Save this list with a name for later recall">Save List</button>
+                <button type="button" class="saved-btn" onclick="loadNamedList()" style="background:#7c3aed;color:#fff;" title="Load a previously saved list">Load List</button>
+                <button type="button" class="saved-btn saved-btn-clear" onclick="clearSavedList()">Clear</button>
             </div>
         </div>
         <div class="finder-table-wrapper">
@@ -2171,8 +2175,9 @@
                     <th style="cursor:default;width:30px;"><input type="checkbox" id="savedSelectAll" onclick="toggleSavedSelectAll()" title="Select for combining"></th>
                     <th style="cursor:default;">Address</th>
                     <th style="cursor:default;">APN</th>
+                    <th style="cursor:default;">Best Use</th>
+                    <th style="cursor:default;">Opp Ratio</th>
                     <th style="cursor:default;">Lot Size</th>
-                    <th style="cursor:default;">Zone</th>
                     <th style="cursor:default;">Links</th>
                     <th style="cursor:default;"></th>
                 </tr></thead>
@@ -6336,14 +6341,14 @@ function onFinderCheckChange() { finderSelectedSet.clear(); document.querySelect
 function toggleSelectAll() { const allCb = document.getElementById('finderSelectAll'); const checks = document.querySelectorAll('.finder-row-check'); const shouldCheck = allCb ? allCb.checked : false; finderSelectedSet.clear(); checks.forEach(cb => { cb.checked = shouldCheck; if (shouldCheck) finderSelectedSet.add(parseInt(cb.dataset.idx)); }); updateSelectionBar(); syncMapCirclesFromCheckboxes(); }
 function updateSelectionBar() { const bar = document.getElementById('finderSelectionBar'); if (!bar) return; if (finderSelectedSet.size > 0) { bar.style.display = 'flex'; document.getElementById('finderSelCount').textContent = finderSelectedSet.size + ' selected'; } else bar.style.display = 'none'; }
 function clearFinderSelection() { finderSelectedSet.clear(); clearFinderHighlightCircles(); document.querySelectorAll('.finder-row-check').forEach(cb => cb.checked = false); const allCb = document.getElementById('finderSelectAll'); if (allCb) allCb.checked = false; updateSelectionBar(); }
-function addSelectionToSaved() { if (finderSelectedSet.size === 0) return; const saved = getSavedList(); const existingApns = new Set(saved.map(s => s.apn)); let added = 0; finderSelectedSet.forEach(idx => { const r = finderResults2[idx]; if (r && !existingApns.has(r.apn)) { saved.push({ address: r.address, apn: r.apn, lotSizeSqFt: r.lotSizeSqFt, useType: r.useType, yearBuilt: r.yearBuilt, landVal: r.landVal, impVal: r.impVal, impRatio: r.impRatio, zone: r.zone, allowances: r.allowances, lat: r.lat, lon: r.lon, tier: r.tier }); added++; } }); setSavedList(saved); clearFinderSelection(); renderSavedList(); if (added > 0) { const panel = document.getElementById('savedListPanel'); if (panel) panel.scrollIntoView({ behavior: 'smooth' }); } }
+function addSelectionToSaved() { if (finderSelectedSet.size === 0) return; const saved = getSavedList(); const existingApns = new Set(saved.map(s => s.apn)); let added = 0; finderSelectedSet.forEach(idx => { const r = finderResults2[idx]; if (r && !existingApns.has(r.apn)) { saved.push({ address: r.address, apn: r.apn, lotSizeSqFt: r.lotSizeSqFt, useType: r.useType, yearBuilt: r.yearBuilt, landVal: r.landVal, impVal: r.impVal, impRatio: r.impRatio, zone: r.zone, allowances: r.allowances, lat: r.lat, lon: r.lon, tier: r.tier, bestUseId: r.bestUseId, bestUse: r.bestUse, hbuScore: r.hbuScore, oppRatio: r.oppRatio, residualLandValue: r.residualLandValue, estimatedMarketValue: r.estimatedMarketValue, premium: r.premium, legislation: r.legislation, inp: r.inp, budget: r.budget, units: r.units, stories: r.stories }); added++; } }); setSavedList(saved); clearFinderSelection(); renderSavedList(); if (added > 0) { const panel = document.getElementById('savedListPanel'); if (panel) panel.scrollIntoView({ behavior: 'smooth' }); } }
 function getSavedList() { try { return JSON.parse(localStorage.getItem('sb79_saved_list')) || []; } catch { return []; } }
 function setSavedList(list) { localStorage.setItem('sb79_saved_list', JSON.stringify(list)); }
 function renderSavedList() {
     const saved = getSavedList(); const panel = document.getElementById('savedListPanel'); const body = document.getElementById('savedListBody'); const countEl = document.getElementById('savedListCount'); if (!panel || !body) return;
     if (saved.length === 0) { panel.style.display = 'none'; return; }
     panel.style.display = 'block'; countEl.textContent = saved.length + ' propert' + (saved.length === 1 ? 'y' : 'ies');
-    body.innerHTML = saved.map((r, i) => { const enc = encodeURIComponent(r.address||''); const apnClean = (r.apn||'').replace(/[^0-9]/g,''); return `<tr><td><input type="checkbox" class="saved-select" data-idx="${i}"></td><td>${r.address}</td><td>${r.apn}</td><td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString()+' sf' : '-'}</td><td>${r.zone||'-'}</td><td><span class="prop-links"><a href="https://www.zillow.com/homes/${enc}_rb/" target="_blank">Z</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank">LA</a></span></td><td><button type="button" class="saved-btn-remove" onclick="removeSavedItem(${i})">Remove</button></td></tr>`; }).join('');
+    body.innerHTML = saved.map((r, i) => { const enc = encodeURIComponent(r.address||''); const apnClean = (r.apn||'').replace(/[^0-9]/g,''); const oppColor = (r.oppRatio||0) >= 2.0 ? '#059669' : (r.oppRatio||0) >= 1.5 ? '#d97706' : '#6b7280'; return `<tr><td><input type="checkbox" class="saved-select" data-idx="${i}"></td><td>${r.address}</td><td>${r.apn}</td><td>${r.bestUse||'-'}</td><td style="color:${oppColor};font-weight:700;">${r.oppRatio ? r.oppRatio.toFixed(1)+'x' : '-'}</td><td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString()+' sf' : '-'}</td><td><span class="prop-links"><a href="https://www.zillow.com/homes/${enc}_rb/" target="_blank">Z</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank">LA</a></span></td><td><button type="button" class="saved-btn-remove" onclick="removeSavedItem(${i})">Remove</button></td></tr>`; }).join('');
 }
 function removeSavedItem(idx) { const saved = getSavedList(); saved.splice(idx, 1); setSavedList(saved); renderSavedList(); }
 function clearSavedList() { if (!confirm('Remove all saved properties?')) return; setSavedList([]); renderSavedList(); }
@@ -6357,7 +6362,134 @@ function combineContiguousParcels() {
     combined.impRatio = combined.landVal > 0 ? combined.impVal/combined.landVal : 0;
     saved.unshift(combined); setSavedList(saved); renderSavedList(); alert('Combined parcel created!');
 }
-function exportSavedCSV() { const saved = getSavedList(); if (saved.length === 0) return; const headers = ['Address','APN','Lot Size','Use','Year','Land Value','Imp Value','Imp/Land','Zone','Height','Density','FAR','Lat','Lon']; const rows = saved.map(r => { const a = r.allowances||{}; return [`"${(r.address||'').replace(/"/g,'""')}"`,r.apn,r.lotSizeSqFt,r.useType,r.yearBuilt||'',r.landVal,r.impVal,r.impRatio < 100 ? r.impRatio.toFixed(3):'',r.zone,a.height||'',a.density||'',a.far||'',r.lat,r.lon].join(','); }); const csv = [headers.join(','), ...rows].join('\n'); const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `sb79-saved-${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(url); }
+function exportSavedCSV() { const saved = getSavedList(); if (saved.length === 0) return; const headers = ['Address','APN','Lot Size','Best Use','Opp Ratio','Residual Land Value','Est Market Value','Premium','Units','Stories','Use Type','Year Built','Land Value','Imp Value','Zone','Lat','Lon']; const rows = saved.map(r => { return [`"${(r.address||'').replace(/"/g,'""')}"`,r.apn,r.lotSizeSqFt,`"${r.bestUse||''}"`,r.oppRatio?r.oppRatio.toFixed(2):'',r.residualLandValue||'',r.estimatedMarketValue||'',r.premium||'',r.units||'',r.stories||'',r.useType,r.yearBuilt||'',r.landVal,r.impVal,r.zone,r.lat,r.lon].join(','); }); const csv = [headers.join(','), ...rows].join('\n'); const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `sb79-saved-${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(url); }
+
+// --- Batch One-Pagers from Saved List ---
+function batchOnePagers() {
+    const saved = getSavedList();
+    const withData = saved.filter(r => r.bestUseId && r.inp);
+    if (withData.length === 0) { alert('No saved properties with analysis data. Re-scan the area and add properties from the scanner results.'); return; }
+
+    const pages = [];
+    withData.forEach(r => {
+        const prevGeocode = window.lastGeocode;
+        window.lastGeocode = { lat: r.lat, lon: r.lon, assessedTotal: (r.landVal||0) + (r.impVal||0) };
+        const topResult = { id: r.bestUseId, name: r.bestUse, overall: r.hbuScore || 0, legislation: r.legislation || [], budget: r.budget || null };
+        try {
+            pages.push({ address: r.address, html: generateListingOnePager(topResult, r.inp, r.address) });
+        } catch(e) { console.warn('One-pager failed for', r.address, e); }
+        window.lastGeocode = prevGeocode;
+    });
+
+    if (pages.length === 0) { alert('Could not generate any one-pagers.'); return; }
+
+    // Single one-pager — show in modal
+    if (pages.length === 1) {
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9990;overflow-y:auto;padding:2rem;';
+        modal.innerHTML = `<div style="max-width:800px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <div style="padding:0.75rem 1.5rem;background:#f1f5f9;display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-weight:600;">One-Pager: ${pages[0].address}</span>
+                <div><button onclick="window.print()" style="padding:0.4rem 1rem;background:var(--primary);color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;margin-right:0.5rem;">Print</button><button onclick="this.closest('div').closest('div').closest('div').remove()" style="padding:0.4rem 1rem;background:#e2e8f0;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Close</button></div>
+            </div>
+            <div class="onepager-container">${pages[0].html}</div>
+        </div>`;
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+        document.body.appendChild(modal);
+        return;
+    }
+
+    // Multiple — open in new window for printing
+    const allHtml = pages.map((p, i) => `<div style="${i > 0 ? 'page-break-before:always;' : ''}padding:1rem;">${p.html}</div>`).join('');
+    const w = window.open('', '_blank');
+    w.document.write(`<!DOCTYPE html><html><head><title>One-Pagers (${pages.length} properties)</title><style>body{font-family:system-ui,sans-serif;margin:0;padding:1rem;} @media print{body{padding:0;}}</style></head><body>
+        <div style="text-align:center;margin-bottom:1rem;"><button onclick="window.print()" style="padding:0.6rem 2rem;background:#2563eb;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:1rem;">Print All ${pages.length} One-Pagers</button></div>
+        ${allHtml}</body></html>`);
+    w.document.close();
+}
+
+// --- Batch Letters from Saved List ---
+function batchLetters() {
+    const saved = getSavedList();
+    const withData = saved.filter(r => r.bestUseId && r.residualLandValue);
+    if (withData.length === 0) { alert('No saved properties with analysis data. Re-scan the area and add properties from the scanner results.'); return; }
+
+    const agentProfile = getAgentProfile();
+    let allLetters = '';
+    withData.forEach((r, i) => {
+        const pageBreak = i > 0 ? 'page-break-before:always;' : '';
+        allLetters += `<div style="${pageBreak} padding: 1rem 0;">${generateProspectingLetter(r, agentProfile)}<hr style="border:none;border-top:1px solid #e2e8f0;margin-top:1.5rem;"></div>`;
+    });
+
+    const w = window.open('', '_blank');
+    w.document.write(`<!DOCTYPE html><html><head><title>Prospecting Letters (${withData.length})</title>
+        <style>body{font-family:'Georgia',serif;max-width:750px;margin:0 auto;padding:2rem;line-height:1.7;color:#1a202c;} @media print{body{padding:0;max-width:100%;}}</style></head><body>
+        <div style="text-align:center;margin-bottom:1.5rem;font-family:system-ui,sans-serif;">
+            <button onclick="window.print()" style="padding:0.6rem 2rem;background:#059669;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:1rem;">Print All ${withData.length} Letters</button>
+        </div>${allLetters}</body></html>`);
+    w.document.close();
+}
+
+// --- Named List Save / Load ---
+function getSavedNamedLists() {
+    try { return JSON.parse(localStorage.getItem('sb79_named_lists')) || {}; } catch { return {}; }
+}
+
+function saveNamedList() {
+    const saved = getSavedList();
+    if (saved.length === 0) { alert('No properties to save.'); return; }
+    const name = prompt('Enter a name for this list:', 'My List ' + new Date().toLocaleDateString());
+    if (!name) return;
+    const lists = getSavedNamedLists();
+    lists[name] = { properties: saved, savedAt: new Date().toISOString(), count: saved.length };
+    localStorage.setItem('sb79_named_lists', JSON.stringify(lists));
+    alert('List "' + name + '" saved with ' + saved.length + ' properties.');
+}
+
+function loadNamedList() {
+    const lists = getSavedNamedLists();
+    const names = Object.keys(lists);
+    if (names.length === 0) { alert('No saved lists found.'); return; }
+
+    // Build a selection modal
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9990;display:flex;align-items:center;justify-content:center;';
+    let listHtml = names.map((n, i) => {
+        const l = lists[n];
+        const date = l.savedAt ? new Date(l.savedAt).toLocaleDateString() : '';
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0.8rem;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:0.5rem;cursor:pointer;transition:background 0.15s;" onmouseenter="this.style.background='#f1f5f9'" onmouseleave="this.style.background='white'" onclick="doLoadNamedList('${n.replace(/'/g,"\\'")}');this.closest('[data-modal]').remove();">
+            <div><strong>${n}</strong><br><span style="font-size:0.8rem;color:#718096;">${l.count} properties &mdash; saved ${date}</span></div>
+            <button onclick="event.stopPropagation();deleteNamedList('${n.replace(/'/g,"\\'")}');this.closest('[data-modal]').remove();loadNamedList();" style="padding:0.3rem 0.7rem;background:#ef4444;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.75rem;">Delete</button>
+        </div>`;
+    }).join('');
+
+    modal.setAttribute('data-modal', '1');
+    modal.innerHTML = `<div style="background:white;border-radius:16px;padding:1.5rem;max-width:450px;width:90%;max-height:70vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <h3 style="margin:0 0 1rem;font-size:1.1rem;">Load a Saved List</h3>
+        ${listHtml}
+        <div style="text-align:right;margin-top:1rem;"><button onclick="this.closest('[data-modal]').remove()" style="padding:0.4rem 1.2rem;background:#e2e8f0;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Cancel</button></div>
+    </div>`;
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
+}
+
+function doLoadNamedList(name) {
+    const lists = getSavedNamedLists();
+    if (!lists[name]) return;
+    const current = getSavedList();
+    if (current.length > 0 && !confirm('Replace current list with "' + name + '"? (Current list has ' + current.length + ' properties)')) return;
+    setSavedList(lists[name].properties || []);
+    renderSavedList();
+    const panel = document.getElementById('savedListPanel');
+    if (panel) panel.scrollIntoView({ behavior: 'smooth' });
+}
+
+function deleteNamedList(name) {
+    if (!confirm('Delete saved list "' + name + '"?')) return;
+    const lists = getSavedNamedLists();
+    delete lists[name];
+    localStorage.setItem('sb79_named_lists', JSON.stringify(lists));
+}
 
 // Load saved list on page init
 document.addEventListener('DOMContentLoaded', () => { renderSavedList(); renderPipelineSavedList(); renderAgentSites(); });
