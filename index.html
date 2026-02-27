@@ -704,9 +704,17 @@
         @media (max-width: 640px) {
             .sticky-cta { display: block; }
             body { padding-bottom: 70px; }
-            .compare-table { font-size: .78rem; }
-            .compare-table td, .compare-table thead th { padding: .65rem .5rem; }
+            .compare-table { font-size: .72rem; display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .compare-table td, .compare-table thead th { padding: .55rem .4rem; white-space: nowrap; }
+            .compare-table thead th:first-child { min-width: 90px; }
+            .compare-table small { display: none; }
+            .compare-tagline { font-size: .95rem; }
             .proof-grid { grid-template-columns: 1fr; }
+            .proof-quote { padding: 1.5rem; font-size: .92rem; }
+            .lead-form { flex-direction: column; }
+            .lead-form input[type="email"] { min-width: 100%; }
+            .lead-form .btn-accent { width: 100%; min-height: 48px; }
+            .demo-play-btn { width: 60px; height: 60px; font-size: 1.4rem; }
         }
         @media (max-width: 900px) {
             .proof-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
@@ -765,7 +773,8 @@
                 gap: 1rem; box-shadow: var(--shadow-lg);
             }
             .nav-links.open { display: flex; }
-            .hamburger { display: flex; }
+            .nav-links a { min-height: 44px; display: flex; align-items: center; }
+            .hamburger { display: flex; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; }
             .nav-brand-text { font-size: 1.4rem; }
             .cls-logo { height: 36px; }
             .hero-inner { padding: 7rem 1.5rem 3rem; }
@@ -777,6 +786,17 @@
             .photo-strip { grid-template-columns: 1fr; }
             .photo-strip-item:nth-child(2),
             .photo-strip-item:nth-child(3) { display: none; }
+            /* Touch-friendly CTAs */
+            .btn { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+            .btn-lg { min-height: 48px; padding: .75rem 1.5rem; }
+            .portal-card { padding: 1.5rem 1.25rem; }
+            .portal-arrow { min-height: 44px; display: inline-flex; align-items: center; }
+            .price-card { padding: 2rem 1.5rem; }
+            .price-card .btn { min-height: 48px; font-size: .9rem; }
+            .faq-q { min-height: 44px; padding: .5rem 0; }
+            .hero-links a { min-height: 44px; display: inline-flex; align-items: center; }
+            .founding-banner { font-size: .85rem; padding: .75rem 1rem; }
+            .section-header h2 { font-size: 1.7rem; }
         }
     </style>
 </head>
