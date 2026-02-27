@@ -1754,9 +1754,14 @@
                         <input type="number" id="parcelSize" value="10000" min="500" max="5000000" step="100">
                     </div>
 
+                    <div class="field" id="field-marketValue">
+                        <label>Est. Market Value <span id="assessedValueLabel" style="color:#718096;font-size:0.82em;"></span></label>
+                        <input type="number" id="marketValue" value="0" min="0" step="1000" style="font-weight:600;">
+                        <div style="font-size:0.75em;color:#718096;margin-top:2px;">Check <a href="#" id="zillowValLink" target="_blank" style="color:var(--primary-light);">Zillow</a> or <a href="#" id="redfinValLink" target="_blank" style="color:var(--primary-light);">Redfin</a> for actual market value</div>
+                    </div>
                     <div class="field" id="field-ownProperty" style="display:flex;align-items:center;gap:8px;margin:-4px 0 4px 0;">
                         <input type="checkbox" id="ownProperty" style="width:auto;margin:0;">
-                        <label for="ownProperty" style="margin:0;font-size:0.92em;cursor:pointer;">I currently own this property <span id="assessedValueLabel" style="color:#718096;font-size:0.85em;"></span></label>
+                        <label for="ownProperty" style="margin:0;font-size:0.92em;cursor:pointer;">I currently own this property (land cost = $0)</label>
                     </div>
 
                     <div class="field" id="field-frontage">
@@ -3428,19 +3433,29 @@ async function lookupAddress() {
         }
     }
 
-    // Capture assessor roll values for land cost default
+    // Capture assessor roll values
     window.lastAssessedTotal = 0;
     if (parcelResult && parcelResult.attrs) {
         const _rl = parseFloat(parcelResult.attrs.Roll_LandValue) || 0;
         const _ri = parseFloat(parcelResult.attrs.Roll_ImpValue) || 0;
         window.lastAssessedTotal = _rl + _ri;
     }
+    var _mvInput = document.getElementById('marketValue');
+    if (_mvInput) {
+        _mvInput.value = window.lastAssessedTotal > 0 ? Math.round(window.lastAssessedTotal) : 0;
+    }
     var _avLabel = document.getElementById('assessedValueLabel');
     if (_avLabel) {
         _avLabel.textContent = window.lastAssessedTotal > 0
-            ? '(Assessed: $' + window.lastAssessedTotal.toLocaleString() + ')'
+            ? '(Tax-assessed: $' + window.lastAssessedTotal.toLocaleString() + ')'
             : '';
     }
+    var _addrForLinks = (document.getElementById('address') || {}).value || '';
+    var _encAddr = encodeURIComponent(_addrForLinks);
+    var _zLink = document.getElementById('zillowValLink');
+    var _rLink = document.getElementById('redfinValLink');
+    if (_zLink) _zLink.href = 'https://www.zillow.com/homes/' + _encAddr + '_rb/';
+    if (_rLink) _rLink.href = 'https://www.redfin.com/search?q=' + _encAddr;
 
     // Apply parcel size
     if (parcelResult && parcelResult.error === 'cors') {
@@ -4142,7 +4157,7 @@ function scoreFinancial(useId, inp, effects) {
     // Land cost: use assessor value if available, checkbox zeroes it out
     const _ownProp = document.getElementById('ownProperty');
     const landCost = (_ownProp && _ownProp.checked) ? 0
-        : (window.lastAssessedTotal > 0) ? window.lastAssessedTotal
+        : (parseFloat((document.getElementById('marketValue') || {}).value) > 0) ? parseFloat(document.getElementById('marketValue').value)
         : (useId === 'adu' ? 0 : inp.parcelSize * landValuePSF);
 
     // Build cost with parking reduction from legislation
@@ -4725,7 +4740,7 @@ function generateBudget(useId, inp, effects) {
     // Land cost: use assessor value if available, checkbox zeroes it out
     const _ownProp2 = document.getElementById('ownProperty');
     const landCost = (_ownProp2 && _ownProp2.checked) ? 0
-        : (window.lastAssessedTotal > 0) ? window.lastAssessedTotal
+        : (parseFloat((document.getElementById('marketValue') || {}).value) > 0) ? parseFloat(document.getElementById('marketValue').value)
         : (useId === 'adu' ? 0 : inp.parcelSize * landValuePSF);
 
     // Hard costs — Site work broken into sub-components
@@ -5072,7 +5087,15 @@ function initSB79Map(lat, lon) {
     });
     sb79Street.addTo(sb79Map);
     var sb79ParcelLayer = setupParcelLayer(sb79Map);
-    L.control.layers({'Street': sb79Street, 'Satellite': sb79Satellite}, {'Lot Lines': sb79ParcelLayer}, {position: 'topright'}).addTo(sb79Map);
+    var sb79HistoricLayer = L.layerGroup();
+    var sb79HistoricLoaded = false;
+    sb79Map.on('overlayadd', function(e) {
+        if (e.layer === sb79HistoricLayer && !sb79HistoricLoaded) {
+            sb79HistoricLoaded = true;
+            fetchHistoricOverlay(sb79Map, sb79HistoricLayer);
+        }
+    });
+    L.control.layers({'Street': sb79Street, 'Satellite': sb79Satellite}, {'Lot Lines': sb79ParcelLayer, 'Historic Districts (HPOZ)': sb79HistoricLayer}, {position: 'topright'}).addTo(sb79Map);
 
     // Layer groups
     sb79Layers.tier1 = L.layerGroup().addTo(sb79Map);
@@ -5514,7 +5537,7 @@ function computeFromAssumptions(useId, inp, assumptions, effects) {
     // Land cost: use assessor value if available, checkbox zeroes it out
     const _ownProp3 = document.getElementById('ownProperty');
     const landCost = (_ownProp3 && _ownProp3.checked) ? 0
-        : (window.lastAssessedTotal > 0) ? window.lastAssessedTotal
+        : (parseFloat((document.getElementById('marketValue') || {}).value) > 0) ? parseFloat(document.getElementById('marketValue').value)
         : (useId === 'adu' ? 0 : inp.parcelSize * landValuePSF);
     let siteWorkBreakdown;
     if (assumptions.siteWorkOverride !== undefined && assumptions.siteWorkOverride !== null) {
@@ -5967,7 +5990,15 @@ function initPipelineMap() {
     var pipelineSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri' });
     pipelineStreet.addTo(pipelineMapInstance);
     var pipelineParcelLayer = setupParcelLayer(pipelineMapInstance);
-    L.control.layers({'Street': pipelineStreet, 'Satellite': pipelineSatellite}, {'Lot Lines': pipelineParcelLayer}, {position: 'topright'}).addTo(pipelineMapInstance);
+    var pipelineHistoricLayer = L.layerGroup();
+    var pipelineHistoricLoaded = false;
+    pipelineMapInstance.on('overlayadd', function(e) {
+        if (e.layer === pipelineHistoricLayer && !pipelineHistoricLoaded) {
+            pipelineHistoricLoaded = true;
+            fetchHistoricOverlay(pipelineMapInstance, pipelineHistoricLayer);
+        }
+    });
+    L.control.layers({'Street': pipelineStreet, 'Satellite': pipelineSatellite}, {'Lot Lines': pipelineParcelLayer, 'Historic Districts (HPOZ)': pipelineHistoricLayer}, {position: 'topright'}).addTo(pipelineMapInstance);
     pipelineMarkerLayer = L.layerGroup().addTo(pipelineMapInstance);
     pipelineMapInstance.on('click', function(e) { setPipelineSearchCenter(e.latlng.lat, e.latlng.lng, `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`); });
     renderPipelineMapLegend();
@@ -6008,6 +6039,41 @@ function normalizePipelineRecord(raw, source) {
     return { permit_nbr: raw.permit_nbr || raw.pcis_permit || raw.permit_number || '', address: raw.address || raw.address_street || raw.project_address || '', permit_type: typeKey, permit_type_label: (raw.permit_type || raw.type || raw.permit_type_desc || 'Building').replace(/^\w/, c => c.toUpperCase()), stage, status_raw: raw.status_desc || raw.status || '', valuation: parseFloat(raw.valuation || raw.project_valuation || 0) || 0, date: raw.issue_date || raw.submitted_date || raw.status_date || raw.filed_date || '', zone: raw.zone || raw.existing_zoning || '', description: raw.work_description || raw.project_description || raw.description || '', lat, lon, source };
 }
 function guessStage(s) { if (/submit|appli/i.test(s)) return 'submitted'; if (/plan.*check|pcis/i.test(s)) return 'plan_check'; if (/issue/i.test(s)) return 'issued'; if (/inspect/i.test(s)) return 'inspection'; if (/final/i.test(s)) return 'finaled'; if (/co |certificate|occupan/i.test(s)) return 'coo'; return 'submitted'; }
+// --- Historic Districts (HPOZ) Overlay ---
+async function fetchHistoricOverlay(map, layerGroup) {
+    var url = 'https://arcgis.gis.lacounty.gov/arcgis/rest/services/DRP/Open_Data/MapServer/35/query';
+    var bounds = map.getBounds();
+    var bbox = bounds.getWest() + ',' + bounds.getSouth() + ',' + bounds.getEast() + ',' + bounds.getNorth();
+    var params = '?where=1%3D1&outFields=Name,Status_Code_Description,Year_Designated&geometryType=esriGeometryEnvelope'
+        + '&geometry=' + encodeURIComponent(bbox)
+        + '&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&f=geojson&resultRecordCount=500';
+    try {
+        var resp = await fetch(url + params);
+        if (!resp.ok) return;
+        var data = await resp.json();
+        if (!data.features) return;
+        L.geoJSON(data, {
+            style: function() {
+                return { color: '#b83280', weight: 2, fillColor: '#b83280', fillOpacity: 0.18, dashArray: '5,5' };
+            },
+            onEachFeature: function(feature, layer) {
+                var p = feature.properties || {};
+                layer.bindPopup('<strong>' + (p.Name || 'Historic Resource') + '</strong><br>'
+                    + (p.Status_Code_Description || '') + '<br>'
+                    + (p.Year_Designated ? 'Designated: ' + p.Year_Designated : '')
+                    + '<br><em style="color:#b83280;font-size:0.82rem;">SB 79 may be limited in historic districts</em>');
+            }
+        }).addTo(layerGroup);
+        map.off('moveend.historic');
+        map.on('moveend.historic', function() {
+            layerGroup.clearLayers();
+            fetchHistoricOverlay(map, layerGroup);
+        });
+    } catch (e) {
+        console.warn('Historic overlay fetch failed:', e);
+    }
+}
+
 function buildBoundingBox(lat, lon, radiusMiles) { const latDeg = radiusMiles / 69.0; const lonDeg = radiusMiles / (69.0 * Math.cos(lat * Math.PI / 180)); return { minLat: lat - latDeg, maxLat: lat + latDeg, minLon: lon - lonDeg, maxLon: lon + lonDeg }; }
 
 async function queryPipelineIssuedPermits(lat, lon, radiusMiles, onProgress) {
@@ -6099,7 +6165,7 @@ async function togglePipelineOverlay() {
     const stationSelect = document.getElementById('finderStation2'); if (!stationSelect || stationSelect.selectedIndex < 0) { alert('Select a station first.'); return; }
     const idx = parseInt(stationSelect.value); const station = METRO_STATIONS[idx]; if (!station) return;
     btn.textContent = 'Loading...'; btn.disabled = true;
-    try { const permits = await fetchAllPipelinePermits(station.lat, station.lon, 0.5, null); pipelineOverlayLayer = L.layerGroup(); permits.slice(0, 300).forEach(r => { if (!r.lat || !r.lon) return; const m = L.circleMarker([r.lat, r.lon], { radius: 4, fillColor: PIPELINE_COLORS[r.stage]||'#718096', fillOpacity: 0.7, color: '#fff', weight: 1 }); m.bindPopup(`<strong>${r.address||'Permit'}</strong><br>${r.permit_nbr}<br>${PIPELINE_STAGE_LABELS[r.stage]||r.stage}`); m.addTo(pipelineOverlayLayer); }); pipelineOverlayLayer.addTo(finderMapInstance); pipelineOverlayActive = true; btn.classList.add('active'); btn.textContent = `Hide Permits (${Math.min(permits.length, 300)})`; }
+    try { const permits = await fetchAllPipelinePermits(station.lat, station.lon, 1.0, null); pipelineOverlayLayer = L.layerGroup(); permits.slice(0, 300).forEach(r => { if (!r.lat || !r.lon) return; const m = L.circleMarker([r.lat, r.lon], { radius: 4, fillColor: PIPELINE_COLORS[r.stage]||'#718096', fillOpacity: 0.7, color: '#fff', weight: 1 }); m.bindPopup(`<strong>${r.address||'Permit'}</strong><br>${r.permit_nbr}<br>${PIPELINE_STAGE_LABELS[r.stage]||r.stage}`); m.addTo(pipelineOverlayLayer); }); pipelineOverlayLayer.addTo(finderMapInstance); pipelineOverlayActive = true; btn.classList.add('active'); btn.textContent = `Hide Permits (${Math.min(permits.length, 300)})`; }
     catch (e) { alert('Failed: ' + e.message); btn.textContent = 'Show Permits Nearby'; }
     finally { btn.disabled = false; }
 }
@@ -6198,7 +6264,15 @@ function initFinderMap() {
     var finderSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri' });
     finderStreet.addTo(finderMapInstance);
     var finderParcelLyr = setupParcelLayer(finderMapInstance);
-    L.control.layers({'Street': finderStreet, 'Satellite': finderSatellite}, {'Lot Lines': finderParcelLyr}, {position: 'topright'}).addTo(finderMapInstance);
+    var finderHistoricLayer = L.layerGroup();
+    var finderHistoricLoaded = false;
+    finderMapInstance.on('overlayadd', function(e) {
+        if (e.layer === finderHistoricLayer && !finderHistoricLoaded) {
+            finderHistoricLoaded = true;
+            fetchHistoricOverlay(finderMapInstance, finderHistoricLayer);
+        }
+    });
+    L.control.layers({'Street': finderStreet, 'Satellite': finderSatellite}, {'Lot Lines': finderParcelLyr, 'Historic Districts (HPOZ)': finderHistoricLayer}, {position: 'topright'}).addTo(finderMapInstance);
     const seenCoords = new Set();
     METRO_STATIONS.forEach((s, idx) => { const key = `${s.lat.toFixed(4)},${s.lon.toFixed(4)},${s.line}`; if (seenCoords.has(key)) return; seenCoords.add(key); const color = LINE_COLORS[s.line]||'#718096'; const icon = L.divIcon({ html: `<div style="background:${color};width:10px;height:10px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>`, iconSize: [10,10], iconAnchor: [5,5], className: '' }); const marker = L.marker([s.lat, s.lon], { icon }).bindPopup(`<strong>${s.name}</strong><br>${LINE_LABELS[s.line]||s.line}`).on('click', () => { selectFinderStation2(idx); drawFinderStationRadii(s); }); marker.addTo(finderMapInstance); });
     attachZoneClickHandler(finderMapInstance); renderFinderMapLegend(); populateFinderStations2();
@@ -6615,7 +6689,15 @@ function initSitesMap() {
     });
     sitesStreet.addTo(sitesMapInstance);
     var sitesParcelLayer = setupParcelLayer(sitesMapInstance);
-    L.control.layers({'Street': sitesStreet, 'Satellite': sitesSatellite}, {'Lot Lines': sitesParcelLayer}, {position: 'topright'}).addTo(sitesMapInstance);
+    var sitesHistoricLayer = L.layerGroup();
+    var sitesHistoricLoaded = false;
+    sitesMapInstance.on('overlayadd', function(e) {
+        if (e.layer === sitesHistoricLayer && !sitesHistoricLoaded) {
+            sitesHistoricLoaded = true;
+            fetchHistoricOverlay(sitesMapInstance, sitesHistoricLayer);
+        }
+    });
+    L.control.layers({'Street': sitesStreet, 'Satellite': sitesSatellite}, {'Lot Lines': sitesParcelLayer, 'Historic Districts (HPOZ)': sitesHistoricLayer}, {position: 'topright'}).addTo(sitesMapInstance);
     sitesMapInitialized = true;
     renderAgentSites();
 }
@@ -7397,7 +7479,7 @@ function renderScannerResults() {
             <td style="font-size:0.78rem;">${r.bestUse}</td>
             <td onclick="event.stopPropagation()">
                 <span class="prop-links">
-                    <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" title="Lookup Owner on LA County Assessor">Owner</a> |
+                    <a href="https://www.fastpeoplesearch.com/address/${enc.replace(/%20/g,'-').replace(/[,%23]/g,'')}" target="_blank" title="Reverse address lookup — find property owner">Owner</a> |
                     <a href="https://www.zillow.com/homes/${enc}_rb/" target="_blank" title="View on Zillow">Z</a> |
                     <a href="javascript:void(0)" onclick="openOnePagerFromScan(${i})" title="Generate One-Pager">1-Pg</a> |
                     <a href="javascript:void(0)" onclick="openLetterModal(${i})" title="Generate Letter">Letter</a>
@@ -7471,7 +7553,8 @@ function openOnePagerFromScan(idx) {
         name: r.bestUse,
         overall: r.hbuScore,
         devMarginPct: r.budget ? r.budget.devMargin : 0,
-        legislation: r.legislation || []
+        legislation: r.legislation || [],
+        budget: r.budget || null
     };
     const html = generateListingOnePager(topResult, r.inp, r.address);
     window.lastGeocode = prevGeocode;
@@ -7662,23 +7745,31 @@ function generateProspectingLetter(r, agentProfile) {
     const p = agentProfile || getAgentProfile();
     const fmt = (v) => v ? '$' + Math.round(v).toLocaleString() : '$0';
     const premium = r.residualLandValue - r.estimatedMarketValue;
+    const pctIncrease = r.estimatedMarketValue > 0 ? Math.round((premium / r.estimatedMarketValue) * 100) : 0;
 
     let sb79Section = '';
     if (r.sb79Eligible && r.bestStation) {
-        sb79Section = `<p>Your property is located within the <strong>SB 79 transit zone</strong> near ${r.bestStation.name} station, which allows significantly increased density and height under California's new transit-oriented development legislation (effective July 2026). This is a major value driver.</p>`;
+        sb79Section = `<p>Your property is located within the <strong>SB 79 transit zone</strong> near ${r.bestStation.name} station, which allows significantly increased density and height under California's new transit-oriented development legislation (effective July 2026). This is a major value driver that won't last forever &mdash; early sellers capture the highest premiums.</p>`;
     }
 
     return `<div class="letter-content">
         <p style="text-align:right;color:#64748b;font-size:0.85rem;">${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
         <p>Dear Homeowner,</p>
-        <p>I'm reaching out because recent California legislation has dramatically changed what can be built on properties like yours at <strong>${r.address}</strong>.</p>
-        <p>Based on my analysis, a developer could pay approximately <strong>${fmt(r.residualLandValue)}</strong> for your property &mdash; that's <strong>${r.oppRatio.toFixed(1)}x</strong> what it's currently valued at (${fmt(r.estimatedMarketValue)}). The highest and best use for your land is <strong>${r.bestUse}</strong>${r.units > 0 ? `, which could support <strong>${r.units} units</strong> across <strong>${r.stories} stories</strong>` : ''}.</p>
+        <p>I'm reaching out because recent California legislation has dramatically changed what can be built on properties like yours at <strong>${r.address}</strong>, and I believe you may be sitting on significantly more value than you realize.</p>
+        <p>Based on my analysis, a developer could pay approximately <strong>${fmt(r.residualLandValue)}</strong> for your property &mdash; that's a <strong>${pctIncrease}% increase</strong> (${r.oppRatio.toFixed(1)}x) over the current estimated market value of ${fmt(r.estimatedMarketValue)}. The highest and best use for your land is <strong>${r.bestUse}</strong>${r.units > 0 ? `, which could support <strong>${r.units} units</strong> across <strong>${r.stories} stories</strong>` : ''}.</p>
         ${sb79Section}
-        <p>That represents a potential premium of <strong>${fmt(premium)}</strong> over the current market value of your property.</p>
-        <p>I specialize in helping homeowners maximize their property's value by connecting them with qualified developers. There's no obligation &mdash; I'd love to show you what your options are.</p>
-        <p style="margin-top:2rem;">Sincerely,</p>
+        <p>That represents a potential premium of <strong>${fmt(premium)}</strong> &mdash; a <strong>${pctIncrease}%</strong> gain over your property's current value. This opportunity is driven by new zoning changes and strong developer demand in your area.</p>
+        <p>I specialize in helping homeowners maximize their property's value by connecting them with qualified, pre-vetted developers. My services are <strong>completely free to you as the seller</strong> &mdash; the buyer pays my commission.</p>
+        <p>Here's what I can do for you:</p>
+        <ul style="margin:0.5rem 0 1rem 1.5rem;line-height:1.8;">
+            <li>Provide a <strong>free, no-obligation property valuation</strong> showing exactly what developers would pay</li>
+            <li>Run a competitive process to get you the <strong>highest possible offer</strong></li>
+            <li>Handle all negotiations and due diligence so you don't have to</li>
+        </ul>
+        <p><strong>Properties in transit zones are in high demand right now.</strong> I'd love to schedule a brief 15-minute call to walk you through your options. You can reach me directly at the number below &mdash; no pressure, just information.</p>
+        <p style="margin-top:2rem;">Looking forward to hearing from you,</p>
         <p style="margin-bottom:0.25rem;"><strong>${p.name || '[Your Name]'}</strong></p>
-        ${p.phone ? `<p style="margin:0;font-size:0.9rem;">${p.phone}</p>` : ''}
+        ${p.phone ? `<p style="margin:0;font-size:0.9rem;"><strong>${p.phone}</strong></p>` : ''}
         ${p.email ? `<p style="margin:0;font-size:0.9rem;">${p.email}</p>` : ''}
         ${p.brokerage ? `<p style="margin:0;font-size:0.9rem;">${p.brokerage}</p>` : ''}
         ${p.licenseNo ? `<p style="margin:0;font-size:0.82rem;color:#64748b;">DRE# ${p.licenseNo}</p>` : ''}

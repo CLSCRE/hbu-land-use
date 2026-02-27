@@ -2625,9 +2625,14 @@
                         <input type="number" id="parcelSize" value="10000" min="500" max="5000000" step="100">
                     </div>
 
+                    <div class="field" id="field-marketValue">
+                        <label>Est. Market Value <span id="assessedValueLabel" style="color:#718096;font-size:0.82em;"></span></label>
+                        <input type="number" id="marketValue" value="0" min="0" step="1000" style="font-weight:600;">
+                        <div style="font-size:0.75em;color:#718096;margin-top:2px;">Check <a href="#" id="zillowValLink" target="_blank" style="color:#667eea;">Zillow</a> or <a href="#" id="redfinValLink" target="_blank" style="color:#667eea;">Redfin</a> for actual market value</div>
+                    </div>
                     <div class="field" id="field-ownProperty" style="display:flex;align-items:center;gap:8px;margin:-4px 0 4px 0;">
                         <input type="checkbox" id="ownProperty" style="width:auto;margin:0;">
-                        <label for="ownProperty" style="margin:0;font-size:0.92em;cursor:pointer;">I currently own this property <span id="assessedValueLabel" style="color:#718096;font-size:0.85em;"></span></label>
+                        <label for="ownProperty" style="margin:0;font-size:0.92em;cursor:pointer;">I currently own this property (land cost = $0)</label>
                     </div>
 
                     <div class="field" id="field-frontage">
@@ -4559,20 +4564,31 @@ async function lookupAddress() {
         }
     }
 
-    // Capture assessor roll values for land cost default
+    // Capture assessor roll values
     window.lastAssessedTotal = 0;
     if (parcelResult && parcelResult.attrs) {
         const _rl = parseFloat(parcelResult.attrs.Roll_LandValue) || 0;
         const _ri = parseFloat(parcelResult.attrs.Roll_ImpValue) || 0;
         window.lastAssessedTotal = _rl + _ri;
     }
-    // Update the assessed value label next to the ownership checkbox
+    // Populate market value field — default to assessor value, user should override from Zillow/Redfin
+    var _mvInput = document.getElementById('marketValue');
+    if (_mvInput) {
+        _mvInput.value = window.lastAssessedTotal > 0 ? Math.round(window.lastAssessedTotal) : 0;
+    }
     var _avLabel = document.getElementById('assessedValueLabel');
     if (_avLabel) {
         _avLabel.textContent = window.lastAssessedTotal > 0
-            ? '(Assessed: $' + window.lastAssessedTotal.toLocaleString() + ')'
+            ? '(Tax-assessed: $' + window.lastAssessedTotal.toLocaleString() + ')'
             : '';
     }
+    // Set Zillow/Redfin valuation links
+    var _addrForLinks = (document.getElementById('address') || {}).value || '';
+    var _encAddr = encodeURIComponent(_addrForLinks);
+    var _zLink = document.getElementById('zillowValLink');
+    var _rLink = document.getElementById('redfinValLink');
+    if (_zLink) _zLink.href = 'https://www.zillow.com/homes/' + _encAddr + '_rb/';
+    if (_rLink) _rLink.href = 'https://www.redfin.com/search?q=' + _encAddr;
 
     // Apply parcel size
     if (parcelResult && parcelResult.error === 'cors') {
@@ -5302,7 +5318,7 @@ function scoreFinancial(useId, inp, effects) {
     // Land cost: use assessor value if available, checkbox zeroes it out
     const _ownProp = document.getElementById('ownProperty');
     const landCost = (_ownProp && _ownProp.checked) ? 0
-        : (window.lastAssessedTotal > 0) ? window.lastAssessedTotal
+        : (parseFloat((document.getElementById('marketValue') || {}).value) > 0) ? parseFloat(document.getElementById('marketValue').value)
         : (useId === 'adu' ? 0 : inp.parcelSize * landValuePSF);
 
     // Build cost with parking reduction from legislation
@@ -5859,7 +5875,7 @@ function generateBudget(useId, inp, effects) {
     // Land cost: use assessor value if available, checkbox zeroes it out
     const _ownProp2 = document.getElementById('ownProperty');
     const landCost = (_ownProp2 && _ownProp2.checked) ? 0
-        : (window.lastAssessedTotal > 0) ? window.lastAssessedTotal
+        : (parseFloat((document.getElementById('marketValue') || {}).value) > 0) ? parseFloat(document.getElementById('marketValue').value)
         : (useId === 'adu' ? 0 : inp.parcelSize * landValuePSF);
 
     // Hard costs — Site work broken into sub-components
@@ -6411,7 +6427,7 @@ function computeFromAssumptions(useId, inp, assumptions, effects) {
     // Land cost: use assessor value if available, checkbox zeroes it out
     const _ownProp3 = document.getElementById('ownProperty');
     const landCost = (_ownProp3 && _ownProp3.checked) ? 0
-        : (window.lastAssessedTotal > 0) ? window.lastAssessedTotal
+        : (parseFloat((document.getElementById('marketValue') || {}).value) > 0) ? parseFloat(document.getElementById('marketValue').value)
         : (useId === 'adu' ? 0 : inp.parcelSize * landValuePSF);
 
     // Hard costs — Site work with user-overridable sub-components
@@ -7401,7 +7417,17 @@ function initSB79Map(lat, lon) {
     });
     sb79Street.addTo(sb79Map);
     var sb79ParcelLayer = setupParcelLayer(sb79Map);
-    L.control.layers({'Street': sb79Street, 'Satellite': sb79Satellite}, {'Lot Lines': sb79ParcelLayer}, {position: 'topright'}).addTo(sb79Map);
+    // Historic overlay — loaded on-demand from LA County GIS
+    var sb79HistoricLayer = L.layerGroup();
+    var sb79HistoricLoaded = false;
+    sb79Map.on('overlayadd', function(e) {
+        if (e.layer === sb79HistoricLayer && !sb79HistoricLoaded) {
+            sb79HistoricLoaded = true;
+            fetchHistoricOverlay(sb79Map, sb79HistoricLayer);
+        }
+    });
+
+    L.control.layers({'Street': sb79Street, 'Satellite': sb79Satellite}, {'Lot Lines': sb79ParcelLayer, 'Historic Districts (HPOZ)': sb79HistoricLayer}, {position: 'topright'}).addTo(sb79Map);
 
     // Layer groups
     sb79Layers.tier1 = L.layerGroup().addTo(sb79Map);
@@ -8822,6 +8848,42 @@ function guessStage(s) {
     return 'submitted';
 }
 
+// --- Historic Districts (HPOZ) Overlay ---
+async function fetchHistoricOverlay(map, layerGroup) {
+    var url = 'https://arcgis.gis.lacounty.gov/arcgis/rest/services/DRP/Open_Data/MapServer/35/query';
+    var bounds = map.getBounds();
+    var bbox = bounds.getWest() + ',' + bounds.getSouth() + ',' + bounds.getEast() + ',' + bounds.getNorth();
+    var params = '?where=1%3D1&outFields=Name,Status_Code_Description,Year_Designated&geometryType=esriGeometryEnvelope'
+        + '&geometry=' + encodeURIComponent(bbox)
+        + '&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&f=geojson&resultRecordCount=500';
+    try {
+        var resp = await fetch(url + params);
+        if (!resp.ok) return;
+        var data = await resp.json();
+        if (!data.features) return;
+        L.geoJSON(data, {
+            style: function() {
+                return { color: '#b83280', weight: 2, fillColor: '#b83280', fillOpacity: 0.18, dashArray: '5,5' };
+            },
+            onEachFeature: function(feature, layer) {
+                var p = feature.properties || {};
+                layer.bindPopup('<strong>' + (p.Name || 'Historic Resource') + '</strong><br>'
+                    + (p.Status_Code_Description || '') + '<br>'
+                    + (p.Year_Designated ? 'Designated: ' + p.Year_Designated : '')
+                    + '<br><em style="color:#b83280;font-size:0.82rem;">SB 79 may be limited in historic districts</em>');
+            }
+        }).addTo(layerGroup);
+        // Reload when map moves
+        map.off('moveend.historic');
+        map.on('moveend.historic', function() {
+            layerGroup.clearLayers();
+            fetchHistoricOverlay(map, layerGroup);
+        });
+    } catch (e) {
+        console.warn('Historic overlay fetch failed:', e);
+    }
+}
+
 function buildBoundingBox(lat, lon, radiusMiles) {
     const latDeg = radiusMiles / 69.0;
     const lonDeg = radiusMiles / (69.0 * Math.cos(lat * Math.PI / 180));
@@ -9383,7 +9445,7 @@ async function togglePipelineOverlay() {
     btn.disabled = true;
 
     try {
-        const permits = await fetchAllPipelinePermits(station.lat, station.lon, 0.5, null);
+        const permits = await fetchAllPipelinePermits(station.lat, station.lon, 1.0, null);
         pipelineOverlayLayer = L.layerGroup();
         const cap = 300;
         permits.slice(0, cap).forEach(r => {
@@ -9428,7 +9490,15 @@ function initFinderMap() {
     });
     finderStreet.addTo(finderMapInstance);
     var finderParcelLyr = setupParcelLayer(finderMapInstance);
-    L.control.layers({'Street': finderStreet, 'Satellite': finderSatellite}, {'Lot Lines': finderParcelLyr}, {position: 'topright'}).addTo(finderMapInstance);
+    var finderHistoricLayer = L.layerGroup();
+    var finderHistoricLoaded = false;
+    finderMapInstance.on('overlayadd', function(e) {
+        if (e.layer === finderHistoricLayer && !finderHistoricLoaded) {
+            finderHistoricLoaded = true;
+            fetchHistoricOverlay(finderMapInstance, finderHistoricLayer);
+        }
+    });
+    L.control.layers({'Street': finderStreet, 'Satellite': finderSatellite}, {'Lot Lines': finderParcelLyr, 'Historic Districts (HPOZ)': finderHistoricLayer}, {position: 'topright'}).addTo(finderMapInstance);
 
     // Add all station markers
     const seenCoords = new Set();
