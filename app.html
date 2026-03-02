@@ -2653,9 +2653,9 @@
                     </div>
 
                     <div class="field" id="field-marketValue">
-                        <label>Est. Market Value <span id="assessedValueLabel" style="color:#718096;font-size:0.82em;"></span></label>
+                        <label>Est. Market Value <span class="autofill-badge">Prop 13 adj.</span> <span id="assessedValueLabel" style="color:#718096;font-size:0.82em;"></span></label>
                         <input type="number" id="marketValue" value="0" min="0" step="1000" style="font-weight:600;">
-                        <div style="font-size:0.75em;color:#718096;margin-top:2px;">Check <a href="#" id="zillowValLink" target="_blank" style="color:#667eea;">Zillow</a> or <a href="#" id="redfinValLink" target="_blank" style="color:#667eea;">Redfin</a> for actual market value</div>
+                        <div style="font-size:0.75em;color:#718096;margin-top:2px;">1.9× Prop 13 estimate · Verify on <a href="#" id="zillowValLink" target="_blank" style="color:#667eea;">Zillow</a> or <a href="#" id="redfinValLink" target="_blank" style="color:#667eea;">Redfin</a></div>
                     </div>
                     <div class="field" id="field-ownProperty" style="display:flex;align-items:center;gap:8px;margin:-4px 0 4px 0;">
                         <input type="checkbox" id="ownProperty" style="width:auto;margin:0;">
@@ -2797,7 +2797,7 @@
         <button type="button" class="btn-calculate" onclick="calculateHBU()">Calculate Top 3 Highest &amp; Best Uses</button>
     </form>
 
-    <button type="button" class="btn-print" id="btnPrint" onclick="exportPDF()">Print / Export to PDF</button>
+    <button type="button" class="btn-print" id="btnPrint" onclick="exportPDF()" style="display:none !important;">Print / Export to PDF</button>
 
     <!-- RESULTS -->
     <div id="results">
@@ -2906,22 +2906,9 @@
         </section>
 
 
-        <!-- SB 79 Transit Opportunity Map -->
-        <div class="map-section" id="mapSection" style="display:none;">
-            <div class="section-header">
-                <h2>SB 79 Transit Opportunity Map</h2>
-                <p class="section-subtitle">Interactive map showing transit stations, SB 79 zones, and development opportunities</p>
-            </div>
-            <div class="map-controls" id="mapControls">
-                <button type="button" class="layer-btn active" onclick="toggleMapLayer('tier1')">Tier 1 (Heavy Rail)</button>
-                <button type="button" class="layer-btn active" onclick="toggleMapLayer('tier2')">Tier 2 (Metrolink)</button>
-                <button type="button" class="layer-btn active" onclick="toggleMapLayer('zones')">SB 79 Zones</button>
-                <button type="button" class="layer-btn active" onclick="toggleMapLayer('property')">Your Property</button>
-            </div>
-            <div id="sb79Map" style="height:500px;"></div>
-            <div class="map-legend" id="mapLegend"></div>
-            <div class="sb79-eligibility" id="sb79Eligibility" style="display:none;"></div>
-        </div>
+        <!-- SB 79 map removed from calculator tab — available in the SB 79 Opportunity Finder tab -->
+        <div id="mapSection" style="display:none;"></div>
+        <div id="sb79Eligibility" style="display:none;"></div>
     </div>
 </div>
 </div><!-- /tabCalculator -->
@@ -4310,7 +4297,20 @@ async function refineConstraintsFromGIS(lat, lon) {
         });
         if (updated) {
             markAutofill('siteConstraints');
-            addStatus('<br><span class="status-item ok">Site constraints refined from GIS data</span>');
+            // Build refined status message
+            var detected = [];
+            ['constFlood', 'constHillside', 'constHistoric', 'constFault', 'constCoastal'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el && el.checked) {
+                    var labels = { constFlood: 'Flood Zone', constHillside: 'Hillside', constHistoric: 'Historic (HPOZ)', constFault: 'Fault Zone', constCoastal: 'Coastal Zone' };
+                    detected.push(labels[id]);
+                }
+            });
+            if (detected.length > 0) {
+                addStatus('<br><span class="status-item warn">GIS verified constraints: ' + detected.join(', ') + '</span>');
+            } else {
+                addStatus('<br><span class="status-item ok">GIS confirmed: no site constraints detected</span>');
+            }
         }
     } catch (e) {
         console.warn('GIS constraint refinement failed:', e);
@@ -4602,15 +4602,17 @@ async function lookupAddress() {
         const _ri = parseFloat(parcelResult.attrs.Roll_ImpValue) || 0;
         window.lastAssessedTotal = _rl + _ri;
     }
-    // Populate market value field — default to assessor value, user should override from Zillow/Redfin
+    // Populate market value field — apply Prop 13 multiplier (1.9x) to approximate market value
+    var _prop13Multiplier = 1.9;
+    var _estMarketValue = window.lastAssessedTotal > 0 ? Math.round(window.lastAssessedTotal * _prop13Multiplier) : 0;
     var _mvInput = document.getElementById('marketValue');
     if (_mvInput) {
-        _mvInput.value = window.lastAssessedTotal > 0 ? Math.round(window.lastAssessedTotal) : 0;
+        _mvInput.value = _estMarketValue;
     }
     var _avLabel = document.getElementById('assessedValueLabel');
     if (_avLabel) {
         _avLabel.textContent = window.lastAssessedTotal > 0
-            ? '(Tax-assessed: $' + window.lastAssessedTotal.toLocaleString() + ')'
+            ? '(Prop 13 adj. — assessed: $' + window.lastAssessedTotal.toLocaleString() + ')'
             : '';
     }
     // Set Zillow/Redfin valuation links
@@ -4681,6 +4683,7 @@ async function lookupAddress() {
     // Auto-detect site constraints (instant heuristics)
     const constraints = detectSiteConstraints(coords.lat, coords.lon, hood);
     const anyConstraints = applyConstraintDetection(constraints);
+    markAutofill('siteConstraints');
     if (anyConstraints) {
         const detected = [];
         if (constraints.constFlood) detected.push('Flood Zone');
@@ -4689,6 +4692,9 @@ async function lookupAddress() {
         if (constraints.constFault) detected.push('Fault Zone');
         if (constraints.constCoastal) detected.push('Coastal Zone');
         statusParts.push('<span class="status-item warn">Constraints detected: ' + detected.join(', ') + ' (verify &amp; override if needed)</span>');
+        filledCount++;
+    } else {
+        statusParts.push('<span class="status-item ok">No site constraints detected (no flood, hillside, historic, fault, or coastal zones found)</span>');
         filledCount++;
     }
 
@@ -5602,7 +5608,7 @@ function calculateHBU() {
             physical: Math.round(physical * 100),
             financial: Math.round(financial * 100),
             productive: Math.round(productive * 100),
-            overall: Math.round(overall * 100),
+            overall: Math.min(100, Math.round(overall * 100)),
             devMarginPct,
             legislation,
         };
@@ -5782,32 +5788,9 @@ function renderResults(results, inp) {
         cardsDiv.appendChild(aduCard);
     }
 
-    // Legislation section — collect unique bills from top 3
-    const legSection = document.getElementById('legislationSection');
-    const allLegislation = new Map();
-    for (let i = 0; i < 3 && i < results.length; i++) {
-        if (results[i].legislation) {
-            for (const bill of results[i].legislation) {
-                if (!allLegislation.has(bill.id)) {
-                    allLegislation.set(bill.id, bill);
-                }
-            }
-        }
-    }
-
-    if (allLegislation.size > 0) {
-        legSection.style.display = 'block';
-        let legHTML = '<h3>Applicable California Housing Legislation</h3>';
-        legHTML += '<div class="legislation-cards">';
-        for (const bill of allLegislation.values()) {
-            legHTML += `<div class="legislation-card clickable" onclick="showLegislationDetail('${bill.id}')"><strong>${bill.name}</strong><p>${bill.description}</p></div>`;
-        }
-        legHTML += '</div>';
-        legSection.innerHTML = legHTML;
-    } else {
-        legSection.style.display = 'none';
-        legSection.innerHTML = '';
-    }
+    // Legislation badges are shown per-card — no separate summary needed
+    var legSection = document.getElementById('legislationSection');
+    if (legSection) { legSection.style.display = 'none'; legSection.innerHTML = ''; }
 
     // Full table — split into permissible vs excluded
     const tbody = document.getElementById('detailsBody');
@@ -5867,8 +5850,7 @@ function renderResults(results, inp) {
         excludedSection.style.display = 'none';
     }
 
-    // Show print button
-    document.getElementById('btnPrint').classList.add('visible');
+    // Print button removed from main HBU page — available in individual analysis modals
 
     // Only scroll to results if not in multi-site mode
     if (!window._multiSiteMode) {

@@ -2544,9 +2544,9 @@
                     </div>
 
                     <div class="field" id="field-marketValue">
-                        <label>Est. Market Value <span id="assessedValueLabel" style="color:#718096;font-size:0.82em;"></span></label>
+                        <label>Est. Market Value <span class="autofill-badge">Prop 13 adj.</span> <span id="assessedValueLabel" style="color:#718096;font-size:0.82em;"></span></label>
                         <input type="number" id="marketValue" value="0" min="0" step="1000" style="font-weight:600;">
-                        <div style="font-size:0.75em;color:#718096;margin-top:2px;">Check <a href="#" id="zillowValLink" target="_blank" style="color:#667eea;">Zillow</a> or <a href="#" id="redfinValLink" target="_blank" style="color:#667eea;">Redfin</a> for actual market value</div>
+                        <div style="font-size:0.75em;color:#718096;margin-top:2px;">1.9× Prop 13 estimate · Verify on <a href="#" id="zillowValLink" target="_blank" style="color:#667eea;">Zillow</a> or <a href="#" id="redfinValLink" target="_blank" style="color:#667eea;">Redfin</a></div>
                     </div>
                     <div class="field" id="field-ownProperty" style="display:flex;align-items:center;gap:8px;margin:-4px 0 4px 0;">
                         <input type="checkbox" id="ownProperty" style="width:auto;margin:0;">
@@ -4275,14 +4275,17 @@ async function lookupAddress() {
         const _ri = parseFloat(parcelResult.attrs.Roll_ImpValue) || 0;
         window.lastAssessedTotal = _rl + _ri;
     }
+    // Apply Prop 13 multiplier (1.9x) to approximate market value
+    var _prop13Multiplier = 1.9;
+    var _estMarketValue = window.lastAssessedTotal > 0 ? Math.round(window.lastAssessedTotal * _prop13Multiplier) : 0;
     var _mvInput = document.getElementById('marketValue');
     if (_mvInput) {
-        _mvInput.value = window.lastAssessedTotal > 0 ? Math.round(window.lastAssessedTotal) : 0;
+        _mvInput.value = _estMarketValue;
     }
     var _avLabel = document.getElementById('assessedValueLabel');
     if (_avLabel) {
         _avLabel.textContent = window.lastAssessedTotal > 0
-            ? '(Tax-assessed: $' + window.lastAssessedTotal.toLocaleString() + ')'
+            ? '(Prop 13 adj. — assessed: $' + window.lastAssessedTotal.toLocaleString() + ')'
             : '';
     }
     var _addrForLinks = (document.getElementById('address') || {}).value || '';
