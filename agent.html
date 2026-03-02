@@ -1904,8 +1904,8 @@
                         </select>
                     </div>
 
-                    <div class="field">
-                        <label>Site Constraints <span class="hint">(select all that apply)</span></label>
+                    <div class="field" id="field-siteConstraints">
+                        <label>Site Constraints <span class="hint">(select all that apply)</span> <span class="autofill-badge">auto-detected</span></label>
                         <div class="checkbox-group">
                             <label class="checkbox-item"><input type="checkbox" id="constFlood"> Flood Zone</label>
                             <label class="checkbox-item"><input type="checkbox" id="constHillside"> Hillside Ordinance</label>
@@ -3166,6 +3166,114 @@ function detectSiteCondition(osmClass, osmType) {
     return 'vacant';
 }
 
+// ====================================================================
+//  SITE CONSTRAINT AUTO-DETECTION (heuristics + API refinement)
+// ====================================================================
+
+const LA_FAULT_SEGMENTS = [
+    [34.1015, -118.3640, 34.0975, -118.3290], [34.0975, -118.3290, 34.0942, -118.3010],
+    [34.0942, -118.3010, 34.0905, -118.2700], [34.0905, -118.2700, 34.0880, -118.2440],
+    [34.0880, -118.2440, 34.0860, -118.2250], [34.0490, -118.5100, 34.0430, -118.4700],
+    [34.0430, -118.4700, 34.0370, -118.4350], [34.0370, -118.4350, 34.0310, -118.3960],
+    [34.1600, -118.1700, 34.1480, -118.1200], [34.1480, -118.1200, 34.1400, -118.0900],
+    [33.9600, -118.3960, 33.9850, -118.3800], [33.9850, -118.3800, 34.0100, -118.3650],
+    [34.0100, -118.3650, 34.0350, -118.3530], [34.1850, -118.1200, 34.1750, -118.0600],
+    [34.1750, -118.0600, 34.1650, -118.0100], [34.2200, -118.2800, 34.2000, -118.2400],
+    [34.2000, -118.2400, 34.1850, -118.2100],
+];
+const COASTAL_NEIGHBORHOODS = ['venice','marina_del_rey','playa_del_rey','westchester','pacific_palisades','malibu','san_pedro','wilmington'];
+function isCoastalHeuristic(lat, lon, hood) {
+    if (COASTAL_NEIGHBORHOODS.includes(hood)) return true;
+    if (lon < -118.47 && lat < 34.08) return true;
+    if (lon < -118.52) return true;
+    if (lat < 33.76 && lon < -118.30) return true;
+    return false;
+}
+const HILLSIDE_REGIONS = [
+    { latMin: 34.105, latMax: 34.160, lonMin: -118.420, lonMax: -118.280 },
+    { latMin: 34.095, latMax: 34.125, lonMin: -118.230, lonMax: -118.195 },
+    { latMin: 33.990, latMax: 34.015, lonMin: -118.380, lonMax: -118.340 },
+    { latMin: 34.120, latMax: 34.160, lonMin: -118.320, lonMax: -118.260 },
+    { latMin: 34.088, latMax: 34.105, lonMin: -118.270, lonMax: -118.250 },
+    { latMin: 34.080, latMax: 34.100, lonMin: -118.185, lonMax: -118.160 },
+    { latMin: 34.050, latMax: 34.090, lonMin: -118.530, lonMax: -118.470 },
+    { latMin: 34.075, latMax: 34.110, lonMin: -118.460, lonMax: -118.420 },
+];
+function isHillsideHeuristic(lat, lon) {
+    for (const r of HILLSIDE_REGIONS) {
+        if (lat >= r.latMin && lat <= r.latMax && lon >= r.lonMin && lon <= r.lonMax) return true;
+    }
+    return false;
+}
+const HPOZ_NEIGHBORHOODS = ['hancock_park','windsor_square','west_adams','highland_park','jefferson_park','country_club_park','carthay','south_carthay','spaulding_square','melrose_hill','vinegar_hill','whitley_heights','banning'];
+function isHistoricHeuristic(hood) { return HPOZ_NEIGHBORHOODS.includes(hood); }
+const FLOOD_CORRIDORS = [
+    { lat: 34.145, lon: -118.260 }, { lat: 34.115, lon: -118.245 }, { lat: 34.085, lon: -118.230 },
+    { lat: 34.060, lon: -118.220 }, { lat: 34.030, lon: -118.210 }, { lat: 33.980, lon: -118.200 },
+    { lat: 33.940, lon: -118.195 }, { lat: 33.900, lon: -118.210 }, { lat: 33.770, lon: -118.215 },
+    { lat: 33.980, lon: -118.420 }, { lat: 33.975, lon: -118.440 }, { lat: 34.200, lon: -118.370 },
+    { lat: 34.175, lon: -118.355 }, { lat: 33.870, lon: -118.260 }, { lat: 33.905, lon: -118.220 },
+];
+const FLOOD_BUFFER_MI = 0.20;
+function isFloodHeuristic(lat, lon) {
+    for (const pt of FLOOD_CORRIDORS) { if (haversine(lat, lon, pt.lat, pt.lon) <= FLOOD_BUFFER_MI) return true; }
+    return false;
+}
+function pointToSegmentDist(lat, lon, lat1, lon1, lat2, lon2) {
+    const dx = lon2 - lon1, dy = lat2 - lat1, lenSq = dx * dx + dy * dy;
+    if (lenSq === 0) return haversine(lat, lon, lat1, lon1);
+    let t = Math.max(0, Math.min(1, ((lon - lon1) * dx + (lat - lat1) * dy) / lenSq));
+    return haversine(lat, lon, lat1 + t * dy, lon1 + t * dx);
+}
+function isFaultHeuristic(lat, lon) {
+    const FAULT_BUFFER_MI = 0.15;
+    for (const seg of LA_FAULT_SEGMENTS) { if (pointToSegmentDist(lat, lon, seg[0], seg[1], seg[2], seg[3]) <= FAULT_BUFFER_MI) return true; }
+    return false;
+}
+function detectSiteConstraints(lat, lon, hood) {
+    return { constFlood: isFloodHeuristic(lat, lon), constHillside: isHillsideHeuristic(lat, lon), constHistoric: isHistoricHeuristic(hood), constFault: isFaultHeuristic(lat, lon), constCoastal: isCoastalHeuristic(lat, lon, hood) };
+}
+function applyConstraintDetection(constraints) {
+    var anySet = false;
+    ['constFlood','constHillside','constHistoric','constFault','constCoastal'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el && constraints[id]) { el.checked = true; anySet = true; }
+        else if (el) { el.checked = false; }
+    });
+    if (anySet) markAutofill('siteConstraints');
+    return anySet;
+}
+async function fetchConstraintsFromGIS(lat, lon) {
+    var results = { constFlood: null, constHillside: null, constHistoric: null, constFault: null, constCoastal: null };
+    var queries = [];
+    queries.push(fetch('https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/28/query?geometry=' + lon + ',' + lat + '&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=FLD_ZONE&returnGeometry=false&f=json').then(function(r){return r.json();}).then(function(data){if(data.features&&data.features.length>0){var zone=data.features[0].attributes.FLD_ZONE||'';results.constFlood=/^[AV]/.test(zone);}}).catch(function(){}));
+    queries.push(fetch('https://zimas.lacity.org/arcgis/rest/services/zma/specific_plan/MapServer/1117/query?geometry=' + lon + ',' + lat + '&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=APTS_NAME&returnGeometry=false&f=json').then(function(r){return r.json();}).then(function(data){if(data.features&&data.features.length>0){var name=(data.features[0].attributes.APTS_NAME||'').toLowerCase();results.constHillside=name.indexOf('hillside')>=0||name.indexOf('baseline')>=0;}}).catch(function(){}));
+    queries.push(fetch('https://zimas.lacity.org/arcgis/rest/services/zma/hpoz/MapServer/1116/query?geometry=' + lon + ',' + lat + '&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=OBJECTID&returnGeometry=false&f=json').then(function(r){return r.json();}).then(function(data){if(data.features&&data.features.length>0){results.constHistoric=true;}}).catch(function(){}));
+    queries.push(fetch('https://zimas.lacity.org/arcgis/rest/services/zma/fault_zone/MapServer/1107/query?geometry=' + lon + ',' + lat + '&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=OBJECTID&returnGeometry=false&f=json').then(function(r){return r.json();}).then(function(data){if(data.features&&data.features.length>0){results.constFault=true;}}).catch(function(){}));
+    queries.push(fetch('https://zimas.lacity.org/arcgis/rest/services/zma/coastal/MapServer/1105/query?geometry=' + lon + ',' + lat + '&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=OBJECTID&returnGeometry=false&f=json').then(function(r){return r.json();}).then(function(data){if(data.features&&data.features.length>0){results.constCoastal=true;}}).catch(function(){}));
+    await Promise.all(queries);
+    return results;
+}
+async function refineConstraintsFromGIS(lat, lon) {
+    try {
+        var gis = await fetchConstraintsFromGIS(lat, lon);
+        var updated = false;
+        ['constFlood','constHillside','constHistoric','constFault','constCoastal'].forEach(function(id) {
+            if (gis[id] !== null) { var el = document.getElementById(id); if (el && el.checked !== gis[id]) { el.checked = gis[id]; updated = true; } }
+        });
+        if (updated) {
+            markAutofill('siteConstraints');
+            var detected = [];
+            ['constFlood','constHillside','constHistoric','constFault','constCoastal'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el && el.checked) { var labels = { constFlood: 'Flood Zone', constHillside: 'Hillside', constHistoric: 'Historic (HPOZ)', constFault: 'Fault Zone', constCoastal: 'Coastal Zone' }; detected.push(labels[id]); }
+            });
+            if (detected.length > 0) { addStatus('<br><span class="status-item warn">GIS verified constraints: ' + detected.join(', ') + '</span>'); }
+            else { addStatus('<br><span class="status-item ok">GIS confirmed: no site constraints detected</span>'); }
+        }
+    } catch (e) { console.warn('GIS constraint refinement failed:', e); }
+}
+
 // Detect jurisdiction from coordinates + Nominatim address details
 const JURISDICTIONS = [
     { name: 'Beverly Hills', lat: 34.0736, lon: -118.4004, radius: 1.8, note: 'Beverly Hills Municipal Code applies — different density/height rules than LA.' },
@@ -3581,8 +3689,29 @@ async function lookupAddress() {
     markAutofill('siteCondition');
     filledCount++;
 
+    // Auto-detect site constraints (instant heuristics)
+    const constraints = detectSiteConstraints(coords.lat, coords.lon, hood);
+    const anyConstraints = applyConstraintDetection(constraints);
+    markAutofill('siteConstraints');
+    if (anyConstraints) {
+        const detected = [];
+        if (constraints.constFlood) detected.push('Flood Zone');
+        if (constraints.constHillside) detected.push('Hillside');
+        if (constraints.constHistoric) detected.push('Historic (HPOZ)');
+        if (constraints.constFault) detected.push('Fault Zone');
+        if (constraints.constCoastal) detected.push('Coastal Zone');
+        statusParts.push('<span class="status-item warn">Constraints detected: ' + detected.join(', ') + ' (verify &amp; override if needed)</span>');
+        filledCount++;
+    } else {
+        statusParts.push('<span class="status-item ok">No site constraints detected (no flood, hillside, historic, fault, or coastal zones found)</span>');
+        filledCount++;
+    }
+
     // Show status
     setStatus(statusParts.join('<br>'));
+
+    // Refine constraints from GIS APIs in background (non-blocking)
+    refineConstraintsFromGIS(coords.lat, coords.lon);
 
     // Show autofill notice
     if (filledCount > 0) {
