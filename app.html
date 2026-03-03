@@ -4376,6 +4376,10 @@ function estimateZoningFallback(addressString, addressDetails, neighborhood) {
         'vermont ave', 'figueroa', 'broadway', 'spring st', 'main st',
         'ventura blvd', 'lankershim', 'sepulveda blvd', 'van nuys blvd',
         'colorado blvd', 'brand blvd', 'glendale ave',
+        'crenshaw', 'slauson', 'florence', 'manchester', 'century blvd',
+        'imperial', 'rosecrans', 'compton', 'atlantic blvd', 'whittier blvd',
+        'cesar chavez', 'temple st', 'alvarado', 'hoover', 'normandie',
+        'adams blvd', 'jefferson blvd', 'exposition blvd', 'martin luther king',
     ];
     const isCommercialCorridor = commercialCorridors.some(c => road.includes(c) || lower.includes(c));
 
@@ -4457,9 +4461,11 @@ async function geocodeAddress(address) {
 async function fetchZoning(lat, lon) {
     try {
         // ZIMAS uses CA State Plane Zone 5 (feet) but we can pass WGS84 with inSR=4326
+        // Use 30m buffer because Nominatim geocodes to road centerline, not parcel centroid
         const url = `https://zimas.lacity.org/arcgis/rest/services/zma/zoning/MapServer/1102/query?` +
             `geometry=${lon},${lat}&geometryType=esriGeometryPoint&inSR=4326` +
-            `&spatialRel=esriSpatialRelIntersects&outFields=ZONE_CMPLT&returnGeometry=false&f=json`;
+            `&spatialRel=esriSpatialRelIntersects&outFields=ZONE_CMPLT&returnGeometry=false` +
+            `&distance=30&units=esriSRUnit_Meter&f=json`;
         const resp = await fetch(url);
         if (!resp.ok) throw new Error('ZIMAS unavailable');
         const data = await resp.json();
@@ -4477,24 +4483,40 @@ async function fetchZoning(lat, lon) {
 // Query LA County parcel layer for lot size
 async function fetchParcelInfo(lat, lon) {
     try {
+        // Use 30m buffer because Nominatim geocodes to road centerline, not parcel centroid
         const url = `https://public.gis.lacounty.gov/public/rest/services/LACounty_Cache/LACounty_Parcel/MapServer/0/query?` +
             `geometry=${lon},${lat}&geometryType=esriGeometryPoint&inSR=4326` +
-            `&spatialRel=esriSpatialRelIntersects&outFields=*&returnGeometry=true&f=json`;
+            `&spatialRel=esriSpatialRelIntersects&outFields=*&returnGeometry=true` +
+            `&distance=30&units=esriSRUnit_Meter&f=json`;
         const resp = await fetch(url);
         if (!resp.ok) throw new Error('Parcel service unavailable');
         const data = await resp.json();
         if (data.features && data.features.length > 0) {
-            const attrs = data.features[0].attributes;
+            // If buffer returned multiple parcels, pick the one closest to the geocoded point
+            let bestFeature = data.features[0];
+            if (data.features.length > 1) {
+                let bestDist = Infinity;
+                for (let fi = 0; fi < data.features.length; fi++) {
+                    const fa = data.features[fi].attributes;
+                    const clat = parseFloat(fa.CENTER_LAT) || 0;
+                    const clon = parseFloat(fa.CENTER_LON) || 0;
+                    if (clat && clon) {
+                        const d = Math.pow(clat - lat, 2) + Math.pow(clon - lon, 2);
+                        if (d < bestDist) { bestDist = d; bestFeature = data.features[fi]; }
+                    }
+                }
+            }
+            const attrs = bestFeature.attributes;
             // Try different field names for area
             let area = attrs['Shape.STArea()'] || attrs['Shape__Area'] || attrs['ShapeSTArea'] || attrs['SHAPE.STArea()'] || null;
             // If geometry is returned, try to compute from rings
-            if (!area && data.features[0].geometry && data.features[0].geometry.rings) {
-                area = computePolygonArea(data.features[0].geometry.rings, data.spatialReference);
+            if (!area && bestFeature.geometry && bestFeature.geometry.rings) {
+                area = computePolygonArea(bestFeature.geometry.rings, data.spatialReference);
             }
             // Store geometry + spatial reference for massing satellite overlay
             var _geometry = null;
-            if (data.features[0].geometry && data.features[0].geometry.rings) {
-                _geometry = { rings: data.features[0].geometry.rings, spatialReference: data.spatialReference };
+            if (bestFeature.geometry && bestFeature.geometry.rings) {
+                _geometry = { rings: bestFeature.geometry.rings, spatialReference: data.spatialReference };
             }
             return { area, attrs, _geometry };
         }
