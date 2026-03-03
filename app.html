@@ -6582,43 +6582,43 @@ function renderAssumptions(assumptions, hasUnits) {
         <div class="assumptions-grid">
             <div class="assumption-field">
                 <label>FAR</label>
-                <input type="number" class="assumption-input" id="a-far" step="0.1" min="0.1" max="20" value="${assumptions.far}" oninput="recalcAnalysis()">
+                <input type="number" class="assumption-input" id="a-far" step="0.1" min="0.1" max="20" value="${assumptions.far}" onchange="recalcAnalysis()">
             </div>
             <div class="assumption-field">
                 <label>${hasUnits ? 'Units' : 'Net Leasable SF'}</label>
-                <input type="number" class="assumption-input" id="a-unitsOrNSF" step="1" min="1" value="${assumptions.unitsOrNSF}" oninput="recalcAnalysis()">
+                <input type="number" class="assumption-input" id="a-unitsOrNSF" step="1" min="1" value="${assumptions.unitsOrNSF}" onchange="recalcAnalysis()">
             </div>
             <div class="assumption-field">
                 <label>Parking Spaces</label>
-                <input type="number" class="assumption-input" id="a-parkingSpaces" step="1" min="0" value="${assumptions.parkingSpaces}" oninput="recalcAnalysis()">
+                <input type="number" class="assumption-input" id="a-parkingSpaces" step="1" min="0" value="${assumptions.parkingSpaces}" onchange="recalcAnalysis()">
             </div>
             <div class="assumption-field">
                 <label>Build Cost $/SF</label>
-                <input type="number" class="assumption-input" id="a-buildCostPSF" step="5" min="10" value="${assumptions.buildCostPSF}" oninput="recalcAnalysis()">
+                <input type="number" class="assumption-input" id="a-buildCostPSF" step="5" min="10" value="${assumptions.buildCostPSF}" onchange="recalcAnalysis()">
             </div>
             <div class="assumption-field">
                 <label>Land Value $/SF</label>
-                <input type="number" class="assumption-input" id="a-landValuePSF" step="5" min="1" value="${assumptions.landValuePSF}" oninput="recalcAnalysis()">
+                <input type="number" class="assumption-input" id="a-landValuePSF" step="5" min="1" value="${assumptions.landValuePSF}" onchange="recalcAnalysis()">
             </div>
             <div class="assumption-field">
                 <label>Revenue $/SF</label>
-                <input type="number" class="assumption-input" id="a-revenuePSF" step="1" min="1" value="${assumptions.revenuePSF}" oninput="recalcAnalysis()">
+                <input type="number" class="assumption-input" id="a-revenuePSF" step="1" min="1" value="${assumptions.revenuePSF}" onchange="recalcAnalysis()">
             </div>
             <div class="assumption-field">
                 <label>OpEx %</label>
-                <input type="number" class="assumption-input" id="a-opexPct" step="1" min="0" max="100" value="${assumptions.opexPct}" oninput="recalcAnalysis()">
+                <input type="number" class="assumption-input" id="a-opexPct" step="1" min="0" max="100" value="${assumptions.opexPct}" onchange="recalcAnalysis()">
             </div>
             <div class="assumption-field">
                 <label>Cap Rate %</label>
-                <input type="number" class="assumption-input" id="a-capRatePct" step="0.1" min="0.1" max="20" value="${assumptions.capRatePct}" oninput="recalcAnalysis()">
+                <input type="number" class="assumption-input" id="a-capRatePct" step="0.1" min="0.1" max="20" value="${assumptions.capRatePct}" onchange="recalcAnalysis()">
             </div>
             <div class="assumption-field">
                 <label>Parking $/Space</label>
-                <input type="number" class="assumption-input" id="a-parkingCostPerSpace" step="1000" min="0" value="${assumptions.parkingCostPerSpace}" oninput="recalcAnalysis()">
+                <input type="number" class="assumption-input" id="a-parkingCostPerSpace" step="1000" min="0" value="${assumptions.parkingCostPerSpace}" onchange="recalcAnalysis()">
             </div>
             <div class="assumption-field">
                 <label>Site Work $/SF <span style="font-size:0.6rem;color:#a0aec0;">(of lot)</span></label>
-                <input type="number" class="assumption-input" id="a-siteWorkPSF" step="1" min="0" max="100" value="${assumptions.siteWorkPSF || Math.round(assumptions.siteWorkTotal / (assumptions.parcelSize || 10000))}" oninput="recalcAnalysis()" placeholder="auto">
+                <input type="number" class="assumption-input" id="a-siteWorkPSF" step="1" min="0" max="100" value="${assumptions.siteWorkPSF || Math.round(assumptions.siteWorkTotal / (assumptions.parcelSize || 10000))}" onchange="recalcAnalysis()" placeholder="auto">
                 <span style="font-size:0.6rem;color:#a0aec0;">blank = auto-calc</span>
             </div>
         </div>
