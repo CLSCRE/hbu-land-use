@@ -4590,30 +4590,53 @@ async function lookupAddress() {
     // Store coordinates globally for map & SB 79 detection
     window.lastGeocode = { lat: coords.lat, lon: coords.lon };
 
+    try { await _lookupAddressBody(address, coords, btn); }
+    catch (e) { console.error('lookupAddress error:', e); setStatus('<span class="err">Lookup failed: ' + (e.message || 'unknown error') + '. Please fill fields manually.</span>'); }
+    finally { btn.disabled = false; btn.textContent = 'Look Up'; }
+}
+
+async function _lookupAddressBody(address, coords, btn) {
     let filledCount = 0;
 
-    // Run zoning + parcel queries in parallel
+    // Detect neighborhood early so fallback zoning estimation can use it
+    const hood = detectNeighborhood(coords.lat, coords.lon, coords.address);
+
+    // Run zoning + parcel queries in parallel with timeout
     addStatus('<br><span class="loading">Querying zoning &amp; parcel data...</span>');
 
-    const [zoningResult, parcelResult] = await Promise.all([
-        fetchZoning(coords.lat, coords.lon),
-        fetchParcelInfo(coords.lat, coords.lon),
-    ]);
+    function fetchWithTimeout(promise, ms) {
+        return Promise.race([
+            promise,
+            new Promise(function(resolve) { setTimeout(function() { resolve({ error: 'timeout' }); }, ms); })
+        ]);
+    }
+
+    let zoningResult, parcelResult;
+    try {
+        [zoningResult, parcelResult] = await Promise.all([
+            fetchWithTimeout(fetchZoning(coords.lat, coords.lon), 12000),
+            fetchWithTimeout(fetchParcelInfo(coords.lat, coords.lon), 12000),
+        ]);
+    } catch (e) {
+        console.warn('Zoning/parcel query error:', e);
+        zoningResult = { error: 'cors' };
+        parcelResult = { error: 'cors' };
+    }
 
     // Build status summary
     let statusParts = [`<span class="status-item ok">Matched: ${coords.matched}</span>`];
 
     // Apply zoning
-    if (zoningResult && zoningResult.error === 'cors') {
-        // Estimate zoning from street type and neighborhood when ZIMAS blocked
+    if (zoningResult && (zoningResult.error === 'cors' || zoningResult.error === 'timeout')) {
+        // Estimate zoning from street type and neighborhood when ZIMAS blocked/timed out
         const estZone = estimateZoningFallback(coords.matched || address, coords.address, hood);
         if (estZone) {
             document.getElementById('zoning').value = estZone;
             markAutofill('zoning');
             filledCount++;
-            statusParts.push(`<span class="status-item warn">Zoning: ZIMAS blocked — estimated ${estZone} from location (verify manually)</span>`);
+            statusParts.push(`<span class="status-item warn">Zoning: ZIMAS unavailable — estimated ${estZone} from location (verify manually)</span>`);
         } else {
-            statusParts.push(`<span class="status-item warn">Zoning: ZIMAS blocked by browser — select manually</span>`);
+            statusParts.push(`<span class="status-item warn">Zoning: ZIMAS unavailable — select manually</span>`);
         }
     } else if (zoningResult && zoningResult.mapped) {
         const sel = document.getElementById('zoning');
@@ -4670,8 +4693,8 @@ async function lookupAddress() {
     if (_rLink) _rLink.href = 'https://www.redfin.com/search?q=' + _encAddr;
 
     // Apply parcel size
-    if (parcelResult && parcelResult.error === 'cors') {
-        statusParts.push(`<span class="status-item warn">Parcel size: County GIS blocked by browser — enter manually</span>`);
+    if (parcelResult && (parcelResult.error === 'cors' || parcelResult.error === 'timeout')) {
+        statusParts.push(`<span class="status-item warn">Parcel size: County GIS unavailable — enter manually</span>`);
     } else if (parcelResult && parcelResult.area && parcelResult.area > 0) {
         document.getElementById('parcelSize').value = Math.round(parcelResult.area);
         markAutofill('parcelSize');
@@ -4692,8 +4715,7 @@ async function lookupAddress() {
         statusParts.push(`<span class="status-item warn">Parcel size: could not retrieve — enter manually</span>`);
     }
 
-    // Detect neighborhood (using Nominatim address details when available)
-    const hood = detectNeighborhood(coords.lat, coords.lon, coords.address);
+    // Apply neighborhood (already detected above for zoning fallback)
     document.getElementById('neighborhood').value = hood;
     markAutofill('neighborhood');
     filledCount++;
@@ -4754,9 +4776,6 @@ async function lookupAddress() {
     if (filledCount > 0) {
         document.getElementById('autofillNotice').classList.add('visible');
     }
-
-    btn.disabled = false;
-    btn.textContent = 'Look Up';
 }
 
 
