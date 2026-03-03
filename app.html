@@ -2802,6 +2802,20 @@
     <!-- RESULTS -->
     <div id="results">
         <div class="print-date" id="printDate"></div>
+
+        <!-- What-If Zoning Toggle -->
+        <div id="whatIfZoningPanel" style="display:none;background:#ebf8ff;border:1px solid #bee3f8;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.25rem;">
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0.75rem;">
+                <div style="font-size:0.88rem;font-weight:600;color:#2b6cb0;">What-If Zoning</div>
+                <select id="whatIfZoneSelect" onchange="runWhatIfZoning()" style="padding:6px 12px;border:1px solid #bee3f8;border-radius:6px;font-size:0.85rem;min-width:140px;min-height:44px;">
+                    <option value="">— Current Zoning —</option>
+                </select>
+                <button type="button" onclick="resetWhatIfZoning()" style="padding:6px 16px;background:#fff;border:1px solid #bee3f8;border-radius:6px;font-size:0.82rem;color:#2b6cb0;cursor:pointer;min-height:44px;">Reset to Actual</button>
+                <div id="whatIfBadge" style="display:none;font-size:0.78rem;color:#d69e2e;font-weight:600;"></div>
+            </div>
+            <div id="whatIfComparison" style="display:none;margin-top:1rem;"></div>
+        </div>
+
         <div class="results-header">
             <h2>Top 3 Highest &amp; Best Use Results</h2>
             <p id="resultsSummary"></p>
@@ -3252,6 +3266,25 @@
                 </div>
             </div>
             <div class="deep-tab-group">
+                <div class="deep-tab-group-label">Market</div>
+                <div class="deep-tab-group-btns">
+                    <button class="deep-tab-btn" onclick="switchDeepTab(27)">Market Cycle</button>
+                    <button class="deep-tab-btn" onclick="switchDeepTab(28)">Fee Estimator</button>
+                </div>
+            </div>
+            <div class="deep-tab-group">
+                <div class="deep-tab-group-label">Construction</div>
+                <div class="deep-tab-group-btns">
+                    <button class="deep-tab-btn" onclick="switchDeepTab(29)">Draw Schedule</button>
+                </div>
+            </div>
+            <div class="deep-tab-group">
+                <div class="deep-tab-group-label">Comparison</div>
+                <div class="deep-tab-group-btns">
+                    <button class="deep-tab-btn" onclick="switchDeepTab(30)">Rent vs Buy/Build</button>
+                </div>
+            </div>
+            <div class="deep-tab-group">
                 <div class="deep-tab-group-label">Export</div>
                 <div class="deep-tab-group-btns">
                     <button class="deep-tab-btn" onclick="switchDeepTab(26)">Export &amp; Reports</button>
@@ -3288,6 +3321,19 @@ function showMapToast(msg) {
     document.body.appendChild(toast);
     requestAnimationFrame(function() { toast.style.opacity = '1'; });
     setTimeout(function() { toast.style.opacity = '0'; setTimeout(function() { toast.remove(); }, 350); }, 2500);
+}
+
+function showToast(msg, duration) {
+    duration = duration || 3000;
+    var existing = document.getElementById('appToast');
+    if (existing) existing.remove();
+    var toast = document.createElement('div');
+    toast.id = 'appToast';
+    toast.textContent = msg;
+    toast.style.cssText = 'position:fixed;top:18px;left:50%;transform:translateX(-50%);background:#2d3748;color:#fff;padding:10px 24px;border-radius:8px;font-size:0.85rem;z-index:100000;box-shadow:0 4px 12px rgba(0,0,0,.3);pointer-events:none;opacity:0;transition:opacity 0.3s;max-width:90vw;text-align:center;';
+    document.body.appendChild(toast);
+    requestAnimationFrame(function() { toast.style.opacity = '1'; });
+    setTimeout(function() { toast.style.opacity = '0'; setTimeout(function() { toast.remove(); }, 350); }, duration);
 }
 
 function formatParcelCurrency(val) {
@@ -5638,6 +5684,87 @@ function calculateHBU() {
 
 
 // ============================================================
+//  WHAT-IF ZONING TOGGLE
+// ============================================================
+
+var _whatIfOriginalZoning = null;
+var _whatIfOriginalResults = null;
+
+function initWhatIfZoning(inp) {
+    var select = document.getElementById('whatIfZoneSelect');
+    var panel = document.getElementById('whatIfZoningPanel');
+    if (!select || !panel) return;
+
+    // Populate dropdown with all zones from ZONING_MATRIX
+    select.innerHTML = '<option value="">— Current: ' + inp.zoning + ' —</option>';
+    var zones = Object.keys(ZONING_MATRIX);
+    for (var i = 0; i < zones.length; i++) {
+        if (zones[i] !== inp.zoning) {
+            select.innerHTML += '<option value="' + zones[i] + '">' + zones[i] + '</option>';
+        }
+    }
+    _whatIfOriginalZoning = inp.zoning;
+    _whatIfOriginalResults = lastResults ? lastResults.slice(0, 3) : null;
+    panel.style.display = 'block';
+    document.getElementById('whatIfBadge').style.display = 'none';
+    document.getElementById('whatIfComparison').style.display = 'none';
+}
+
+function runWhatIfZoning() {
+    var select = document.getElementById('whatIfZoneSelect');
+    var newZone = select.value;
+    if (!newZone || !lastInputs) {
+        resetWhatIfZoning();
+        return;
+    }
+
+    // Temporarily override zoning and re-run HBU
+    var origZoning = _whatIfOriginalZoning;
+    document.getElementById('zoning').value = newZone;
+
+    // Re-run calculateHBU with new zoning
+    calculateHBU();
+
+    // Show comparison
+    var badge = document.getElementById('whatIfBadge');
+    badge.style.display = 'inline';
+    badge.textContent = 'Showing: ' + newZone + ' (was ' + origZoning + ')';
+
+    // Build comparison table
+    if (_whatIfOriginalResults && lastResults) {
+        var comp = document.getElementById('whatIfComparison');
+        var html = '<table style="width:100%;border-collapse:collapse;font-size:0.82rem;"><thead><tr><th style="text-align:left;padding:4px 8px;">Rank</th><th style="text-align:left;padding:4px 8px;">Original (' + origZoning + ')</th><th style="text-align:center;padding:4px 8px;">Score</th><th style="text-align:left;padding:4px 8px;">What-If (' + newZone + ')</th><th style="text-align:center;padding:4px 8px;">Score</th><th style="text-align:center;padding:4px 8px;">Change</th></tr></thead><tbody>';
+        for (var i = 0; i < 3; i++) {
+            var orig = _whatIfOriginalResults[i];
+            var curr = lastResults[i];
+            if (!orig || !curr) continue;
+            var diff = curr.overall - orig.overall;
+            var diffColor = diff > 0 ? '#38a169' : (diff < 0 ? '#e53e3e' : 'var(--text-light)');
+            var diffStr = diff > 0 ? '+' + diff : '' + diff;
+            html += '<tr><td style="padding:4px 8px;font-weight:600;">#' + (i + 1) + '</td>';
+            html += '<td style="padding:4px 8px;">' + (orig.icon || '') + ' ' + orig.name + '</td>';
+            html += '<td style="text-align:center;padding:4px 8px;">' + orig.overall + '</td>';
+            html += '<td style="padding:4px 8px;">' + (curr.icon || '') + ' ' + curr.name + '</td>';
+            html += '<td style="text-align:center;padding:4px 8px;font-weight:700;">' + curr.overall + '</td>';
+            html += '<td style="text-align:center;padding:4px 8px;color:' + diffColor + ';font-weight:700;">' + diffStr + '</td></tr>';
+        }
+        html += '</tbody></table>';
+        comp.innerHTML = html;
+        comp.style.display = 'block';
+    }
+}
+
+function resetWhatIfZoning() {
+    if (_whatIfOriginalZoning) {
+        document.getElementById('zoning').value = _whatIfOriginalZoning;
+        calculateHBU();
+    }
+    document.getElementById('whatIfZoneSelect').value = '';
+    document.getElementById('whatIfBadge').style.display = 'none';
+    document.getElementById('whatIfComparison').style.display = 'none';
+}
+
+// ============================================================
 //  RENDER
 // ============================================================
 
@@ -5851,6 +5978,9 @@ function renderResults(results, inp) {
     }
 
     // Print button removed from main HBU page — available in individual analysis modals
+
+    // Initialize What-If Zoning toggle
+    initWhatIfZoning(inp);
 
     // Only scroll to results if not in multi-site mode
     if (!window._multiSiteMode) {
@@ -10268,6 +10398,9 @@ function combineContiguousParcels() {
         componentParcels: selected,
     };
 
+    // Show Assembly Analysis before opening deep analysis
+    showAssemblyAnalysis(selected, combinedParcel);
+
     // Add combined parcel to saved list and open deep analysis
     var newSaved = [combinedParcel].concat(saved);
     var origSaved = localStorage.getItem('sb79_saved_list');
@@ -10276,6 +10409,96 @@ function combineContiguousParcels() {
     // Restore original
     if (origSaved) localStorage.setItem('sb79_saved_list', origSaved);
     else localStorage.removeItem('sb79_saved_list');
+}
+
+function showAssemblyAnalysis(parcels, combined) {
+    // Calculate assembly metrics
+    var combinedAcres = combined.lotSizeSqFt / 43560;
+    var individualValues = parcels.map(function(p) { return (p.landVal || 0) + (p.impVal || 0); });
+    var sumIndividual = individualValues.reduce(function(s, v) { return s + v; }, 0);
+    var avgLandPSF = combined.lotSizeSqFt > 0 ? combined.landVal / combined.lotSizeSqFt : 0;
+
+    // Assembly premium: larger parcels are worth more per SF (10-25% premium)
+    var premiumPct = Math.min(25, 5 + parcels.length * 5 + (combined.lotSizeSqFt > 20000 ? 5 : 0));
+    var assemblyPremiumValue = Math.round(sumIndividual * premiumPct / 100);
+
+    // Density bonus thresholds unlocked by larger combined size
+    var densityBonuses = [];
+    if (combined.lotSizeSqFt >= 5000) densityBonuses.push({ threshold: '5,000 SF', benefit: 'Multifamily Low-Rise eligible', unlocked: true });
+    if (combined.lotSizeSqFt >= 10000) densityBonuses.push({ threshold: '10,000 SF', benefit: 'Multifamily Mid-Rise eligible; SB 1818 density bonus', unlocked: true });
+    if (combined.lotSizeSqFt >= 15000) densityBonuses.push({ threshold: '15,000 SF', benefit: 'Hotel/Senior Living eligible', unlocked: true });
+    if (combined.lotSizeSqFt >= 20000) densityBonuses.push({ threshold: '20,000 SF', benefit: 'High-Rise eligible; TOC Tier-based bonus potential', unlocked: true });
+    if (combined.lotSizeSqFt >= 32670) densityBonuses.push({ threshold: '0.75 acres', benefit: 'SB 35 streamlining for 100% affordable projects', unlocked: true });
+
+    // Check what thresholds were NOT available to individual parcels
+    var maxIndividualSize = Math.max.apply(null, parcels.map(function(p) { return p.lotSizeSqFt || 0; }));
+    var newlyUnlocked = densityBonuses.filter(function(db) {
+        var thresholdSF = parseInt(db.threshold.replace(/[^0-9]/g, ''));
+        if (db.threshold.indexOf('acre') >= 0) thresholdSF = Math.round(parseFloat(db.threshold) * 43560);
+        return thresholdSF > maxIndividualSize;
+    });
+
+    // Show toast with key info
+    var msg = 'Assembly: ' + parcels.length + ' parcels combined = ' + combined.lotSizeSqFt.toLocaleString() + ' SF';
+    if (newlyUnlocked.length > 0) msg += ' | ' + newlyUnlocked.length + ' new density threshold(s) unlocked!';
+    msg += ' | Est. premium: +' + premiumPct + '% (' + fmt(assemblyPremiumValue) + ')';
+    showToast(msg, 6000);
+
+    // Highlight parcels on map if available
+    highlightAssemblyOnMap(parcels, combined);
+}
+
+function highlightAssemblyOnMap(parcels, combined) {
+    // If Leaflet map is available in Finder, draw circles around parcels
+    if (typeof L === 'undefined' || !window._finderMap) return;
+    var map = window._finderMap;
+
+    // Clear previous assembly markers
+    if (window._assemblyLayer) {
+        map.removeLayer(window._assemblyLayer);
+    }
+
+    var group = L.featureGroup();
+    var lats = [], lons = [];
+
+    parcels.forEach(function(p) {
+        if (p.lat && p.lon) {
+            lats.push(p.lat);
+            lons.push(p.lon);
+            L.circle([p.lat, p.lon], {
+                radius: 30, color: '#805ad5', weight: 3, fillColor: '#805ad5', fillOpacity: 0.25
+            }).bindPopup('<strong>' + (p.address || p.apn) + '</strong><br>' + (p.lotSizeSqFt || 0).toLocaleString() + ' SF')
+            .addTo(group);
+        }
+    });
+
+    // Draw connecting line between parcels
+    if (lats.length >= 2) {
+        var coords = [];
+        for (var i = 0; i < lats.length; i++) coords.push([lats[i], lons[i]]);
+        coords.push([lats[0], lons[0]]); // close the polygon
+        L.polyline(coords, { color: '#805ad5', weight: 2, dashArray: '6 4' }).addTo(group);
+    }
+
+    // Add combined centroid marker
+    if (combined.lat && combined.lon) {
+        L.marker([combined.lat, combined.lon], {
+            icon: L.divIcon({
+                className: '',
+                html: '<div style="background:#805ad5;color:white;font-size:11px;font-weight:700;padding:3px 8px;border-radius:12px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.3);">COMBINED: ' + combined.lotSizeSqFt.toLocaleString() + ' SF</div>',
+                iconSize: null,
+                iconAnchor: [50, -5]
+            })
+        }).addTo(group);
+    }
+
+    group.addTo(map);
+    window._assemblyLayer = group;
+
+    // Zoom to fit
+    if (group.getLayers().length > 0) {
+        map.fitBounds(group.getBounds().pad(0.3));
+    }
 }
 
 function exportSavedCSV() {
@@ -11053,6 +11276,10 @@ function renderDeepTabPanels(skipTab0) {
         renderFiscalImpactTab,      // 24
         renderAssetStrategyTab,     // 25
         renderExportTab,            // 26
+        renderMarketCycleTab,       // 27
+        renderFeeEstimatorTab,      // 28
+        renderDrawScheduleTab,      // 29
+        renderRentVsBuildTab,       // 30
     ];
     // Store globally for lazy access
     window._deepTabRenderers = DEEP_TAB_RENDERERS;
@@ -17452,6 +17679,511 @@ function filterKPIs(view) {
 
 
 // ============================================================
+//  FEATURE: MARKET CYCLE INDICATOR (Tab 27)
+// ============================================================
+
+function computeMarketCyclePhase(inp) {
+    var nh = inp.neighborhood || 'dtla';
+    var vacancy = VACANCY_RATES[nh] || VACANCY_RATES.dtla;
+    var absorption = ABSORPTION_DATA[nh] || ABSORPTION_DATA.dtla;
+    var comps = COMP_LAND_SALES[nh] || COMP_LAND_SALES.dtla;
+
+    // Compute composite score from vacancy, absorption, and price trends
+    var avgVacancy = (vacancy.residential + vacancy.retail + vacancy.office) / 3;
+    var avgAbsorption = (absorption.residential + absorption.retail + absorption.office) / 3;
+    var trendScore = vacancy.trend === 'improving' ? 1 : (vacancy.trend === 'stable' ? 0 : -1);
+    var supplyPressure = absorption.newSupplyUnits > 1500 ? -0.5 : (absorption.newSupplyUnits > 800 ? 0 : 0.5);
+
+    // Cycle score: -2 (deep recession) to +2 (peak expansion)
+    var cycleScore = 0;
+    cycleScore += avgVacancy < 0.05 ? 1.5 : (avgVacancy < 0.08 ? 0.5 : (avgVacancy < 0.12 ? -0.5 : -1.5));
+    cycleScore += avgAbsorption > 0.85 ? 1 : (avgAbsorption > 0.70 ? 0.3 : -0.5);
+    cycleScore += trendScore * 0.5;
+    cycleScore += supplyPressure;
+
+    var phase, phaseIdx, color, recommendation, timing;
+    if (cycleScore >= 1.2) {
+        phase = 'Expansion'; phaseIdx = 1; color = '#38a169'; recommendation = 'BUY'; timing = 'Strong market fundamentals support new development. Lock in entitlements and begin construction.';
+    } else if (cycleScore >= 0.2) {
+        phase = 'Recovery'; phaseIdx = 0; color = '#68d391'; recommendation = 'BUY'; timing = 'Early cycle opportunity — land acquisition favorable before prices fully recover.';
+    } else if (cycleScore >= -0.8) {
+        phase = 'Hyper-Supply'; phaseIdx = 2; color = '#ecc94b'; recommendation = 'HOLD'; timing = 'New supply entering market. Evaluate carefully — focus on pre-leasing and cost control.';
+    } else {
+        phase = 'Recession'; phaseIdx = 3; color = '#e53e3e'; recommendation = 'WAIT'; timing = 'Market correction underway. Position for next cycle — negotiate land options, not purchases.';
+    }
+
+    return {
+        phase: phase, phaseIdx: phaseIdx, color: color, recommendation: recommendation, timing: timing,
+        cycleScore: cycleScore, avgVacancy: avgVacancy, avgAbsorption: avgAbsorption,
+        trendLabel: vacancy.trend, supplyUnits: absorption.newSupplyUnits,
+        landTrend: comps.trend, neighborhood: nh
+    };
+}
+
+function renderMarketCycleTab(st) {
+    var inp = st.inp;
+    var mc = computeMarketCyclePhase(inp);
+    var phases = ['Recovery', 'Expansion', 'Hyper-Supply', 'Recession'];
+    var phaseColors = ['#68d391', '#38a169', '#ecc94b', '#e53e3e'];
+    var phaseIcons = ['🌱', '📈', '⚠️', '📉'];
+
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="analysis-section"><h3>Market Cycle Indicator</h3>';
+    html += '<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:1.25rem;">Real-time market cycle positioning for the <strong>' + (mc.neighborhood || 'dtla').replace(/([a-z])([A-Z])/g, '$1 $2') + '</strong> submarket based on vacancy trends, absorption rates, and construction pipeline.</p>';
+
+    // SVG Gauge
+    html += '<div style="text-align:center;margin:1.5rem 0;">';
+    html += '<svg viewBox="0 0 300 180" style="max-width:400px;width:100%;">';
+    // Gauge arc segments
+    var arcColors = ['#68d391', '#38a169', '#ecc94b', '#e53e3e'];
+    for (var i = 0; i < 4; i++) {
+        var startAngle = -180 + (i * 45);
+        var endAngle = startAngle + 45;
+        var startRad = startAngle * Math.PI / 180;
+        var endRad = endAngle * Math.PI / 180;
+        var x1 = 150 + 120 * Math.cos(startRad);
+        var y1 = 160 + 120 * Math.sin(startRad);
+        var x2 = 150 + 120 * Math.cos(endRad);
+        var y2 = 160 + 120 * Math.sin(endRad);
+        html += '<path d="M ' + x1 + ' ' + y1 + ' A 120 120 0 0 1 ' + x2 + ' ' + y2 + '" fill="none" stroke="' + arcColors[i] + '" stroke-width="18" opacity="' + (mc.phaseIdx === i ? '1' : '0.3') + '"/>';
+    }
+    // Needle
+    var needleAngle = -180 + ((mc.cycleScore + 2) / 4) * 180;
+    var needleRad = needleAngle * Math.PI / 180;
+    var nx = 150 + 100 * Math.cos(needleRad);
+    var ny = 160 + 100 * Math.sin(needleRad);
+    html += '<line x1="150" y1="160" x2="' + nx + '" y2="' + ny + '" stroke="#2d3748" stroke-width="3" stroke-linecap="round"/>';
+    html += '<circle cx="150" cy="160" r="8" fill="#2d3748"/>';
+    // Phase label
+    html += '<text x="150" y="145" text-anchor="middle" font-size="18" font-weight="700" fill="' + mc.color + '">' + mc.phase + '</text>';
+    html += '</svg>';
+    html += '</div>';
+
+    // Recommendation badge
+    var recBg = mc.recommendation === 'BUY' ? '#f0fff4' : (mc.recommendation === 'HOLD' ? '#fffff0' : '#fff5f5');
+    var recBorder = mc.recommendation === 'BUY' ? '#c6f6d5' : (mc.recommendation === 'HOLD' ? '#fefcbf' : '#fed7d7');
+    html += '<div style="background:' + recBg + ';border:2px solid ' + recBorder + ';border-radius:12px;padding:1.25rem;margin:1rem 0;text-align:center;">';
+    html += '<div style="font-size:0.78rem;color:var(--text-light);text-transform:uppercase;letter-spacing:1px;">Investment Timing</div>';
+    html += '<div style="font-size:1.6rem;font-weight:800;color:' + mc.color + ';margin:0.5rem 0;">' + mc.recommendation + '</div>';
+    html += '<div style="font-size:0.88rem;color:var(--text);">' + mc.timing + '</div>';
+    html += '</div>';
+
+    // Market metrics grid
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin:1.5rem 0;">';
+    html += '<div style="background:#f7fafc;border:1px solid var(--border);border-radius:8px;padding:1rem;text-align:center;"><div style="font-size:0.75rem;color:var(--text-light);">Avg Vacancy</div><div style="font-size:1.3rem;font-weight:700;color:var(--primary);">' + (mc.avgVacancy * 100).toFixed(1) + '%</div></div>';
+    html += '<div style="background:#f7fafc;border:1px solid var(--border);border-radius:8px;padding:1rem;text-align:center;"><div style="font-size:0.75rem;color:var(--text-light);">Avg Absorption</div><div style="font-size:1.3rem;font-weight:700;color:var(--primary);">' + (mc.avgAbsorption * 100).toFixed(1) + '%</div></div>';
+    html += '<div style="background:#f7fafc;border:1px solid var(--border);border-radius:8px;padding:1rem;text-align:center;"><div style="font-size:0.75rem;color:var(--text-light);">Vacancy Trend</div><div style="font-size:1.3rem;font-weight:700;color:' + (mc.trendLabel === 'improving' ? '#38a169' : (mc.trendLabel === 'stable' ? '#d69e2e' : '#e53e3e')) + ';">' + mc.trendLabel.charAt(0).toUpperCase() + mc.trendLabel.slice(1) + '</div></div>';
+    html += '<div style="background:#f7fafc;border:1px solid var(--border);border-radius:8px;padding:1rem;text-align:center;"><div style="font-size:0.75rem;color:var(--text-light);">New Supply</div><div style="font-size:1.3rem;font-weight:700;color:var(--primary);">' + mc.supplyUnits.toLocaleString() + '</div><div style="font-size:0.72rem;color:var(--text-light);">units/year</div></div>';
+    html += '<div style="background:#f7fafc;border:1px solid var(--border);border-radius:8px;padding:1rem;text-align:center;"><div style="font-size:0.75rem;color:var(--text-light);">Land Price Trend</div><div style="font-size:1.3rem;font-weight:700;color:#38a169;">' + mc.landTrend + '</div></div>';
+    html += '</div>';
+
+    // Historical cycle timeline
+    html += '<h4 style="font-size:0.88rem;color:var(--primary);margin:1.5rem 0 0.75rem;">LA Market Cycle History</h4>';
+    html += '<div style="display:flex;align-items:stretch;height:60px;border-radius:8px;overflow:hidden;font-size:0.72rem;color:#fff;font-weight:600;">';
+    var cycleHistory = [
+        { years: '2008-2010', phase: 'Recession', color: '#e53e3e', pct: 15 },
+        { years: '2011-2013', phase: 'Recovery', color: '#68d391', pct: 15 },
+        { years: '2014-2018', phase: 'Expansion', color: '#38a169', pct: 25 },
+        { years: '2019', phase: 'Hyper-Supply', color: '#ecc94b', pct: 5 },
+        { years: '2020-2021', phase: 'Recession', color: '#e53e3e', pct: 10 },
+        { years: '2022-2023', phase: 'Recovery', color: '#68d391', pct: 10 },
+        { years: '2024-2026', phase: mc.phase, color: mc.color, pct: 20 },
+    ];
+    for (var ci = 0; ci < cycleHistory.length; ci++) {
+        var ch = cycleHistory[ci];
+        html += '<div style="width:' + ch.pct + '%;background:' + ch.color + ';display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:2px solid #fff;">';
+        html += '<div>' + ch.years + '</div><div style="font-weight:400;font-size:0.65rem;">' + ch.phase + '</div></div>';
+    }
+    html += '</div>';
+
+    html += '</div></div>';
+    return html;
+}
+
+// ============================================================
+//  FEATURE: DEVELOPMENT FEE ESTIMATOR (Tab 28)
+// ============================================================
+
+var JURISDICTION_FEE_RATES = {
+    'City of Los Angeles': { schoolPSF: 4.79, parkPerUnit: 7500, artsPSF: 1.57, trafficPSF: 3.25, surchargePSF: 0.67, permitPct: 0.045, planCheckPct: 0.035, utilityPerUnit: 3500, ladbsPSF: 1.25 },
+    'Santa Monica': { schoolPSF: 4.79, parkPerUnit: 12000, artsPSF: 2.10, trafficPSF: 5.50, surchargePSF: 0.85, permitPct: 0.055, planCheckPct: 0.040, utilityPerUnit: 4200, ladbsPSF: 0 },
+    'West Hollywood': { schoolPSF: 4.79, parkPerUnit: 9500, artsPSF: 1.85, trafficPSF: 4.25, surchargePSF: 0.78, permitPct: 0.050, planCheckPct: 0.038, utilityPerUnit: 3800, ladbsPSF: 0 },
+    'Culver City': { schoolPSF: 4.79, parkPerUnit: 8500, artsPSF: 1.50, trafficPSF: 3.75, surchargePSF: 0.70, permitPct: 0.048, planCheckPct: 0.036, utilityPerUnit: 3600, ladbsPSF: 0 },
+    'Beverly Hills': { schoolPSF: 4.79, parkPerUnit: 15000, artsPSF: 2.50, trafficPSF: 6.00, surchargePSF: 1.00, permitPct: 0.060, planCheckPct: 0.045, utilityPerUnit: 5000, ladbsPSF: 0 },
+    'Glendale': { schoolPSF: 4.79, parkPerUnit: 7800, artsPSF: 1.40, trafficPSF: 3.50, surchargePSF: 0.65, permitPct: 0.045, planCheckPct: 0.035, utilityPerUnit: 3400, ladbsPSF: 0 },
+    'Pasadena': { schoolPSF: 4.79, parkPerUnit: 8200, artsPSF: 1.60, trafficPSF: 3.80, surchargePSF: 0.72, permitPct: 0.048, planCheckPct: 0.037, utilityPerUnit: 3600, ladbsPSF: 0 },
+    'Burbank': { schoolPSF: 4.79, parkPerUnit: 7200, artsPSF: 1.30, trafficPSF: 3.25, surchargePSF: 0.65, permitPct: 0.044, planCheckPct: 0.034, utilityPerUnit: 3300, ladbsPSF: 0 },
+    'Inglewood': { schoolPSF: 4.79, parkPerUnit: 6500, artsPSF: 1.20, trafficPSF: 2.75, surchargePSF: 0.58, permitPct: 0.042, planCheckPct: 0.032, utilityPerUnit: 3000, ladbsPSF: 0 },
+    'Long Beach': { schoolPSF: 4.79, parkPerUnit: 7000, artsPSF: 1.35, trafficPSF: 3.00, surchargePSF: 0.62, permitPct: 0.044, planCheckPct: 0.034, utilityPerUnit: 3200, ladbsPSF: 0 },
+    'Torrance': { schoolPSF: 4.79, parkPerUnit: 7500, artsPSF: 1.25, trafficPSF: 3.15, surchargePSF: 0.60, permitPct: 0.043, planCheckPct: 0.033, utilityPerUnit: 3100, ladbsPSF: 0 },
+};
+
+function renderFeeEstimatorTab(st) {
+    var computed = st.computed;
+    var inp = st.inp;
+    var bestUse = st.bestUse;
+    var params = BUILDING_PARAMS[bestUse];
+    var jur = window._lastJurisdiction || { jurisdiction: 'City of Los Angeles', isLA: true };
+    var jurName = jur.jurisdiction || 'City of Los Angeles';
+    var rates = JURISDICTION_FEE_RATES[jurName] || JURISDICTION_FEE_RATES['City of Los Angeles'];
+
+    var gsf = computed.gsf || 0;
+    var units = computed.units || 0;
+    var totalHard = computed.totalHard || 0;
+    var feeId = 'feeEst_' + Date.now();
+
+    // Calculate each fee
+    var schoolFee = Math.round(gsf * rates.schoolPSF);
+    var parkFee = units > 0 ? Math.round(units * rates.parkPerUnit) : 0;
+    var artsFee = Math.round(gsf * rates.artsPSF);
+    var trafficFee = gsf > 50000 ? Math.round(gsf * rates.trafficPSF) : 0;
+    var surchargeFee = Math.round(gsf * rates.surchargePSF);
+    var permitFee = Math.round(totalHard * rates.permitPct);
+    var planCheckFee = Math.round(totalHard * rates.planCheckPct);
+    var utilityFee = units > 0 ? Math.round(units * rates.utilityPerUnit) : Math.round(gsf * 0.35);
+    var ladbsFee = rates.ladbsPSF > 0 ? Math.round(gsf * rates.ladbsPSF) : 0;
+    var totalFees = schoolFee + parkFee + artsFee + trafficFee + surchargeFee + permitFee + planCheckFee + utilityFee + ladbsFee;
+    var feePSF = gsf > 0 ? totalFees / gsf : 0;
+    var feePerUnit = units > 0 ? totalFees / units : 0;
+
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="analysis-section"><h3>Development Fee Estimator</h3>';
+    html += '<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:1rem;">Itemized government fees and impact fees for <strong>' + jurName + '</strong>. Click any amount to override with actual quotes.</p>';
+
+    if (!jur.isLA && jurName !== 'City of Los Angeles') {
+        html += '<div style="background:#ebf8ff;border:1px solid #bee3f8;border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.85rem;color:#2b6cb0;">';
+        html += '<strong>Jurisdiction:</strong> ' + jurName + ' — rates are estimated based on comparable fee schedules. Verify with the local planning department.</div>';
+    }
+
+    // Summary cards
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin-bottom:1.5rem;">';
+    html += '<div style="background:#f0fff4;border:1px solid #c6f6d5;border-radius:8px;padding:1rem;text-align:center;"><div style="font-size:0.75rem;color:var(--text-light);">Total Fees</div><div style="font-size:1.3rem;font-weight:700;color:#38a169;">' + fmt(totalFees) + '</div></div>';
+    html += '<div style="background:#f7fafc;border:1px solid var(--border);border-radius:8px;padding:1rem;text-align:center;"><div style="font-size:0.75rem;color:var(--text-light);">Per SF</div><div style="font-size:1.3rem;font-weight:700;color:var(--primary);">' + fmt(Math.round(feePSF)) + '</div></div>';
+    if (units > 0) html += '<div style="background:#f7fafc;border:1px solid var(--border);border-radius:8px;padding:1rem;text-align:center;"><div style="font-size:0.75rem;color:var(--text-light);">Per Unit</div><div style="font-size:1.3rem;font-weight:700;color:var(--primary);">' + fmt(Math.round(feePerUnit)) + '</div></div>';
+    html += '<div style="background:#f7fafc;border:1px solid var(--border);border-radius:8px;padding:1rem;text-align:center;"><div style="font-size:0.75rem;color:var(--text-light);">% of Hard Costs</div><div style="font-size:1.3rem;font-weight:700;color:var(--primary);">' + (totalHard > 0 ? (totalFees / totalHard * 100).toFixed(1) : '0') + '%</div></div>';
+    html += '</div>';
+
+    // Fee breakdown table with editable overrides
+    html += '<table class="entitle-cost-table"><thead><tr><th>Fee Category</th><th style="text-align:right;">Estimated Amount</th><th>Calculation Basis</th><th style="text-align:right;">Override</th></tr></thead><tbody>';
+
+    var feeRows = [
+        { name: 'School Fees (LAUSD Level II)', amount: schoolFee, basis: '$' + rates.schoolPSF.toFixed(2) + '/SF x ' + gsf.toLocaleString() + ' GSF', id: 'school' },
+        { name: 'Park / Quimby Fee', amount: parkFee, basis: '$' + rates.parkPerUnit.toLocaleString() + '/unit x ' + units + ' units', id: 'park', show: units > 0 },
+        { name: 'Arts Development Fee', amount: artsFee, basis: '$' + rates.artsPSF.toFixed(2) + '/SF x ' + gsf.toLocaleString() + ' GSF', id: 'arts' },
+        { name: 'Traffic Mitigation Fee', amount: trafficFee, basis: gsf > 50000 ? '$' + rates.trafficPSF.toFixed(2) + '/SF x ' + gsf.toLocaleString() + ' GSF' : 'Under 50K SF threshold', id: 'traffic' },
+        { name: 'Building Permit Surcharge', amount: surchargeFee, basis: '$' + rates.surchargePSF.toFixed(2) + '/SF x ' + gsf.toLocaleString() + ' GSF', id: 'surcharge' },
+        { name: 'Building Permit Fee', amount: permitFee, basis: (rates.permitPct * 100).toFixed(1) + '% of $' + totalHard.toLocaleString() + ' hard costs', id: 'permit' },
+        { name: 'Plan Check Fee', amount: planCheckFee, basis: (rates.planCheckPct * 100).toFixed(1) + '% of $' + totalHard.toLocaleString() + ' hard costs', id: 'plancheck' },
+        { name: 'Utility Connection Fees', amount: utilityFee, basis: units > 0 ? '$' + rates.utilityPerUnit.toLocaleString() + '/unit x ' + units + ' units' : '$0.35/SF', id: 'utility' },
+    ];
+    if (ladbsFee > 0) {
+        feeRows.push({ name: 'LADBS Fees', amount: ladbsFee, basis: '$' + rates.ladbsPSF.toFixed(2) + '/SF x ' + gsf.toLocaleString() + ' GSF', id: 'ladbs' });
+    }
+
+    for (var fi = 0; fi < feeRows.length; fi++) {
+        var fr = feeRows[fi];
+        if (fr.show === false) continue;
+        html += '<tr><td><strong>' + fr.name + '</strong></td>';
+        html += '<td style="text-align:right;">' + fmt(fr.amount) + '</td>';
+        html += '<td style="font-size:0.78rem;color:var(--text-light);">' + fr.basis + '</td>';
+        html += '<td style="text-align:right;"><input type="number" class="fee-override-input" data-fee-id="' + fr.id + '" placeholder="Override" style="width:100px;padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.82rem;text-align:right;" onchange="recalcFeeEstimatorTotal(this)"></td>';
+        html += '</tr>';
+    }
+    html += '<tr class="total-row"><td><strong>Total Estimated Fees</strong></td><td style="text-align:right;" id="feeEstTotal"><strong>' + fmt(totalFees) + '</strong></td><td></td><td></td></tr>';
+    html += '</tbody></table>';
+
+    // Note about pro forma integration
+    html += '<div style="background:#f7fafc;border:1px solid var(--border);border-radius:8px;padding:0.75rem 1rem;margin-top:1rem;font-size:0.82rem;color:var(--text-light);">';
+    html += '<strong>Pro Forma Integration:</strong> These fees are already reflected in the Permits line item of your development budget. Use overrides above to fine-tune based on actual fee quotes from ' + jurName + '.</div>';
+
+    html += '</div></div>';
+    return html;
+}
+
+function recalcFeeEstimatorTotal(el) {
+    var table = el.closest('table');
+    if (!table) return;
+    var inputs = table.querySelectorAll('.fee-override-input');
+    var cells = table.querySelectorAll('tbody tr:not(.total-row) td:nth-child(2)');
+    var total = 0;
+    for (var i = 0; i < cells.length; i++) {
+        var input = inputs[i];
+        var val = input && input.value ? parseFloat(input.value) : 0;
+        var cellText = cells[i].textContent.replace(/[$,]/g, '');
+        total += val > 0 ? val : parseFloat(cellText) || 0;
+    }
+    var totalCell = table.querySelector('#feeEstTotal');
+    if (totalCell) totalCell.innerHTML = '<strong>' + fmt(total) + '</strong>';
+}
+
+// ============================================================
+//  FEATURE: CONSTRUCTION LOAN DRAW SCHEDULE (Tab 29)
+// ============================================================
+
+function renderDrawScheduleTab(st) {
+    var computed = st.computed;
+    var assumptions = st.assumptions;
+
+    var totalConstCost = computed.totalHard || 0;
+    var ltc = 0.65; // 65% LTC default
+    var loanAmount = Math.round(totalConstCost * ltc);
+    var rate = 0.085; // 8.5% annual
+    var termMonths = assumptions ? Math.round((assumptions.constructionMonths || 18)) : 18;
+    var holdbackPct = 0.10; // 10% retainage
+
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="analysis-section"><h3>Construction Loan Draw Schedule</h3>';
+    html += '<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:1rem;">Month-by-month S-curve draw schedule with interest accrual and holdback tracking.</p>';
+
+    // Input controls
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem;">';
+    html += '<div class="field"><label style="font-size:0.78rem;">Total Construction Cost</label><input type="text" id="draw-totalCost" value="' + totalConstCost.toLocaleString() + '" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:0.85rem;width:100%;" readonly></div>';
+    html += '<div class="field"><label style="font-size:0.78rem;">LTC %</label><input type="number" id="draw-ltc" value="65" min="50" max="85" step="5" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:0.85rem;width:100%;" onchange="regenerateDrawSchedule()"></div>';
+    html += '<div class="field"><label style="font-size:0.78rem;">Interest Rate (%)</label><input type="number" id="draw-rate" value="8.5" min="4" max="15" step="0.25" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:0.85rem;width:100%;" onchange="regenerateDrawSchedule()"></div>';
+    html += '<div class="field"><label style="font-size:0.78rem;">Term (months)</label><input type="number" id="draw-term" value="' + termMonths + '" min="6" max="36" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:0.85rem;width:100%;" onchange="regenerateDrawSchedule()"></div>';
+    html += '<div class="field"><label style="font-size:0.78rem;">Holdback / Retainage (%)</label><input type="number" id="draw-holdback" value="10" min="0" max="20" step="5" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:0.85rem;width:100%;" onchange="regenerateDrawSchedule()"></div>';
+    html += '</div>';
+
+    // Generate schedule
+    html += '<div id="drawScheduleContent">';
+    html += generateDrawScheduleHTML(totalConstCost, ltc, rate, termMonths, holdbackPct);
+    html += '</div>';
+
+    html += '</div></div>';
+    return html;
+}
+
+function generateDrawScheduleHTML(totalCost, ltc, annualRate, termMonths, holdbackPct) {
+    var loanAmount = Math.round(totalCost * ltc);
+    var monthlyRate = annualRate / 12;
+    var html = '';
+
+    // S-curve distribution using sigmoid function
+    var schedule = [];
+    var totalDrawn = 0;
+    var totalInterest = 0;
+    var cumDrawn = 0;
+    var peakMonth = 0;
+    var peakDraw = 0;
+
+    for (var m = 1; m <= termMonths; m++) {
+        // Sigmoid S-curve: more draws in middle months
+        var t = (m - 1) / (termMonths - 1); // 0 to 1
+        var sigmoid = 1 / (1 + Math.exp(-10 * (t - 0.5)));
+        var prevSigmoid = m === 1 ? 0 : 1 / (1 + Math.exp(-10 * ((m - 2) / (termMonths - 1) - 0.5)));
+        var drawPct = sigmoid - prevSigmoid;
+
+        var grossDraw = Math.round(loanAmount * drawPct);
+        var holdback = Math.round(grossDraw * holdbackPct);
+        var netDraw = grossDraw - holdback;
+
+        cumDrawn += grossDraw;
+        var interestThisMonth = Math.round(cumDrawn * monthlyRate);
+        totalInterest += interestThisMonth;
+
+        if (grossDraw > peakDraw) { peakDraw = grossDraw; peakMonth = m; }
+
+        schedule.push({
+            month: m, grossDraw: grossDraw, netDraw: netDraw, holdback: holdback,
+            cumDrawn: cumDrawn, interest: interestThisMonth, totalInterest: totalInterest,
+            remaining: loanAmount - cumDrawn, holdbackBal: Math.round(cumDrawn * holdbackPct)
+        });
+    }
+
+    var avgOutstanding = schedule.reduce(function(s, r) { return s + r.cumDrawn; }, 0) / termMonths;
+
+    // Summary cards
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin-bottom:1.5rem;">';
+    html += '<div style="background:#ebf8ff;border:1px solid #bee3f8;border-radius:8px;padding:1rem;text-align:center;"><div style="font-size:0.75rem;color:var(--text-light);">Loan Amount</div><div style="font-size:1.2rem;font-weight:700;color:#2b6cb0;">' + fmt(loanAmount) + '</div></div>';
+    html += '<div style="background:#f7fafc;border:1px solid var(--border);border-radius:8px;padding:1rem;text-align:center;"><div style="font-size:0.75rem;color:var(--text-light);">Total Interest Carry</div><div style="font-size:1.2rem;font-weight:700;color:#e53e3e;">' + fmt(totalInterest) + '</div></div>';
+    html += '<div style="background:#f7fafc;border:1px solid var(--border);border-radius:8px;padding:1rem;text-align:center;"><div style="font-size:0.75rem;color:var(--text-light);">Avg Outstanding</div><div style="font-size:1.2rem;font-weight:700;color:var(--primary);">' + fmt(Math.round(avgOutstanding)) + '</div></div>';
+    html += '<div style="background:#f7fafc;border:1px solid var(--border);border-radius:8px;padding:1rem;text-align:center;"><div style="font-size:0.75rem;color:var(--text-light);">Peak Draw Month</div><div style="font-size:1.2rem;font-weight:700;color:var(--primary);">Month ' + peakMonth + '</div></div>';
+    html += '</div>';
+
+    // S-curve chart (simple bar chart)
+    html += '<h4 style="font-size:0.88rem;color:var(--primary);margin:1rem 0 0.5rem;">Draw Distribution (S-Curve)</h4>';
+    html += '<div style="display:flex;align-items:flex-end;gap:2px;height:120px;margin-bottom:1.5rem;padding:0 4px;">';
+    var maxDraw = peakDraw || 1;
+    for (var ci = 0; ci < schedule.length; ci++) {
+        var s = schedule[ci];
+        var barH = Math.max(2, (s.grossDraw / maxDraw) * 100);
+        var intH = Math.max(0, (s.interest / maxDraw) * 100);
+        html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;" title="Month ' + s.month + ': Draw ' + fmt(s.grossDraw) + ' | Interest ' + fmt(s.interest) + '">';
+        html += '<div style="width:100%;height:' + intH + 'px;background:#fc8181;border-radius:2px 2px 0 0;min-width:8px;"></div>';
+        html += '<div style="width:100%;height:' + barH + 'px;background:#3182ce;border-radius:0 0 2px 2px;min-width:8px;"></div>';
+        html += '</div>';
+    }
+    html += '</div>';
+    html += '<div style="display:flex;gap:1.5rem;font-size:0.75rem;color:var(--text-light);margin-bottom:1rem;"><span><span style="display:inline-block;width:12px;height:12px;background:#3182ce;border-radius:2px;vertical-align:middle;margin-right:4px;"></span>Draw Amount</span><span><span style="display:inline-block;width:12px;height:12px;background:#fc8181;border-radius:2px;vertical-align:middle;margin-right:4px;"></span>Interest</span></div>';
+
+    // Table
+    html += '<div style="overflow-x:auto;"><table class="entitle-cost-table" style="font-size:0.78rem;"><thead><tr><th>Month</th><th style="text-align:right;">Gross Draw</th><th style="text-align:right;">Holdback</th><th style="text-align:right;">Net Draw</th><th style="text-align:right;">Cum. Drawn</th><th style="text-align:right;">Interest</th><th style="text-align:right;">Cum. Interest</th><th style="text-align:right;">Remaining</th></tr></thead><tbody>';
+    for (var ti = 0; ti < schedule.length; ti++) {
+        var r = schedule[ti];
+        var isQ = r.month % 3 === 0;
+        html += '<tr' + (isQ ? ' style="background:#f7fafc;font-weight:600;"' : '') + '>';
+        html += '<td>' + r.month + '</td>';
+        html += '<td style="text-align:right;">' + fmt(r.grossDraw) + '</td>';
+        html += '<td style="text-align:right;">' + fmt(r.holdback) + '</td>';
+        html += '<td style="text-align:right;">' + fmt(r.netDraw) + '</td>';
+        html += '<td style="text-align:right;">' + fmt(r.cumDrawn) + '</td>';
+        html += '<td style="text-align:right;color:#e53e3e;">' + fmt(r.interest) + '</td>';
+        html += '<td style="text-align:right;color:#e53e3e;">' + fmt(r.totalInterest) + '</td>';
+        html += '<td style="text-align:right;">' + fmt(Math.max(0, r.remaining)) + '</td>';
+        html += '</tr>';
+    }
+    html += '</tbody></table></div>';
+
+    return html;
+}
+
+function regenerateDrawSchedule() {
+    var totalCost = parseFloat((document.getElementById('draw-totalCost') || {}).value.replace(/,/g, '')) || 0;
+    var ltc = (parseFloat((document.getElementById('draw-ltc') || {}).value) || 65) / 100;
+    var rate = (parseFloat((document.getElementById('draw-rate') || {}).value) || 8.5) / 100;
+    var term = parseInt((document.getElementById('draw-term') || {}).value) || 18;
+    var holdback = (parseFloat((document.getElementById('draw-holdback') || {}).value) || 10) / 100;
+    var container = document.getElementById('drawScheduleContent');
+    if (container) container.innerHTML = generateDrawScheduleHTML(totalCost, ltc, rate, term, holdback);
+}
+
+// ============================================================
+//  FEATURE: RENT VS BUY/BUILD COMPARISON (Tab 30)
+// ============================================================
+
+function renderRentVsBuildTab(st) {
+    var computed = st.computed;
+    var inp = st.inp;
+    var bestUse = st.bestUse;
+    var assumptions = st.assumptions;
+    var params = BUILDING_PARAMS[bestUse];
+    var nh = inp.neighborhood || 'dtla';
+    var rents = MARKET_RENTS_2025[nh] || MARKET_RENTS_2025.dtla;
+
+    // Build scenario (from existing pro forma)
+    var buildCost = computed.totalDev || 0;
+    var buildNOI = computed.noi || 0;
+    var buildValue = computed.stabilizedValue || 0;
+    var buildTimeline = assumptions ? (assumptions.constructionMonths || 18) : 18;
+    var capRate = computed.capRate || 0.05;
+
+    // Buy scenario: acquire comparable stabilized property
+    var buyPrice = capRate > 0 ? Math.round(buildNOI / (capRate - 0.005)) : 0; // Tighter cap for stabilized
+    var buyClosingCosts = Math.round(buyPrice * 0.025);
+    var buyTotalCost = buyPrice + buyClosingCosts;
+    var buyNOI = buildNOI; // Same NOI assumption
+
+    // Lease scenario
+    var isResidential = ['sfr','duplex','multifamily_low','multifamily_mid','multifamily_high','mixeduse','senior','adu'].includes(bestUse);
+    var monthlyRentPSF = isResidential ? (rents.br1 / (params.unitSF || 800)) : (rents.office_psf / 12);
+    var totalSF = computed.nsf || computed.gsf || 0;
+    var annualLease = Math.round(totalSF * monthlyRentPSF * 12);
+    var leaseEscalation = 0.03; // 3% annual
+
+    // 10-year NPV comparison
+    var discountRate = 0.08;
+    var appreciationRate = 0.03;
+    var noiGrowth = 0.025;
+
+    var buildCFs = [-buildCost];
+    var buyCFs = [-buyTotalCost];
+    var leaseCFs = [0]; // No upfront for lease
+
+    for (var yr = 1; yr <= 10; yr++) {
+        var yrNOI = buildNOI * Math.pow(1 + noiGrowth, yr - 1);
+        // Build: no income during construction (simplified first 1.5 yrs)
+        var buildIncome = yr <= Math.ceil(buildTimeline / 12) ? 0 : yrNOI;
+        buildCFs.push(buildIncome);
+        buyCFs.push(yrNOI);
+        leaseCFs.push(-annualLease * Math.pow(1 + leaseEscalation, yr - 1));
+    }
+    // Exit values at year 10
+    var exitNOI = buildNOI * Math.pow(1 + noiGrowth, 9);
+    var exitCap = capRate + 0.005;
+    var exitValue = exitCap > 0 ? Math.round(exitNOI / exitCap) : 0;
+    buildCFs[10] += exitValue;
+    buyCFs[10] += exitValue;
+    // Lease has no exit value
+
+    function calcNPV(cfs, r) {
+        var npv = 0;
+        for (var i = 0; i < cfs.length; i++) npv += cfs[i] / Math.pow(1 + r, i);
+        return npv;
+    }
+
+    function calcIRR(cfs) {
+        var lo = -0.5, hi = 2.0;
+        for (var iter = 0; iter < 100; iter++) {
+            var mid = (lo + hi) / 2;
+            var npv = calcNPV(cfs, mid);
+            if (npv > 0) lo = mid; else hi = mid;
+        }
+        return (lo + hi) / 2;
+    }
+
+    var buildNPV = calcNPV(buildCFs, discountRate);
+    var buyNPV = calcNPV(buyCFs, discountRate);
+    var leaseNPV = calcNPV(leaseCFs, discountRate);
+    var buildIRR = calcIRR(buildCFs);
+    var buyIRR = calcIRR(buyCFs);
+
+    // Determine best scenario
+    var scenarios = [
+        { name: 'Build', npv: buildNPV, irr: buildIRR },
+        { name: 'Buy', npv: buyNPV, irr: buyIRR },
+    ];
+    scenarios.sort(function(a, b) { return b.npv - a.npv; });
+    var bestScenario = scenarios[0].name;
+
+    var html = '<div class="deep-tab-panel">';
+    html += '<div class="analysis-section"><h3>Rent vs. Buy / Build Comparison</h3>';
+    html += '<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:1.25rem;">10-year NPV comparison of developing the site vs. acquiring an existing comparable property vs. leasing equivalent space.</p>';
+
+    // Recommendation
+    var recColor = bestScenario === 'Build' ? '#38a169' : '#2b6cb0';
+    html += '<div style="background:#f0fff4;border:2px solid #c6f6d5;border-radius:12px;padding:1rem;margin-bottom:1.5rem;text-align:center;">';
+    html += '<div style="font-size:0.78rem;color:var(--text-light);text-transform:uppercase;letter-spacing:1px;">Recommended Strategy</div>';
+    html += '<div style="font-size:1.4rem;font-weight:800;color:' + recColor + ';margin:0.5rem 0;">' + bestScenario.toUpperCase() + '</div>';
+    html += '<div style="font-size:0.85rem;color:var(--text);">' + (bestScenario === 'Build' ? 'Ground-up development offers the highest risk-adjusted return for this site.' : 'Acquiring an existing stabilized property provides better risk-adjusted returns.') + '</div>';
+    html += '</div>';
+
+    // Comparison table
+    html += '<table class="entitle-cost-table"><thead><tr><th>Metric</th><th style="text-align:right;color:#38a169;">Build (Develop)</th><th style="text-align:right;color:#2b6cb0;">Buy (Stabilized)</th><th style="text-align:right;color:#d69e2e;">Lease</th></tr></thead><tbody>';
+    html += '<tr><td>Initial Investment</td><td style="text-align:right;">' + fmt(buildCost) + '</td><td style="text-align:right;">' + fmt(buyTotalCost) + '</td><td style="text-align:right;">$0</td></tr>';
+    html += '<tr><td>Year 1 NOI / (Rent)</td><td style="text-align:right;">' + (Math.ceil(buildTimeline / 12) >= 1 ? '<span style="color:var(--text-light);">Under Construction</span>' : fmt(buildNOI)) + '</td><td style="text-align:right;">' + fmt(buyNOI) + '</td><td style="text-align:right;color:#e53e3e;">(' + fmt(annualLease) + ')</td></tr>';
+    html += '<tr><td>Stabilized NOI</td><td style="text-align:right;">' + fmt(buildNOI) + '</td><td style="text-align:right;">' + fmt(buyNOI) + '</td><td style="text-align:right;">N/A</td></tr>';
+    html += '<tr><td>Year 10 Exit Value</td><td style="text-align:right;">' + fmt(exitValue) + '</td><td style="text-align:right;">' + fmt(exitValue) + '</td><td style="text-align:right;">$0</td></tr>';
+    html += '<tr class="total-row"><td><strong>10-Year NPV (8% disc.)</strong></td><td style="text-align:right;"><strong>' + fmt(Math.round(buildNPV)) + '</strong></td><td style="text-align:right;"><strong>' + fmt(Math.round(buyNPV)) + '</strong></td><td style="text-align:right;"><strong>' + fmt(Math.round(leaseNPV)) + '</strong></td></tr>';
+    html += '<tr><td><strong>IRR</strong></td><td style="text-align:right;font-weight:700;">' + (buildIRR * 100).toFixed(1) + '%</td><td style="text-align:right;font-weight:700;">' + (buyIRR * 100).toFixed(1) + '%</td><td style="text-align:right;color:var(--text-light);">N/A</td></tr>';
+    html += '<tr><td>Yield on Cost</td><td style="text-align:right;">' + (buildCost > 0 ? (buildNOI / buildCost * 100).toFixed(2) : '0') + '%</td><td style="text-align:right;">' + (buyTotalCost > 0 ? (buyNOI / buyTotalCost * 100).toFixed(2) : '0') + '%</td><td style="text-align:right;">N/A</td></tr>';
+    html += '</tbody></table>';
+
+    // Sensitivity: varying cap rates
+    html += '<h4 style="font-size:0.88rem;color:var(--primary);margin:1.5rem 0 0.75rem;">Sensitivity: Build vs. Buy NPV by Cap Rate</h4>';
+    html += '<table class="entitle-cost-table" style="font-size:0.78rem;"><thead><tr><th>Exit Cap Rate</th>';
+    var capRates = [0.04, 0.045, 0.05, 0.055, 0.06, 0.065];
+    for (var cri = 0; cri < capRates.length; cri++) html += '<th style="text-align:right;">' + (capRates[cri] * 100).toFixed(1) + '%</th>';
+    html += '</tr></thead><tbody><tr><td><strong>Build NPV</strong></td>';
+    for (var cri2 = 0; cri2 < capRates.length; cri2++) {
+        var sensBuildCFs = buildCFs.slice(0, 10);
+        sensBuildCFs.push(buildCFs[10] - exitValue + (capRates[cri2] > 0 ? Math.round(exitNOI / capRates[cri2]) : 0));
+        var sensNPV = calcNPV(sensBuildCFs, discountRate);
+        html += '<td style="text-align:right;' + (sensNPV > 0 ? 'color:#38a169;' : 'color:#e53e3e;') + '">' + fmt(Math.round(sensNPV)) + '</td>';
+    }
+    html += '</tr><tr><td><strong>Buy NPV</strong></td>';
+    for (var cri3 = 0; cri3 < capRates.length; cri3++) {
+        var sensBuyCFs = buyCFs.slice(0, 10);
+        sensBuyCFs.push(buyCFs[10] - exitValue + (capRates[cri3] > 0 ? Math.round(exitNOI / capRates[cri3]) : 0));
+        var sensBuyNPV = calcNPV(sensBuyCFs, discountRate);
+        html += '<td style="text-align:right;' + (sensBuyNPV > 0 ? 'color:#38a169;' : 'color:#e53e3e;') + '">' + fmt(Math.round(sensBuyNPV)) + '</td>';
+    }
+    html += '</tr></tbody></table>';
+
+    html += '</div></div>';
+    return html;
+}
+
+// ============================================================
 //  SKILL 40: ENHANCED EXPORT & REPORTING
 // ============================================================
 
@@ -17482,6 +18214,16 @@ function renderExportTab(st) {
                 <div class="export-icon">📋</div>
                 <h4>Executive One-Pager</h4>
                 <p>Condensed summary with key metrics, suitable for investment committees.</p>
+            </div>
+            <div class="export-card" onclick="generateLOI()">
+                <div class="export-icon">📝</div>
+                <h4>Generate LOI</h4>
+                <p>Auto-generate a Letter of Intent with deal terms pre-filled from analysis.</p>
+            </div>
+            <div class="export-card" onclick="generatePitchDeck()">
+                <div class="export-icon">📊</div>
+                <h4>Investor Pitch Deck</h4>
+                <p>Multi-page presentation with market data, pro forma, and returns analysis.</p>
             </div>
         </div>
     </div>`;
@@ -19881,6 +20623,302 @@ function generateInvestorSummary() {
 
     h += '</body></html>';
 
+    w.document.write(h);
+    w.document.close();
+}
+
+// ============================================================
+//  FEATURE: ACQUISITION OFFER GENERATOR (LOI)
+// ============================================================
+
+function generateLOI() {
+    var st = deepAnalysisState;
+    if (!st) { alert('Run a deep analysis first.'); return; }
+    var prop = st.prop || {};
+    var c = st.computed || {};
+    var addr = prop.address || prop.formattedAddress || 'Subject Property';
+    var purchasePrice = c.stabilizedValue ? Math.round(c.stabilizedValue * 0.85) : 0; // 85% of stabilized value as starting offer
+    var earnestMoney = Math.round(purchasePrice * 0.015); // 1.5%
+    var useLabel = st.bestUse ? st.bestUse.replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); }) : 'Development';
+
+    var w = window.open('', '_blank');
+    if (!w) { alert('Please allow popups to generate the LOI.'); return; }
+
+    var h = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Letter of Intent — ' + addr + '</title>';
+    h += '<style>';
+    h += 'body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; color: #2d3748; line-height: 1.7; font-size: 0.92rem; }';
+    h += 'h1 { font-size: 1.4rem; color: #1a365d; text-align: center; margin-bottom: 0.25rem; }';
+    h += '.subtitle { text-align: center; font-size: 0.82rem; color: #718096; margin-bottom: 2.5rem; border-bottom: 2px solid #2b6cb0; padding-bottom: 1rem; }';
+    h += 'h2 { font-size: 1rem; color: #2b6cb0; margin-top: 1.5rem; margin-bottom: 0.5rem; }';
+    h += '.term-row { display: flex; padding: 0.5rem 0; border-bottom: 1px solid #e2e8f0; }';
+    h += '.term-label { width: 200px; font-weight: 600; color: #4a5568; flex-shrink: 0; }';
+    h += '.term-value { flex: 1; }';
+    h += '.editable { border: 1px dashed #bee3f8; padding: 2px 6px; border-radius: 4px; min-width: 100px; display: inline-block; }';
+    h += '.editable:focus { outline: 2px solid #3182ce; border-color: transparent; }';
+    h += '.section { margin: 1.5rem 0; }';
+    h += '.signature-block { margin-top: 3rem; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }';
+    h += '.sig-line { border-top: 1px solid #2d3748; padding-top: 0.5rem; margin-top: 3rem; font-size: 0.82rem; }';
+    h += '.exhibit { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; margin-top: 1rem; font-size: 0.82rem; }';
+    h += 'table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 0.5rem 0; }';
+    h += 'th { background: #edf2f7; padding: 5px 8px; text-align: left; }';
+    h += 'td { padding: 5px 8px; border-bottom: 1px solid #e2e8f0; }';
+    h += '.disclaimer { font-size: 0.72rem; color: #a0aec0; margin-top: 2rem; border-top: 1px solid #e2e8f0; padding-top: 1rem; }';
+    h += '@media print { .no-print { display: none; } .editable { border: none; } }';
+    h += '</style></head><body>';
+
+    h += '<h1>Letter of Intent</h1>';
+    h += '<div class="subtitle">Non-Binding Expression of Interest for the Acquisition of Real Property</div>';
+
+    h += '<p>Date: ' + new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + '</p>';
+
+    h += '<p>Dear Property Owner / Authorized Representative,</p>';
+    h += '<p>The undersigned (<strong contenteditable="true" class="editable">[Buyer Name / Entity]</strong>) hereby submits this non-binding Letter of Intent to acquire the property described below, subject to the following terms and conditions:</p>';
+
+    h += '<h2>Property Information</h2>';
+    h += '<div class="term-row"><div class="term-label">Property Address</div><div class="term-value">' + addr + '</div></div>';
+    h += '<div class="term-row"><div class="term-label">APN</div><div class="term-value">' + (prop.apn || 'N/A') + '</div></div>';
+    h += '<div class="term-row"><div class="term-label">Lot Size</div><div class="term-value">' + ((prop.lotSizeSqFt || 0).toLocaleString()) + ' SF</div></div>';
+    h += '<div class="term-row"><div class="term-label">Current Zoning</div><div class="term-value">' + (prop.zoning || 'See Exhibit A') + '</div></div>';
+
+    h += '<h2>Financial Terms</h2>';
+    h += '<div class="term-row"><div class="term-label">Purchase Price</div><div class="term-value"><span contenteditable="true" class="editable">' + fmt(purchasePrice) + '</span></div></div>';
+    h += '<div class="term-row"><div class="term-label">Earnest Money Deposit</div><div class="term-value"><span contenteditable="true" class="editable">' + fmt(earnestMoney) + '</span> (1.5% of purchase price)</div></div>';
+    h += '<div class="term-row"><div class="term-label">Financing</div><div class="term-value"><span contenteditable="true" class="editable">Cash / Construction Loan — 65% LTC</span></div></div>';
+
+    h += '<h2>Timeline</h2>';
+    h += '<div class="term-row"><div class="term-label">Due Diligence Period</div><div class="term-value"><span contenteditable="true" class="editable">45 days</span> from mutual execution</div></div>';
+    h += '<div class="term-row"><div class="term-label">Closing Date</div><div class="term-value"><span contenteditable="true" class="editable">30 days</span> after due diligence expiration</div></div>';
+    h += '<div class="term-row"><div class="term-label">Deposit Goes Hard</div><div class="term-value">Upon expiration of due diligence period</div></div>';
+
+    h += '<h2>Contingencies</h2>';
+    h += '<div class="term-row"><div class="term-label">1. Inspection</div><div class="term-value">Satisfactory physical inspection and Phase I Environmental Site Assessment</div></div>';
+    h += '<div class="term-row"><div class="term-label">2. Title</div><div class="term-value">Clear and marketable title with no material encumbrances</div></div>';
+    h += '<div class="term-row"><div class="term-label">3. Entitlements</div><div class="term-value">Confirmation of zoning and development rights for proposed ' + useLabel + ' use</div></div>';
+    h += '<div class="term-row"><div class="term-label">4. Financing</div><div class="term-value"><span contenteditable="true" class="editable">Buyer to obtain acceptable financing commitment</span></div></div>';
+    h += '<div class="term-row"><div class="term-label">5. Additional</div><div class="term-value"><span contenteditable="true" class="editable">[Add custom contingencies]</span></div></div>';
+
+    h += '<h2>Additional Terms</h2>';
+    h += '<ul>';
+    h += '<li>Escrow to be held by <span contenteditable="true" class="editable">[Escrow Company]</span></li>';
+    h += '<li>Each party to pay its own closing costs customary in Los Angeles County</li>';
+    h += '<li>This LOI is non-binding and does not create any obligation to purchase or sell</li>';
+    h += '<li>Binding Purchase and Sale Agreement to be negotiated in good faith during due diligence</li>';
+    h += '</ul>';
+
+    // Exhibit A - Deal metrics
+    h += '<h2>Exhibit A — Development Analysis Summary</h2>';
+    h += '<div class="exhibit">';
+    h += '<table>';
+    h += '<tr><td style="font-weight:600;width:45%;">Proposed Use</td><td>' + useLabel + '</td></tr>';
+    if (c.units) h += '<tr><td style="font-weight:600;">Unit Count</td><td>' + c.units + '</td></tr>';
+    h += '<tr><td style="font-weight:600;">Gross SF</td><td>' + (c.gsf || 0).toLocaleString() + '</td></tr>';
+    h += '<tr><td style="font-weight:600;">Total Development Cost</td><td>' + fmt(c.totalDev) + '</td></tr>';
+    h += '<tr><td style="font-weight:600;">Stabilized NOI</td><td>' + fmt(c.noi) + '</td></tr>';
+    h += '<tr><td style="font-weight:600;">Stabilized Value</td><td>' + fmt(c.stabilizedValue) + '</td></tr>';
+    h += '<tr><td style="font-weight:600;">Development Margin</td><td>' + (c.devMargin * 100).toFixed(1) + '%</td></tr>';
+    h += '<tr><td style="font-weight:600;">Yield on Cost</td><td>' + (c.yieldOnCost * 100).toFixed(2) + '%</td></tr>';
+    h += '</table>';
+    h += '</div>';
+
+    // Signature blocks
+    h += '<div class="signature-block">';
+    h += '<div><div class="sig-line"><strong>BUYER:</strong><br><span contenteditable="true" class="editable">[Buyer Name]</span><br><span contenteditable="true" class="editable">[Title]</span><br><span contenteditable="true" class="editable">[Entity Name]</span><br>Date: _______________</div></div>';
+    h += '<div><div class="sig-line"><strong>SELLER:</strong><br>_______________________<br>Name:<br>Title:<br>Date: _______________</div></div>';
+    h += '</div>';
+
+    h += '<div class="disclaimer">This Letter of Intent is non-binding and is intended solely as a basis for further negotiation. It does not constitute a contract or agreement to purchase. No binding obligation shall arise until execution of a definitive Purchase and Sale Agreement.</div>';
+    h += '<div class="disclaimer" style="margin-top:0.5rem;">Generated by Land to Yield | ' + new Date().toLocaleDateString() + '</div>';
+
+    h += '<div class="no-print" style="text-align:center;margin-top:2rem;"><button onclick="window.print()" style="padding:10px 24px;background:#2b6cb0;color:#fff;border:none;border-radius:6px;font-size:0.85rem;cursor:pointer;">Print / Save as PDF</button></div>';
+
+    h += '</body></html>';
+    w.document.write(h);
+    w.document.close();
+}
+
+// ============================================================
+//  FEATURE: INVESTOR PITCH DECK AUTO-GENERATOR
+// ============================================================
+
+function generatePitchDeck() {
+    var st = deepAnalysisState;
+    if (!st) { alert('Run a deep analysis first.'); return; }
+    var prop = st.prop || {};
+    var c = st.computed || {};
+    var inp = st.inp || {};
+    var addr = prop.address || prop.formattedAddress || 'Subject Property';
+    var useLabel = st.bestUse ? st.bestUse.replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); }) : 'Development';
+    var mc = computeMarketCyclePhase(inp);
+    var nh = inp.neighborhood || 'dtla';
+    var rents = MARKET_RENTS_2025[nh] || MARKET_RENTS_2025.dtla;
+    var vacancy = VACANCY_RATES[nh] || VACANCY_RATES.dtla;
+
+    var w = window.open('', '_blank');
+    if (!w) { alert('Please allow popups to generate the pitch deck.'); return; }
+
+    var h = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Pitch Deck — ' + addr + '</title>';
+    h += '<style>';
+    h += '*, *::before, *::after { box-sizing: border-box; }';
+    h += 'body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; color: #2d3748; }';
+    h += '.slide { width: 100%; min-height: 100vh; padding: 60px; display: flex; flex-direction: column; justify-content: center; page-break-after: always; }';
+    h += '.slide:last-child { page-break-after: auto; }';
+    h += '.slide h1 { font-size: 2rem; color: #1a365d; margin-bottom: 0.5rem; }';
+    h += '.slide h2 { font-size: 1.5rem; color: #2b6cb0; margin-bottom: 1rem; }';
+    h += '.slide h3 { font-size: 1.1rem; color: #4a5568; margin-top: 1.5rem; }';
+    h += '.slide p { font-size: 1rem; line-height: 1.6; }';
+    h += '.brand { font-size: 0.75rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem; }';
+    h += '.metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin: 1.5rem 0; }';
+    h += '.metric { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem; text-align: center; }';
+    h += '.metric .label { font-size: 0.82rem; color: #718096; margin-bottom: 0.3rem; }';
+    h += '.metric .val { font-size: 1.8rem; font-weight: 700; color: #2b6cb0; }';
+    h += '.metric .sub { font-size: 0.78rem; color: #a0aec0; }';
+    h += 'table { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin: 1rem 0; }';
+    h += 'th { background: #edf2f7; padding: 8px 12px; text-align: left; font-weight: 600; }';
+    h += 'td { padding: 7px 12px; border-bottom: 1px solid #e2e8f0; }';
+    h += '.highlight { background: linear-gradient(135deg, #ebf8ff, #f0fff4); border: 2px solid #bee3f8; border-radius: 12px; padding: 1.5rem; margin: 1rem 0; }';
+    h += '.risk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }';
+    h += '.risk-item { background: #fff5f5; border: 1px solid #fed7d7; border-radius: 8px; padding: 1rem; }';
+    h += '.risk-item h4 { font-size: 0.88rem; color: #c53030; margin: 0 0 0.3rem; }';
+    h += '.risk-item p { font-size: 0.82rem; margin: 0; color: #4a5568; }';
+    h += '.cover-bg { background: linear-gradient(135deg, #1a365d, #2b6cb0); color: white; }';
+    h += '.cover-bg h1 { color: white; font-size: 2.5rem; }';
+    h += '.cover-bg h2 { color: #bee3f8; }';
+    h += '.cover-bg .brand { color: rgba(255,255,255,0.6); }';
+    h += '.slide-num { position: absolute; bottom: 20px; right: 30px; font-size: 0.72rem; color: #a0aec0; }';
+    h += '.disclaimer { font-size: 0.72rem; color: #a0aec0; margin-top: 2rem; }';
+    h += '@media print { .slide { min-height: auto; padding: 30px; } .no-print { display: none; } }';
+    h += '</style></head><body>';
+
+    // Slide 1: Cover
+    h += '<div class="slide cover-bg" style="position:relative;">';
+    h += '<div class="brand">Land to Yield</div>';
+    h += '<h1>' + useLabel + ' Development Opportunity</h1>';
+    h += '<h2>' + addr + '</h2>';
+    h += '<p style="color:#bee3f8;font-size:1.1rem;margin-top:2rem;">' + (c.gsf || 0).toLocaleString() + ' SF | ' + (c.units || 'N/A') + ' Units | ' + fmt(c.totalDev) + ' Total Investment</p>';
+    h += '<p style="color:rgba(255,255,255,0.5);font-size:0.85rem;margin-top:3rem;">Confidential Investment Summary | Prepared ' + new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + '</p>';
+    h += '</div>';
+
+    // Slide 2: Executive Summary
+    h += '<div class="slide" style="position:relative;">';
+    h += '<div class="brand">Executive Summary</div>';
+    h += '<h2>Investment Thesis</h2>';
+    h += '<p>Ground-up <strong>' + useLabel + '</strong> development on a ' + ((prop.lotSizeSqFt || 0).toLocaleString()) + ' SF parcel in the ' + nh.replace(/([a-z])([A-Z])/g, '$1 $2') + ' submarket of Los Angeles. The project benefits from strong market fundamentals, favorable zoning, and attractive risk-adjusted returns.</p>';
+    h += '<div class="metric-grid">';
+    h += '<div class="metric"><div class="label">Development Margin</div><div class="val" style="color:#38a169;">' + ((c.devMargin || 0) * 100).toFixed(1) + '%</div><div class="sub">Target: 15-25%</div></div>';
+    h += '<div class="metric"><div class="label">Yield on Cost</div><div class="val">' + ((c.yieldOnCost || 0) * 100).toFixed(2) + '%</div><div class="sub">vs. ' + ((c.capRate || 0.05) * 100).toFixed(1) + '% market cap</div></div>';
+    h += '<div class="metric"><div class="label">Stabilized Value</div><div class="val">' + formatCompactDollars(c.stabilizedValue) + '</div><div class="sub">On ' + formatCompactDollars(c.totalDev) + ' cost basis</div></div>';
+    h += '</div>';
+    h += '</div>';
+
+    // Slide 3: Site Overview
+    h += '<div class="slide" style="position:relative;">';
+    h += '<div class="brand">Site Overview</div>';
+    h += '<h2>Property Details</h2>';
+    h += '<table>';
+    h += '<tr><td style="width:40%;font-weight:600;">Address</td><td>' + addr + '</td></tr>';
+    h += '<tr><td style="font-weight:600;">APN</td><td>' + (prop.apn || 'N/A') + '</td></tr>';
+    h += '<tr><td style="font-weight:600;">Lot Size</td><td>' + ((prop.lotSizeSqFt || 0).toLocaleString()) + ' SF (' + ((prop.lotSizeSqFt || 0) / 43560).toFixed(2) + ' acres)</td></tr>';
+    h += '<tr><td style="font-weight:600;">Current Zoning</td><td>' + (inp.zoning || 'N/A') + '</td></tr>';
+    h += '<tr><td style="font-weight:600;">Jurisdiction</td><td>' + ((window._lastJurisdiction || {}).jurisdiction || 'City of Los Angeles') + '</td></tr>';
+    h += '<tr><td style="font-weight:600;">Transit Proximity</td><td>' + (inp.transitDist || 'N/A') + '</td></tr>';
+    h += '</table>';
+    if (prop.lat && prop.lon) {
+        h += '<div style="margin-top:1rem;text-align:center;"><img src="https://maps.googleapis.com/maps/api/staticmap?center=' + prop.lat + ',' + prop.lon + '&zoom=16&size=700x300&maptype=satellite&markers=' + prop.lat + ',' + prop.lon + '" alt="Site aerial" style="max-width:100%;border-radius:8px;border:1px solid #e2e8f0;" onerror="this.style.display=\'none\'"></div>';
+    }
+    h += '</div>';
+
+    // Slide 4: Market Analysis
+    h += '<div class="slide" style="position:relative;">';
+    h += '<div class="brand">Market Analysis</div>';
+    h += '<h2>' + nh.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/\b\w/g, function(l) { return l.toUpperCase(); }) + ' Submarket</h2>';
+    h += '<div class="highlight">';
+    h += '<div style="display:flex;align-items:center;gap:1rem;"><div style="font-size:2rem;font-weight:800;color:' + mc.color + ';">' + mc.phase + '</div><div style="font-size:0.88rem;color:var(--text-light);">Market Cycle Phase — ' + mc.recommendation + ' Signal</div></div>';
+    h += '</div>';
+    h += '<div class="metric-grid">';
+    h += '<div class="metric"><div class="label">Residential Vacancy</div><div class="val">' + (vacancy.residential * 100).toFixed(1) + '%</div></div>';
+    h += '<div class="metric"><div class="label">Market Rent (1BR)</div><div class="val">$' + rents.br1.toLocaleString() + '</div><div class="sub">/month</div></div>';
+    h += '<div class="metric"><div class="label">Land Price Trend</div><div class="val" style="color:#38a169;font-size:1.3rem;">' + ((COMP_LAND_SALES[nh] || COMP_LAND_SALES.dtla).trend) + '</div></div>';
+    h += '</div>';
+    h += '</div>';
+
+    // Slide 5: Development Program
+    h += '<div class="slide" style="position:relative;">';
+    h += '<div class="brand">Development Program</div>';
+    h += '<h2>Proposed ' + useLabel + '</h2>';
+    h += '<table>';
+    h += '<tr><td style="font-weight:600;">Gross Building Area</td><td>' + (c.gsf || 0).toLocaleString() + ' SF</td></tr>';
+    h += '<tr><td style="font-weight:600;">Net Rentable Area</td><td>' + (c.nsf || 0).toLocaleString() + ' SF</td></tr>';
+    if (c.units) h += '<tr><td style="font-weight:600;">Units</td><td>' + c.units + '</td></tr>';
+    h += '<tr><td style="font-weight:600;">Stories</td><td>' + (c.stories || 'N/A') + '</td></tr>';
+    h += '<tr><td style="font-weight:600;">Building Height</td><td>' + (c.buildingHeight || 0) + ' ft</td></tr>';
+    h += '<tr><td style="font-weight:600;">Parking Spaces</td><td>' + (c.parkingSpaces || 0) + '</td></tr>';
+    h += '<tr><td style="font-weight:600;">FAR</td><td>' + (c.far || 0).toFixed(2) + '</td></tr>';
+    h += '</table>';
+    h += '</div>';
+
+    // Slide 6: Pro Forma Summary
+    h += '<div class="slide" style="position:relative;">';
+    h += '<div class="brand">Pro Forma Summary</div>';
+    h += '<h2>Development Budget & Returns</h2>';
+    h += '<table>';
+    h += '<tr><th colspan="2">Uses of Funds</th></tr>';
+    h += '<tr><td>Land Acquisition</td><td style="text-align:right;">' + fmt(c.landCost) + '</td></tr>';
+    h += '<tr><td>Hard Costs</td><td style="text-align:right;">' + fmt(c.totalHard) + '</td></tr>';
+    h += '<tr><td>Soft Costs</td><td style="text-align:right;">' + fmt(c.totalSoft) + '</td></tr>';
+    h += '<tr style="font-weight:700;background:#f7fafc;"><td>Total Development Cost</td><td style="text-align:right;">' + fmt(c.totalDev) + '</td></tr>';
+    h += '<tr><th colspan="2" style="padding-top:1rem;">Operating Performance</th></tr>';
+    h += '<tr><td>Gross Revenue</td><td style="text-align:right;">' + fmt(c.grossRevenue) + '</td></tr>';
+    h += '<tr><td>Operating Expenses</td><td style="text-align:right;">(' + fmt(c.opex) + ')</td></tr>';
+    h += '<tr style="font-weight:700;background:#f0fff4;"><td>Net Operating Income (NOI)</td><td style="text-align:right;">' + fmt(c.noi) + '</td></tr>';
+    h += '<tr><th colspan="2" style="padding-top:1rem;">Valuation</th></tr>';
+    h += '<tr><td>Stabilized Value (at ' + ((c.capRate || 0.05) * 100).toFixed(1) + '% cap)</td><td style="text-align:right;">' + fmt(c.stabilizedValue) + '</td></tr>';
+    h += '<tr><td>Development Margin</td><td style="text-align:right;color:#38a169;font-weight:700;">' + ((c.devMargin || 0) * 100).toFixed(1) + '%</td></tr>';
+    h += '<tr><td>Yield on Cost</td><td style="text-align:right;font-weight:700;">' + ((c.yieldOnCost || 0) * 100).toFixed(2) + '%</td></tr>';
+    h += '</table>';
+    h += '</div>';
+
+    // Slide 7: Returns Analysis
+    h += '<div class="slide" style="position:relative;">';
+    h += '<div class="brand">Returns Analysis</div>';
+    h += '<h2>Key Investment Metrics</h2>';
+    h += '<div class="metric-grid">';
+    h += '<div class="metric"><div class="label">Total Investment</div><div class="val">' + formatCompactDollars(c.totalDev) + '</div></div>';
+    h += '<div class="metric"><div class="label">Stabilized Value</div><div class="val" style="color:#38a169;">' + formatCompactDollars(c.stabilizedValue) + '</div></div>';
+    h += '<div class="metric"><div class="label">Value Creation</div><div class="val">' + formatCompactDollars((c.stabilizedValue || 0) - (c.totalDev || 0)) + '</div></div>';
+    h += '<div class="metric"><div class="label">Cost per SF</div><div class="val">' + (c.gsf > 0 ? fmt(Math.round(c.totalDev / c.gsf)) : 'N/A') + '</div></div>';
+    if (c.units) h += '<div class="metric"><div class="label">Cost per Unit</div><div class="val">' + fmt(Math.round(c.totalDev / c.units)) + '</div></div>';
+    h += '<div class="metric"><div class="label">NOI per SF</div><div class="val">' + (c.gsf > 0 ? '$' + Math.round(c.noi / c.gsf) : 'N/A') + '</div></div>';
+    h += '</div>';
+    h += '</div>';
+
+    // Slide 8: Risk Factors
+    h += '<div class="slide" style="position:relative;">';
+    h += '<div class="brand">Risk Factors</div>';
+    h += '<h2>Key Risks & Mitigants</h2>';
+    h += '<div class="risk-grid">';
+    h += '<div class="risk-item"><h4>Construction Cost Overruns</h4><p>Mitigant: 7% hard cost contingency; GMP contract recommended</p></div>';
+    h += '<div class="risk-item"><h4>Lease-Up / Absorption</h4><p>Mitigant: Conservative vacancy assumptions; high-demand submarket</p></div>';
+    h += '<div class="risk-item"><h4>Interest Rate Risk</h4><p>Mitigant: IO period cushion; rate lock at construction close</p></div>';
+    h += '<div class="risk-item"><h4>Entitlement Delays</h4><p>Mitigant: By-right streamlining eliminates discretionary review</p></div>';
+    h += '<div class="risk-item"><h4>Cap Rate Expansion</h4><p>Mitigant: Conservative exit cap; sensitivity tested across scenarios</p></div>';
+    h += '<div class="risk-item"><h4>Market Downturn</h4><p>Mitigant: ' + mc.phase + ' cycle phase; strong absorption metrics</p></div>';
+    h += '</div>';
+    h += '</div>';
+
+    // Slide 9: Contact
+    h += '<div class="slide cover-bg" style="position:relative;">';
+    h += '<div class="brand">Contact</div>';
+    h += '<h1>Thank You</h1>';
+    h += '<h2 style="margin-top:2rem;">Ready to Discuss This Opportunity?</h2>';
+    h += '<div style="margin-top:2rem;font-size:1.1rem;line-height:2;">';
+    h += '<p contenteditable="true" style="color:#bee3f8;">[Your Name]<br>[Your Title]<br>[Company Name]<br>[Phone]<br>[Email]</p>';
+    h += '</div>';
+    h += '<div class="disclaimer" style="color:rgba(255,255,255,0.4);">This presentation is for informational purposes only. Projections are estimates and actual results may differ. Generated by Land to Yield.</div>';
+    h += '</div>';
+
+    h += '<div class="no-print" style="text-align:center;padding:2rem;"><button onclick="window.print()" style="padding:12px 32px;background:#2b6cb0;color:#fff;border:none;border-radius:6px;font-size:0.92rem;cursor:pointer;">Print / Save as PDF</button></div>';
+
+    h += '</body></html>';
     w.document.write(h);
     w.document.close();
 }
