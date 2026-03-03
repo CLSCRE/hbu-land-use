@@ -7132,39 +7132,78 @@ function renderMassingSatelliteMap(useId, inp, computed, containerId) {
     var ftPerDegLat = 364000; // ~1 degree lat in feet at 34°N
     var ftPerDegLon = 288200; // ~1 degree lon in feet at 34°N
 
-    // Position building within parcel
+    // Compute parcel orientation angle from geometry
+    var parcelAngle = 0; // radians, 0 = north-south aligned
     var fpCenter;
     if (parcelLatLngs && parcelLatLngs[0] && parcelLatLngs[0].length >= 3) {
-        // Find parcel centroid and bounding box
         var ring = parcelLatLngs[0];
-        var minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
         var cLat = 0, cLng = 0;
         for (var i = 0; i < ring.length; i++) {
             cLat += ring[i][0]; cLng += ring[i][1];
-            if (ring[i][0] < minLat) minLat = ring[i][0];
-            if (ring[i][0] > maxLat) maxLat = ring[i][0];
-            if (ring[i][1] < minLng) minLng = ring[i][1];
-            if (ring[i][1] > maxLng) maxLng = ring[i][1];
         }
         cLat /= ring.length; cLng /= ring.length;
 
-        // Determine lot orientation: assume front=south (street side = min lat)
-        // Offset centroid toward center considering setbacks
-        var setFDeg = setF / ftPerDegLat;
-        var setSDeg = setS / ftPerDegLon;
-        fpCenter = [cLat + setFDeg * 0.3, cLng]; // slight offset from true center toward rear
+        // Find parcel's principal axis: longest edge determines orientation
+        var longestLen = 0;
+        var longestDx = 0, longestDy = 0;
+        for (var ei = 0; ei < ring.length - 1; ei++) {
+            var dx = (ring[ei + 1][1] - ring[ei][1]) * ftPerDegLon;
+            var dy = (ring[ei + 1][0] - ring[ei][0]) * ftPerDegLat;
+            var edgeLen = Math.sqrt(dx * dx + dy * dy);
+            if (edgeLen > longestLen) {
+                longestLen = edgeLen;
+                longestDx = dx; longestDy = dy;
+            }
+        }
+        if (longestLen > 0) {
+            parcelAngle = Math.atan2(longestDx, longestDy); // angle from north
+        }
+
+        // Determine which dimension aligns with the long axis
+        // The building's depth (long side) should align with the parcel's long axis
+        // If parcel is wider than deep, swap
+        var parcelW = longestLen; // longest edge in feet
+        // Find perpendicular extent
+        var cosA = Math.cos(parcelAngle), sinA = Math.sin(parcelAngle);
+        var minProj = Infinity, maxProj = -Infinity;
+        for (var pi2 = 0; pi2 < ring.length; pi2++) {
+            var px = (ring[pi2][1] - cLng) * ftPerDegLon;
+            var py = (ring[pi2][0] - cLat) * ftPerDegLat;
+            // Project onto perpendicular axis
+            var perpProj = -px * cosA + py * sinA;
+            if (perpProj < minProj) minProj = perpProj;
+            if (perpProj > maxProj) maxProj = perpProj;
+        }
+        var parcelPerpExtent = maxProj - minProj;
+
+        // Clamp building to fit within parcel (with setbacks)
+        var availableDepth = parcelW - setF - setF; // along long axis
+        var availableWidth = parcelPerpExtent - setS - setS; // perpendicular
+        if (fpDepth > availableDepth && availableDepth > 0) fpDepth = availableDepth;
+        if (fpWidth > availableWidth && availableWidth > 0) fpWidth = availableWidth;
+
+        fpCenter = [cLat, cLng];
     } else {
         fpCenter = [geo.lat, geo.lon];
     }
 
-    var halfW = (fpWidth / 2) / ftPerDegLon;
-    var halfD = (fpDepth / 2) / ftPerDegLat;
+    // Build rotated footprint rectangle
+    var halfW = fpWidth / 2;
+    var halfD = fpDepth / 2;
+    var cosA2 = Math.cos(parcelAngle), sinA2 = Math.sin(parcelAngle);
+
+    // Corner offsets in feet, rotated by parcel angle, then converted to degrees
+    function rotateCorner(alongFt, perpFt) {
+        var dLng = (alongFt * sinA2 + perpFt * cosA2) / ftPerDegLon;
+        var dLat = (alongFt * cosA2 - perpFt * sinA2) / ftPerDegLat;
+        return [fpCenter[0] + dLat, fpCenter[1] + dLng];
+    }
 
     var fpRect = [
-        [fpCenter[0] - halfD, fpCenter[1] - halfW],
-        [fpCenter[0] - halfD, fpCenter[1] + halfW],
-        [fpCenter[0] + halfD, fpCenter[1] + halfW],
-        [fpCenter[0] + halfD, fpCenter[1] - halfW],
+        rotateCorner(-halfD, -halfW),
+        rotateCorner(-halfD, +halfW),
+        rotateCorner(+halfD, +halfW),
+        rotateCorner(+halfD, -halfW),
     ];
 
     // Draw setback zone (hatched area between parcel edge and building)
@@ -7199,7 +7238,10 @@ function renderMassingSatelliteMap(useId, inp, computed, containerId) {
         (setF > 0 ? '<br>Front setback: ' + setF + '\'' : '') +
         (setS > 0 ? '<br>Side setback: ' + setS + '\'' : '') +
         '</div>';
-    L.marker([fpRect[2][0] + 0.00002, fpCenter[1]], {
+    // Position label above the top edge of the rotated footprint
+    var labelLat = Math.max(fpRect[0][0], fpRect[1][0], fpRect[2][0], fpRect[3][0]) + 0.00002;
+    var labelLng = (fpRect[0][1] + fpRect[1][1] + fpRect[2][1] + fpRect[3][1]) / 4;
+    L.marker([labelLat, labelLng], {
         icon: L.divIcon({ html: labelHtml, className: '', iconSize: [160, 60], iconAnchor: [80, 60] }),
         interactive: false
     }).addTo(map);
