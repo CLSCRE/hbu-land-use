@@ -3555,12 +3555,16 @@ async function lookupAddress() {
 
     let filledCount = 0;
 
-    // Run zoning + parcel queries in parallel
+    // Run zoning + parcel queries in parallel (with hard 12s timeout)
     addStatus('<br><span class="loading">Querying zoning &amp; parcel data...</span>');
 
-    const [zoningResult, parcelResult] = await Promise.all([
-        fetchZoning(coords.lat, coords.lon),
-        fetchParcelInfo(coords.lat, coords.lon),
+    const _dataTimeout = new Promise(resolve => setTimeout(() => resolve([{ error: 'timeout' }, { error: 'timeout' }]), 12000));
+    const [zoningResult, parcelResult] = await Promise.race([
+        Promise.all([
+            fetchZoning(coords.lat, coords.lon),
+            fetchParcelInfo(coords.lat, coords.lon),
+        ]),
+        _dataTimeout,
     ]);
 
     // Build status summary
