@@ -3618,7 +3618,7 @@ async function lookupAddress() {
     var _structSF = (parcelResult && parcelResult.attrs) ? parseInt(parcelResult.attrs.SQFTmain1) || 0 : 0;
     var _nhood = (document.getElementById('neighborhood') || {}).value || 'dtla';
     var _lotSF = parseFloat((document.getElementById('parcelSize') || {}).value) || 10000;
-    var _addrForLinks = (document.getElementById('addressInput') || {}).value || '';
+    var _addrForLinks = coords.matched || (document.getElementById('addressInput') || {}).value || '';
     var _parcelAttrs = (parcelResult && parcelResult.attrs) ? parcelResult.attrs : null;
     // Set immediate fallback estimate while valuation engine runs
     var _estMarketValue = estimateMarketValue(_structSF, _lotSF, _structSF > 0 ? 'Residential' : 'Vacant', _nhood);
