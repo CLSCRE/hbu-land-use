@@ -1537,11 +1537,11 @@
         /* Letter modal */
         .letter-modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5);
-            z-index: 9998; display: flex; align-items: center; justify-content: center; overflow-y: auto;
+            z-index: 9998; overflow-y: auto; padding: 2rem 0;
         }
         .letter-modal {
             background: white; border-radius: 16px; padding: 2.5rem; max-width: 700px; width: 95%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2); margin: 2rem auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2); margin: 0 auto; max-height: none;
         }
         .letter-content { font-family: Georgia, 'Times New Roman', serif; line-height: 1.8; font-size: 1rem; color: #1a1a1a; }
         .letter-content p { margin-bottom: 1rem; }
@@ -6746,8 +6746,10 @@ document.addEventListener('DOMContentLoaded', () => { renderSavedList(); renderP
 function generateListingOnePager(result, inp, address) {
     const effects = stackLegislationEffects(result.legislation || []);
     const budget = generateBudget(result.id, inp, effects);
-    const ease = computeEaseOfExecution(result.id, inp, effects);
-    const risk = computeRiskLevel(result.id, inp, effects);
+    const lglScore = scoreLegal(result.id, inp, effects);
+    const phyScore = scorePhysical(result.id, inp);
+    const ease = computeEaseOfExecution(result.id, inp, effects, lglScore);
+    const risk = computeRiskLevel(result.id, inp, lglScore, phyScore);
 
     // Values — Residual Land Value approach
     // What a developer would pay: Stabilized Value minus all costs except land
@@ -7944,7 +7946,8 @@ function copyAPN(apn) {
 function openOnePagerFromScan(idx) {
     const r = scannerResults[idx]; if (!r) return;
     const prevGeocode = window.lastGeocode;
-    window.lastGeocode = { lat: r.lat, lon: r.lon, assessedTotal: r.landVal + r.impVal };
+    const sqft = r.inp && r.inp.siteCondition === 'demolition' ? Math.round((r.lotSizeSqFt || 10000) * 0.4) : 0;
+    window.lastGeocode = { lat: r.lat, lon: r.lon, assessedTotal: r.landVal + r.impVal, structureSqFt: sqft };
 
     const topResult = {
         id: r.bestUseId,
@@ -7988,7 +7991,8 @@ function generateSelectionOnePagers() {
     indices.forEach(idx => {
         const r = scannerResults[idx]; if (!r) return;
         const prevGeocode = window.lastGeocode;
-        window.lastGeocode = { lat: r.lat, lon: r.lon, assessedTotal: r.landVal + r.impVal };
+        const sqft2 = r.inp && r.inp.siteCondition === 'demolition' ? Math.round((r.lotSizeSqFt || 10000) * 0.4) : 0;
+        window.lastGeocode = { lat: r.lat, lon: r.lon, assessedTotal: r.landVal + r.impVal, structureSqFt: sqft2 };
         const topResult = {
             id: r.bestUseId, name: r.bestUse, overall: r.hbuScore,
             devMarginPct: r.budget ? r.budget.devMargin : 0,
