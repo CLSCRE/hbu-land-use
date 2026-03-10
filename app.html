@@ -4749,7 +4749,7 @@ async function _lookupAddressBody(address, coords, btn) {
     var _structSF = (parcelResult && parcelResult.attrs) ? parseInt(parcelResult.attrs.SQFTmain1) || 0 : 0;
     var _nhood = (document.getElementById('neighborhood') || {}).value || 'dtla';
     var _lotSF = parseFloat((document.getElementById('parcelSize') || {}).value) || 10000;
-    var _addrForLinks = (document.getElementById('address') || {}).value || '';
+    var _addrForLinks = (document.getElementById('addressInput') || {}).value || '';
     // Set immediate fallback estimate while AVM loads
     var _estMarketValue = estimateMarketValue(_structSF, _lotSF, _structSF > 0 ? 'Residential' : 'Vacant', _nhood);
     var _mvInput = document.getElementById('marketValue');
