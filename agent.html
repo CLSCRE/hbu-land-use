@@ -3299,6 +3299,25 @@ const JURISDICTIONS = [
     { name: 'Carson', lat: 33.8317, lon: -118.2620, radius: 2.5, note: 'Carson Municipal Code applies — own specific plans and environmental review.' },
     { name: 'Redondo Beach', lat: 33.8492, lon: -118.3884, radius: 2.0, note: 'Redondo Beach zoning code applies — Coastal Zone, own height/density standards.' },
     { name: 'Pomona', lat: 34.0551, lon: -117.7500, radius: 3.5, note: 'Pomona zoning code applies — own downtown specific plan and development incentives.' },
+    { name: 'South Pasadena', lat: 34.1161, lon: -118.1503, radius: 1.5, note: 'South Pasadena zoning code applies — strong historic preservation, own development standards.' },
+    { name: 'Arcadia', lat: 34.1397, lon: -118.0353, radius: 2.5, note: 'Arcadia zoning code applies — own development standards and review process.' },
+    { name: 'Monrovia', lat: 34.1442, lon: -117.9990, radius: 2.0, note: 'Monrovia zoning code applies — Old Town specific plan, own entitlement process.' },
+    { name: 'Alhambra', lat: 34.0953, lon: -118.1270, radius: 2.0, note: 'Alhambra zoning code applies — own specific plans and development standards.' },
+    { name: 'San Gabriel', lat: 34.0961, lon: -118.1058, radius: 1.5, note: 'San Gabriel zoning code applies — Mission District overlay, own development standards.' },
+    { name: 'Whittier', lat: 33.9792, lon: -118.0328, radius: 3.0, note: 'Whittier zoning code applies — Uptown specific plan, own development standards.' },
+    { name: 'Downey', lat: 33.9401, lon: -118.1332, radius: 2.5, note: 'Downey zoning code applies — own specific plans and development review.' },
+    { name: 'El Monte', lat: 34.0686, lon: -118.0276, radius: 2.5, note: 'El Monte zoning code applies — own development standards and review process.' },
+    { name: 'Covina', lat: 34.0900, lon: -117.8903, radius: 2.5, note: 'Covina zoning code applies — own downtown specific plan and development standards.' },
+    { name: 'West Covina', lat: 34.0686, lon: -117.9390, radius: 3.0, note: 'West Covina zoning code applies — own development standards and review process.' },
+    { name: 'Diamond Bar', lat: 34.0286, lon: -117.8103, radius: 3.0, note: 'Diamond Bar zoning code applies — hillside management, own development standards.' },
+    { name: 'Claremont', lat: 34.0967, lon: -117.7198, radius: 2.5, note: 'Claremont zoning code applies — Village specific plan, own development standards.' },
+    { name: 'Azusa', lat: 34.1336, lon: -117.9076, radius: 2.0, note: 'Azusa zoning code applies — TOD district near Gold Line, own development standards.' },
+    { name: 'Compton', lat: 33.8958, lon: -118.2201, radius: 2.5, note: 'Compton zoning code applies — own development standards and review process.' },
+    { name: 'Lakewood', lat: 33.8536, lon: -118.1340, radius: 2.5, note: 'Lakewood zoning code applies — own development standards and review process.' },
+    { name: 'Norwalk', lat: 33.9022, lon: -118.0817, radius: 2.5, note: 'Norwalk zoning code applies — own specific plans and development standards.' },
+    { name: 'Cerritos', lat: 33.8583, lon: -118.0647, radius: 2.0, note: 'Cerritos zoning code applies — own development standards and review process.' },
+    { name: 'Hermosa Beach', lat: 33.8622, lon: -118.3995, radius: 1.0, note: 'Hermosa Beach zoning code applies — Coastal Zone, own height/density standards.' },
+    { name: 'Manhattan Beach', lat: 33.8847, lon: -118.4109, radius: 1.5, note: 'Manhattan Beach zoning code applies — Coastal Zone, strict R-1 protections.' },
 ];
 const LA_CITY_CENTER = { lat: 34.0522, lon: -118.2437 };
 const LA_CITY_APPROX_RADIUS = 15;
@@ -3554,25 +3573,39 @@ async function lookupAddress() {
     window.lastGeocode = { lat: coords.lat, lon: coords.lon };
 
     let filledCount = 0;
+    try { // Master try/catch — button always re-enables
+
+    // Detect neighborhood early (needed for zoning fallback)
+    const hood = detectNeighborhood(coords.lat, coords.lon, coords.address);
+    document.getElementById('neighborhood').value = hood;
+    markAutofill('neighborhood');
+    filledCount++;
 
     // Run zoning + parcel queries in parallel (with hard 12s timeout)
     addStatus('<br><span class="loading">Querying zoning &amp; parcel data...</span>');
 
-    const _dataTimeout = new Promise(resolve => setTimeout(() => resolve([{ error: 'timeout' }, { error: 'timeout' }]), 12000));
-    const [zoningResult, parcelResult] = await Promise.race([
-        Promise.all([
-            fetchZoning(coords.lat, coords.lon),
-            fetchParcelInfo(coords.lat, coords.lon),
-        ]),
-        _dataTimeout,
-    ]);
+    let zoningResult = null, parcelResult = null;
+    try {
+        const _dataTimeout = new Promise(resolve => setTimeout(() => resolve([{ error: 'timeout' }, { error: 'timeout' }]), 12000));
+        [zoningResult, parcelResult] = await Promise.race([
+            Promise.all([
+                fetchZoning(coords.lat, coords.lon),
+                fetchParcelInfo(coords.lat, coords.lon),
+            ]),
+            _dataTimeout,
+        ]);
+    } catch (e) {
+        console.warn('Zoning/parcel queries failed:', e);
+        zoningResult = { error: 'timeout' };
+        parcelResult = { error: 'timeout' };
+    }
 
     // Build status summary
     let statusParts = [`<span class="status-item ok">Matched: ${coords.matched}</span>`];
 
     // Apply zoning
-    if (zoningResult && zoningResult.error === 'cors') {
-        // Estimate zoning from street type and neighborhood when ZIMAS blocked
+    if (zoningResult && (zoningResult.error === 'cors' || zoningResult.error === 'timeout')) {
+        // Estimate zoning from street type and neighborhood when ZIMAS unavailable
         const estZone = estimateZoningFallback(coords.matched || address, coords.address, hood);
         if (estZone) {
             document.getElementById('zoning').value = estZone;
@@ -3682,12 +3715,6 @@ async function lookupAddress() {
         statusParts.push(`<span class="status-item warn">Parcel size: could not retrieve — enter manually</span>`);
     }
 
-    // Detect neighborhood (using Nominatim address details when available)
-    const hood = detectNeighborhood(coords.lat, coords.lon, coords.address);
-    document.getElementById('neighborhood').value = hood;
-    markAutofill('neighborhood');
-    filledCount++;
-
     // Detect jurisdiction
     const jurisdiction = detectJurisdiction(coords.lat, coords.lon, coords.address);
     window._lastJurisdiction = jurisdiction;
@@ -3745,6 +3772,10 @@ async function lookupAddress() {
         document.getElementById('autofillNotice').classList.add('visible');
     }
 
+    } catch (lookupErr) {
+        console.error('Lookup error:', lookupErr);
+        setStatus(`<span class="status-item ok">Matched: ${coords.matched}</span><br><span class="status-item warn">Some data unavailable — fill in fields manually and click Analyze.</span>`);
+    }
     btn.disabled = false;
     btn.textContent = 'Look Up';
 }
