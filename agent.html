@@ -3427,11 +3427,10 @@ async function geocodeAddress(address) {
 // Query ZIMAS zoning layer
 async function fetchZoning(lat, lon) {
     try {
-        // ZIMAS uses CA State Plane Zone 5 (feet) but we can pass WGS84 with inSR=4326
         const url = `https://zimas.lacity.org/arcgis/rest/services/zma/zoning/MapServer/1102/query?` +
             `geometry=${lon},${lat}&geometryType=esriGeometryPoint&inSR=4326` +
             `&spatialRel=esriSpatialRelIntersects&outFields=ZONE_CMPLT&returnGeometry=false&f=json`;
-        const resp = await fetch(url);
+        const resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
         if (!resp.ok) throw new Error('ZIMAS unavailable');
         const data = await resp.json();
         if (data.features && data.features.length > 0) {
@@ -3440,7 +3439,7 @@ async function fetchZoning(lat, lon) {
         }
         return null;
     } catch (e) {
-        console.warn('ZIMAS zoning query failed (may be CORS):', e);
+        console.warn('ZIMAS zoning query failed:', e);
         return { error: 'cors' };
     }
 }
@@ -3451,14 +3450,12 @@ async function fetchParcelInfo(lat, lon) {
         const url = `https://public.gis.lacounty.gov/public/rest/services/LACounty_Cache/LACounty_Parcel/MapServer/0/query?` +
             `geometry=${lon},${lat}&geometryType=esriGeometryPoint&inSR=4326` +
             `&spatialRel=esriSpatialRelIntersects&outFields=*&returnGeometry=true&f=json`;
-        const resp = await fetch(url);
+        const resp = await fetch(url, { signal: AbortSignal.timeout(10000) });
         if (!resp.ok) throw new Error('Parcel service unavailable');
         const data = await resp.json();
         if (data.features && data.features.length > 0) {
             const attrs = data.features[0].attributes;
-            // Try different field names for area
             let area = attrs['Shape.STArea()'] || attrs['Shape__Area'] || attrs['ShapeSTArea'] || attrs['SHAPE.STArea()'] || null;
-            // If geometry is returned, try to compute from rings
             if (!area && data.features[0].geometry && data.features[0].geometry.rings) {
                 area = computePolygonArea(data.features[0].geometry.rings, data.spatialReference);
             }
@@ -3466,8 +3463,8 @@ async function fetchParcelInfo(lat, lon) {
         }
         return null;
     } catch (e) {
-        console.warn('Parcel query failed (may be CORS):', e);
-        return { error: 'cors' };
+        console.warn('Parcel query failed:', e);
+        return { error: e.name === 'TimeoutError' ? 'timeout' : 'cors' };
     }
 }
 
@@ -3652,8 +3649,8 @@ async function lookupAddress() {
     if (_rLink) _rLink.href = 'https://www.redfin.com/search?q=' + _encAddr;
 
     // Apply parcel size
-    if (parcelResult && parcelResult.error === 'cors') {
-        statusParts.push(`<span class="status-item warn">Parcel size: County GIS blocked by browser — enter manually</span>`);
+    if (parcelResult && (parcelResult.error === 'cors' || parcelResult.error === 'timeout')) {
+        statusParts.push(`<span class="status-item warn">Parcel size: County GIS unavailable — enter manually</span>`);
     } else if (parcelResult && parcelResult.area && parcelResult.area > 0) {
         document.getElementById('parcelSize').value = Math.round(parcelResult.area);
         markAutofill('parcelSize');
@@ -4642,9 +4639,9 @@ function scoreFinancial(useId, inp, effects) {
     const landValuePSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
     // Land cost: use assessor value if available, checkbox zeroes it out
     const _ownProp = document.getElementById('ownProperty');
-    const landCost = (_ownProp && _ownProp.checked) ? 0
+    const landCost = (useId === 'adu' || (_ownProp && _ownProp.checked)) ? 0
         : (parseFloat((document.getElementById('marketValue') || {}).value) > 0) ? parseFloat(document.getElementById('marketValue').value)
-        : (useId === 'adu' ? 0 : inp.parcelSize * landValuePSF);
+        : inp.parcelSize * landValuePSF;
 
     // Build cost with parking reduction from legislation
     let buildCostPerSF = BUILD_COST_PSF[useId] || 300;
@@ -5217,11 +5214,11 @@ function generateBudget(useId, inp, effects) {
     const parkingCostPerSpace = PARKING_COST_MAP[useId] || 35000;
 
     const landValuePSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
-    // Land cost: use assessor value if available, checkbox zeroes it out
+    // Land cost: ADU always $0 (addition to existing property), checkbox zeroes it out
     const _ownProp2 = document.getElementById('ownProperty');
-    const landCost = (_ownProp2 && _ownProp2.checked) ? 0
+    const landCost = (useId === 'adu' || (_ownProp2 && _ownProp2.checked)) ? 0
         : (parseFloat((document.getElementById('marketValue') || {}).value) > 0) ? parseFloat(document.getElementById('marketValue').value)
-        : (useId === 'adu' ? 0 : inp.parcelSize * landValuePSF);
+        : inp.parcelSize * landValuePSF;
 
     // Hard costs — Site work broken into sub-components
     const siteWorkBreakdown = calcSiteWorkBreakdown(useId, inp, gsf);
@@ -6016,9 +6013,9 @@ function computeFromAssumptions(useId, inp, assumptions, effects) {
     const landValuePSF = assumptions.landValuePSF;
     // Land cost: use assessor value if available, checkbox zeroes it out
     const _ownProp3 = document.getElementById('ownProperty');
-    const landCost = (_ownProp3 && _ownProp3.checked) ? 0
+    const landCost = (useId === 'adu' || (_ownProp3 && _ownProp3.checked)) ? 0
         : (parseFloat((document.getElementById('marketValue') || {}).value) > 0) ? parseFloat(document.getElementById('marketValue').value)
-        : (useId === 'adu' ? 0 : inp.parcelSize * landValuePSF);
+        : inp.parcelSize * landValuePSF;
     let siteWorkBreakdown;
     if (assumptions.siteWorkOverride !== undefined && assumptions.siteWorkOverride !== null) {
         siteWorkBreakdown = { total: assumptions.siteWorkOverride, grading: 0, utilities: 0, erosion: 0, soilPrep: 0, clearing: 0, isOverride: true };
