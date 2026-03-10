@@ -3625,26 +3625,22 @@ async function lookupAddress() {
     var _mvInput = document.getElementById('marketValue');
     if (_mvInput) _mvInput.value = _estMarketValue;
     var _avLabel = document.getElementById('assessedValueLabel');
-    if (_avLabel) { _avLabel.textContent = 'Calculating...'; _avLabel.style.color = '#6366f1'; }
-    // Async: run multi-approach valuation engine
+    if (_avLabel) { _avLabel.textContent = ''; }
+    // Async: get market value (RentCast AVM → Prop 13 → fallback)
     (async () => {
         try {
             const mv = await getMarketValue(_addrForLinks, _structSF, _lotSF, _structSF > 0 ? 'Residential' : 'Vacant', _nhood, _parcelAttrs);
             if (_mvInput) _mvInput.value = mv.value;
-            if (_avLabel) _avLabel.textContent = mv.detail;
             var _badge = document.getElementById('mvSourceBadge');
-            if (mv.source === 'blended') {
-                if (_avLabel) _avLabel.style.color = '#059669';
-                if (_badge) { _badge.textContent = 'Blended AVM'; _badge.style.background = '#059669'; }
-            } else if (mv.source === 'rentcast') {
-                if (_avLabel) _avLabel.style.color = '#059669';
-                if (_badge) { _badge.textContent = 'RentCast AVM'; _badge.style.background = '#059669'; }
-            } else if (mv.source === 'prop13') {
-                if (_avLabel) _avLabel.style.color = '#6366f1';
-                if (_badge) { _badge.textContent = 'Prop 13 Adj.'; _badge.style.background = '#6366f1'; }
+            if (mv.source === 'avm') {
+                if (_badge) { _badge.textContent = 'AVM'; _badge.style.background = '#059669'; }
+                if (_avLabel) _avLabel.textContent = '';
+            } else if (mv.source === 'assessor') {
+                if (_badge) { _badge.textContent = 'Assessor'; _badge.style.background = '#6366f1'; }
+                if (_avLabel) _avLabel.textContent = '';
             } else {
-                if (_avLabel) _avLabel.style.color = '';
-                if (_badge) { _badge.textContent = 'Median $/SF'; _badge.style.background = ''; }
+                if (_badge) { _badge.textContent = 'Est.'; _badge.style.background = ''; }
+                if (_avLabel) _avLabel.textContent = '';
             }
         } catch {}
     })();
@@ -4076,52 +4072,24 @@ async function fetchRentCastAVM(address) {
  * Returns { value, detail, approaches: [{name, value, weight}], source }
  */
 async function getMarketValue(address, structureSqFt, lotSizeSqFt, useType, neighborhood, parcelAttrs) {
-    const approaches = [];
-    const units = parcelAttrs ? (parseInt(parcelAttrs.Units1) || 0) : 0;
-    const useDesc = parcelAttrs ? (parcelAttrs.UseDescription || '') : '';
+    // Priority 1: RentCast AVM (closest to Zillow Zestimate)
+    const avm = await fetchRentCastAVM(address);
+    if (avm && avm.price) {
+        return { value: Math.round(avm.price), source: 'avm' };
+    }
 
-    // Approach 1: Prop 13 Base Year Adjusted (instant)
+    // Priority 2: Prop 13 base-year adjusted (uses real assessor data)
     if (parcelAttrs) {
         const p13val = prop13AdjustedValue(
             parcelAttrs.Roll_LandValue, parcelAttrs.Roll_ImpValue,
             parcelAttrs.Roll_LandBaseYear, parcelAttrs.Roll_ImpBaseYear
         );
-        if (p13val > 0) approaches.push({ name: 'Prop 13 Adj.', value: p13val, weight: 30 });
+        if (p13val > 0) return { value: p13val, source: 'assessor' };
     }
 
-    // Approach 2: Comp-based value, adjusted by property type (instant)
-    const compVal = compBasedValue(structureSqFt, lotSizeSqFt, useType, neighborhood, units, useDesc);
-    if (compVal > 0) approaches.push({ name: 'Comp Analysis', value: compVal, weight: 30 });
-
-    // Approach 3: Income approach using actual unit count (instant)
-    const incomeVal = incomeApproachValue(structureSqFt, lotSizeSqFt, useType, neighborhood, units, useDesc);
-    if (incomeVal > 0) approaches.push({ name: 'Income Approach', value: incomeVal, weight: 20 });
-
-    // Approach 4: RentCast AVM (async API call)
-    const avm = await fetchRentCastAVM(address);
-    if (avm && avm.price) {
-        approaches.push({ name: 'RentCast AVM', value: Math.round(avm.price), weight: 20 });
-    }
-
-    // Blend all available approaches
-    if (approaches.length >= 2) {
-        const totalWeight = approaches.reduce((s, a) => s + a.weight, 0);
-        const blended = Math.round(approaches.reduce((s, a) => s + a.value * (a.weight / totalWeight), 0));
-        const detailParts = approaches.map(a => a.name + ': ' + fmtDollar(a.value));
-        return { value: blended, source: 'blended', detail: detailParts.join(' · '), approaches };
-    }
-    if (approaches.length === 1) {
-        return {
-            value: approaches[0].value,
-            source: approaches[0].name.toLowerCase().includes('rentcast') ? 'rentcast' : 'comp',
-            detail: approaches[0].name + ': ' + fmtDollar(approaches[0].value),
-            approaches
-        };
-    }
-
-    // Last resort fallback
+    // Fallback: neighborhood median $/SF
     const est = estimateMarketValue(structureSqFt, lotSizeSqFt, useType, neighborhood);
-    return { value: est, source: 'median_psf', detail: 'Median $/SF: ' + fmtDollar(est), approaches: [{ name: 'Median $/SF', value: est, weight: 100 }] };
+    return { value: est, source: 'estimate' };
 }
 // ══════════════════════════════════════════════════════════════════
 
@@ -7050,7 +7018,7 @@ function generateListingOnePager(result, inp, address) {
     const geo = window.lastGeocode || {};
     const _structSF = geo.structureSqFt || parseInt((document.getElementById('structureSF') || {}).value) || 0;
     let estimatedMarketValue = estimateMarketValue(_structSF, inp.parcelSize, _structSF > 0 ? 'Residential' : 'Vacant', inp.neighborhood);
-    let marketValueSource = _structSF > 0 ? 'Neighborhood median $/SF' : 'Neighborhood land value $/SF';
+    let marketValueSource = 'Estimated';
 
     // Premium a developer would pay over current market value
     const premium = residualLandValue - estimatedMarketValue;
@@ -7140,7 +7108,7 @@ function generateListingOnePager(result, inp, address) {
         <div style="margin-top:1rem;font-size:0.92rem;opacity:0.9;">
             ${oppRatio >= 1.5 ? `That\u2019s <strong style="color:#fde68a;font-size:1.15rem;">${oppRatio.toFixed(1)}x</strong> the current market value &mdash; a <strong style="color:#fde68a;">+${fmt(premium)}</strong> premium` : oppRatio >= 1.0 ? `Developer would pay <strong style="color:#fde68a;">${oppRatio.toFixed(1)}x</strong> current value &mdash; modest upside of +${fmt(premium)}` : `Developer land bid is <strong style="color:#fca5a5;">${oppRatio.toFixed(2)}x</strong> of current market value`}
         </div>
-        <div style="font-size:0.7rem;opacity:0.6;margin-top:0.5rem;">${marketValueSource} &mdash; verify with Zillow/Redfin comps</div>
+        <div style="font-size:0.7rem;opacity:0.6;margin-top:0.5rem;">Verify on Zillow/Redfin</div>
     </div>
     <div class="onepager-body">
         ${oppBanner}
