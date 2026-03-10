@@ -5036,7 +5036,7 @@ function _avmCacheGet(address) {
         const raw = localStorage.getItem(_avmCacheKey(address));
         if (!raw) return null;
         const obj = JSON.parse(raw);
-        if (Date.now() - obj.timestamp > 7 * 86400000) { localStorage.removeItem(_avmCacheKey(address)); return null; }
+        if (Date.now() - obj.timestamp > 90 * 86400000) { localStorage.removeItem(_avmCacheKey(address)); return null; }
         return obj;
     } catch { return null; }
 }

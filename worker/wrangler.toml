@@ -2,9 +2,6 @@ name = "lty-avm-proxy"
 main = "index.js"
 compatibility_date = "2024-01-01"
 
-# Optional: KV namespace for caching (saves API calls)
-# Create with: wrangler kv namespace create AVM_CACHE
-# Then uncomment and paste the ID below:
-# [[kv_namespaces]]
-# binding = "AVM_CACHE"
-# id = "YOUR_KV_NAMESPACE_ID"
+[[kv_namespaces]]
+binding = "AVM_CACHE"
+id = "6051090792e74414ba367f29be1834cd"

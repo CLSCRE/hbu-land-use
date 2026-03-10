@@ -111,9 +111,9 @@ export default {
         timestamp: Date.now(),
       };
 
-      // Cache for 7 days in KV (if bound)
+      // Cache for 90 days in KV — values don't shift much in 3 months
       if (env.AVM_CACHE) {
-        ctx.waitUntil(env.AVM_CACHE.put(cacheKey, JSON.stringify(result), { expirationTtl: 604800 }));
+        ctx.waitUntil(env.AVM_CACHE.put(cacheKey, JSON.stringify(result), { expirationTtl: 7776000 }));
       }
 
       return Response.json(result, {
