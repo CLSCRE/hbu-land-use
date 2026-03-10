@@ -3648,10 +3648,11 @@ async function lookupAddress() {
             }
         } catch {}
     })();
+    var _zillowAddr = _addrForLinks.trim().replace(/[,#\.]+/g, '').replace(/\s+/g, '-');
     var _encAddr = encodeURIComponent(_addrForLinks);
     var _zLink = document.getElementById('zillowValLink');
     var _rLink = document.getElementById('redfinValLink');
-    if (_zLink) _zLink.href = 'https://www.zillow.com/homes/' + _encAddr + '_rb/';
+    if (_zLink) _zLink.href = 'https://www.zillow.com/homes/' + _zillowAddr + '_rb/';
     if (_rLink) _rLink.href = 'https://www.redfin.com/search?q=' + _encAddr;
 
     // Apply parcel size
@@ -3985,38 +3986,58 @@ function prop13AdjustedValue(rollLandVal, rollImpVal, landBaseYear, impBaseYear)
     return Math.round(landVal * landMult + impVal * impMult);
 }
 
+// Property-type discount: multi-family trades at lower $/SF than SFR
+function getPropertyTypeMultiplier(units, useDesc) {
+    const desc = (useDesc || '').toLowerCase();
+    if (units >= 5 || desc.includes('five or more')) return 0.45;
+    if (units === 4 || desc.includes('four')) return 0.52;
+    if (units === 3 || desc.includes('three') || desc.includes('triplex')) return 0.58;
+    if (units === 2 || desc.includes('two') || desc.includes('duplex')) return 0.65;
+    if (desc.includes('condo')) return 0.85;
+    return 1.0; // SFR
+}
+
 /**
  * Approach 2: Sales Comp via Assessor + Land Comp Data
+ * Adjusted by property type — duplexes, triplexes etc. trade at lower $/SF
  */
-function compBasedValue(structureSqFt, lotSizeSqFt, useType, neighborhood) {
+function compBasedValue(structureSqFt, lotSizeSqFt, useType, neighborhood, units, useDesc) {
     const landComps = COMP_LAND_SALES[neighborhood] || COMP_LAND_SALES.dtla;
     if (useType === 'Vacant' || structureSqFt <= 0) {
-        // Land value = lot SF × comparable land $/SF
         return Math.round(lotSizeSqFt * landComps.median);
     }
-    // Improved: use structure $/SF from MARKET_VALUE_PSF + land residual
     const mvPSF = MARKET_VALUE_PSF[neighborhood] || 600;
-    return Math.round(structureSqFt * mvPSF);
+    const typeMult = getPropertyTypeMultiplier(units, useDesc);
+    return Math.round(structureSqFt * mvPSF * typeMult);
 }
 
 /**
  * Approach 3: Income Approach — NOI / Cap Rate
- * Estimates what an investor would pay based on rental income.
+ * Uses actual unit count from assessor when available.
  */
-function incomeApproachValue(structureSqFt, lotSizeSqFt, useType, neighborhood) {
-    if (useType === 'Vacant' || structureSqFt <= 0) return 0; // Can't value vacant via income
+function incomeApproachValue(structureSqFt, lotSizeSqFt, useType, neighborhood, units, useDesc) {
+    if (useType === 'Vacant' || structureSqFt <= 0) return 0;
     const rents = MARKET_RENTS_2025[neighborhood] || MARKET_RENTS_2025.dtla;
     const vacancy = VACANCY_RATES[neighborhood] || VACANCY_RATES.dtla;
     const caps = CAP_RATES[neighborhood] || CAP_RATES.dtla;
 
-    // Estimate gross rental income based on typical unit mix
-    const avgUnitSF = 850;
-    const estUnits = Math.max(1, Math.floor(structureSqFt * 0.85 / avgUnitSF));
-    // Weighted avg rent: 20% studio, 40% 1BR, 30% 2BR, 10% 3BR
-    const avgRent = rents.studio * 0.20 + rents.br1 * 0.40 + rents.br2 * 0.30 + rents.br3 * 0.10;
-    const grossAnnual = estUnits * avgRent * 12;
+    // Use actual unit count if available, otherwise estimate
+    const actualUnits = (units && units > 0) ? units : Math.max(1, Math.floor(structureSqFt * 0.85 / 850));
+    // Adjust rent mix by unit count
+    let avgRent;
+    if (actualUnits <= 2) {
+        // Duplexes: typically 2BR units
+        avgRent = rents.br2;
+    } else if (actualUnits <= 4) {
+        // Small multi: mix of 1BR and 2BR
+        avgRent = rents.br1 * 0.5 + rents.br2 * 0.5;
+    } else {
+        // Larger buildings: studio/1BR heavy
+        avgRent = rents.studio * 0.20 + rents.br1 * 0.45 + rents.br2 * 0.30 + rents.br3 * 0.05;
+    }
+    const grossAnnual = actualUnits * avgRent * 12;
     const vacancyLoss = grossAnnual * vacancy.residential;
-    const opex = grossAnnual * 0.35; // 35% expense ratio
+    const opex = grossAnnual * (actualUnits <= 4 ? 0.40 : 0.35); // Higher expense ratio for small multi
     const noi = grossAnnual - vacancyLoss - opex;
     if (noi <= 0 || caps.residential <= 0) return 0;
     return Math.round(noi / caps.residential);
@@ -4056,6 +4077,8 @@ async function fetchRentCastAVM(address) {
  */
 async function getMarketValue(address, structureSqFt, lotSizeSqFt, useType, neighborhood, parcelAttrs) {
     const approaches = [];
+    const units = parcelAttrs ? (parseInt(parcelAttrs.Units1) || 0) : 0;
+    const useDesc = parcelAttrs ? (parcelAttrs.UseDescription || '') : '';
 
     // Approach 1: Prop 13 Base Year Adjusted (instant)
     if (parcelAttrs) {
@@ -4066,12 +4089,12 @@ async function getMarketValue(address, structureSqFt, lotSizeSqFt, useType, neig
         if (p13val > 0) approaches.push({ name: 'Prop 13 Adj.', value: p13val, weight: 30 });
     }
 
-    // Approach 2: Comp-based value using land sale data (instant)
-    const compVal = compBasedValue(structureSqFt, lotSizeSqFt, useType, neighborhood);
+    // Approach 2: Comp-based value, adjusted by property type (instant)
+    const compVal = compBasedValue(structureSqFt, lotSizeSqFt, useType, neighborhood, units, useDesc);
     if (compVal > 0) approaches.push({ name: 'Comp Analysis', value: compVal, weight: 30 });
 
-    // Approach 3: Income approach (instant, improved properties only)
-    const incomeVal = incomeApproachValue(structureSqFt, lotSizeSqFt, useType, neighborhood);
+    // Approach 3: Income approach using actual unit count (instant)
+    const incomeVal = incomeApproachValue(structureSqFt, lotSizeSqFt, useType, neighborhood, units, useDesc);
     if (incomeVal > 0) approaches.push({ name: 'Income Approach', value: incomeVal, weight: 20 });
 
     // Approach 4: RentCast AVM (async API call)
@@ -6838,7 +6861,7 @@ function renderFinderResults2(station) {
     let html = `<div id="finderSelectionBar" class="selection-bar" style="display:none;"><span id="finderSelCount">0</span><button type="button" class="finder-btn-export" onclick="addSelectionToSaved()" style="margin:0 0.5rem;">Add to Saved</button><button type="button" class="finder-btn-export" onclick="clearFinderSelection()">Clear</button></div>`;
     html += `<div class="finder-summary">${finderResults2.length} opportunities near <strong>${station.name}</strong></div>`;
     html += `<div class="finder-table-wrapper"><table class="finder-table" id="finderTable2"><thead><tr><th onclick="event.stopPropagation();toggleSelectAll()"><input type="checkbox" id="finderSelectAll" onclick="event.stopPropagation();toggleSelectAll()"></th><th onclick="sortFinderTable2('address')">Address</th><th onclick="sortFinderTable2('apn')">APN</th><th onclick="sortFinderTable2('lotSizeSqFt')">Lot Size</th><th onclick="sortFinderTable2('useType')">Use</th><th onclick="sortFinderTable2('yearBuilt')">Year</th><th onclick="sortFinderTable2('landVal')">Land Val</th><th onclick="sortFinderTable2('impVal')">Imp Val</th><th onclick="sortFinderTable2('impRatio')">Imp/Land</th><th onclick="sortFinderTable2('zone')">Zone</th><th>Allowances</th><th>Links</th></tr></thead><tbody>`;
-    finderResults2.forEach((r, i) => { const allow = r.allowances; const allowStr = allow ? `${allow.height}ft/${allow.density}du/${allow.far}FAR` : '-'; const checked = finderSelectedSet.has(i) ? 'checked' : ''; const enc = encodeURIComponent(r.address); const apnClean = (r.apn||'').replace(/[^0-9]/g,''); html += `<tr onclick="highlightFinderParcel2(${i})" id="finderRow2_${i}"><td onclick="event.stopPropagation()"><input type="checkbox" class="finder-row-check" data-idx="${i}" ${checked} onchange="onFinderCheckChange()"></td><td>${r.address}</td><td>${r.apn}</td><td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString()+' sf' : '-'}</td><td>${r.useType}${r.resSubType ? ' <span style="color:#718096;font-size:0.78em;">(' + r.resSubType + ')</span>' : ''}</td><td>${r.yearBuilt > 0 ? r.yearBuilt : '-'}</td><td>${f(r.landVal)}</td><td>${f(r.impVal)}</td><td class="${ratioClass(r.impRatio)}">${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'}</td><td>${zoneBadge(r.zone)}</td><td style="font-size:0.75rem;">${allowStr}</td><td><span class="prop-links" onclick="event.stopPropagation()"><a href="https://www.zillow.com/homes/${enc}_rb/" target="_blank">Z</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank">LA</a></span></td></tr>`; });
+    finderResults2.forEach((r, i) => { const allow = r.allowances; const allowStr = allow ? `${allow.height}ft/${allow.density}du/${allow.far}FAR` : '-'; const checked = finderSelectedSet.has(i) ? 'checked' : ''; const zEnc = r.address.trim().replace(/[,#\.]+/g,'').replace(/\s+/g,'-'); const apnClean = (r.apn||'').replace(/[^0-9]/g,''); html += `<tr onclick="highlightFinderParcel2(${i})" id="finderRow2_${i}"><td onclick="event.stopPropagation()"><input type="checkbox" class="finder-row-check" data-idx="${i}" ${checked} onchange="onFinderCheckChange()"></td><td>${r.address}</td><td>${r.apn}</td><td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString()+' sf' : '-'}</td><td>${r.useType}${r.resSubType ? ' <span style="color:#718096;font-size:0.78em;">(' + r.resSubType + ')</span>' : ''}</td><td>${r.yearBuilt > 0 ? r.yearBuilt : '-'}</td><td>${f(r.landVal)}</td><td>${f(r.impVal)}</td><td class="${ratioClass(r.impRatio)}">${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'}</td><td>${zoneBadge(r.zone)}</td><td style="font-size:0.75rem;">${allowStr}</td><td><span class="prop-links" onclick="event.stopPropagation()"><a href="https://www.zillow.com/homes/${zEnc}_rb/" target="_blank">Z</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank">LA</a></span></td></tr>`; });
     html += '</tbody></table></div>';
     html += `<button type="button" class="finder-btn-export" onclick="exportFinderCSV2()">Export CSV (${finderResults2.length})</button>`;
     area.innerHTML = html; updateSelectionBar();
@@ -6861,7 +6884,7 @@ function renderSavedList() {
     const saved = getSavedList(); const panel = document.getElementById('savedListPanel'); const body = document.getElementById('savedListBody'); const countEl = document.getElementById('savedListCount'); if (!panel || !body) return;
     if (saved.length === 0) { panel.style.display = 'none'; return; }
     panel.style.display = 'block'; countEl.textContent = saved.length + ' propert' + (saved.length === 1 ? 'y' : 'ies');
-    body.innerHTML = saved.map((r, i) => { const enc = encodeURIComponent(r.address||''); const apnClean = (r.apn||'').replace(/[^0-9]/g,''); const oppColor = (r.oppRatio||0) >= 2.0 ? '#059669' : (r.oppRatio||0) >= 1.5 ? '#d97706' : '#6b7280'; return `<tr><td><input type="checkbox" class="saved-select" data-idx="${i}"></td><td>${r.address}</td><td>${r.apn}</td><td>${r.bestUse||'-'}</td><td style="color:${oppColor};font-weight:700;">${r.oppRatio ? r.oppRatio.toFixed(1)+'x' : '-'}</td><td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString()+' sf' : '-'}</td><td><span class="prop-links"><a href="https://www.zillow.com/homes/${enc}_rb/" target="_blank">Z</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank">LA</a></span></td><td><button type="button" class="saved-btn-remove" onclick="removeSavedItem(${i})">Remove</button></td></tr>`; }).join('');
+    body.innerHTML = saved.map((r, i) => { const zEnc = (r.address||'').trim().replace(/[,#\.]+/g,'').replace(/\s+/g,'-'); const apnClean = (r.apn||'').replace(/[^0-9]/g,''); const oppColor = (r.oppRatio||0) >= 2.0 ? '#059669' : (r.oppRatio||0) >= 1.5 ? '#d97706' : '#6b7280'; return `<tr><td><input type="checkbox" class="saved-select" data-idx="${i}"></td><td>${r.address}</td><td>${r.apn}</td><td>${r.bestUse||'-'}</td><td style="color:${oppColor};font-weight:700;">${r.oppRatio ? r.oppRatio.toFixed(1)+'x' : '-'}</td><td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString()+' sf' : '-'}</td><td><span class="prop-links"><a href="https://www.zillow.com/homes/${zEnc}_rb/" target="_blank">Z</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank">LA</a></span></td><td><button type="button" class="saved-btn-remove" onclick="removeSavedItem(${i})">Remove</button></td></tr>`; }).join('');
 }
 function removeSavedItem(idx) { const saved = getSavedList(); saved.splice(idx, 1); setSavedList(saved); renderSavedList(); }
 function clearSavedList() { if (!confirm('Remove all saved properties?')) return; setSavedList([]); renderSavedList(); }
@@ -8373,7 +8396,7 @@ function exportCallList() {
     const headers = ['Address','APN','Lot Size (SF)','Use Type','Year Built','Est. Market Value','Developer Land Bid','Opp. Ratio','Premium ($)','Premium (%)','Best Use','HBU Score','Ease of Build','SB 79 Eligible','Zone','Owner Name','Mailing Address','Phone','Notes','Zillow URL','Assessor URL'];
     const rows = results.map(r => {
         const apnClean = (r.apn || '').replace(/[^0-9]/g, '');
-        const enc = encodeURIComponent(r.address);
+        const zEnc = r.address.trim().replace(/[,#\.]+/g, '').replace(/\s+/g, '-');
         const premium = r.residualLandValue - r.estimatedMarketValue;
         const premiumPct = r.estimatedMarketValue > 0 ? ((premium / r.estimatedMarketValue) * 100).toFixed(0) : '';
         return [
@@ -8396,7 +8419,7 @@ function exportCallList() {
             '', // Mailing Address (blank)
             '', // Phone (blank)
             '', // Notes
-            `https://www.zillow.com/homes/${enc}_rb/`,
+            `https://www.zillow.com/homes/${zEnc}_rb/`,
             `https://portal.assessor.lacounty.gov/parceldetail/${apnClean}`
         ].join(',');
     });
@@ -8417,7 +8440,7 @@ function exportPortfolioCallList() {
     const headers = ['Address','APN','Status','Lot Size (SF)','Best Use','Dev Value','As-Is Value','Opp. Ratio','HBU Score','Ease','Owner Name','Mailing Address','Phone','Notes','Zillow URL','Assessor URL'];
     const rows = sites.map(s => {
         const apnClean = (s.apn || '').replace(/[^0-9]/g, '');
-        const enc = encodeURIComponent(s.address || '');
+        const zEnc = (s.address || '').trim().replace(/[,#\.]+/g, '').replace(/\s+/g, '-');
         const ratio = s.oppRatio || (s.asIsValue > 0 ? s.devValue / s.asIsValue : 0);
         const stLabel = (PROSPECT_STATUSES[s.status] || PROSPECT_STATUSES.not_contacted).label;
         return [
@@ -8426,7 +8449,7 @@ function exportPortfolioCallList() {
             Math.round(s.devValue || 0), Math.round(s.asIsValue || 0),
             ratio.toFixed(2), s.score || '', s.ease || '',
             '', '', '', '',
-            `https://www.zillow.com/homes/${enc}_rb/`,
+            `https://www.zillow.com/homes/${zEnc}_rb/`,
             `https://portal.assessor.lacounty.gov/parceldetail/${apnClean}`
         ].join(',');
     });

@@ -4780,10 +4780,11 @@ async function _lookupAddressBody(address, coords, btn) {
         } catch {}
     })();
     // Set Zillow/Redfin valuation links
+    var _zillowAddr = _addrForLinks.trim().replace(/[,#\.]+/g, '').replace(/\s+/g, '-');
     var _encAddr = encodeURIComponent(_addrForLinks);
     var _zLink = document.getElementById('zillowValLink');
     var _rLink = document.getElementById('redfinValLink');
-    if (_zLink) _zLink.href = 'https://www.zillow.com/homes/' + _encAddr + '_rb/';
+    if (_zLink) _zLink.href = 'https://www.zillow.com/homes/' + _zillowAddr + '_rb/';
     if (_rLink) _rLink.href = 'https://www.redfin.com/search?q=' + _encAddr;
 
     // Apply parcel size
@@ -5164,37 +5165,55 @@ function prop13AdjustedValue(rollLandVal, rollImpVal, landBaseYear, impBaseYear)
 }
 
 /**
+ * Property-type multiplier — multi-family trades at discount to SFR $/SF
+ */
+function getPropertyTypeMultiplier(units, useDesc) {
+    const desc = (useDesc || '').toLowerCase();
+    if (units >= 5 || desc.includes('five or more')) return 0.45;
+    if (units === 4 || desc.includes('four')) return 0.52;
+    if (units === 3 || desc.includes('three') || desc.includes('triplex')) return 0.58;
+    if (units === 2 || desc.includes('two') || desc.includes('duplex')) return 0.65;
+    if (desc.includes('condo')) return 0.85;
+    return 1.0; // SFR
+}
+
+/**
  * Approach 2: Sales Comp via Assessor + Land Comp Data
  */
-function compBasedValue(structureSqFt, lotSizeSqFt, useType, neighborhood) {
+function compBasedValue(structureSqFt, lotSizeSqFt, useType, neighborhood, units, useDesc) {
     const landComps = COMP_LAND_SALES[neighborhood] || COMP_LAND_SALES.dtla;
     if (useType === 'Vacant' || structureSqFt <= 0) {
-        // Land value = lot SF × comparable land $/SF
         return Math.round(lotSizeSqFt * landComps.median);
     }
-    // Improved: use structure $/SF from MARKET_VALUE_PSF + land residual
     const mvPSF = MARKET_VALUE_PSF[neighborhood] || 600;
-    return Math.round(structureSqFt * mvPSF);
+    const typeMult = getPropertyTypeMultiplier(units, useDesc);
+    return Math.round(structureSqFt * mvPSF * typeMult);
 }
 
 /**
  * Approach 3: Income Approach — NOI / Cap Rate
  * Estimates what an investor would pay based on rental income.
  */
-function incomeApproachValue(structureSqFt, lotSizeSqFt, useType, neighborhood) {
-    if (useType === 'Vacant' || structureSqFt <= 0) return 0; // Can't value vacant via income
+function incomeApproachValue(structureSqFt, lotSizeSqFt, useType, neighborhood, units, useDesc) {
+    if (useType === 'Vacant' || structureSqFt <= 0) return 0;
     const rents = MARKET_RENTS_2025[neighborhood] || MARKET_RENTS_2025.dtla;
     const vacancy = VACANCY_RATES[neighborhood] || VACANCY_RATES.dtla;
     const caps = CAP_RATES[neighborhood] || CAP_RATES.dtla;
 
-    // Estimate gross rental income based on typical unit mix
-    const avgUnitSF = 850;
-    const estUnits = Math.max(1, Math.floor(structureSqFt * 0.85 / avgUnitSF));
-    // Weighted avg rent: 20% studio, 40% 1BR, 30% 2BR, 10% 3BR
-    const avgRent = rents.studio * 0.20 + rents.br1 * 0.40 + rents.br2 * 0.30 + rents.br3 * 0.10;
-    const grossAnnual = estUnits * avgRent * 12;
+    // Use actual unit count if available, otherwise estimate
+    const actualUnits = (units && units > 0) ? units : Math.max(1, Math.floor(structureSqFt * 0.85 / 850));
+    // Adjust rent mix by unit count
+    let avgRent;
+    if (actualUnits <= 2) {
+        avgRent = rents.br2; // Duplexes: typically 2BR units
+    } else if (actualUnits <= 4) {
+        avgRent = rents.br1 * 0.5 + rents.br2 * 0.5; // Small multi: mix of 1BR and 2BR
+    } else {
+        avgRent = rents.studio * 0.20 + rents.br1 * 0.45 + rents.br2 * 0.30 + rents.br3 * 0.05;
+    }
+    const grossAnnual = actualUnits * avgRent * 12;
     const vacancyLoss = grossAnnual * vacancy.residential;
-    const opex = grossAnnual * 0.35; // 35% expense ratio
+    const opex = grossAnnual * (actualUnits <= 4 ? 0.40 : 0.35); // Higher expense ratio for small multi
     const noi = grossAnnual - vacancyLoss - opex;
     if (noi <= 0 || caps.residential <= 0) return 0;
     return Math.round(noi / caps.residential);
@@ -5234,6 +5253,8 @@ async function fetchRentCastAVM(address) {
  */
 async function getMarketValue(address, structureSqFt, lotSizeSqFt, useType, neighborhood, parcelAttrs) {
     const approaches = [];
+    const units = parcelAttrs ? (parseInt(parcelAttrs.Units1) || 0) : 0;
+    const useDesc = parcelAttrs ? (parcelAttrs.UseDescription || '') : '';
 
     // Approach 1: Prop 13 Base Year Adjusted (instant)
     if (parcelAttrs) {
@@ -5244,12 +5265,12 @@ async function getMarketValue(address, structureSqFt, lotSizeSqFt, useType, neig
         if (p13val > 0) approaches.push({ name: 'Prop 13 Adj.', value: p13val, weight: 30 });
     }
 
-    // Approach 2: Comp-based value using land sale data (instant)
-    const compVal = compBasedValue(structureSqFt, lotSizeSqFt, useType, neighborhood);
+    // Approach 2: Comp-based value, adjusted by property type (instant)
+    const compVal = compBasedValue(structureSqFt, lotSizeSqFt, useType, neighborhood, units, useDesc);
     if (compVal > 0) approaches.push({ name: 'Comp Analysis', value: compVal, weight: 30 });
 
-    // Approach 3: Income approach (instant, improved properties only)
-    const incomeVal = incomeApproachValue(structureSqFt, lotSizeSqFt, useType, neighborhood);
+    // Approach 3: Income approach using actual unit count (instant)
+    const incomeVal = incomeApproachValue(structureSqFt, lotSizeSqFt, useType, neighborhood, units, useDesc);
     if (incomeVal > 0) approaches.push({ name: 'Income Approach', value: incomeVal, weight: 20 });
 
     // Approach 4: RentCast AVM (async API call)
@@ -10452,8 +10473,9 @@ function renderFinderResults2(station) {
     const fmt = (v) => v ? '$' + v.toLocaleString() : '-';
     const propLinks = (addr, apn) => {
         const enc = encodeURIComponent(addr);
+        const zEnc = addr.trim().replace(/[,#\.]+/g, '').replace(/\s+/g, '-');
         const apnClean = (apn || '').replace(/[^0-9]/g, '');
-        return `<span class="prop-links" onclick="event.stopPropagation()"><a href="https://www.zillow.com/homes/${enc}_rb/" target="_blank" title="Zillow">Z</a> | <a href="https://www.redfin.com/search?q=${enc}" target="_blank" title="Redfin">R</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" title="LA County Assessor">LA</a></span>`;
+        return `<span class="prop-links" onclick="event.stopPropagation()"><a href="https://www.zillow.com/homes/${zEnc}_rb/" target="_blank" title="Zillow">Z</a> | <a href="https://www.redfin.com/search?q=${enc}" target="_blank" title="Redfin">R</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" title="LA County Assessor">LA</a></span>`;
     };
 
     let html = `<div id="finderSelectionBar" class="selection-bar" style="display:none;">
@@ -10623,14 +10645,14 @@ function exportFinderCSV2() {
     const headers = ['Address', 'APN', 'Lot Size (sf)', 'Use Type', 'Year Built', 'Land Value', 'Imp Value', 'Imp/Land Ratio', 'SB79 Zone', 'Max Height (ft)', 'Max Density (du/ac)', 'Max FAR', 'Parking Req', 'Zillow URL', 'Assessor URL', 'Latitude', 'Longitude'];
     const rows = finderResults2.map(r => {
         const a = r.allowances || {};
-        const enc = encodeURIComponent(r.address || '');
+        const zEnc = (r.address || '').trim().replace(/[,#\.]+/g, '').replace(/\s+/g, '-');
         const apnClean = (r.apn || '').replace(/[^0-9]/g, '');
         return [
             `"${(r.address || '').replace(/"/g, '""')}"`,
             r.apn, r.lotSizeSqFt, r.useType, r.yearBuilt || '',
             r.landVal, r.impVal, r.impRatio < 100 ? r.impRatio.toFixed(3) : '',
             r.zone, a.height || '', a.density || '', a.far || '', a.parking ?? '',
-            `https://www.zillow.com/homes/${enc}_rb/`,
+            `https://www.zillow.com/homes/${zEnc}_rb/`,
             `https://portal.assessor.lacounty.gov/parceldetail/${apnClean}`,
             r.lat, r.lon,
         ].join(',');
@@ -10771,8 +10793,9 @@ function renderSavedList() {
 
     body.innerHTML = saved.map((r, i) => {
         const enc = encodeURIComponent(r.address || '');
+        const zEnc = (r.address || '').trim().replace(/[,#\.]+/g, '').replace(/\s+/g, '-');
         const apnClean = (r.apn || '').replace(/[^0-9]/g, '');
-        const links = `<span class="prop-links"><a href="https://www.zillow.com/homes/${enc}_rb/" target="_blank" title="Zillow">Z</a> | <a href="https://www.redfin.com/search?q=${enc}" target="_blank" title="Redfin">R</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" title="LA County Assessor">LA</a></span>`;
+        const links = `<span class="prop-links"><a href="https://www.zillow.com/homes/${zEnc}_rb/" target="_blank" title="Zillow">Z</a> | <a href="https://www.redfin.com/search?q=${enc}" target="_blank" title="Redfin">R</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" title="LA County Assessor">LA</a></span>`;
         return `<tr>
             <td><input type="checkbox" class="saved-select" data-idx="${i}"></td>
             <td>${r.address}</td>
@@ -10959,14 +10982,14 @@ function exportSavedCSV() {
     const headers = ['Address', 'APN', 'Lot Size (sf)', 'Use Type', 'Year Built', 'Land Value', 'Imp Value', 'Imp/Land Ratio', 'SB79 Zone', 'Max Height (ft)', 'Max Density (du/ac)', 'Max FAR', 'Zillow URL', 'Assessor URL', 'Latitude', 'Longitude'];
     const rows = saved.map(r => {
         const a = r.allowances || {};
-        const enc = encodeURIComponent(r.address || '');
+        const zEnc = (r.address || '').trim().replace(/[,#\.]+/g, '').replace(/\s+/g, '-');
         const apnClean = (r.apn || '').replace(/[^0-9]/g, '');
         return [
             `"${(r.address || '').replace(/"/g, '""')}"`,
             r.apn, r.lotSizeSqFt, r.useType, r.yearBuilt || '',
             r.landVal, r.impVal, r.impRatio < 100 ? r.impRatio.toFixed(3) : '',
             r.zone, a.height || '', a.density || '', a.far || '',
-            `https://www.zillow.com/homes/${enc}_rb/`,
+            `https://www.zillow.com/homes/${zEnc}_rb/`,
             `https://portal.assessor.lacounty.gov/parceldetail/${apnClean}`,
             r.lat, r.lon,
         ].join(',');
