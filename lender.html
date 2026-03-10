@@ -5611,7 +5611,7 @@ function calculateHBU() {
             physical: Math.round(physical * 100),
             financial: Math.round(financial * 100),
             productive: Math.round(productive * 100),
-            overall: Math.round(overall * 100),
+            overall: Math.min(100, Math.round(overall * 100)),
             devMarginPct,
             legislation,
         };
