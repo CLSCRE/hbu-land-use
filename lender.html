@@ -2544,9 +2544,9 @@
                     </div>
 
                     <div class="field" id="field-marketValue">
-                        <label>Est. Market Value <span class="autofill-badge">Prop 13 adj.</span> <span id="assessedValueLabel" style="color:#718096;font-size:0.82em;"></span></label>
+                        <label>Est. Market Value <span class="autofill-badge">Median $/SF</span> <span id="assessedValueLabel" style="color:#718096;font-size:0.82em;"></span></label>
                         <input type="number" id="marketValue" value="0" min="0" step="1000" style="font-weight:600;">
-                        <div style="font-size:0.75em;color:#718096;margin-top:2px;">1.9× Prop 13 estimate · Verify on <a href="#" id="zillowValLink" target="_blank" style="color:#667eea;">Zillow</a> or <a href="#" id="redfinValLink" target="_blank" style="color:#667eea;">Redfin</a></div>
+                        <div style="font-size:0.75em;color:#718096;margin-top:2px;">Neighborhood median $/SF estimate · Verify on <a href="#" id="zillowValLink" target="_blank" style="color:#667eea;">Zillow</a> or <a href="#" id="redfinValLink" target="_blank" style="color:#667eea;">Redfin</a></div>
                     </div>
                     <div class="field" id="field-ownProperty" style="display:flex;align-items:center;gap:8px;margin:-4px 0 4px 0;">
                         <input type="checkbox" id="ownProperty" style="width:auto;margin:0;">
@@ -2875,6 +2875,14 @@
             <div class="finder-field">
                 <label>Max Lot Size (sq ft)</label>
                 <input type="number" id="finderMaxLot2" value="100000" min="0" step="500">
+            </div>
+            <div class="finder-field">
+                <label>Year Built After</label>
+                <input type="number" id="finderYearAfter2" placeholder="e.g. 1960" min="1800" max="2030" step="1">
+            </div>
+            <div class="finder-field">
+                <label>Year Built Before</label>
+                <input type="number" id="finderYearBefore2" placeholder="e.g. 1980" min="1800" max="2030" step="1">
             </div>
         </div>
         <button type="button" class="finder-btn-search" id="finderSearchBtn2" onclick="runStandaloneSearch()">Find Opportunities</button>
@@ -4382,19 +4390,21 @@ async function lookupAddress() {
         const _rl = parseFloat(parcelResult.attrs.Roll_LandValue) || 0;
         const _ri = parseFloat(parcelResult.attrs.Roll_ImpValue) || 0;
         window.lastAssessedTotal = _rl + _ri;
+        if (window.lastGeocode) window.lastGeocode.structureSqFt = parseInt(parcelResult.attrs.SQFTmain1) || 0;
     }
-    // Apply Prop 13 multiplier (1.9x) to approximate market value
-    var _prop13Multiplier = 1.9;
-    var _estMarketValue = window.lastAssessedTotal > 0 ? Math.round(window.lastAssessedTotal * _prop13Multiplier) : 0;
+    // Populate market value field — neighborhood median $/SF estimate
+    var _structSF = (parcelResult && parcelResult.attrs) ? parseInt(parcelResult.attrs.SQFTmain1) || 0 : 0;
+    var _nhood = (document.getElementById('neighborhood') || {}).value || 'dtla';
+    var _lotSF = parseFloat((document.getElementById('parcelSize') || {}).value) || 10000;
+    var _estMarketValue = estimateMarketValue(_structSF, _lotSF, _structSF > 0 ? 'Residential' : 'Vacant', _nhood);
     var _mvInput = document.getElementById('marketValue');
     if (_mvInput) {
         _mvInput.value = _estMarketValue;
     }
     var _avLabel = document.getElementById('assessedValueLabel');
     if (_avLabel) {
-        _avLabel.textContent = window.lastAssessedTotal > 0
-            ? '(Prop 13 adj. — assessed: $' + window.lastAssessedTotal.toLocaleString() + ')'
-            : '';
+        var _mvPsfLabel = _structSF > 0 ? ('(' + _nhood + ' median $/SF × ' + _structSF.toLocaleString() + ' SF)') : ('(' + _nhood + ' land $/SF × ' + _lotSF.toLocaleString() + ' SF lot)');
+        _avLabel.textContent = _estMarketValue > 0 ? _mvPsfLabel : '';
     }
     var _addrForLinks = (document.getElementById('address') || {}).value || '';
     var _encAddr = encodeURIComponent(_addrForLinks);
@@ -4572,6 +4582,24 @@ const LAND_VALUE_PSF = {
     silverlake: 220, highland: 150, venice: 350, culver: 260, exposition: 160,
     southbay: 120, harbor: 80, boyleheights: 110
 };
+
+// Median market value per structure SF by neighborhood (2025 LA County comps)
+const MARKET_VALUE_PSF = {
+    dtla: 650, hollywood: 700, koreatown: 550, westside: 900, santamonica: 1100,
+    beverly: 1200, midcity: 750, southla: 450, valleyeast: 550, valleywest: 600,
+    silverlake: 800, highland: 600, venice: 1000, culver: 800, exposition: 550,
+    southbay: 700, harbor: 450, boyleheights: 500
+};
+
+// Estimate market value using neighborhood median $/SF instead of Prop 13 multiplier
+function estimateMarketValue(structureSqFt, lotSizeSqFt, useType, neighborhood) {
+    const mvPSF = MARKET_VALUE_PSF[neighborhood] || 600;
+    const landPSF = LAND_VALUE_PSF[neighborhood] || 150;
+    if (useType === 'Vacant' || structureSqFt <= 0) {
+        return Math.round(lotSizeSqFt * landPSF);
+    }
+    return Math.round(structureSqFt * mvPSF);
+}
 
 // Revenue potential per NSF of building (annual $/SF, new-construction achievable rents)
 const REVENUE_PSF = {
@@ -7478,6 +7506,7 @@ function filterAndScoreResults(features, station, filters) {
         if (filters.resType && filters.resType !== 'all' && useType === 'Residential' && resSubType !== filters.resType) continue;
         if (filters.maxRatio !== null && impRatio > filters.maxRatio) continue;
         if (filters.yearBefore && yearBuilt > 0 && yearBuilt >= filters.yearBefore) continue;
+        if (filters.yearAfter && yearBuilt > 0 && yearBuilt <= filters.yearAfter) continue;
 
         const allowances = getSB79Allowances(station.tier, zoneInfo.key);
 
@@ -7498,9 +7527,10 @@ function filterAndScoreResults(features, station, filters) {
         resultObj.legislationEffects = legInfo.effects;
         resultObj.legislationCount = legInfo.bills.length;
 
-        // Estimated market value (Prop 13 adjusted)
-        var assessedTotal = landVal + impVal;
-        resultObj.estimatedMarketValue = assessedTotal > 0 ? Math.round(assessedTotal * 1.9) : 0;
+        // Estimated market value (neighborhood median $/SF)
+        var neighborhood = 'dtla'; var minNDist = Infinity;
+        for (var nk in NEIGHBORHOOD_CENTROIDS) { var nc = NEIGHBORHOOD_CENTROIDS[nk]; var nd = Math.abs(lat - nc.lat) + Math.abs(lon - nc.lon); if (nd < minNDist) { minNDist = nd; neighborhood = nk; } }
+        resultObj.estimatedMarketValue = estimateMarketValue(sqft, lotSizeSqFt, useType, neighborhood);
 
         results.push(resultObj);
     }
@@ -9138,6 +9168,8 @@ async function runStandaloneSearch() {
     const resType = (document.getElementById('finderResType2') || {}).value || 'all';
     const minLot = parseInt(document.getElementById('finderMinLot2').value) || 0;
     const maxLot = parseInt(document.getElementById('finderMaxLot2').value) || 999999;
+    const yearAfter = parseInt(document.getElementById('finderYearAfter2').value) || 0;
+    const yearBefore = parseInt(document.getElementById('finderYearBefore2').value) || 0;
 
     // Map selected radii to zone keys for filtering
     const selectedZones = [];
@@ -9145,7 +9177,7 @@ async function runStandaloneSearch() {
     if (selectedRadii.includes(1320)) selectedZones.push('inner');
     if (selectedRadii.includes(2640)) selectedZones.push('outer');
 
-    const filters = { useTypes, resType, minLot, maxLot, maxRatio: null, yearBefore: null, selectedZones };
+    const filters = { useTypes, resType, minLot, maxLot, maxRatio: null, yearBefore, yearAfter, selectedZones };
 
     finderSelectedSet.clear();
 
@@ -19062,13 +19094,9 @@ function updateLenderCreditSnapshot(deal) {
       var devCostsExLand = (budget.totalHard || 0) + (budget.totalSoft || 0);
       var devLandBid = Math.max(0, (budget.stabilizedValue || 0) - devCostsExLand);
 
-      var marketValue = 0;
-      if (geo.assessedTotal && geo.assessedTotal > 0) {
-        marketValue = Math.round(geo.assessedTotal * 1.9);
-      } else {
-        var landValPSF = (typeof LAND_VALUE_PSF !== 'undefined' && LAND_VALUE_PSF[inp.neighborhood]) ? LAND_VALUE_PSF[inp.neighborhood] : 150;
-        marketValue = Math.round(landValPSF * inp.parcelSize * 1.3);
-      }
+      // Estimated market value (neighborhood median $/SF)
+      var _sSF = (geo.structureSqFt || parseInt((document.getElementById('structureSF') || {}).value) || 0);
+      var marketValue = estimateMarketValue(_sSF, inp.parcelSize, _sSF > 0 ? 'Residential' : 'Vacant', inp.neighborhood);
 
       var oppRatio = marketValue > 0 ? devLandBid / marketValue : 0;
       var address = '';

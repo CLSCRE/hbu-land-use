@@ -586,27 +586,165 @@
         /* ── DEMO VIDEO ── */
         .demo-video { background: var(--bg); }
         .demo-video-wrapper {
-            max-width: 800px; margin: 0 auto;
-            position: relative; aspect-ratio: 16/9;
+            max-width: 900px; margin: 0 auto;
+            position: relative;
             background: #0f172a; border-radius: var(--radius);
             overflow: hidden; border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
         }
-        .demo-placeholder {
-            position: absolute; inset: 0;
+        /* Walkthrough carousel */
+        .wt-viewport {
+            position: relative; overflow: hidden;
+            width: 100%; height: 0; padding-bottom: 56.25%; /* 16:9 */
+        }
+        .wt-slide {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; transition: opacity 0.6s ease;
             display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            color: rgba(255,255,255,0.7); text-align: center; gap: 1rem;
+            pointer-events: none;
         }
-        .demo-play-btn {
-            width: 72px; height: 72px; border-radius: 50%;
-            background: var(--primary); color: var(--white);
+        .wt-slide.active { opacity: 1; pointer-events: auto; }
+        /* Slide chrome — fake app titlebar */
+        .wt-chrome {
+            background: #1e293b; padding: 0.4rem 0.75rem;
+            display: flex; align-items: center; gap: 0.5rem;
+            border-bottom: 1px solid #334155; flex-shrink: 0;
+        }
+        .wt-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .wt-dot.r { background: #ef4444; } .wt-dot.y { background: #f59e0b; } .wt-dot.g { background: #22c55e; }
+        .wt-tab {
+            margin-left: 0.75rem; background: #334155; padding: 0.2rem 0.7rem;
+            border-radius: 6px 6px 0 0; font-size: 0.6rem; color: #94a3b8;
+            display: flex; align-items: center; gap: 0.3rem;
+        }
+        .wt-tab.active { background: #0f172a; color: #e2e8f0; }
+        .wt-tab-icon { font-size: 0.7rem; }
+        /* Slide body */
+        .wt-body {
+            flex: 1; padding: 0.9rem; overflow-y: auto; overflow-x: hidden;
+            background: linear-gradient(180deg, #0f172a 0%, #1a2332 100%);
+            font-size: 0.65rem; color: #e2e8f0; line-height: 1.5;
+            display: flex; flex-direction: column; gap: 0.5rem;
+            min-height: 0; /* allow flex shrink */
+        }
+        .wt-card {
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px; padding: 0.6rem; display: flex; flex-direction: column; gap: 0.3rem;
+        }
+        .wt-card-title {
+            font-size: 0.6rem; font-weight: 700; color: #60a5fa;
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .wt-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+        .wt-col { flex: 1; min-width: 0; }
+        .wt-stat {
+            background: rgba(255,255,255,0.04); border-radius: 6px; padding: 0.35rem 0.5rem;
+            display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.06);
+        }
+        .wt-stat-label { font-size: 0.48rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; }
+        .wt-stat-value { font-size: 0.72rem; font-weight: 700; color: #f8fafc; }
+        .wt-stat-value.green { color: #4ade80; }
+        .wt-stat-value.amber { color: #fbbf24; }
+        .wt-stat-value.blue { color: #60a5fa; }
+        .wt-badge {
+            display: inline-block; padding: 0.12rem 0.4rem; border-radius: 4px;
+            font-size: 0.5rem; font-weight: 600;
+        }
+        .wt-badge-green { background: rgba(34,197,94,0.15); color: #4ade80; }
+        .wt-badge-blue { background: rgba(59,130,246,0.15); color: #60a5fa; }
+        .wt-badge-amber { background: rgba(245,158,11,0.15); color: #fbbf24; }
+        .wt-badge-red { background: rgba(239,68,68,0.15); color: #f87171; }
+        .wt-input-row {
+            display: flex; gap: 0.4rem; align-items: center;
+        }
+        .wt-input {
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px; padding: 0.3rem 0.5rem; color: #f8fafc;
+            font-size: 0.6rem; flex: 1;
+        }
+        .wt-btn {
+            background: #2563eb; color: white; border-radius: 6px;
+            padding: 0.3rem 0.7rem; font-size: 0.55rem; font-weight: 600;
+            white-space: nowrap; border: none;
+        }
+        .wt-btn-green { background: #059669; }
+        .wt-table { width: 100%; border-collapse: collapse; font-size: 0.5rem; }
+        .wt-table th {
+            background: rgba(255,255,255,0.06); text-align: left;
+            padding: 0.25rem 0.35rem; color: #94a3b8; font-weight: 600;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .wt-table td {
+            padding: 0.22rem 0.35rem; border-bottom: 1px solid rgba(255,255,255,0.04);
+            color: #cbd5e1;
+        }
+        .wt-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+        .wt-map-placeholder {
+            flex: 1; background: linear-gradient(135deg, #1a3a2a 0%, #0f2318 100%);
+            border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);
+            position: relative; overflow: hidden; min-height: 100px;
+        }
+        .wt-map-dot {
+            position: absolute; width: 6px; height: 6px; border-radius: 50%;
+            background: #f59e0b; box-shadow: 0 0 8px rgba(245,158,11,0.6);
+        }
+        .wt-map-ring {
+            position: absolute; border-radius: 50%;
+            border: 1px solid rgba(59,130,246,0.3);
+            background: rgba(59,130,246,0.05);
+        }
+        .wt-map-label {
+            position: absolute; font-size: 0.45rem; color: rgba(255,255,255,0.5);
+            white-space: nowrap;
+        }
+        .wt-h2 { font-size: 0.78rem; font-weight: 700; color: #f8fafc; }
+        .wt-h3 { font-size: 0.62rem; font-weight: 600; color: #e2e8f0; }
+        .wt-sub { font-size: 0.52rem; color: #94a3b8; }
+        .wt-rank-cards { display: flex; gap: 0.4rem; }
+        .wt-rank-card {
+            flex: 1; background: rgba(255,255,255,0.05); border-radius: 8px;
+            padding: 0.5rem; border: 1px solid rgba(255,255,255,0.08);
+            display: flex; flex-direction: column; gap: 0.2rem;
+        }
+        .wt-rank-card.gold { border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.06); }
+        .wt-rank-num { font-size: 0.55rem; font-weight: 800; }
+        .wt-rank-num.n1 { color: #fbbf24; } .wt-rank-num.n2 { color: #94a3b8; } .wt-rank-num.n3 { color: #b45309; }
+        .wt-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 0.2rem 0; }
+        /* Progress bar & controls */
+        .wt-controls {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.5rem 0.75rem; background: #1e293b;
+            border-top: 1px solid #334155;
+        }
+        .wt-progress {
+            flex: 1; height: 3px; background: rgba(255,255,255,0.1);
+            border-radius: 2px; overflow: hidden; cursor: pointer;
+        }
+        .wt-progress-fill {
+            height: 100%; background: var(--primary-light);
+            transition: width 0.3s linear; width: 0%;
+        }
+        .wt-ctrl-btn {
+            background: none; border: none; color: #94a3b8; cursor: pointer;
+            font-size: 0.75rem; padding: 0.2rem; transition: color 0.2s;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.8rem; cursor: pointer;
-            transition: transform .2s, background .2s;
-            border: 3px solid rgba(255,255,255,0.3);
         }
-        .demo-play-btn:hover { transform: scale(1.08); background: var(--primary-dark); }
-        .demo-placeholder p { font-size: .88rem; color: rgba(255,255,255,0.5); max-width: 300px; }
+        .wt-ctrl-btn:hover { color: #e2e8f0; }
+        .wt-step-label { font-size: 0.52rem; color: #94a3b8; white-space: nowrap; min-width: 60px; }
+        .wt-caption {
+            text-align: center; padding: 0.5rem 0.75rem; background: #1e293b;
+            font-size: 0.62rem; color: #94a3b8; min-height: 2em;
+            border-top: 1px solid rgba(255,255,255,0.04);
+        }
+        .wt-caption strong { color: #e2e8f0; }
+        .wt-proforma-row { display: flex; justify-content: space-between; padding: 0.15rem 0; }
+        .wt-proforma-row.total { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.25rem; margin-top: 0.15rem; font-weight: 700; }
+        .wt-filter-btn {
+            display: inline-block; padding: 0.15rem 0.4rem; border-radius: 4px;
+            font-size: 0.48rem; border: 1px solid rgba(255,255,255,0.15);
+            color: #94a3b8; background: transparent;
+        }
+        .wt-filter-btn.on { background: rgba(59,130,246,0.2); border-color: #3b82f6; color: #60a5fa; }
 
         /* ── COMPETITIVE COMPARISON ── */
         .compare { background: var(--bg-alt); }
@@ -714,7 +852,10 @@
             .lead-form { flex-direction: column; }
             .lead-form input[type="email"] { min-width: 100%; }
             .lead-form .btn-accent { width: 100%; min-height: 48px; }
-            .demo-play-btn { width: 60px; height: 60px; font-size: 1.4rem; }
+            .wt-body { font-size: 0.55rem; padding: 0.5rem; }
+            .wt-stat-value { font-size: 0.6rem; }
+            .wt-rank-cards { flex-direction: column; }
+            .wt-table { font-size: 0.42rem; }
         }
         @media (max-width: 900px) {
             .proof-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
@@ -1046,7 +1187,7 @@
     </div>
 </section>
 
-<!-- ── DEMO VIDEO ── -->
+<!-- ── INTERACTIVE WALKTHROUGH ── -->
 <section class="demo-video">
     <div class="section-inner">
         <div class="section-header">
@@ -1055,11 +1196,455 @@
             <p>Watch how Land to Yield delivers instant development intelligence.</p>
         </div>
         <div class="demo-video-wrapper" id="demoVideoWrapper">
-            <div class="demo-placeholder" id="demoPlaceholder">
-                <div class="demo-play-btn" onclick="loadDemoVideo()">&#9654;</div>
-                <p>Watch the 60-second walkthrough</p>
+
+            <div class="wt-viewport" id="wtViewport">
+
+                <!-- Slide 1: Enter Address -->
+                <div class="wt-slide active" data-caption="<strong>Step 1:</strong> Enter any LA County address and click Look Up. Parcel data auto-fills instantly from the County Assessor.">
+                    <div class="wt-chrome">
+                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
+                        <div class="wt-tab active"><span class="wt-tab-icon">&#128200;</span> Developer Portal</div>
+                    </div>
+                    <div class="wt-body">
+                        <div class="wt-h2">Highest &amp; Best Use Calculator</div>
+                        <div class="wt-sub">Enter a property address to begin your development analysis</div>
+                        <div class="wt-card">
+                            <div class="wt-card-title">Property Lookup</div>
+                            <div class="wt-input-row">
+                                <div class="wt-input" style="flex:3;">6801 Hollywood Blvd, Los Angeles, CA 90028</div>
+                                <div class="wt-btn">Look Up</div>
+                            </div>
+                        </div>
+                        <div class="wt-card" style="opacity:0.5;">
+                            <div class="wt-card-title">Site Characteristics</div>
+                            <div class="wt-row">
+                                <div class="wt-stat"><span class="wt-stat-label">Parcel Size</span><span class="wt-stat-value" style="color:#475569;">Awaiting lookup...</span></div>
+                                <div class="wt-stat"><span class="wt-stat-label">Zoning</span><span class="wt-stat-value" style="color:#475569;">&#8212;</span></div>
+                                <div class="wt-stat"><span class="wt-stat-label">Neighborhood</span><span class="wt-stat-value" style="color:#475569;">&#8212;</span></div>
+                            </div>
+                        </div>
+                        <div class="wt-sub" style="text-align:center;margin-top:auto;opacity:0.5;">Results appear below after lookup</div>
+                    </div>
+                </div>
+
+                <!-- Slide 2: Parcel Data Auto-Filled -->
+                <div class="wt-slide" data-caption="<strong>Step 2:</strong> Parcel data populates automatically &mdash; lot size, zoning, assessed values, year built, and more.">
+                    <div class="wt-chrome">
+                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
+                        <div class="wt-tab active"><span class="wt-tab-icon">&#128200;</span> Developer Portal</div>
+                    </div>
+                    <div class="wt-body">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div class="wt-h2">6801 Hollywood Blvd</div>
+                            <div class="wt-badge wt-badge-green">&#10003; Data loaded</div>
+                        </div>
+                        <div class="wt-card">
+                            <div class="wt-card-title">Site Characteristics (Auto-filled)</div>
+                            <div class="wt-row">
+                                <div class="wt-stat"><span class="wt-stat-label">Parcel Size</span><span class="wt-stat-value">12,430 SF</span></div>
+                                <div class="wt-stat"><span class="wt-stat-label">Zoning</span><span class="wt-stat-value blue">C4-2D</span></div>
+                                <div class="wt-stat"><span class="wt-stat-label">Neighborhood</span><span class="wt-stat-value">Hollywood</span></div>
+                            </div>
+                            <div class="wt-row">
+                                <div class="wt-stat"><span class="wt-stat-label">Year Built</span><span class="wt-stat-value">1953</span></div>
+                                <div class="wt-stat"><span class="wt-stat-label">Structure SF</span><span class="wt-stat-value">4,280</span></div>
+                                <div class="wt-stat"><span class="wt-stat-label">Imp/Land Ratio</span><span class="wt-stat-value green">0.38</span></div>
+                            </div>
+                        </div>
+                        <div class="wt-card">
+                            <div class="wt-card-title">Valuation</div>
+                            <div class="wt-row">
+                                <div class="wt-stat"><span class="wt-stat-label">Est. Market Value</span><span class="wt-stat-value">$2,996,000</span></div>
+                                <div class="wt-stat"><span class="wt-stat-label">Land Value</span><span class="wt-stat-value">$1,850,000</span></div>
+                                <div class="wt-stat"><span class="wt-stat-label">Imp. Value</span><span class="wt-stat-value">$702,000</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 3: HBU Results - Top 3 Uses -->
+                <div class="wt-slide" data-caption="<strong>Step 3:</strong> AI ranks all 16 land uses and surfaces the top 3 — each scored on feasibility, revenue, and risk.">
+                    <div class="wt-chrome">
+                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
+                        <div class="wt-tab active"><span class="wt-tab-icon">&#128200;</span> Developer Portal</div>
+                    </div>
+                    <div class="wt-body">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div class="wt-h2">Highest &amp; Best Use Results</div>
+                            <div class="wt-badge wt-badge-amber">16 uses scored</div>
+                        </div>
+                        <div class="wt-rank-cards">
+                            <div class="wt-rank-card gold">
+                                <div class="wt-rank-num n1">&#127942; #1 Best Use</div>
+                                <div class="wt-h3">Mid-Rise Multifamily</div>
+                                <div class="wt-row">
+                                    <div class="wt-stat"><span class="wt-stat-label">HBU Score</span><span class="wt-stat-value green">92</span></div>
+                                    <div class="wt-stat"><span class="wt-stat-label">Opp Ratio</span><span class="wt-stat-value green">1.8x</span></div>
+                                </div>
+                                <div class="wt-sub">5 stories &middot; 62 units &middot; 3.2 FAR</div>
+                            </div>
+                            <div class="wt-rank-card">
+                                <div class="wt-rank-num n2">#2 Alternative</div>
+                                <div class="wt-h3">Mixed-Use</div>
+                                <div class="wt-row">
+                                    <div class="wt-stat"><span class="wt-stat-label">HBU Score</span><span class="wt-stat-value">84</span></div>
+                                    <div class="wt-stat"><span class="wt-stat-label">Opp Ratio</span><span class="wt-stat-value">1.5x</span></div>
+                                </div>
+                                <div class="wt-sub">4 stories &middot; Retail + 48 units</div>
+                            </div>
+                            <div class="wt-rank-card">
+                                <div class="wt-rank-num n3">#3 Alternative</div>
+                                <div class="wt-h3">Hotel/Hospitality</div>
+                                <div class="wt-row">
+                                    <div class="wt-stat"><span class="wt-stat-label">HBU Score</span><span class="wt-stat-value">76</span></div>
+                                    <div class="wt-stat"><span class="wt-stat-label">Opp Ratio</span><span class="wt-stat-value amber">1.2x</span></div>
+                                </div>
+                                <div class="wt-sub">6 stories &middot; 95 keys</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 4: Deep Analysis Pro Forma -->
+                <div class="wt-slide" data-caption="<strong>Step 4:</strong> One-click deep analysis generates a full pro forma &mdash; construction costs, revenue projections, and stabilized NOI.">
+                    <div class="wt-chrome">
+                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
+                        <div class="wt-tab active"><span class="wt-tab-icon">&#128200;</span> Deep Analysis</div>
+                    </div>
+                    <div class="wt-body">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div class="wt-h2">Pro Forma: Mid-Rise Multifamily</div>
+                            <div class="wt-badge wt-badge-green">62 units &middot; 5 stories</div>
+                        </div>
+                        <div class="wt-row">
+                            <div class="wt-card wt-col">
+                                <div class="wt-card-title">Development Budget</div>
+                                <div class="wt-proforma-row"><span>Hard Costs (construction)</span><span class="wt-stat-value">$14,920,000</span></div>
+                                <div class="wt-proforma-row"><span>Soft Costs (fees, permits)</span><span>$2,984,000</span></div>
+                                <div class="wt-proforma-row"><span>Land Acquisition</span><span>$2,996,000</span></div>
+                                <div class="wt-proforma-row"><span>Contingency (10%)</span><span>$1,790,000</span></div>
+                                <div class="wt-proforma-row total"><span>Total Development Cost</span><span class="wt-stat-value amber">$22,690,000</span></div>
+                            </div>
+                            <div class="wt-card wt-col">
+                                <div class="wt-card-title">Revenue &amp; Returns</div>
+                                <div class="wt-proforma-row"><span>Gross Revenue (annual)</span><span class="wt-stat-value">$2,678,400</span></div>
+                                <div class="wt-proforma-row"><span>Operating Expenses (35%)</span><span>($937,440)</span></div>
+                                <div class="wt-proforma-row total"><span>Net Operating Income</span><span class="wt-stat-value green">$1,740,960</span></div>
+                                <div class="wt-divider"></div>
+                                <div class="wt-proforma-row"><span>Stabilized Value (4.75% cap)</span><span class="wt-stat-value green">$36,652,000</span></div>
+                                <div class="wt-proforma-row"><span>Residual Land Value</span><span class="wt-stat-value green">$18,748,000</span></div>
+                                <div class="wt-proforma-row"><span>Development Spread</span><span class="wt-stat-value green">$13,962,000</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 5: Legislation Scanner -->
+                <div class="wt-slide" data-caption="<strong>Step 5:</strong> Applicable CA housing legislation auto-detected &mdash; SB 9, AB 1287, SB 79, and density bonus programs.">
+                    <div class="wt-chrome">
+                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
+                        <div class="wt-tab active"><span class="wt-tab-icon">&#128220;</span> Legislation</div>
+                    </div>
+                    <div class="wt-body">
+                        <div class="wt-h2">Applicable CA Housing Legislation</div>
+                        <div class="wt-sub">7 bills apply to this parcel based on zoning, lot size, and transit proximity</div>
+                        <div class="wt-card">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <div class="wt-h3">SB 79 — Transit-Oriented Development</div>
+                                <div class="wt-badge wt-badge-green">Tier 1 — Heavy Rail</div>
+                            </div>
+                            <div class="wt-sub">Overrides local zoning within 1/2 mi of qualifying transit. Allows 95ft, 160 du/acre, 4.5 FAR.</div>
+                            <div class="wt-row">
+                                <div class="wt-stat"><span class="wt-stat-label">Max Height</span><span class="wt-stat-value blue">95 ft</span></div>
+                                <div class="wt-stat"><span class="wt-stat-label">Max Density</span><span class="wt-stat-value blue">160 du/ac</span></div>
+                                <div class="wt-stat"><span class="wt-stat-label">Max FAR</span><span class="wt-stat-value blue">4.5</span></div>
+                                <div class="wt-stat"><span class="wt-stat-label">Parking</span><span class="wt-stat-value green">0.5/unit</span></div>
+                            </div>
+                        </div>
+                        <div class="wt-row">
+                            <div class="wt-card wt-col" style="padding:0.4rem;">
+                                <div class="wt-h3">AB 2011</div>
+                                <div class="wt-badge wt-badge-blue">By-right</div>
+                                <div class="wt-sub" style="margin-top:0.15rem;">Commercial-to-residential conversion</div>
+                            </div>
+                            <div class="wt-card wt-col" style="padding:0.4rem;">
+                                <div class="wt-h3">AB 1287</div>
+                                <div class="wt-badge wt-badge-blue">Density Bonus</div>
+                                <div class="wt-sub" style="margin-top:0.15rem;">Up to 50% bonus with affordable set-aside</div>
+                            </div>
+                            <div class="wt-card wt-col" style="padding:0.4rem;">
+                                <div class="wt-h3">SB 9</div>
+                                <div class="wt-badge wt-badge-amber">Lot Split</div>
+                                <div class="wt-sub" style="margin-top:0.15rem;">Ministerial duplex/split on SFR lots</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 6: SB 79 Opportunity Finder Map -->
+                <div class="wt-slide" data-caption="<strong>Step 6:</strong> The Opportunity Finder scans thousands of parcels near any Metro station for underbuilt teardown candidates.">
+                    <div class="wt-chrome">
+                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
+                        <div class="wt-tab active"><span class="wt-tab-icon">&#128270;</span> Opportunity Finder</div>
+                    </div>
+                    <div class="wt-body" style="gap:0.4rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div class="wt-h2">SB 79 Opportunity Finder</div>
+                            <div class="wt-badge wt-badge-amber">1,247 parcels scanned</div>
+                        </div>
+                        <div class="wt-input-row">
+                            <div class="wt-input" style="flex:2;">Hollywood / Western (Red Line)</div>
+                            <span class="wt-filter-btn on">&#10003; Outer (1/2 mi)</span>
+                            <span class="wt-filter-btn on">&#10003; Residential</span>
+                            <span class="wt-filter-btn on">&#10003; Commercial</span>
+                            <div class="wt-btn">Search</div>
+                        </div>
+                        <div class="wt-map-placeholder" style="flex:1;">
+                            <div class="wt-map-ring" style="width:140px;height:140px;top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+                            <div class="wt-map-ring" style="width:90px;height:90px;top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+                            <div class="wt-map-ring" style="width:30px;height:30px;top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+                            <div class="wt-map-dot" style="top:50%;left:50%;transform:translate(-50%,-50%);width:8px;height:8px;"></div>
+                            <div class="wt-map-dot" style="top:35%;left:40%;"></div>
+                            <div class="wt-map-dot" style="top:42%;left:58%;"></div>
+                            <div class="wt-map-dot" style="top:60%;left:45%;background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,0.6);"></div>
+                            <div class="wt-map-dot" style="top:55%;left:62%;background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,0.6);"></div>
+                            <div class="wt-map-dot" style="top:38%;left:52%;background:#ef4444;box-shadow:0 0 8px rgba(239,68,68,0.4);"></div>
+                            <div class="wt-map-dot" style="top:65%;left:38%;"></div>
+                            <div class="wt-map-dot" style="top:30%;left:55%;background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,0.6);"></div>
+                            <div class="wt-map-dot" style="top:48%;left:35%;"></div>
+                            <div class="wt-map-dot" style="top:70%;left:55%;background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,0.6);"></div>
+                            <div class="wt-map-label" style="top:50%;left:50%;transform:translate(8px,-50%);">Hollywood/Western Station</div>
+                            <div class="wt-map-label" style="bottom:6px;right:8px;font-size:0.4rem;">&#9679; Hot &nbsp; &#9679; Strong &nbsp; &#9679; Moderate</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 7: Finder Results Table -->
+                <div class="wt-slide" data-caption="<strong>Step 7:</strong> Results ranked by opportunity ratio &mdash; sortable by any column, with year-built filters for teardown analysis.">
+                    <div class="wt-chrome">
+                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
+                        <div class="wt-tab active"><span class="wt-tab-icon">&#128270;</span> Opportunity Finder</div>
+                    </div>
+                    <div class="wt-body" style="gap:0.3rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div class="wt-h3">187 opportunities near Hollywood / Western</div>
+                            <div class="wt-btn" style="font-size:0.5rem;">Export CSV</div>
+                        </div>
+                        <div style="overflow:hidden;border-radius:6px;border:1px solid rgba(255,255,255,0.08);flex:1;">
+                        <table class="wt-table">
+                            <thead><tr>
+                                <th>Address</th><th>Lot SF</th><th>Use</th><th>Yr Built</th><th>Est. MV</th><th>Imp Ratio</th><th>Zone</th><th>Allowances</th>
+                            </tr></thead>
+                            <tbody>
+                                <tr><td>5411 Hollywood Blvd</td><td>8,200</td><td>SFR</td><td>1948</td><td>$1,820,000</td><td style="color:#4ade80;">0.22</td><td>Inner</td><td>95ft / 160du / 4.5 FAR</td></tr>
+                                <tr><td>1825 N Western Ave</td><td>6,500</td><td>Commercial</td><td>1962</td><td>$2,145,000</td><td style="color:#4ade80;">0.31</td><td>Adjacent</td><td>95ft / 160du / 4.5 FAR</td></tr>
+                                <tr><td>5520 Carlton Way</td><td>7,100</td><td>SFR</td><td>1941</td><td>$1,560,000</td><td style="color:#4ade80;">0.18</td><td>Inner</td><td>95ft / 160du / 4.5 FAR</td></tr>
+                                <tr><td>1910 N Serrano Ave</td><td>5,800</td><td>Duplex</td><td>1955</td><td>$1,380,000</td><td style="color:#fbbf24;">0.45</td><td>Outer</td><td>85ft / 140du / 4.0 FAR</td></tr>
+                                <tr><td>5600 De Longpre Ave</td><td>11,400</td><td>Commercial</td><td>1967</td><td>$3,410,000</td><td style="color:#4ade80;">0.29</td><td>Inner</td><td>95ft / 160du / 4.5 FAR</td></tr>
+                                <tr><td>1734 N Kingsley Dr</td><td>6,200</td><td>SFR</td><td>1938</td><td>$1,290,000</td><td style="color:#4ade80;">0.15</td><td>Outer</td><td>85ft / 140du / 4.0 FAR</td></tr>
+                                <tr><td>5481 Santa Monica Blvd</td><td>9,300</td><td>Vacant</td><td>&#8212;</td><td>$2,325,000</td><td style="color:#4ade80;">0.00</td><td>Inner</td><td>95ft / 160du / 4.5 FAR</td></tr>
+                                <tr><td>1655 N St Andrews Pl</td><td>5,100</td><td>SFR</td><td>1952</td><td>$1,075,000</td><td style="color:#fbbf24;">0.52</td><td>Outer</td><td>85ft / 140du / 4.0 FAR</td></tr>
+                            </tbody>
+                        </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 8: Agent Portal PDA -->
+                <div class="wt-slide" data-caption="<strong>Step 8:</strong> The Agent Portal generates a branded Property Development Advisory (PDA) one-pager for client presentations.">
+                    <div class="wt-chrome">
+                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
+                        <div class="wt-tab"><span class="wt-tab-icon">&#128200;</span> Developer</div>
+                        <div class="wt-tab active"><span class="wt-tab-icon">&#128101;</span> Agent Portal</div>
+                    </div>
+                    <div class="wt-body">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div class="wt-h2">Property Development Advisory</div>
+                            <div class="wt-btn-green wt-btn">&#128424; Export PDF</div>
+                        </div>
+                        <div class="wt-card" style="background:rgba(37,99,235,0.08);border-color:rgba(59,130,246,0.2);">
+                            <div style="display:flex;justify-content:space-between;">
+                                <div>
+                                    <div class="wt-h3" style="color:#60a5fa;">6801 Hollywood Blvd, Los Angeles 90028</div>
+                                    <div class="wt-sub">APN: 5546-018-012 &middot; C4-2D &middot; 12,430 SF lot</div>
+                                </div>
+                                <div style="text-align:right;">
+                                    <div class="wt-badge wt-badge-green" style="font-size:0.55rem;">&#128293; Hot Opportunity</div>
+                                    <div class="wt-stat-value green" style="font-size:0.8rem;">1.8x</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="wt-row">
+                            <div class="wt-card wt-col">
+                                <div class="wt-card-title">Best Use: Mid-Rise Multifamily</div>
+                                <div class="wt-proforma-row"><span>Units</span><span>62</span></div>
+                                <div class="wt-proforma-row"><span>Stories</span><span>5</span></div>
+                                <div class="wt-proforma-row"><span>Buildable SF</span><span>39,776</span></div>
+                                <div class="wt-proforma-row"><span>Parking</span><span>31 spaces</span></div>
+                            </div>
+                            <div class="wt-card wt-col">
+                                <div class="wt-card-title">Investment Summary</div>
+                                <div class="wt-proforma-row"><span>As-Is Value</span><span>$2,996,000</span></div>
+                                <div class="wt-proforma-row"><span>Dev Value</span><span class="wt-stat-value green" style="font-size:0.6rem;">$36,652,000</span></div>
+                                <div class="wt-proforma-row"><span>Dev Cost</span><span>$22,690,000</span></div>
+                                <div class="wt-proforma-row total"><span>Uplift</span><span style="color:#4ade80;">+$13,962,000</span></div>
+                            </div>
+                        </div>
+                        <div class="wt-card" style="padding:0.35rem 0.5rem;">
+                            <div class="wt-row" style="gap:0.6rem;">
+                                <div><span class="wt-stat-label">SB 79 Eligible</span> <span class="wt-badge wt-badge-green">Yes — Tier 1</span></div>
+                                <div><span class="wt-stat-label">Entitlement</span> <span class="wt-badge wt-badge-blue">By-right</span></div>
+                                <div><span class="wt-stat-label">Ease of Execution</span> <span class="wt-badge wt-badge-green">82/100</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 9: Lender Portal -->
+                <div class="wt-slide" data-caption="<strong>Step 9:</strong> The Lender Portal provides underwriting-grade analysis with LTV, DSCR, and construction draw schedules.">
+                    <div class="wt-chrome">
+                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
+                        <div class="wt-tab"><span class="wt-tab-icon">&#128200;</span> Developer</div>
+                        <div class="wt-tab"><span class="wt-tab-icon">&#128101;</span> Agent</div>
+                        <div class="wt-tab active"><span class="wt-tab-icon">&#127974;</span> Lender Portal</div>
+                    </div>
+                    <div class="wt-body">
+                        <div class="wt-h2">Loan Underwriting Analysis</div>
+                        <div class="wt-row">
+                            <div class="wt-stat"><span class="wt-stat-label">Loan Amount</span><span class="wt-stat-value">$15,749,000</span></div>
+                            <div class="wt-stat"><span class="wt-stat-label">LTV</span><span class="wt-stat-value green">65%</span></div>
+                            <div class="wt-stat"><span class="wt-stat-label">LTC</span><span class="wt-stat-value green">69%</span></div>
+                            <div class="wt-stat"><span class="wt-stat-label">DSCR</span><span class="wt-stat-value green">1.42x</span></div>
+                        </div>
+                        <div class="wt-row">
+                            <div class="wt-card wt-col">
+                                <div class="wt-card-title">Loan Structure</div>
+                                <div class="wt-proforma-row"><span>Interest Rate</span><span>7.25%</span></div>
+                                <div class="wt-proforma-row"><span>Term</span><span>24 months + 12 ext</span></div>
+                                <div class="wt-proforma-row"><span>Interest Reserve</span><span>$1,142,000</span></div>
+                                <div class="wt-proforma-row"><span>Origination (1.5%)</span><span>$236,000</span></div>
+                                <div class="wt-proforma-row total"><span>All-In Cost</span><span>$1,378,000</span></div>
+                            </div>
+                            <div class="wt-card wt-col">
+                                <div class="wt-card-title">Risk Assessment</div>
+                                <div class="wt-row">
+                                    <div class="wt-stat"><span class="wt-stat-label">Market Risk</span><span class="wt-badge wt-badge-green">Low</span></div>
+                                    <div class="wt-stat"><span class="wt-stat-label">Entitlement</span><span class="wt-badge wt-badge-green">By-right</span></div>
+                                </div>
+                                <div class="wt-row">
+                                    <div class="wt-stat"><span class="wt-stat-label">Construction</span><span class="wt-badge wt-badge-amber">Moderate</span></div>
+                                    <div class="wt-stat"><span class="wt-stat-label">Exit</span><span class="wt-badge wt-badge-green">Strong</span></div>
+                                </div>
+                                <div class="wt-divider"></div>
+                                <div style="text-align:center;"><span class="wt-stat-label">Overall: </span><span class="wt-badge wt-badge-green" style="font-size:0.55rem;">RECOMMEND — Meets all criteria</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 10: Saved Properties & Batch Export -->
+                <div class="wt-slide" data-caption="<strong>Step 10:</strong> Save properties to your pipeline, combine parcels for assemblage analysis, and batch-export one-pagers.">
+                    <div class="wt-chrome">
+                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
+                        <div class="wt-tab active"><span class="wt-tab-icon">&#128190;</span> Saved Properties</div>
+                    </div>
+                    <div class="wt-body" style="gap:0.3rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div class="wt-h2">Pipeline — 12 Saved Properties</div>
+                            <div style="display:flex;gap:0.3rem;">
+                                <div class="wt-btn" style="font-size:0.5rem;">Combine Selected</div>
+                                <div class="wt-btn-green wt-btn" style="font-size:0.5rem;">Batch One-Pagers</div>
+                                <div class="wt-btn" style="font-size:0.5rem;background:#6366f1;">Export CSV</div>
+                            </div>
+                        </div>
+                        <div style="overflow:hidden;border-radius:6px;border:1px solid rgba(255,255,255,0.08);flex:1;">
+                        <table class="wt-table">
+                            <thead><tr>
+                                <th style="width:20px;">&#9744;</th><th>Address</th><th>Best Use</th><th>Opp Ratio</th><th>Premium</th><th>Score</th><th>SB 79</th>
+                            </tr></thead>
+                            <tbody>
+                                <tr><td>&#9745;</td><td>6801 Hollywood Blvd</td><td>Mid-Rise MF</td><td style="color:#4ade80;">1.8x</td><td style="color:#4ade80;">+$13.9M</td><td>92</td><td><span class="wt-badge wt-badge-green">T1</span></td></tr>
+                                <tr><td>&#9745;</td><td>5411 Hollywood Blvd</td><td>Mixed-Use</td><td style="color:#4ade80;">2.1x</td><td style="color:#4ade80;">+$4.2M</td><td>88</td><td><span class="wt-badge wt-badge-green">T1</span></td></tr>
+                                <tr><td>&#9744;</td><td>1825 N Western Ave</td><td>Mid-Rise MF</td><td style="color:#4ade80;">1.6x</td><td style="color:#4ade80;">+$3.8M</td><td>85</td><td><span class="wt-badge wt-badge-green">T1</span></td></tr>
+                                <tr><td>&#9744;</td><td>5520 Carlton Way</td><td>Duplex + ADU</td><td style="color:#fbbf24;">1.3x</td><td style="color:#fbbf24;">+$480K</td><td>74</td><td><span class="wt-badge wt-badge-amber">T2</span></td></tr>
+                                <tr><td>&#9744;</td><td>1910 N Serrano Ave</td><td>Low-Rise MF</td><td style="color:#fbbf24;">1.2x</td><td style="color:#fbbf24;">+$310K</td><td>71</td><td><span class="wt-badge wt-badge-amber">T2</span></td></tr>
+                                <tr><td>&#9744;</td><td>5600 De Longpre Ave</td><td>Mixed-Use</td><td style="color:#4ade80;">1.9x</td><td style="color:#4ade80;">+$6.1M</td><td>90</td><td><span class="wt-badge wt-badge-green">T1</span></td></tr>
+                                <tr><td>&#9744;</td><td>1734 N Kingsley Dr</td><td>Mid-Rise MF</td><td style="color:#4ade80;">1.7x</td><td style="color:#4ade80;">+$2.1M</td><td>82</td><td><span class="wt-badge wt-badge-blue">T2</span></td></tr>
+                            </tbody>
+                        </table>
+                        </div>
+                        <div class="wt-sub" style="text-align:center;">Select properties to combine for assemblage analysis or batch-generate investor one-pagers</div>
+                    </div>
+                </div>
+
+                <!-- Slide 11: Jurisdiction & Entitlement -->
+                <div class="wt-slide" data-caption="<strong>Step 11:</strong> Jurisdiction auto-detected for 15+ LA cities &mdash; permit pathways, impact fees, and entitlement risk scored automatically.">
+                    <div class="wt-chrome">
+                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
+                        <div class="wt-tab active"><span class="wt-tab-icon">&#127963;</span> Entitlement</div>
+                    </div>
+                    <div class="wt-body">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div class="wt-h2">Entitlement &amp; Permit Pathway</div>
+                            <div class="wt-badge wt-badge-blue">City of Los Angeles</div>
+                        </div>
+                        <div class="wt-row">
+                            <div class="wt-stat"><span class="wt-stat-label">Permit Type</span><span class="wt-stat-value blue">By-Right (SB 79)</span></div>
+                            <div class="wt-stat"><span class="wt-stat-label">Est. Timeline</span><span class="wt-stat-value">12-18 months</span></div>
+                            <div class="wt-stat"><span class="wt-stat-label">Impact Fees</span><span class="wt-stat-value amber">$486,000</span></div>
+                            <div class="wt-stat"><span class="wt-stat-label">Risk Score</span><span class="wt-stat-value green">Low (82/100)</span></div>
+                        </div>
+                        <div class="wt-card">
+                            <div class="wt-card-title">Impact Fee Breakdown</div>
+                            <div class="wt-proforma-row"><span>Park Fees (Quimby)</span><span>$186,000</span></div>
+                            <div class="wt-proforma-row"><span>School Fees</span><span>$127,000</span></div>
+                            <div class="wt-proforma-row"><span>Transportation</span><span>$98,000</span></div>
+                            <div class="wt-proforma-row"><span>Sewer/Water Connection</span><span>$75,000</span></div>
+                            <div class="wt-proforma-row total"><span>Total Impact Fees</span><span class="wt-stat-value amber">$486,000</span></div>
+                        </div>
+                        <div class="wt-card">
+                            <div class="wt-card-title">Recommended Consultants</div>
+                            <div class="wt-sub">Entitlement attorney, expediter, and environmental consultants auto-suggested for City of LA projects over 50 units.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 12: Final CTA -->
+                <div class="wt-slide" data-caption="<strong>Ready to start?</strong> Choose your portal and analyze your first property in under 60 seconds.">
+                    <div class="wt-chrome">
+                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
+                        <div class="wt-tab active"><span class="wt-tab-icon">&#127968;</span> Land to Yield</div>
+                    </div>
+                    <div class="wt-body" style="align-items:center;justify-content:center;text-align:center;gap:0.8rem;">
+                        <div style="font-size:2rem;">&#127919;</div>
+                        <div class="wt-h2" style="font-size:1rem;">Every parcel has untapped potential.<br>Find it in seconds.</div>
+                        <div class="wt-sub" style="max-width:360px;font-size:0.6rem;">16 land uses scored &middot; Full pro forma &middot; SB 79 transit analysis &middot; Legislation scanner &middot; Opportunity finder &middot; Lender underwriting &middot; Agent one-pagers</div>
+                        <div class="wt-row" style="justify-content:center;gap:0.6rem;margin-top:0.3rem;">
+                            <a href="app.html" class="wt-btn" style="padding:0.4rem 1rem;font-size:0.65rem;text-decoration:none;">Developer Portal &#8594;</a>
+                            <a href="lender.html" class="wt-btn" style="padding:0.4rem 1rem;font-size:0.65rem;background:#059669;text-decoration:none;">Lender Portal &#8594;</a>
+                            <a href="agent.html" class="wt-btn" style="padding:0.4rem 1rem;font-size:0.65rem;background:#7c3aed;text-decoration:none;">Agent Portal &#8594;</a>
+                        </div>
+                        <div class="wt-sub" style="font-size:0.5rem;">No credit card required &middot; Free tier includes 3 analyses/month</div>
+                    </div>
+                </div>
+
+            </div><!-- /wt-viewport -->
+
+            <!-- Caption -->
+            <div class="wt-caption" id="wtCaption"></div>
+
+            <!-- Controls -->
+            <div class="wt-controls">
+                <button class="wt-ctrl-btn" id="wtPrev" onclick="wtNav(-1)" title="Previous">&#9664;</button>
+                <button class="wt-ctrl-btn" id="wtPlayPause" onclick="wtTogglePlay()" title="Play/Pause">&#9646;&#9646;</button>
+                <button class="wt-ctrl-btn" id="wtNext" onclick="wtNav(1)" title="Next">&#9654;</button>
+                <div class="wt-progress" id="wtProgress" onclick="wtClickProgress(event)">
+                    <div class="wt-progress-fill" id="wtProgressFill"></div>
+                </div>
+                <div class="wt-step-label" id="wtStepLabel">1 / 12</div>
             </div>
-        </div>
+
+        </div><!-- /demo-video-wrapper -->
     </div>
 </section>
 
@@ -1352,18 +1937,60 @@
         });
     });
 
-    // Demo video loader — replace YOUR_VIDEO_ID with actual YouTube/Loom ID
-    window.loadDemoVideo = function() {
-        var wrapper = document.getElementById('demoVideoWrapper');
-        // Replace this placeholder with your actual YouTube or Loom embed URL
-        var videoUrl = ''; // e.g., 'https://www.youtube.com/embed/YOUR_VIDEO_ID?autoplay=1'
-        if (videoUrl) {
-            wrapper.innerHTML = '<iframe width="100%" height="100%" src="' + videoUrl + '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="position:absolute;inset:0;"></iframe>';
-        } else {
-            // No video yet — scroll to portals for a live demo
-            document.getElementById('role-portals').scrollIntoView({ behavior: 'smooth' });
+    // Walkthrough carousel controller
+    (function() {
+        var slides = document.querySelectorAll('.wt-slide');
+        var total = slides.length;
+        var current = 0;
+        var playing = true;
+        var interval = null;
+        var SLIDE_DURATION = 5000; // 5s per slide
+
+        function show(idx) {
+            current = ((idx % total) + total) % total;
+            slides.forEach(function(s, i) { s.classList.toggle('active', i === current); });
+            var cap = slides[current].getAttribute('data-caption') || '';
+            document.getElementById('wtCaption').innerHTML = cap;
+            document.getElementById('wtStepLabel').textContent = (current + 1) + ' / ' + total;
+            document.getElementById('wtProgressFill').style.width = ((current + 1) / total * 100) + '%';
         }
-    };
+
+        function next() { show(current + 1); }
+
+        function startAutoplay() {
+            if (interval) clearInterval(interval);
+            interval = setInterval(next, SLIDE_DURATION);
+            playing = true;
+            document.getElementById('wtPlayPause').innerHTML = '&#9646;&#9646;';
+        }
+
+        function stopAutoplay() {
+            if (interval) clearInterval(interval);
+            interval = null;
+            playing = false;
+            document.getElementById('wtPlayPause').innerHTML = '&#9654;';
+        }
+
+        window.wtNav = function(dir) {
+            show(current + dir);
+            if (playing) { stopAutoplay(); startAutoplay(); } // reset timer
+        };
+
+        window.wtTogglePlay = function() {
+            if (playing) stopAutoplay(); else startAutoplay();
+        };
+
+        window.wtClickProgress = function(e) {
+            var rect = e.currentTarget.getBoundingClientRect();
+            var pct = (e.clientX - rect.left) / rect.width;
+            show(Math.floor(pct * total));
+            if (playing) { stopAutoplay(); startAutoplay(); }
+        };
+
+        // Init
+        show(0);
+        startAutoplay();
+    })();
 </script>
 
 </body>

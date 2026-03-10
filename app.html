@@ -327,6 +327,43 @@
             font-size: 0.92rem;
         }
 
+        .share-row {
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn-share {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--primary);
+            background: #ebf8ff;
+            border: 1px solid #90cdf4;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .btn-share:hover {
+            background: #bee3f8;
+            border-color: var(--primary-light);
+        }
+        .share-toast {
+            font-size: 0.82rem;
+            color: var(--success);
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .share-toast.visible {
+            opacity: 1;
+        }
+
         .result-cards {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -2653,9 +2690,9 @@
                     </div>
 
                     <div class="field" id="field-marketValue">
-                        <label>Est. Market Value <span class="autofill-badge">Prop 13 adj.</span> <span id="assessedValueLabel" style="color:#718096;font-size:0.82em;"></span></label>
+                        <label>Est. Market Value <span class="autofill-badge">Median $/SF</span> <span id="assessedValueLabel" style="color:#718096;font-size:0.82em;"></span></label>
                         <input type="number" id="marketValue" value="0" min="0" step="1000" style="font-weight:600;">
-                        <div style="font-size:0.75em;color:#718096;margin-top:2px;">1.9× Prop 13 estimate · Verify on <a href="#" id="zillowValLink" target="_blank" style="color:#667eea;">Zillow</a> or <a href="#" id="redfinValLink" target="_blank" style="color:#667eea;">Redfin</a></div>
+                        <div style="font-size:0.75em;color:#718096;margin-top:2px;">Neighborhood median $/SF estimate · Verify on <a href="#" id="zillowValLink" target="_blank" style="color:#667eea;">Zillow</a> or <a href="#" id="redfinValLink" target="_blank" style="color:#667eea;">Redfin</a></div>
                     </div>
                     <div class="field" id="field-ownProperty" style="display:flex;align-items:center;gap:8px;margin:-4px 0 4px 0;">
                         <input type="checkbox" id="ownProperty" style="width:auto;margin:0;">
@@ -2819,6 +2856,12 @@
         <div class="results-header">
             <h2>Top 3 Highest &amp; Best Use Results</h2>
             <p id="resultsSummary"></p>
+            <div class="share-row" id="shareRow" style="display:none;">
+                <button type="button" class="btn-share" id="btnShare" onclick="copyShareLink()" title="Copy a link that restores this analysis">
+                    🔗 Copy share link
+                </button>
+                <span class="share-toast" id="shareToast" aria-live="polite">Link copied!</span>
+            </div>
         </div>
 
         <div class="result-cards" id="resultCards"></div>
@@ -2982,6 +3025,14 @@
             <div class="finder-field">
                 <label>Max Lot Size (sq ft)</label>
                 <input type="number" id="finderMaxLot2" value="100000" min="0" step="500">
+            </div>
+            <div class="finder-field">
+                <label>Year Built After</label>
+                <input type="number" id="finderYearAfter2" placeholder="e.g. 1960" min="1800" max="2030" step="1">
+            </div>
+            <div class="finder-field">
+                <label>Year Built Before</label>
+                <input type="number" id="finderYearBefore2" placeholder="e.g. 1980" min="1800" max="2030" step="1">
             </div>
         </div>
         <button type="button" class="finder-btn-search" id="finderSearchBtn2" onclick="runStandaloneSearch()">Find Opportunities</button>
@@ -4692,19 +4743,21 @@ async function _lookupAddressBody(address, coords, btn) {
         const _rl = parseFloat(parcelResult.attrs.Roll_LandValue) || 0;
         const _ri = parseFloat(parcelResult.attrs.Roll_ImpValue) || 0;
         window.lastAssessedTotal = _rl + _ri;
+        if (window.lastGeocode) window.lastGeocode.structureSqFt = parseInt(parcelResult.attrs.SQFTmain1) || 0;
     }
-    // Populate market value field — apply Prop 13 multiplier (1.9x) to approximate market value
-    var _prop13Multiplier = 1.9;
-    var _estMarketValue = window.lastAssessedTotal > 0 ? Math.round(window.lastAssessedTotal * _prop13Multiplier) : 0;
+    // Populate market value field — neighborhood median $/SF estimate
+    var _structSF = (parcelResult && parcelResult.attrs) ? parseInt(parcelResult.attrs.SQFTmain1) || 0 : 0;
+    var _nhood = (document.getElementById('neighborhood') || {}).value || 'dtla';
+    var _lotSF = parseFloat((document.getElementById('parcelSize') || {}).value) || 10000;
+    var _estMarketValue = estimateMarketValue(_structSF, _lotSF, _structSF > 0 ? 'Residential' : 'Vacant', _nhood);
     var _mvInput = document.getElementById('marketValue');
     if (_mvInput) {
         _mvInput.value = _estMarketValue;
     }
     var _avLabel = document.getElementById('assessedValueLabel');
     if (_avLabel) {
-        _avLabel.textContent = window.lastAssessedTotal > 0
-            ? '(Prop 13 adj. — assessed: $' + window.lastAssessedTotal.toLocaleString() + ')'
-            : '';
+        var _mvPsfLabel = _structSF > 0 ? ('(' + _nhood + ' median $/SF × ' + _structSF.toLocaleString() + ' SF)') : ('(' + _nhood + ' land $/SF × ' + _lotSF.toLocaleString() + ' SF lot)');
+        _avLabel.textContent = _estMarketValue > 0 ? _mvPsfLabel : '';
     }
     // Set Zillow/Redfin valuation links
     var _addrForLinks = (document.getElementById('address') || {}).value || '';
@@ -4941,6 +4994,24 @@ const LAND_VALUE_PSF = {
     silverlake: 220, highland: 150, venice: 350, culver: 260, exposition: 160,
     southbay: 120, harbor: 80, boyleheights: 110
 };
+
+// Median market value per structure SF by neighborhood (2025 LA County comps)
+const MARKET_VALUE_PSF = {
+    dtla: 650, hollywood: 700, koreatown: 550, westside: 900, santamonica: 1100,
+    beverly: 1200, midcity: 750, southla: 450, valleyeast: 550, valleywest: 600,
+    silverlake: 800, highland: 600, venice: 1000, culver: 800, exposition: 550,
+    southbay: 700, harbor: 450, boyleheights: 500
+};
+
+// Estimate market value using neighborhood median $/SF instead of Prop 13 multiplier
+function estimateMarketValue(structureSqFt, lotSizeSqFt, useType, neighborhood) {
+    const mvPSF = MARKET_VALUE_PSF[neighborhood] || 600;
+    const landPSF = LAND_VALUE_PSF[neighborhood] || 150;
+    if (useType === 'Vacant' || structureSqFt <= 0) {
+        return Math.round(lotSizeSqFt * landPSF);
+    }
+    return Math.round(structureSqFt * mvPSF);
+}
 
 // Revenue potential per NSF of building (annual $/SF, new-construction achievable rents)
 const REVENUE_PSF = {
@@ -5812,6 +5883,9 @@ function resetWhatIfZoning() {
 function renderResults(results, inp) {
     const container = document.getElementById('results');
     container.classList.add('visible');
+
+    var shareRow = document.getElementById('shareRow');
+    if (shareRow) shareRow.style.display = 'flex';
 
     // Summary
     document.getElementById('resultsSummary').textContent =
@@ -8320,6 +8394,7 @@ function filterAndScoreResults(features, station, filters) {
         if (filters.resType && filters.resType !== 'all' && useType === 'Residential' && resSubType !== filters.resType) continue;
         if (filters.maxRatio !== null && impRatio > filters.maxRatio) continue;
         if (filters.yearBefore && yearBuilt > 0 && yearBuilt >= filters.yearBefore) continue;
+        if (filters.yearAfter && yearBuilt > 0 && yearBuilt <= filters.yearAfter) continue;
 
         const allowances = getSB79Allowances(station.tier, zoneInfo.key);
 
@@ -8340,9 +8415,10 @@ function filterAndScoreResults(features, station, filters) {
         resultObj.legislationEffects = legInfo.effects;
         resultObj.legislationCount = legInfo.bills.length;
 
-        // Estimated market value (Prop 13 adjusted)
-        var assessedTotal = landVal + impVal;
-        resultObj.estimatedMarketValue = assessedTotal > 0 ? Math.round(assessedTotal * 1.9) : 0;
+        // Estimated market value (neighborhood median $/SF)
+        var neighborhood = 'dtla'; var minNDist = Infinity;
+        for (var nk in NEIGHBORHOOD_CENTROIDS) { var nc = NEIGHBORHOOD_CENTROIDS[nk]; var nd = Math.abs(lat - nc.lat) + Math.abs(lon - nc.lon); if (nd < minNDist) { minNDist = nd; neighborhood = nk; } }
+        resultObj.estimatedMarketValue = estimateMarketValue(sqft, lotSizeSqFt, useType, neighborhood);
 
         results.push(resultObj);
     }
@@ -10008,6 +10084,8 @@ async function runStandaloneSearch() {
     const resType = (document.getElementById('finderResType2') || {}).value || 'all';
     const minLot = parseInt(document.getElementById('finderMinLot2').value) || 0;
     const maxLot = parseInt(document.getElementById('finderMaxLot2').value) || 999999;
+    const yearAfter = parseInt(document.getElementById('finderYearAfter2').value) || 0;
+    const yearBefore = parseInt(document.getElementById('finderYearBefore2').value) || 0;
 
     // Map selected radii to zone keys for filtering
     const selectedZones = [];
@@ -10015,7 +10093,7 @@ async function runStandaloneSearch() {
     if (selectedRadii.includes(1320)) selectedZones.push('inner');
     if (selectedRadii.includes(2640)) selectedZones.push('outer');
 
-    const filters = { useTypes, resType, minLot, maxLot, maxRatio: null, yearBefore: null, selectedZones };
+    const filters = { useTypes, resType, minLot, maxLot, maxRatio: null, yearBefore, yearAfter, selectedZones };
 
     finderSelectedSet.clear();
 
@@ -21125,14 +21203,9 @@ function attachDevScenarioHandlers() {
       var devCostsExLand = (budget.totalHard || 0) + (budget.totalSoft || 0);
       var devLandBid = Math.max(0, (budget.stabilizedValue || 0) - devCostsExLand);
 
-      // Estimated market value
-      var marketValue = 0;
-      if (geo.assessedTotal && geo.assessedTotal > 0) {
-        marketValue = Math.round(geo.assessedTotal * 1.9);
-      } else {
-        var landValPSF = (typeof LAND_VALUE_PSF !== 'undefined' && LAND_VALUE_PSF[inp.neighborhood]) ? LAND_VALUE_PSF[inp.neighborhood] : 150;
-        marketValue = Math.round(landValPSF * inp.parcelSize * 1.3);
-      }
+      // Estimated market value (neighborhood median $/SF)
+      var _sSF = (geo.structureSqFt || parseInt((document.getElementById('structureSF') || {}).value) || 0);
+      var marketValue = estimateMarketValue(_sSF, inp.parcelSize, _sSF > 0 ? 'Residential' : 'Vacant', inp.neighborhood);
 
       var oppRatio = marketValue > 0 ? devLandBid / marketValue : 0;
       var address = '';
@@ -21174,6 +21247,90 @@ function attachDevScenarioHandlers() {
     }
   };
 })();
+
+// ============================================================
+//  Share link — encode analysis state in URL so it can be bookmarked or shared
+// ============================================================
+function buildShareLink() {
+  var inp = typeof lastInputs !== 'undefined' ? lastInputs : null;
+  var addrEl = document.getElementById('addressInput');
+  var address = (addrEl && addrEl.value) ? addrEl.value.trim() : '';
+  var base = window.location.origin + window.location.pathname;
+  var params = new URLSearchParams();
+  params.set('lty', '1');
+  if (inp) {
+    if (inp.parcelSize) params.set('p', String(Math.round(inp.parcelSize)));
+    if (inp.zoning) params.set('z', inp.zoning);
+    if (inp.neighborhood) params.set('n', inp.neighborhood);
+  }
+  if (address) params.set('a', address);
+  return base + '#' + params.toString();
+}
+
+function copyShareLink() {
+  var url = buildShareLink();
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(function() { showShareToast(); }).catch(function() { fallbackCopyShareLink(url); });
+  } else {
+    fallbackCopyShareLink(url);
+  }
+}
+
+function fallbackCopyShareLink(url) {
+  var ta = document.createElement('textarea');
+  ta.value = url;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    showShareToast();
+  } catch (e) {}
+  document.body.removeChild(ta);
+}
+
+function showShareToast() {
+  var toast = document.getElementById('shareToast');
+  if (!toast) return;
+  toast.classList.add('visible');
+  setTimeout(function() { toast.classList.remove('visible'); }, 2000);
+}
+
+function applySharedStateFromHash() {
+  var hash = location.hash ? location.hash.slice(1) : '';
+  if (!hash) return;
+  var params = new URLSearchParams(hash);
+  if (params.get('lty') !== '1') return;
+  var p = params.get('p');
+  var z = params.get('z');
+  var n = params.get('n');
+  var a = params.get('a');
+  var applied = false;
+  if (p) {
+    var parcelEl = document.getElementById('parcelSize');
+    if (parcelEl) { parcelEl.value = p; applied = true; }
+  }
+  if (z) {
+    var zoneEl = document.getElementById('zoning');
+    if (zoneEl && zoneEl.querySelector('option[value="' + z + '"]')) { zoneEl.value = z; applied = true; }
+  }
+  if (n) {
+    var neighEl = document.getElementById('neighborhood');
+    if (neighEl && neighEl.querySelector('option[value="' + n + '"]')) { neighEl.value = n; applied = true; }
+  }
+  if (a) {
+    var addrEl = document.getElementById('addressInput');
+    if (addrEl) { addrEl.value = a; applied = true; }
+  }
+  if (applied && typeof calculateHBU === 'function') {
+    setTimeout(function() { calculateHBU(); }, 100);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  applySharedStateFromHash();
+});
 
 document.addEventListener('DOMContentLoaded', function() {
   attachDevScenarioHandlers();
