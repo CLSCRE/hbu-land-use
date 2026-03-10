@@ -3852,7 +3852,7 @@ function estimateMarketValue(structureSqFt, lotSizeSqFt, useType, neighborhood) 
 
 // ── RentCast AVM Integration ─────────────────────────────────────
 // Proxy URL — set this after deploying the Cloudflare Worker
-const RENTCAST_PROXY_URL = 'https://lty-avm-proxy.YOUR_SUBDOMAIN.workers.dev';
+const RENTCAST_PROXY_URL = 'https://lty-avm-proxy.clscre.workers.dev';
 
 // localStorage cache: key = 'lty_avm_' + normalized address, TTL = 7 days
 function _avmCacheKey(address) { return 'lty_avm_' + address.toLowerCase().trim().replace(/\s+/g, ' '); }
