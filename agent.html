@@ -7877,8 +7877,8 @@ function renderScannerResults() {
             <td style="font-size:0.78rem;">${r.bestUse}</td>
             <td onclick="event.stopPropagation()">
                 <span class="prop-links">
-                    <a href="https://www.fastpeoplesearch.com/address/${enc.replace(/%20/g,'-').replace(/[,%23]/g,'')}" target="_blank" title="Reverse address lookup — find property owner">Owner</a> |
-                    <a href="https://www.zillow.com/homes/${enc}_rb/" target="_blank" title="View on Zillow">Z</a> |
+                    <a href="https://www.fastpeoplesearch.com/address/${r.address.trim().replace(/[,#]+/g,'').replace(/\s+/g,'-')}" target="_blank" title="Reverse address lookup — find property owner">Owner</a> |
+                    <a href="https://www.zillow.com/homes/${r.address.trim().replace(/[,#]+/g,'').replace(/\s+/g,'-')}_rb/" target="_blank" title="View on Zillow">Z</a> |
                     <a href="javascript:void(0)" onclick="openOnePagerFromScan(${i})" title="Generate One-Pager">1-Pg</a> |
                     <a href="javascript:void(0)" onclick="openLetterModal(${i})" title="Generate Letter">Letter</a>
                 </span>
