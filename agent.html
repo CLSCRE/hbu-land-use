@@ -1787,7 +1787,7 @@
                     </div>
 
                     <div class="field" id="field-marketValue">
-                        <label>Est. Market Value <span class="autofill-badge">Median $/SF</span> <span id="assessedValueLabel" style="color:#718096;font-size:0.82em;"></span></label>
+                        <label>Est. Market Value <span class="autofill-badge" id="mvSourceBadge">AVM</span> <span id="assessedValueLabel" style="color:#718096;font-size:0.82em;"></span></label>
                         <input type="number" id="marketValue" value="0" min="0" step="1000" style="font-weight:600;">
                         <div style="font-size:0.75em;color:#718096;margin-top:2px;">Neighborhood median $/SF estimate · Verify on <a href="#" id="zillowValLink" target="_blank" style="color:var(--primary-light);">Zillow</a> or <a href="#" id="redfinValLink" target="_blank" style="color:var(--primary-light);">Redfin</a></div>
                     </div>
@@ -3614,21 +3614,36 @@ async function lookupAddress() {
         const _ri = parseFloat(parcelResult.attrs.Roll_ImpValue) || 0;
         window.lastAssessedTotal = _rl + _ri;
     }
-    // Populate market value field — neighborhood median $/SF estimate
+    // Populate market value field — try RentCast AVM first, fallback to neighborhood median $/SF
     var _structSF = (parcelResult && parcelResult.attrs) ? parseInt(parcelResult.attrs.SQFTmain1) || 0 : 0;
     var _nhood = (document.getElementById('neighborhood') || {}).value || 'dtla';
     var _lotSF = parseFloat((document.getElementById('parcelSize') || {}).value) || 10000;
+    var _addrForLinks = (document.getElementById('address') || {}).value || '';
+    // Set immediate fallback estimate while AVM loads
     var _estMarketValue = estimateMarketValue(_structSF, _lotSF, _structSF > 0 ? 'Residential' : 'Vacant', _nhood);
     var _mvInput = document.getElementById('marketValue');
-    if (_mvInput) {
-        _mvInput.value = _estMarketValue;
-    }
+    if (_mvInput) _mvInput.value = _estMarketValue;
     var _avLabel = document.getElementById('assessedValueLabel');
     if (_avLabel) {
         var _mvPsfLabel = _structSF > 0 ? ('(' + _nhood + ' median $/SF × ' + _structSF.toLocaleString() + ' SF)') : ('(' + _nhood + ' land $/SF × ' + _lotSF.toLocaleString() + ' SF lot)');
         _avLabel.textContent = _estMarketValue > 0 ? _mvPsfLabel : '';
     }
-    var _addrForLinks = (document.getElementById('address') || {}).value || '';
+    // Async: upgrade to RentCast AVM if available
+    (async () => {
+        try {
+            const mv = await getMarketValue(_addrForLinks, _structSF, _lotSF, _structSF > 0 ? 'Residential' : 'Vacant', _nhood);
+            if (_mvInput) _mvInput.value = mv.value;
+            if (_avLabel) _avLabel.textContent = mv.detail;
+            var _badge = document.getElementById('mvSourceBadge');
+            if (mv.source === 'rentcast') {
+                if (_avLabel) _avLabel.style.color = '#059669';
+                if (_badge) { _badge.textContent = 'RentCast AVM'; _badge.style.background = '#059669'; }
+            } else {
+                if (_avLabel) _avLabel.style.color = '';
+                if (_badge) { _badge.textContent = 'Median $/SF'; _badge.style.background = ''; }
+            }
+        } catch {}
+    })();
     var _encAddr = encodeURIComponent(_addrForLinks);
     var _zLink = document.getElementById('zillowValLink');
     var _rLink = document.getElementById('redfinValLink');
@@ -3825,7 +3840,7 @@ const MARKET_VALUE_PSF = {
     southbay: 700, harbor: 450, boyleheights: 500
 };
 
-// Estimate market value using neighborhood median $/SF instead of Prop 13 multiplier
+// Estimate market value using neighborhood median $/SF (fallback when API unavailable)
 function estimateMarketValue(structureSqFt, lotSizeSqFt, useType, neighborhood) {
     const mvPSF = MARKET_VALUE_PSF[neighborhood] || 600;
     const landPSF = LAND_VALUE_PSF[neighborhood] || 150;
@@ -3834,6 +3849,70 @@ function estimateMarketValue(structureSqFt, lotSizeSqFt, useType, neighborhood) 
     }
     return Math.round(structureSqFt * mvPSF);
 }
+
+// ── RentCast AVM Integration ─────────────────────────────────────
+// Proxy URL — set this after deploying the Cloudflare Worker
+const RENTCAST_PROXY_URL = 'https://lty-avm-proxy.YOUR_SUBDOMAIN.workers.dev';
+
+// localStorage cache: key = 'lty_avm_' + normalized address, TTL = 7 days
+function _avmCacheKey(address) { return 'lty_avm_' + address.toLowerCase().trim().replace(/\s+/g, ' '); }
+function _avmCacheGet(address) {
+    try {
+        const raw = localStorage.getItem(_avmCacheKey(address));
+        if (!raw) return null;
+        const obj = JSON.parse(raw);
+        if (Date.now() - obj.timestamp > 7 * 86400000) { localStorage.removeItem(_avmCacheKey(address)); return null; }
+        return obj;
+    } catch { return null; }
+}
+function _avmCacheSet(address, data) {
+    try { localStorage.setItem(_avmCacheKey(address), JSON.stringify({ ...data, timestamp: Date.now() })); } catch {}
+}
+
+/**
+ * Fetch real AVM market value from RentCast (via Cloudflare Worker proxy).
+ * Returns { price, priceLow, priceHigh, priceSqFt, source:'rentcast' } or null on failure.
+ * Always caches successful results in localStorage for 7 days.
+ */
+async function fetchRentCastAVM(address) {
+    if (!address || RENTCAST_PROXY_URL.includes('YOUR_SUBDOMAIN')) return null;
+    const cached = _avmCacheGet(address);
+    if (cached && cached.price) return cached;
+    try {
+        const resp = await fetch(RENTCAST_PROXY_URL + '?address=' + encodeURIComponent(address), { signal: AbortSignal.timeout(8000) });
+        if (!resp.ok) return null;
+        const data = await resp.json();
+        if (data.price) { _avmCacheSet(address, data); return data; }
+        return null;
+    } catch { return null; }
+}
+
+/**
+ * Get market value — tries RentCast first, falls back to neighborhood median $/SF.
+ * Returns { value: number, source: 'rentcast'|'median_psf', detail: string }
+ */
+async function getMarketValue(address, structureSqFt, lotSizeSqFt, useType, neighborhood) {
+    // Try RentCast AVM first
+    const avm = await fetchRentCastAVM(address);
+    if (avm && avm.price) {
+        const rangeTxt = (avm.priceLow && avm.priceHigh)
+            ? '$' + Math.round(avm.priceLow).toLocaleString() + ' – $' + Math.round(avm.priceHigh).toLocaleString()
+            : '';
+        return {
+            value: Math.round(avm.price),
+            source: 'rentcast',
+            detail: 'RentCast AVM' + (rangeTxt ? ' (' + rangeTxt + ')' : ''),
+            raw: avm
+        };
+    }
+    // Fallback to neighborhood median $/SF
+    const est = estimateMarketValue(structureSqFt, lotSizeSqFt, useType, neighborhood);
+    const fallbackDetail = structureSqFt > 0
+        ? neighborhood + ' median $/SF × ' + structureSqFt.toLocaleString() + ' SF'
+        : neighborhood + ' land $/SF × ' + lotSizeSqFt.toLocaleString() + ' SF lot';
+    return { value: est, source: 'median_psf', detail: fallbackDetail, raw: null };
+}
+// ── End RentCast AVM ─────────────────────────────────────────────
 
 // Revenue potential per NSF of building (annual $/SF, new-construction achievable rents)
 const REVENUE_PSF = {
@@ -7812,11 +7891,42 @@ async function runAreaScan() {
         applySmartFilters();
         finderResults2 = scannerResults;
 
-        fillEl.style.width = '100%';
+        fillEl.style.width = '98%';
         textEl.textContent = `Found ${allScannerResults.length} opportunities (${scannerResults.length} shown)`;
         renderSmartFilterPanel();
         renderScannerResults();
         addScannerParcelsToMap();
+
+        // Enrich top results with RentCast AVM (async, non-blocking)
+        if (!RENTCAST_PROXY_URL.includes('YOUR_SUBDOMAIN')) {
+            const topN = scannerResults.slice(0, 10);
+            let enriched = 0;
+            textEl.textContent += ' — fetching real valuations for top results...';
+            for (const r of topN) {
+                try {
+                    const avm = await fetchRentCastAVM(r.address);
+                    if (avm && avm.price) {
+                        r.estimatedMarketValue = Math.round(avm.price);
+                        r.marketValueSource = 'rentcast';
+                        const devCosts = (r.budget.totalHard || 0) + (r.budget.totalSoft || 0);
+                        const rlv = Math.max(0, (r.budget.stabilizedValue || 0) - devCosts);
+                        r.residualLandValue = rlv;
+                        r.oppRatio = r.estimatedMarketValue > 0 ? rlv / r.estimatedMarketValue : 0;
+                        r.premium = rlv - r.estimatedMarketValue;
+                        enriched++;
+                    }
+                } catch {}
+            }
+            if (enriched > 0) {
+                scannerResults.sort((a, b) => b.oppRatio - a.oppRatio);
+                renderScannerResults();
+                textEl.textContent = `Found ${allScannerResults.length} opportunities (${scannerResults.length} shown) — ${enriched} verified with AVM`;
+            } else {
+                textEl.textContent = `Found ${allScannerResults.length} opportunities (${scannerResults.length} shown)`;
+            }
+        }
+
+        fillEl.style.width = '100%';
 
     } catch(e) {
         resultsArea.innerHTML = `<div class="finder-error"><strong>Search failed:</strong> ${e.message}</div>`;
@@ -7873,7 +7983,7 @@ function renderScannerResults() {
             <td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString() + ' sf' : '-'}</td>
             <td>${r.useType}${r.resSubType ? ' <span style="color:#718096;font-size:0.78em;">(' + r.resSubType + ')</span>' : ''}</td>
             <td><span class="opp-badge ${oppClass(r.oppRatio)}">${ratioStr}</span></td>
-            <td>${fmt(r.estimatedMarketValue)}</td>
+            <td>${fmt(r.estimatedMarketValue)}${r.marketValueSource === 'rentcast' ? ' <span title="Verified by RentCast AVM" style="color:#059669;font-weight:700;">&#10003;</span>' : ''}</td>
             <td>${fmt(r.residualLandValue)}</td>
             <td>${r.hbuScore}/100</td>
             <td style="font-size:0.78rem;">${r.bestUse}</td>
