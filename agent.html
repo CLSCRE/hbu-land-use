@@ -3299,7 +3299,7 @@ const JURISDICTIONS = [
     { name: 'Carson', lat: 33.8317, lon: -118.2620, radius: 2.5, note: 'Carson Municipal Code applies — own specific plans and environmental review.' },
     { name: 'Redondo Beach', lat: 33.8492, lon: -118.3884, radius: 2.0, note: 'Redondo Beach zoning code applies — Coastal Zone, own height/density standards.' },
     { name: 'Pomona', lat: 34.0551, lon: -117.7500, radius: 3.5, note: 'Pomona zoning code applies — own downtown specific plan and development incentives.' },
-    { name: 'South Pasadena', lat: 34.1161, lon: -118.1503, radius: 1.5, note: 'South Pasadena zoning code applies — strong historic preservation, own development standards.' },
+    { name: 'South Pasadena', lat: 34.1161, lon: -118.1503, radius: 1.5, note: 'South Pasadena Municipal Code (SPMC Ch. 36) applies — zones RE/RS/RM/RH (not LA R1-R5). Strong historic preservation (11+ historic districts, 50+ landmarks). ADUs allowed with 4 ft setbacks. SB 9 prohibited in historic districts. Downtown Specific Plan covers Mission St & Fair Oaks Ave corridors.' },
     { name: 'Arcadia', lat: 34.1397, lon: -118.0353, radius: 2.5, note: 'Arcadia zoning code applies — own development standards and review process.' },
     { name: 'Monrovia', lat: 34.1442, lon: -117.9990, radius: 2.0, note: 'Monrovia zoning code applies — Old Town specific plan, own entitlement process.' },
     { name: 'Alhambra', lat: 34.0953, lon: -118.1270, radius: 2.0, note: 'Alhambra zoning code applies — own specific plans and development standards.' },
@@ -3326,6 +3326,13 @@ function detectJurisdiction(lat, lon, addressDetails) {
     if (addressDetails) {
         const city = (addressDetails.city || addressDetails.town || addressDetails.municipality || '').toLowerCase().trim();
         if (city) {
+            // First pass: exact match (prevents "South Pasadena" matching "Pasadena")
+            for (const j of JURISDICTIONS) {
+                if (city === j.name.toLowerCase()) {
+                    return { jurisdiction: j.name, isLA: false, note: j.note };
+                }
+            }
+            // Second pass: substring match (fallback for variations like "City of ...")
             for (const j of JURISDICTIONS) {
                 if (city.includes(j.name.toLowerCase())) {
                     return { jurisdiction: j.name, isLA: false, note: j.note };
@@ -3351,6 +3358,67 @@ function detectJurisdiction(lat, lon, addressDetails) {
         return { jurisdiction: 'City of Los Angeles', isLA: true, note: 'City of LA zoning (LAMC) applies. ZIMAS is the authoritative zoning source.' };
     }
     return { jurisdiction: 'Unincorporated LA County', isLA: false, note: 'Unincorporated LA County — County zoning code applies, not City of LA. Different entitlement process through County DRP.' };
+}
+
+// Jurisdiction-specific development standards — override LA City defaults
+const JURISDICTION_STANDARDS = {
+    'South Pasadena': {
+        // Zone mapping: LA zoning → South Pasadena equivalent
+        zoneMap: { 'R1': 'RS', 'R2': 'RM', 'R3': 'RM', 'R4': 'RH', 'R5': 'RH' },
+        zones: {
+            RS: { maxHeight: 45, maxFAR: 0.50, maxDensity: 5, minLot: 10000, parking: { sfr: 2, duplex: 2.5 },
+                   setbacks: { front: 10, side: 4, rear: 15 }, maxCoverage: 0.50, label: 'RS (Residential Single-Family)' },
+            RE: { maxHeight: 35, maxFAR: 0.35, maxDensity: 3, minLot: 12500, parking: { sfr: 2 },
+                   setbacks: { front: 25, side: '10%', rear: 25 }, maxCoverage: 0.40, label: 'RE (Residential Estate)' },
+            RM: { maxHeight: 45, maxFAR: 1.50, maxDensity: 30, minLot: 10000, parking: { studio: 0.5, '1br': 1, '2br': 1.5 },
+                   setbacks: { front: 7.5, side: 4, rear: 15 }, openSpace: 200, label: 'RM (Residential Medium Density)' },
+            RH: { maxHeight: 45, maxFAR: 2.50, maxDensity: 45, minLot: 10000, parking: { studio: 0.5, '1br': 1, '2br': 1.5 },
+                   setbacks: { front: 7.5, side: 4, rear: 15 }, openSpace: 200, label: 'RH (Residential High Density)' },
+        },
+        adu: { maxSize: 1200, attachedMax: '50% of primary or 1200 SF', maxHeight: 16, setbacks: 4,
+               parking: 1, parkingWaiver: 'Within 0.5 mi of transit or in historic district', permitDays: 60 },
+        sb9: { eligible: true, maxUnitSize: 850, maxTotal: 1700, minLotForSplit: 1200, parking: 1,
+               prohibited: 'Historic districts, State Historic Resources Inventory, designated landmarks, slopes >15%' },
+        historic: { districts: 11, landmarks: 50, millsAct: true, chc: 'Cultural Heritage Commission',
+                    aduRules: 'Secretary of Interior Standards apply for ADUs on historic properties',
+                    sb9Prohibited: true },
+        dtsp: { name: 'Downtown Specific Plan (2023, amended 2025)', corridors: 'Mission St & Fair Oaks Ave',
+                muc70: { density: '20-70 du/acre', height: 55 }, muc50: { density: '20-50 du/acre', height: 50 } },
+        fees: { school: 4.79, schoolThreshold: 500, note: 'Park and growth capital fees set by Council resolution — contact (626) 403-7220 for current amounts.' },
+        // FAR overrides by use type
+        farOverrides: { sfr: 0.50, duplex: 0.55, multifamily_low: 1.50, multifamily_mid: 2.50, multifamily_high: 2.50,
+                        mixeduse: 2.50, adu: 0.50, senior: 2.50 },
+        // Parking overrides (spaces per unit)
+        parkingOverrides: { sfr: 2, duplex: 2.5, multifamily_low: 1.25, multifamily_mid: 1.25,
+                            multifamily_high: 1.25, mixeduse: 1.25, senior: 0.75, adu: 1 },
+    },
+};
+
+// Get jurisdiction-adjusted FAR for a use type
+function getJurisdictionFAR(useId, jurisdiction) {
+    if (!jurisdiction || jurisdiction.isLA) return null;
+    const std = JURISDICTION_STANDARDS[jurisdiction.jurisdiction];
+    if (!std || !std.farOverrides) return null;
+    return std.farOverrides[useId] || null;
+}
+
+// Get jurisdiction-adjusted parking ratio
+function getJurisdictionParking(useId, jurisdiction) {
+    if (!jurisdiction || jurisdiction.isLA) return null;
+    const std = JURISDICTION_STANDARDS[jurisdiction.jurisdiction];
+    if (!std || !std.parkingOverrides) return null;
+    return std.parkingOverrides[useId] || null;
+}
+
+// Get jurisdiction development standards summary for display
+function getJurisdictionSummary(jurisdiction, zoning) {
+    if (!jurisdiction || jurisdiction.isLA) return null;
+    const std = JURISDICTION_STANDARDS[jurisdiction.jurisdiction];
+    if (!std) return null;
+    // Map LA zoning to local equivalent
+    const localZone = std.zoneMap && std.zoneMap[zoning] ? std.zoneMap[zoning] : null;
+    const zoneData = localZone && std.zones[localZone] ? std.zones[localZone] : null;
+    return { standards: std, localZone, zoneData };
 }
 
 // Estimate zoning when ZIMAS is blocked (fallback heuristic)
@@ -3478,7 +3546,11 @@ async function fetchParcelInfo(lat, lon) {
             if (!area && data.features[0].geometry && data.features[0].geometry.rings) {
                 area = computePolygonArea(data.features[0].geometry.rings, data.spatialReference);
             }
-            return { area, attrs };
+            // Store geometry for satellite overlay
+            const _geom = data.features[0].geometry;
+            const _sr = data.spatialReference || (_geom ? _geom.spatialReference : null);
+            const _geometry = _geom && _geom.rings ? { rings: _geom.rings, spatialReference: _sr } : null;
+            return { area, attrs, _geometry };
         }
         return null;
     } catch (e) {
@@ -3694,6 +3766,11 @@ async function lookupAddress() {
         filledCount++;
         statusParts.push(`<span class="status-item ok">Lot: ${Math.round(parcelResult.area).toLocaleString()} SF</span>`);
 
+        // Store parcel geometry for satellite massing overlay
+        if (parcelResult._geometry) {
+            window.lastParcelGeometry = parcelResult._geometry;
+        }
+
         // Estimate frontage
         const est = estimateFrontage(parcelResult.area);
         document.getElementById('frontage').value = est;
@@ -3720,6 +3797,20 @@ async function lookupAddress() {
     window._lastJurisdiction = jurisdiction;
     if (!jurisdiction.isLA) {
         statusParts.push('<span class="status-item warn">Jurisdiction: <strong>' + jurisdiction.jurisdiction + '</strong> — ' + jurisdiction.note + '</span>');
+        // Show jurisdiction-specific development standards if available
+        const jStd = getJurisdictionSummary(jurisdiction, document.getElementById('zoning') ? document.getElementById('zoning').value : '');
+        if (jStd && jStd.zoneData) {
+            const zd = jStd.zoneData;
+            statusParts.push('<span class="status-item ok">Local zone: <strong>' + zd.label + '</strong> — Height: ' + zd.maxHeight + ' ft, FAR: ' + zd.maxFAR + ', Density: ' + zd.maxDensity + ' du/acre, Setbacks: front ' + zd.setbacks.front + ' ft / side ' + zd.setbacks.side + (typeof zd.setbacks.side === 'number' ? ' ft' : '') + ' / rear ' + zd.setbacks.rear + ' ft</span>');
+        }
+        if (jStd && jStd.standards && jStd.standards.adu) {
+            const adu = jStd.standards.adu;
+            statusParts.push('<span class="status-item ok">ADU: max ' + adu.maxSize + ' SF detached, ' + adu.maxHeight + ' ft height, ' + adu.setbacks + ' ft setbacks, ' + adu.parking + ' parking space' + (adu.parkingWaiver ? ' (waived near transit/historic)' : '') + '</span>');
+        }
+        if (jStd && jStd.standards && jStd.standards.historic) {
+            const hist = jStd.standards.historic;
+            statusParts.push('<span class="status-item warn">Historic: ' + hist.districts + ' historic districts, ' + hist.landmarks + '+ landmarks — SB 9 prohibited in historic areas, ADUs require Secretary of Interior Standards compliance</span>');
+        }
     } else {
         statusParts.push('<span class="status-item ok">Jurisdiction: City of Los Angeles</span>');
     }
@@ -4191,7 +4282,13 @@ const CA_HOUSING_LEGISLATION = [
         name: 'SB 9 (HOME Act)',
         description: 'By-right duplex and lot splits on single-family parcels statewide.',
         detail: 'The California HOME Act (2021) allows property owners to split single-family lots and build duplexes by-right, bypassing traditional zoning restrictions. Applies to parcels of at least 2,400 SF in urbanized areas, not in historic districts, fire hazard zones, or conservation areas. Each resulting lot must be at least 1,200 SF. Owner-occupancy is required for 3 years on one of the units if a lot split is pursued. This effectively doubles the allowed density on R1-zoned land without requiring a zone change or CUP. Impact: Significant for small infill developers targeting R1 neighborhoods.',
-        applies: (useId, inp) => inp.zoning === 'R1' && inp.parcelSize >= 2400 && ['duplex', 'adu'].includes(useId),
+        applies: (useId, inp) => {
+            if (inp.zoning !== 'R1' || inp.parcelSize < 2400 || !['duplex', 'adu'].includes(useId)) return false;
+            // South Pasadena: SB 9 prohibited in historic districts (most of city is historic)
+            const _j = window._lastJurisdiction;
+            if (_j && _j.jurisdiction === 'South Pasadena' && inp.constHistoric) return false;
+            return true;
+        },
         densityBonus: 1.0,
         parkingReduction: 0,
         softCostReduction: 0,
@@ -4660,8 +4757,10 @@ function scorePhysical(useId, inp) {
 }
 
 function scoreFinancial(useId, inp, effects) {
-    // Compute effective FAR with legislation bonuses
-    const baseFAR = FAR_TYPICAL[useId] || 1.0;
+    // Compute effective FAR with legislation bonuses + jurisdiction overrides
+    const juris = window._lastJurisdiction || null;
+    const jurisdictionFAR = getJurisdictionFAR(useId, juris);
+    const baseFAR = jurisdictionFAR || FAR_TYPICAL[useId] || 1.0;
     let far = baseFAR;
     if (effects) {
         far = baseFAR * (1 + effects.densityBonus);
@@ -4685,9 +4784,10 @@ function scoreFinancial(useId, inp, effects) {
     }
     const buildCost = buildableSF * buildCostPerSF;
 
-    // Parking cost (use-specific)
+    // Parking cost (use-specific, with jurisdiction override)
     const parkCostPerSpace = PARKING_COST_MAP[useId] || 35000;
-    const baseParkRatio = params ? (params.parkRatio || 0) : 0;
+    const jurisdictionPark = getJurisdictionParking(useId, juris);
+    const baseParkRatio = jurisdictionPark || (params ? (params.parkRatio || 0) : 0);
     const parkReduction = effects ? effects.parkingReduction : 0;
     const hasUnits = params && params.unitSF;
     let parkSpaces = 0;
@@ -6221,6 +6321,167 @@ function renderSVGs(useId, inp, computed) {
     return `${generateSitePlanSVG(useId, inp, computed)}${generateElevationSVG(useId, inp, computed)}`;
 }
 
+// Satellite massing overlay — renders building footprint on Esri satellite imagery
+var _massingSatMap = null;
+function renderMassingSatelliteMap(useId, inp, computed, containerId) {
+    var container = document.getElementById(containerId);
+    if (!container) return;
+    if (_massingSatMap) { try { _massingSatMap.remove(); } catch(e){} _massingSatMap = null; }
+    container.innerHTML = '';
+
+    var geo = window.lastGeocode;
+    if (!geo || !geo.lat) {
+        container.innerHTML = '<div style="padding:1rem;color:#718096;font-size:0.82rem;text-align:center;">Look up an address first to display satellite overlay.</div>';
+        return;
+    }
+
+    var map = L.map(container, { zoomControl: true, attributionControl: false }).setView([geo.lat, geo.lon], 18);
+    _massingSatMap = map;
+
+    var satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri', maxZoom: 20, maxNativeZoom: 18
+    });
+    var streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OSM', maxZoom: 19
+    });
+    satLayer.addTo(map);
+    L.control.layers({ 'Satellite': satLayer, 'Street': streetLayer }, {}, { position: 'topright' }).addTo(map);
+
+    var color = USE_COLORS[useId] || '#3182ce';
+    var params = BUILDING_PARAMS[useId] || {};
+    var setF = params.setF || 0;
+    var setS = params.setS || 0;
+
+    // Convert coordinate systems to WGS84
+    function ringsToLatLngs(geom) {
+        var sr = geom.spatialReference || {};
+        var wkid = sr.wkid || sr.latestWkid || 4326;
+        return geom.rings.map(function(ring) {
+            return ring.map(function(pt) {
+                if (wkid === 4326) return [pt[1], pt[0]];
+                if (wkid === 102100 || wkid === 3857) {
+                    var lng = (pt[0] / 20037508.34) * 180;
+                    var lat = (pt[1] / 20037508.34) * 180;
+                    lat = 180 / Math.PI * (2 * Math.atan(Math.exp(lat * Math.PI / 180)) - Math.PI / 2);
+                    return [lat, lng];
+                }
+                if (wkid === 2229 || wkid === 102645) {
+                    var x = pt[0]; var y = pt[1];
+                    var lng0 = -118.25; var lat0 = 34.05;
+                    var ftPerDegLon = 288200; var ftPerDegLat = 364000;
+                    var xOrigin = 6561666.667; var yOrigin = 1640416.667;
+                    var lng2 = lng0 + (x - xOrigin) / ftPerDegLon;
+                    var lat2 = lat0 + (y - yOrigin) / ftPerDegLat;
+                    return [lat2, lng2];
+                }
+                return [pt[1], pt[0]];
+            });
+        });
+    }
+
+    // Draw parcel boundary if available
+    var parcelLatLngs = null;
+    if (window.lastParcelGeometry && window.lastParcelGeometry.rings) {
+        parcelLatLngs = ringsToLatLngs(window.lastParcelGeometry);
+        var parcelPoly = L.polygon(parcelLatLngs, {
+            color: '#38a169', weight: 2, dashArray: '6, 4',
+            fillColor: 'transparent', fillOpacity: 0, interactive: false
+        }).addTo(map);
+        map.fitBounds(parcelPoly.getBounds().pad(0.15));
+    }
+
+    // Build footprint rectangle
+    var footprintSF = computed.buildingFootprint || (computed.gsf / (computed.stories || 1));
+    var stories = computed.stories || params.stories || 1;
+    var bldgHeight = computed.buildingHeight || (stories * (params.floorH || 10));
+
+    var fpWidth = Math.sqrt(footprintSF / 2);
+    var fpDepth = fpWidth * 2;
+
+    var ftPerDegLat = 364000;
+    var ftPerDegLon = 288200;
+
+    // Compute parcel orientation from geometry
+    var parcelAngle = 0;
+    var fpCenter;
+    if (parcelLatLngs && parcelLatLngs[0] && parcelLatLngs[0].length >= 3) {
+        var ring = parcelLatLngs[0];
+        var cLat = 0, cLng = 0;
+        for (var i = 0; i < ring.length; i++) { cLat += ring[i][0]; cLng += ring[i][1]; }
+        cLat /= ring.length; cLng /= ring.length;
+
+        var longestLen = 0, longestDx = 0, longestDy = 0;
+        for (var ei = 0; ei < ring.length - 1; ei++) {
+            var dx = (ring[ei + 1][1] - ring[ei][1]) * ftPerDegLon;
+            var dy = (ring[ei + 1][0] - ring[ei][0]) * ftPerDegLat;
+            var edgeLen = Math.sqrt(dx * dx + dy * dy);
+            if (edgeLen > longestLen) { longestLen = edgeLen; longestDx = dx; longestDy = dy; }
+        }
+        if (longestLen > 0) parcelAngle = Math.atan2(longestDx, longestDy);
+
+        var cosA = Math.cos(parcelAngle), sinA = Math.sin(parcelAngle);
+        var minProj = Infinity, maxProj = -Infinity;
+        for (var pi2 = 0; pi2 < ring.length; pi2++) {
+            var px = (ring[pi2][1] - cLng) * ftPerDegLon;
+            var py = (ring[pi2][0] - cLat) * ftPerDegLat;
+            var perpProj = -px * cosA + py * sinA;
+            if (perpProj < minProj) minProj = perpProj;
+            if (perpProj > maxProj) maxProj = perpProj;
+        }
+        var parcelPerpExtent = maxProj - minProj;
+
+        var availableDepth = longestLen - setF - setF;
+        var availableWidth = parcelPerpExtent - setS - setS;
+        if (fpDepth > availableDepth && availableDepth > 0) fpDepth = availableDepth;
+        if (fpWidth > availableWidth && availableWidth > 0) fpWidth = availableWidth;
+
+        fpCenter = [cLat, cLng];
+    } else {
+        fpCenter = [geo.lat, geo.lon];
+    }
+
+    // Build rotated footprint corners
+    var halfW = fpWidth / 2, halfD = fpDepth / 2;
+    var cosA2 = Math.cos(parcelAngle), sinA2 = Math.sin(parcelAngle);
+    function rotateCorner(alongFt, perpFt) {
+        var dLng = (alongFt * sinA2 + perpFt * cosA2) / ftPerDegLon;
+        var dLat = (alongFt * cosA2 - perpFt * sinA2) / ftPerDegLat;
+        return [fpCenter[0] + dLat, fpCenter[1] + dLng];
+    }
+    var fpRect = [rotateCorner(-halfD,-halfW), rotateCorner(-halfD,+halfW), rotateCorner(+halfD,+halfW), rotateCorner(+halfD,-halfW)];
+
+    // Setback zone
+    if (parcelLatLngs && (setF > 0 || setS > 0)) {
+        L.polygon(parcelLatLngs, { color: 'transparent', weight: 0, fillColor: '#fbd38d', fillOpacity: 0.15, interactive: false }).addTo(map);
+    }
+
+    // Building footprint polygon
+    var fpPoly = L.polygon(fpRect, { color: color, weight: 2, opacity: 0.9, fillColor: color, fillOpacity: 0.45 }).addTo(map);
+    fpPoly.bindTooltip(
+        '<strong>Proposed Building</strong><br>Footprint: ' + Math.round(footprintSF).toLocaleString() + ' SF<br>' +
+        'Stories: ' + stories + ' (' + Math.round(bldgHeight) + ' ft)<br>GSF: ' + (computed.gsf || 0).toLocaleString() + ' SF' +
+        (setF > 0 || setS > 0 ? '<br>Setbacks: ' + setF + '\' front / ' + setS + '\' side' : ''),
+        { permanent: false, direction: 'top' }
+    );
+
+    // Info label above building
+    var labelHtml = '<div style="background:rgba(255,255,255,0.9);padding:4px 8px;border-radius:4px;font-size:0.72rem;line-height:1.4;box-shadow:0 1px 4px rgba(0,0,0,0.2);">' +
+        '<strong style="color:' + color + ';">' + Math.round(footprintSF).toLocaleString() + ' SF footprint</strong><br>' +
+        stories + ' stories / ' + Math.round(bldgHeight) + ' ft' +
+        (setF > 0 ? '<br>Front setback: ' + setF + '\'' : '') +
+        (setS > 0 ? '<br>Side setback: ' + setS + '\'' : '') + '</div>';
+    var labelLat = Math.max(fpRect[0][0], fpRect[1][0], fpRect[2][0], fpRect[3][0]) + 0.00002;
+    var labelLng = (fpRect[0][1] + fpRect[1][1] + fpRect[2][1] + fpRect[3][1]) / 4;
+    L.marker([labelLat, labelLng], {
+        icon: L.divIcon({ html: labelHtml, className: '', iconSize: [160, 60], iconAnchor: [80, 60] }),
+        interactive: false
+    }).addTo(map);
+
+    if (parcelLatLngs) map.fitBounds(L.polygon(parcelLatLngs).getBounds().pad(0.2));
+    setTimeout(function() { map.invalidateSize(); }, 200);
+    setTimeout(function() { map.invalidateSize(); }, 600);
+}
+
 function recalcAnalysis() { _debouncedCall('analysis', _recalcAnalysisImpl, 200); }
 function _recalcAnalysisImpl() {
     const st = analysisState;
@@ -6266,6 +6527,7 @@ function openAnalysis(resultIndex) {
     html += `<div class="analysis-section"><h3>Building Program</h3><div id="sect-program">${renderProgramDisplay(computed)}</div></div>`;
     html += `<div class="analysis-section">${renderAssumptions(assumptions, hasUnits)}</div>`;
     html += `<div class="analysis-section"><h3>Conceptual Massing</h3><div class="rendering-container" id="sect-svg">${renderSVGs(r.id, inp, computed)}</div></div>`;
+    html += `<div class="analysis-section"><h3>Satellite Overlay — Proposed Building on Site</h3><div id="massingMapContainer" style="width:100%;height:400px;min-height:400px;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0;background:#e2e8f0;"></div></div>`;
     html += `<div class="analysis-section"><h3>Development Pro Forma</h3><div id="sect-budget">${renderBudgetTable(computed, inp)}</div></div>`;
     html += `<div class="analysis-section"><h3>Revenue &amp; Returns</h3><div id="sect-returns">${renderReturnsSection(computed)}</div></div>`;
     html += `<div class="analysis-section"><h3>Timeline — ${totalMonths} Months</h3>
@@ -6285,9 +6547,19 @@ function openAnalysis(resultIndex) {
     document.getElementById('analysisModal').style.display = 'block';
     document.body.style.overflow = 'hidden';
     document.getElementById('analysisModal').scrollTop = 0;
+
+    // Render satellite overlay after modal is fully visible
+    setTimeout(function() {
+        renderMassingSatelliteMap(r.id, inp, computed, 'massingMapContainer');
+    }, 300);
 }
 
-function closeAnalysis() { document.getElementById('analysisModal').style.display = 'none'; document.body.style.overflow = ''; }
+function closeAnalysis() {
+    document.getElementById('analysisModal').style.display = 'none';
+    document.body.style.overflow = '';
+    // Clean up satellite map to prevent memory leaks
+    if (_massingSatMap) { try { _massingSatMap.remove(); } catch(e){} _massingSatMap = null; }
+}
 function printAnalysis() { document.body.classList.add('printing-analysis'); window.print(); document.body.classList.remove('printing-analysis'); }
 
 // ============================================================
@@ -7192,6 +7464,25 @@ function generateListingOnePager(result, inp, address) {
                 ].filter(Boolean).join('; ') || 'No major overlay restrictions detected.'}
             </p>
             ${!(window._lastJurisdiction || {}).isLA && (window._lastJurisdiction || {}).jurisdiction ? `<p style="font-size:0.82rem;color:#b45309;margin-top:0.5rem;"><strong>Jurisdiction Note:</strong> ${(window._lastJurisdiction || {}).note}</p>` : ''}
+            ${(() => {
+                const _jStd = getJurisdictionSummary(window._lastJurisdiction, inp.zoning);
+                if (!_jStd || !_jStd.zoneData) return '';
+                const _zd = _jStd.zoneData;
+                return `<div style="margin-top:0.75rem;padding:0.75rem;background:#fef9c3;border:1px solid #fbbf24;border-radius:8px;">
+                    <strong style="font-size:0.82rem;color:#92400e;">Local Development Standards (${_zd.label}):</strong>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.25rem 1rem;margin-top:0.5rem;font-size:0.78rem;color:#78350f;">
+                        <span>Max Height: <strong>${_zd.maxHeight} ft</strong></span>
+                        <span>Max FAR: <strong>${_zd.maxFAR}</strong></span>
+                        <span>Max Density: <strong>${_zd.maxDensity} du/acre</strong></span>
+                        <span>Min Lot: <strong>${_zd.minLot.toLocaleString()} SF</strong></span>
+                        <span>Front Setback: <strong>${_zd.setbacks.front} ft</strong></span>
+                        <span>Side Setback: <strong>${_zd.setbacks.side}${typeof _zd.setbacks.side === 'number' ? ' ft' : ''}</strong></span>
+                        <span>Rear Setback: <strong>${_zd.setbacks.rear} ft</strong></span>
+                        ${_zd.maxCoverage ? `<span>Max Coverage: <strong>${(_zd.maxCoverage * 100)}%</strong></span>` : ''}
+                        ${_zd.openSpace ? `<span>Open Space: <strong>${_zd.openSpace} SF/unit</strong></span>` : ''}
+                    </div>
+                </div>`;
+            })()}
         </div>
         ${sb79HTML}
         ${legHTML}

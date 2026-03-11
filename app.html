@@ -4816,6 +4816,19 @@ async function _lookupAddressBody(address, coords, btn) {
     window._lastJurisdiction = jurisdiction;
     if (!jurisdiction.isLA) {
         statusParts.push('<span class="status-item warn">Jurisdiction: <strong>' + jurisdiction.jurisdiction + '</strong> — ' + jurisdiction.note + '</span>');
+        const jStd = getJurisdictionSummary(jurisdiction, document.getElementById('zoning') ? document.getElementById('zoning').value : '');
+        if (jStd && jStd.zoneData) {
+            const zd = jStd.zoneData;
+            statusParts.push('<span class="status-item ok">Local zone: <strong>' + zd.label + '</strong> — Height: ' + zd.maxHeight + ' ft, FAR: ' + zd.maxFAR + ', Density: ' + zd.maxDensity + ' du/acre, Setbacks: front ' + zd.setbacks.front + ' ft / side ' + zd.setbacks.side + (typeof zd.setbacks.side === 'number' ? ' ft' : '') + ' / rear ' + zd.setbacks.rear + ' ft</span>');
+        }
+        if (jStd && jStd.standards && jStd.standards.adu) {
+            const adu = jStd.standards.adu;
+            statusParts.push('<span class="status-item ok">ADU: max ' + adu.maxSize + ' SF detached, ' + adu.maxHeight + ' ft height, ' + adu.setbacks + ' ft setbacks, ' + adu.parking + ' parking space' + (adu.parkingWaiver ? ' (waived near transit/historic)' : '') + '</span>');
+        }
+        if (jStd && jStd.standards && jStd.standards.historic) {
+            const hist = jStd.standards.historic;
+            statusParts.push('<span class="status-item warn">Historic: ' + hist.districts + ' historic districts, ' + hist.landmarks + '+ landmarks — SB 9 prohibited in historic areas, ADUs require Secretary of Interior Standards compliance</span>');
+        }
     } else {
         statusParts.push('<span class="status-item ok">Jurisdiction: City of Los Angeles</span>');
     }
@@ -4888,6 +4901,25 @@ const JURISDICTIONS = [
     { name: 'Carson', lat: 33.8317, lon: -118.2620, radius: 2.5, note: 'Carson Municipal Code applies — own specific plans and environmental review.' },
     { name: 'Redondo Beach', lat: 33.8492, lon: -118.3884, radius: 2.0, note: 'Redondo Beach zoning code applies — Coastal Zone, own height/density standards.' },
     { name: 'Pomona', lat: 34.0551, lon: -117.7500, radius: 3.5, note: 'Pomona zoning code applies — own downtown specific plan and development incentives.' },
+    { name: 'South Pasadena', lat: 34.1161, lon: -118.1503, radius: 1.5, note: 'South Pasadena Municipal Code (SPMC Ch. 36) applies — zones RE/RS/RM/RH (not LA R1-R5). Strong historic preservation (11+ historic districts, 50+ landmarks). ADUs allowed with 4 ft setbacks. SB 9 prohibited in historic districts. Downtown Specific Plan covers Mission St & Fair Oaks Ave corridors.' },
+    { name: 'Arcadia', lat: 34.1397, lon: -118.0353, radius: 2.5, note: 'Arcadia zoning code applies — own development standards and review process.' },
+    { name: 'Monrovia', lat: 34.1442, lon: -117.9990, radius: 2.0, note: 'Monrovia zoning code applies — Old Town specific plan, own entitlement process.' },
+    { name: 'Alhambra', lat: 34.0953, lon: -118.1270, radius: 2.0, note: 'Alhambra zoning code applies — own specific plans and development standards.' },
+    { name: 'San Gabriel', lat: 34.0961, lon: -118.1058, radius: 1.5, note: 'San Gabriel zoning code applies — Mission District overlay, own development standards.' },
+    { name: 'Whittier', lat: 33.9792, lon: -118.0328, radius: 3.0, note: 'Whittier zoning code applies — Uptown specific plan, own development standards.' },
+    { name: 'Downey', lat: 33.9401, lon: -118.1332, radius: 2.5, note: 'Downey zoning code applies — own specific plans and development review.' },
+    { name: 'El Monte', lat: 34.0686, lon: -118.0276, radius: 2.5, note: 'El Monte zoning code applies — own development standards and review process.' },
+    { name: 'Covina', lat: 34.0900, lon: -117.8903, radius: 2.5, note: 'Covina zoning code applies — own downtown specific plan and development standards.' },
+    { name: 'West Covina', lat: 34.0686, lon: -117.9390, radius: 3.0, note: 'West Covina zoning code applies — own development standards and review process.' },
+    { name: 'Diamond Bar', lat: 34.0286, lon: -117.8103, radius: 3.0, note: 'Diamond Bar zoning code applies — hillside management, own development standards.' },
+    { name: 'Claremont', lat: 34.0967, lon: -117.7198, radius: 2.5, note: 'Claremont zoning code applies — Village specific plan, own development standards.' },
+    { name: 'Azusa', lat: 34.1336, lon: -117.9076, radius: 2.0, note: 'Azusa zoning code applies — TOD district near Gold Line, own development standards.' },
+    { name: 'Compton', lat: 33.8958, lon: -118.2201, radius: 2.5, note: 'Compton zoning code applies — own development standards and review process.' },
+    { name: 'Lakewood', lat: 33.8536, lon: -118.1340, radius: 2.5, note: 'Lakewood zoning code applies — own development standards and review process.' },
+    { name: 'Norwalk', lat: 33.9022, lon: -118.0817, radius: 2.5, note: 'Norwalk zoning code applies — own specific plans and development standards.' },
+    { name: 'Cerritos', lat: 33.8583, lon: -118.0647, radius: 2.0, note: 'Cerritos zoning code applies — own development standards and review process.' },
+    { name: 'Hermosa Beach', lat: 33.8622, lon: -118.3995, radius: 1.0, note: 'Hermosa Beach zoning code applies — Coastal Zone, own height/density standards.' },
+    { name: 'Manhattan Beach', lat: 33.8847, lon: -118.4109, radius: 1.5, note: 'Manhattan Beach zoning code applies — Coastal Zone, strict R-1 protections.' },
 ];
 const LA_CITY_CENTER = { lat: 34.0522, lon: -118.2437 };
 const LA_CITY_APPROX_RADIUS = 15; // miles — rough bounding for City of LA
@@ -4897,6 +4929,13 @@ function detectJurisdiction(lat, lon, addressDetails) {
     if (addressDetails) {
         const city = (addressDetails.city || addressDetails.town || addressDetails.municipality || '').toLowerCase().trim();
         if (city) {
+            // First pass: exact match (prevents "South Pasadena" matching "Pasadena")
+            for (const j of JURISDICTIONS) {
+                if (city === j.name.toLowerCase()) {
+                    return { jurisdiction: j.name, isLA: false, note: j.note };
+                }
+            }
+            // Second pass: substring match (fallback for variations like "City of ...")
             for (const j of JURISDICTIONS) {
                 if (city.includes(j.name.toLowerCase())) {
                     return { jurisdiction: j.name, isLA: false, note: j.note };
@@ -4925,6 +4964,51 @@ function detectJurisdiction(lat, lon, addressDetails) {
         return { jurisdiction: 'City of Los Angeles', isLA: true, note: 'City of LA zoning (LAMC) applies. ZIMAS is the authoritative zoning source.' };
     }
     return { jurisdiction: 'Unincorporated LA County', isLA: false, note: 'Unincorporated LA County — County zoning code applies, not City of LA. Different entitlement process through County DRP.' };
+}
+
+// Jurisdiction-specific development standards — override LA City defaults
+const JURISDICTION_STANDARDS = {
+    'South Pasadena': {
+        zoneMap: { 'R1': 'RS', 'R2': 'RM', 'R3': 'RM', 'R4': 'RH', 'R5': 'RH' },
+        zones: {
+            RS: { maxHeight: 45, maxFAR: 0.50, maxDensity: 5, minLot: 10000, parking: { sfr: 2, duplex: 2.5 },
+                   setbacks: { front: 10, side: 4, rear: 15 }, maxCoverage: 0.50, label: 'RS (Residential Single-Family)' },
+            RE: { maxHeight: 35, maxFAR: 0.35, maxDensity: 3, minLot: 12500, parking: { sfr: 2 },
+                   setbacks: { front: 25, side: '10%', rear: 25 }, maxCoverage: 0.40, label: 'RE (Residential Estate)' },
+            RM: { maxHeight: 45, maxFAR: 1.50, maxDensity: 30, minLot: 10000, parking: { studio: 0.5, '1br': 1, '2br': 1.5 },
+                   setbacks: { front: 7.5, side: 4, rear: 15 }, openSpace: 200, label: 'RM (Residential Medium Density)' },
+            RH: { maxHeight: 45, maxFAR: 2.50, maxDensity: 45, minLot: 10000, parking: { studio: 0.5, '1br': 1, '2br': 1.5 },
+                   setbacks: { front: 7.5, side: 4, rear: 15 }, openSpace: 200, label: 'RH (Residential High Density)' },
+        },
+        adu: { maxSize: 1200, attachedMax: '50% of primary or 1200 SF', maxHeight: 16, setbacks: 4, parking: 1, parkingWaiver: 'Within 0.5 mi of transit or in historic district', permitDays: 60 },
+        sb9: { eligible: true, maxUnitSize: 850, maxTotal: 1700, minLotForSplit: 1200, parking: 1, prohibited: 'Historic districts, State Historic Resources Inventory, designated landmarks, slopes >15%' },
+        historic: { districts: 11, landmarks: 50, millsAct: true, chc: 'Cultural Heritage Commission', sb9Prohibited: true },
+        dtsp: { name: 'Downtown Specific Plan (2023, amended 2025)', corridors: 'Mission St & Fair Oaks Ave', muc70: { density: '20-70 du/acre', height: 55 }, muc50: { density: '20-50 du/acre', height: 50 } },
+        fees: { school: 4.79, schoolThreshold: 500 },
+        farOverrides: { sfr: 0.50, duplex: 0.55, multifamily_low: 1.50, multifamily_mid: 2.50, multifamily_high: 2.50, mixeduse: 2.50, adu: 0.50, senior: 2.50 },
+        parkingOverrides: { sfr: 2, duplex: 2.5, multifamily_low: 1.25, multifamily_mid: 1.25, multifamily_high: 1.25, mixeduse: 1.25, senior: 0.75, adu: 1 },
+    },
+};
+
+function getJurisdictionFAR(useId, jurisdiction) {
+    if (!jurisdiction || jurisdiction.isLA) return null;
+    const std = JURISDICTION_STANDARDS[jurisdiction.jurisdiction];
+    return (std && std.farOverrides) ? (std.farOverrides[useId] || null) : null;
+}
+
+function getJurisdictionParking(useId, jurisdiction) {
+    if (!jurisdiction || jurisdiction.isLA) return null;
+    const std = JURISDICTION_STANDARDS[jurisdiction.jurisdiction];
+    return (std && std.parkingOverrides) ? (std.parkingOverrides[useId] || null) : null;
+}
+
+function getJurisdictionSummary(jurisdiction, zoning) {
+    if (!jurisdiction || jurisdiction.isLA) return null;
+    const std = JURISDICTION_STANDARDS[jurisdiction.jurisdiction];
+    if (!std) return null;
+    const localZone = std.zoneMap && std.zoneMap[zoning] ? std.zoneMap[zoning] : null;
+    const zoneData = localZone && std.zones[localZone] ? std.zones[localZone] : null;
+    return { standards: std, localZone, zoneData };
 }
 
 // ============================================================
@@ -5036,71 +5120,6 @@ function estimateMarketValue(structureSqFt, lotSizeSqFt, useType, neighborhood) 
 //   4. RentCast AVM — third-party automated valuation
 //  Blended with confidence weights for a single defensible estimate.
 // ══════════════════════════════════════════════════════════════════
-
-// ── Market Intelligence Data (from archive version) ──────────────
-const MARKET_RENTS_2025 = {
-    dtla:         { studio: 1950, br1: 2550, br2: 3400, br3: 4200, retail_psf: 42, office_psf: 48 },
-    hollywood:    { studio: 2100, br1: 2800, br2: 3650, br3: 4500, retail_psf: 48, office_psf: 52 },
-    koreatown:    { studio: 1650, br1: 2150, br2: 2850, br3: 3500, retail_psf: 36, office_psf: 38 },
-    westside:     { studio: 2400, br1: 3100, br2: 4100, br3: 5200, retail_psf: 54, office_psf: 58 },
-    santamonica:  { studio: 2600, br1: 3400, br2: 4500, br3: 5800, retail_psf: 62, office_psf: 65 },
-    beverly:      { studio: 2500, br1: 3200, br2: 4200, br3: 5400, retail_psf: 55, office_psf: 68 },
-    midcity:      { studio: 1850, br1: 2400, br2: 3200, br3: 4000, retail_psf: 38, office_psf: 42 },
-    southla:      { studio: 1300, br1: 1700, br2: 2200, br3: 2750, retail_psf: 24, office_psf: 28 },
-    valleyeast:   { studio: 1500, br1: 1950, br2: 2600, br3: 3200, retail_psf: 30, office_psf: 34 },
-    valleywest:   { studio: 1600, br1: 2100, br2: 2800, br3: 3400, retail_psf: 32, office_psf: 36 },
-    silverlake:   { studio: 2000, br1: 2600, br2: 3500, br3: 4300, retail_psf: 44, office_psf: 46 },
-    highland:     { studio: 1700, br1: 2200, br2: 2900, br3: 3600, retail_psf: 34, office_psf: 38 },
-    venice:       { studio: 2400, br1: 3100, br2: 4100, br3: 5100, retail_psf: 56, office_psf: 54 },
-    culver:       { studio: 2200, br1: 2850, br2: 3800, br3: 4700, retail_psf: 48, office_psf: 52 },
-    exposition:   { studio: 1650, br1: 2150, br2: 2850, br3: 3500, retail_psf: 34, office_psf: 38 },
-    southbay:     { studio: 1600, br1: 2050, br2: 2700, br3: 3350, retail_psf: 32, office_psf: 36 },
-    harbor:       { studio: 1300, br1: 1650, br2: 2200, br3: 2700, retail_psf: 22, office_psf: 26 },
-    boyleheights: { studio: 1350, br1: 1750, br2: 2300, br3: 2850, retail_psf: 26, office_psf: 28 },
-};
-
-const VACANCY_RATES = {
-    dtla: { residential: 0.072, retail: 0.085, office: 0.185 },
-    hollywood: { residential: 0.055, retail: 0.062, office: 0.145 },
-    koreatown: { residential: 0.048, retail: 0.070, office: 0.160 },
-    westside: { residential: 0.042, retail: 0.055, office: 0.125 },
-    santamonica: { residential: 0.038, retail: 0.058, office: 0.135 },
-    beverly: { residential: 0.035, retail: 0.048, office: 0.110 },
-    midcity: { residential: 0.052, retail: 0.068, office: 0.155 },
-    southla: { residential: 0.058, retail: 0.095, office: 0.200 },
-    valleyeast: { residential: 0.050, retail: 0.075, office: 0.165 },
-    valleywest: { residential: 0.045, retail: 0.070, office: 0.155 },
-    silverlake: { residential: 0.040, retail: 0.055, office: 0.130 },
-    highland: { residential: 0.048, retail: 0.072, office: 0.160 },
-    venice: { residential: 0.042, retail: 0.060, office: 0.140 },
-    culver: { residential: 0.038, retail: 0.052, office: 0.120 },
-    exposition: { residential: 0.055, retail: 0.078, office: 0.170 },
-    southbay: { residential: 0.048, retail: 0.072, office: 0.160 },
-    harbor: { residential: 0.062, retail: 0.092, office: 0.195 },
-    boyleheights: { residential: 0.055, retail: 0.088, office: 0.190 },
-};
-
-// Comparable land sales $/SF by neighborhood (recent transactions 2024-2025)
-const COMP_LAND_SALES = {
-    dtla:         { low: 200, median: 275, high: 400, sampleSize: 18 },
-    hollywood:    { low: 180, median: 260, high: 380, sampleSize: 14 },
-    koreatown:    { low: 140, median: 210, high: 320, sampleSize: 22 },
-    westside:     { low: 280, median: 370, high: 520, sampleSize: 8 },
-    santamonica:  { low: 320, median: 420, high: 600, sampleSize: 5 },
-    beverly:      { low: 350, median: 470, high: 650, sampleSize: 6 },
-    midcity:      { low: 130, median: 185, high: 280, sampleSize: 16 },
-    southla:      { low: 55, median: 90, high: 140, sampleSize: 24 },
-    valleyeast:   { low: 70, median: 115, high: 180, sampleSize: 20 },
-    valleywest:   { low: 85, median: 135, high: 200, sampleSize: 15 },
-    silverlake:   { low: 165, median: 230, high: 340, sampleSize: 10 },
-    highland:     { low: 100, median: 155, high: 240, sampleSize: 12 },
-    venice:       { low: 280, median: 365, high: 500, sampleSize: 7 },
-    culver:       { low: 200, median: 275, high: 380, sampleSize: 9 },
-    exposition:   { low: 110, median: 165, high: 250, sampleSize: 14 },
-    southbay:     { low: 80, median: 125, high: 190, sampleSize: 18 },
-    harbor:       { low: 50, median: 82, high: 130, sampleSize: 16 },
-    boyleheights: { low: 70, median: 115, high: 175, sampleSize: 15 },
-};
 
 // Cap rates by neighborhood and property type (2025 LA County)
 const CAP_RATES = {
@@ -5339,7 +5358,12 @@ const CA_HOUSING_LEGISLATION = [
         name: 'SB 9 (HOME Act)',
         description: 'By-right duplex and lot splits on single-family parcels statewide.',
         detail: 'The California HOME Act (2021) allows property owners to split single-family lots and build duplexes by-right, bypassing traditional zoning restrictions. Applies to parcels of at least 2,400 SF in urbanized areas, not in historic districts, fire hazard zones, or conservation areas. Each resulting lot must be at least 1,200 SF. Owner-occupancy is required for 3 years on one of the units if a lot split is pursued. This effectively doubles the allowed density on R1-zoned land without requiring a zone change or CUP. Impact: Significant for small infill developers targeting R1 neighborhoods.',
-        applies: (useId, inp) => inp.zoning === 'R1' && inp.parcelSize >= 2400 && ['duplex', 'adu'].includes(useId),
+        applies: (useId, inp) => {
+            if (inp.zoning !== 'R1' || inp.parcelSize < 2400 || !['duplex', 'adu'].includes(useId)) return false;
+            const _j = window._lastJurisdiction;
+            if (_j && _j.jurisdiction === 'South Pasadena' && inp.constHistoric) return false;
+            return true;
+        },
         densityBonus: 1.0,
         parkingReduction: 0,
         softCostReduction: 0,
@@ -5820,8 +5844,10 @@ function scorePhysical(useId, inp) {
 }
 
 function scoreFinancial(useId, inp, effects) {
-    // Compute effective FAR with legislation bonuses
-    const baseFAR = FAR_TYPICAL[useId] || 1.0;
+    // Compute effective FAR with legislation bonuses + jurisdiction overrides
+    const juris = window._lastJurisdiction || null;
+    const jurisdictionFAR = getJurisdictionFAR(useId, juris);
+    const baseFAR = jurisdictionFAR || FAR_TYPICAL[useId] || 1.0;
     let far = baseFAR;
     if (effects) {
         far = baseFAR * (1 + effects.densityBonus);
@@ -5845,9 +5871,10 @@ function scoreFinancial(useId, inp, effects) {
     }
     const buildCost = buildableSF * buildCostPerSF;
 
-    // Parking cost (use-specific)
+    // Parking cost (use-specific, with jurisdiction override)
     const parkCostPerSpace = PARKING_COST_MAP[useId] || 35000;
-    const baseParkRatio = params ? (params.parkRatio || 0) : 0;
+    const jurisdictionPark = getJurisdictionParking(useId, juris);
+    const baseParkRatio = jurisdictionPark || (params ? (params.parkRatio || 0) : 0);
     const parkReduction = effects ? effects.parkingReduction : 0;
     const hasUnits = params && params.unitSF;
     let parkSpaces = 0;
