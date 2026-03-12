@@ -3501,11 +3501,17 @@ async function geocodeAddress(address) {
     const data = await resp.json();
     if (!data || data.length === 0) throw new Error('Address not found. Try including city and zip code.');
     const m = data[0];
+    const a = m.address || {};
+    const streetParts = [a.house_number, a.road].filter(Boolean).join(' ');
+    const city = a.city || a.town || a.municipality || a.village || '';
+    const state = a.state ? a.state.replace(/^California$/, 'CA') : '';
+    const cleanAddr = [streetParts, city, [state, a.postcode].filter(Boolean).join(' ')].filter(Boolean).join(', ');
     return {
         lat: parseFloat(m.lat),
         lon: parseFloat(m.lon),
         matched: m.display_name,
-        address: m.address || {},
+        cleanAddress: cleanAddr || m.display_name,
+        address: a,
         osmClass: m.class || '',
         osmType: m.type || '',
     };
@@ -3724,7 +3730,7 @@ async function lookupAddress() {
     var _structSF = (parcelResult && parcelResult.attrs) ? parseInt(parcelResult.attrs.SQFTmain1) || 0 : 0;
     var _nhood = (document.getElementById('neighborhood') || {}).value || 'dtla';
     var _lotSF = parseFloat((document.getElementById('parcelSize') || {}).value) || 10000;
-    var _addrForLinks = (document.getElementById('addressInput') || {}).value || coords.matched || '';
+    var _addrForLinks = coords.cleanAddress || coords.matched || '';
     var _parcelAttrs = (parcelResult && parcelResult.attrs) ? parcelResult.attrs : null;
     // Set immediate fallback estimate while valuation engine runs
     var _estMarketValue = estimateMarketValue(_structSF, _lotSF, _structSF > 0 ? 'Residential' : 'Vacant', _nhood);
