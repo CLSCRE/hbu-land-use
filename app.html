@@ -6977,30 +6977,48 @@ function generateSitePlanSVG(useId, inp, budget) {
 
     if (useId === 'adu') {
         // ADU site plan: show existing structure near street + ADU in rear yard
-        const existSF = (window.lastGeocode && window.lastGeocode.structureSqFt > 0) ? window.lastGeocode.structureSqFt : Math.round(inp.parcelSize * 0.30);
-        const exW = Math.sqrt(existSF / 1.5);
-        const exD = exW * 1.5;
+        // structureSqFt is total living area (all floors), not footprint — divide by likely stories
+        const totalSF = (window.lastGeocode && window.lastGeocode.structureSqFt > 0) ? window.lastGeocode.structureSqFt : Math.round(inp.parcelSize * 0.30);
+        const estStories = totalSF > 2000 ? 2 : 1; // most LA houses over 2000sf are 2-story
+        const existFootprint = Math.round(totalSF / estStories);
+        // Cap existing footprint to 45% of lot so it doesn't fill the entire plan
+        const maxExFP = inp.parcelSize * 0.45;
+        const clampedExFP = Math.min(existFootprint, maxExFP);
+        const exW = Math.min(Math.sqrt(clampedExFP / 1.5), lotW - 2 * params.setS);
+        const exD = clampedExFP / exW;
         const exWs = exW * scale, exDs = exD * scale;
         // Existing structure: centered horizontally, near the street (bottom of lot)
         const exX = ox + (lw - exWs) / 2;
-        const exY = oy + ld - sf - exDs; // above front setback
+        const exY = oy + ld - sf - exDs;
         s += `<rect x="${exX}" y="${exY}" width="${exWs}" height="${exDs}" fill="#a0aec0" opacity="0.6" stroke="#718096" stroke-width="1.5" stroke-dasharray="4,2" rx="2"/>`;
         s += `<text x="${exX + exWs/2}" y="${exY + exDs/2 - 4}" text-anchor="middle" font-size="9" fill="#2d3748" font-weight="600">EXISTING</text>`;
-        s += `<text x="${exX + exWs/2}" y="${exY + exDs/2 + 8}" text-anchor="middle" font-size="7" fill="#4a5568">${Math.round(existSF).toLocaleString()} SF</text>`;
-        // ADU: in the rear yard with rear + side setbacks
+        s += `<text x="${exX + exWs/2}" y="${exY + exDs/2 + 8}" text-anchor="middle" font-size="7" fill="#4a5568">${Math.round(totalSF).toLocaleString()} SF (${estStories}-story)</text>`;
+        // ADU: in the rear yard — ensure it doesn't overlap existing
         const aduFP = budget.buildingFootprint || 600;
-        const aduW = Math.sqrt(aduFP / 1.5);
-        const aduD = aduW * 1.5;
+        const aduW = Math.min(Math.sqrt(aduFP / 1.5), lotW - 2 * params.setS);
+        const aduD = aduFP / aduW;
         const aduWs = aduW * scale, aduDs = aduD * scale;
-        const aduX = ox + ss; // side setback from left
-        const aduY = oy + ss; // rear setback from top (rear of lot)
-        s += `<rect x="${aduX}" y="${aduY}" width="${aduWs}" height="${aduDs}" fill="${color}" opacity="0.75" stroke="${color}" stroke-width="1.5" rx="2"/>`;
-        s += `<text x="${aduX + aduWs/2}" y="${aduY + aduDs/2 - 4}" text-anchor="middle" font-size="9" fill="white" font-weight="600">ADU</text>`;
-        s += `<text x="${aduX + aduWs/2}" y="${aduY + aduDs/2 + 8}" text-anchor="middle" font-size="7" fill="rgba(255,255,255,0.85)">${Math.round(aduFP).toLocaleString()} SF</text>`;
+        const aduX = ox + (lw - aduWs) / 2; // centered horizontally
+        // Place ADU at rear setback, but ensure gap from existing structure
+        const rearEdge = oy + ss; // rear setback line
+        const existTop = exY; // top edge of existing structure
+        const availRear = existTop - rearEdge; // space between rear setback and existing structure
+        const aduY = availRear >= aduDs + 4 ? rearEdge : rearEdge; // place at rear setback
+        // If ADU would overlap existing, shrink ADU depth to fit
+        const finalAduDs = Math.min(aduDs, availRear - 4);
+        if (finalAduDs > 8) {
+            s += `<rect x="${aduX}" y="${aduY}" width="${aduWs}" height="${finalAduDs}" fill="${color}" opacity="0.75" stroke="${color}" stroke-width="1.5" rx="2"/>`;
+            s += `<text x="${aduX + aduWs/2}" y="${aduY + finalAduDs/2 - 4}" text-anchor="middle" font-size="9" fill="white" font-weight="600">ADU</text>`;
+            s += `<text x="${aduX + aduWs/2}" y="${aduY + finalAduDs/2 + 8}" text-anchor="middle" font-size="7" fill="rgba(255,255,255,0.85)">${Math.round(aduFP).toLocaleString()} SF</text>`;
+        }
         // Rear setback hatching
         if (ss > 2) s += `<rect x="${ox}" y="${oy}" width="${lw}" height="${ss}" fill="url(#ht)" opacity="0.4"/>`;
         // Front setback hatching
         if (sf > 2) s += `<rect x="${ox}" y="${oy + ld - sf}" width="${lw}" height="${sf}" fill="url(#ht)" opacity="0.4"/>`;
+        // Driveway indicator from street to ADU
+        const dwX = ox + lw * 0.15, dwW = 12;
+        s += `<rect x="${dwX}" y="${aduY + (finalAduDs > 8 ? finalAduDs : 0)}" width="${dwW}" height="${oy + ld - sf - (aduY + (finalAduDs > 8 ? finalAduDs : 0))}" fill="#cbd5e0" opacity="0.5" rx="1"/>`;
+        s += `<text x="${dwX + dwW/2}" y="${oy + ld - sf - 4}" text-anchor="middle" font-size="5" fill="#718096">DRIVE</text>`;
     } else {
         // Non-ADU: original layout — single building centered on lot
         if (sf > 2) s += `<rect x="${ox}" y="${oy + ld - sf}" width="${lw}" height="${sf}" fill="url(#ht)" opacity="0.5"/>`;
@@ -7749,6 +7767,19 @@ function renderReturnsSection(computed) {
 
 // === Satellite Massing Map ===
 var _massingSatMap = null;
+
+// Nudge map view when user clicks directional buttons (for correcting wrong location)
+window._massingNudge = function(dir) {
+    if (!_massingSatMap) return;
+    var c = _massingSatMap.getCenter();
+    var step = 0.00015; // ~50 feet per click
+    var newLat = c.lat, newLng = c.lng;
+    if (dir === 'up') newLat += step;
+    if (dir === 'down') newLat -= step;
+    if (dir === 'left') newLng -= step;
+    if (dir === 'right') newLng += step;
+    _massingSatMap.panTo([newLat, newLng]);
+};
 function renderMassingSatelliteMap(useId, inp, computed, containerId) {
     var container = document.getElementById(containerId);
     if (!container) return;
@@ -7762,7 +7793,21 @@ function renderMassingSatelliteMap(useId, inp, computed, containerId) {
         return;
     }
 
-    var map = L.map(container, { zoomControl: true, attributionControl: false }).setView([geo.lat, geo.lon], 18);
+    // Determine map center: prefer parcel centroid over geocode point (geocode is often offset)
+    var mapCenterLat = geo.lat, mapCenterLng = geo.lon;
+    if (window.lastParcelGeometry && window.lastParcelGeometry.rings) {
+        var _tmpLatLngs = ringsToLatLngs(window.lastParcelGeometry);
+        if (_tmpLatLngs && _tmpLatLngs[0] && _tmpLatLngs[0].length >= 3) {
+            var _cLat = 0, _cLng = 0;
+            for (var _ci = 0; _ci < _tmpLatLngs[0].length; _ci++) {
+                _cLat += _tmpLatLngs[0][_ci][0]; _cLng += _tmpLatLngs[0][_ci][1];
+            }
+            mapCenterLat = _cLat / _tmpLatLngs[0].length;
+            mapCenterLng = _cLng / _tmpLatLngs[0].length;
+        }
+    }
+
+    var map = L.map(container, { zoomControl: true, attributionControl: false }).setView([mapCenterLat, mapCenterLng], 19);
     _massingSatMap = map;
 
     var satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
@@ -7811,14 +7856,23 @@ function renderMassingSatelliteMap(useId, inp, computed, containerId) {
         });
     }
 
-    // Draw parcel boundary if available
+    // Draw parcel boundary (lot lines) — bright and visible
     var parcelLatLngs = null;
     if (window.lastParcelGeometry && window.lastParcelGeometry.rings) {
         parcelLatLngs = ringsToLatLngs(window.lastParcelGeometry);
+        // Lot line fill (subtle)
+        L.polygon(parcelLatLngs, {
+            color: 'transparent', weight: 0,
+            fillColor: '#48bb78', fillOpacity: 0.08, interactive: false
+        }).addTo(map);
+        // Lot line border (bright, thick, solid)
         var parcelPoly = L.polygon(parcelLatLngs, {
-            color: '#38a169', weight: 2, dashArray: '6, 4',
+            color: '#ffed4a', weight: 3, opacity: 0.95,
             fillColor: 'transparent', fillOpacity: 0, interactive: false
         }).addTo(map);
+        parcelPoly.bindTooltip('<strong>Parcel Boundary</strong><br>' + inp.parcelSize.toLocaleString() + ' SF lot', {
+            permanent: false, direction: 'center', className: 'massing-tooltip'
+        });
         map.fitBounds(parcelPoly.getBounds().pad(0.15));
     }
 
@@ -7887,7 +7941,10 @@ function renderMassingSatelliteMap(useId, inp, computed, containerId) {
         }
 
         // --- Existing structure: place in front 35% of lot ---
-        var existSF = (geo && geo.structureSqFt > 0) ? geo.structureSqFt : Math.round(inp.parcelSize * 0.28);
+        // structureSqFt is total living area (all floors), not footprint — estimate footprint
+        var _totalSF = (geo && geo.structureSqFt > 0) ? geo.structureSqFt : Math.round(inp.parcelSize * 0.28);
+        var _estStories = _totalSF > 2000 ? 2 : 1;
+        var existSF = Math.round(_totalSF / _estStories); // footprint estimate
         var exAspect = 1.5; // typical house is wider than deep
         var exDepthFt, exWidthFt;
         if (lotIsNS) {
@@ -7921,7 +7978,7 @@ function renderMassingSatelliteMap(useId, inp, computed, containerId) {
             color: '#718096', weight: 2, opacity: 0.8, dashArray: '4, 3',
             fillColor: '#718096', fillOpacity: 0.25,
         }).addTo(map).bindTooltip(
-            '<strong>Existing Structure</strong><br>Approx. ' + Math.round(existSF).toLocaleString() + ' SF',
+            '<strong>Existing Structure</strong><br>' + Math.round(_totalSF).toLocaleString() + ' SF total (' + _estStories + '-story)<br>~' + Math.round(existSF).toLocaleString() + ' SF footprint',
             { permanent: false, direction: 'top', className: 'massing-tooltip' }
         );
 
@@ -8350,7 +8407,22 @@ function openAnalysis(resultIndex) {
     html += `<div class="analysis-section">${renderAssumptions(assumptions, hasUnits)}</div>`;
 
     // --- Conceptual Renderings (re-rendered) ---
-    html += `<div class="analysis-section"><h3>Conceptual Massing Study</h3><div class="rendering-container" id="sect-svg">${renderSVGs(r.id, inp, computed)}</div><div id="massingMapContainer" style="height:320px;margin-top:1rem;border-radius:8px;overflow:hidden;border:1px solid var(--border);"></div></div>`;
+    html += `<div class="analysis-section"><h3>Conceptual Massing Study</h3><div class="rendering-container" id="sect-svg">${renderSVGs(r.id, inp, computed)}</div><div id="massingMapContainer" style="height:380px;margin-top:1rem;border-radius:8px;overflow:hidden;border:1px solid var(--border);"></div>`;
+    // Street View + controls below satellite map
+    if (geo && geo.lat) {
+        html += `<div style="margin-top:0.75rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+            <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${geo.lat},${geo.lon}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;padding:6px 14px;background:#4285f4;color:white;border-radius:6px;font-size:0.78rem;font-weight:600;text-decoration:none;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                Google Street View
+            </a>
+            <span style="font-size:0.72rem;color:#718096;">Location not right?</span>
+            <button onclick="window._massingNudge('up')" style="padding:3px 8px;font-size:0.72rem;border:1px solid #cbd5e0;border-radius:4px;background:#fff;cursor:pointer;" title="Nudge map north">↑ N</button>
+            <button onclick="window._massingNudge('down')" style="padding:3px 8px;font-size:0.72rem;border:1px solid #cbd5e0;border-radius:4px;background:#fff;cursor:pointer;" title="Nudge map south">↓ S</button>
+            <button onclick="window._massingNudge('left')" style="padding:3px 8px;font-size:0.72rem;border:1px solid #cbd5e0;border-radius:4px;background:#fff;cursor:pointer;" title="Nudge map west">← W</button>
+            <button onclick="window._massingNudge('right')" style="padding:3px 8px;font-size:0.72rem;border:1px solid #cbd5e0;border-radius:4px;background:#fff;cursor:pointer;" title="Nudge map east">→ E</button>
+        </div>`;
+    }
+    html += `</div>`;
 
     // --- Line Item Budget (re-rendered) ---
     html += `<div class="analysis-section"><h3>Development Pro Forma &mdash; Line Item Budget</h3><div id="sect-budget">${renderBudgetTable(computed, inp)}</div></div>`;
