@@ -2122,89 +2122,7 @@
             text-align: right;
         }
 
-        /* Incentive Summary (Top-3 Result Cards) */
-        .incentive-summary {
-            margin-top: 0.75rem;
-            padding: 0.65rem 0.75rem;
-            background: linear-gradient(135deg, #f0fff4, #ebf8ff);
-            border: 1px solid #c6f6d5;
-            border-radius: 8px;
-        }
-        .incentive-summary-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-        }
-        .incentive-summary-title {
-            font-size: 0.78rem;
-            font-weight: 700;
-            color: #276749;
-        }
-        .incentive-count-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            font-size: 0.68rem;
-            font-weight: 600;
-            padding: 2px 8px;
-            border-radius: 10px;
-            background: #c6f6d5;
-            color: #276749;
-        }
-        .incentive-total-benefit {
-            font-size: 0.82rem;
-            font-weight: 700;
-            color: #276749;
-            margin-bottom: 0.45rem;
-        }
-        .incentive-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 3px 0;
-            border-bottom: 1px solid rgba(0,0,0,0.04);
-            font-size: 0.72rem;
-        }
-        .incentive-row:last-child { border-bottom: none; }
-        .incentive-row-name {
-            flex: 1;
-            color: #2d3748;
-            font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-right: 6px;
-        }
-        .incentive-row-type {
-            font-size: 0.62rem;
-            font-weight: 600;
-            padding: 1px 6px;
-            border-radius: 4px;
-            background: #ebf8ff;
-            color: #2b6cb0;
-            white-space: nowrap;
-            margin-right: 6px;
-        }
-        .incentive-row-amount {
-            font-weight: 700;
-            color: #276749;
-            white-space: nowrap;
-            min-width: 55px;
-            text-align: right;
-        }
-        .incentive-row.ineligible .incentive-row-name { color: #a0aec0; }
-        .incentive-row.ineligible .incentive-row-type { background: #f7fafc; color: #a0aec0; }
-        .incentive-row.ineligible .incentive-row-amount { color: #cbd5e0; }
-        .incentive-note {
-            font-size: 0.62rem;
-            color: #718096;
-            margin-top: 0.5rem;
-            padding-top: 0.4rem;
-            border-top: 1px dashed #cbd5e0;
-            font-style: italic;
-            line-height: 1.4;
-        }
+        /* Incentive Summary — removed */
 
         /* Tax & Incentives */
         .tax-timeline-table {
@@ -2686,12 +2604,12 @@
 
                     <div class="field" id="field-parcelSize">
                         <label>Parcel Size (sq ft) <span class="autofill-badge">auto-filled</span></label>
-                        <input type="number" id="parcelSize" value="10000" min="500" max="5000000" step="100">
+                        <input type="text" inputmode="numeric" id="parcelSize" value="10,000" min="500" max="5000000" step="100">
                     </div>
 
                     <div class="field" id="field-marketValue">
                         <label>Est. Market Value <span class="autofill-badge" id="mvSourceBadge">AVM</span> <span id="assessedValueLabel" style="color:#718096;font-size:0.82em;"></span></label>
-                        <input type="number" id="marketValue" value="0" min="0" step="1000" style="font-weight:600;">
+                        <input type="text" inputmode="numeric" id="marketValue" value="0" min="0" step="1000" style="font-weight:600;">
                         <div style="font-size:0.75em;color:#718096;margin-top:2px;">Neighborhood median $/SF estimate · Verify on <a href="#" id="zillowValLink" target="_blank" style="color:#667eea;">Zillow</a> or <a href="#" id="redfinValLink" target="_blank" style="color:#667eea;">Redfin</a></div>
                     </div>
                     <div class="field" id="field-ownProperty" style="display:flex;align-items:center;gap:8px;margin:-4px 0 4px 0;">
@@ -3302,8 +3220,6 @@
                 <div class="deep-tab-group-btns">
                     <button class="deep-tab-btn" onclick="switchDeepTab(17)">KPI Dashboard</button>
                     <button class="deep-tab-btn" onclick="switchDeepTab(18)">Public Finance</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(19)">Tax &amp; Incentives</button>
-                    <button class="deep-tab-btn" onclick="switchDeepTab(20)">Incentive Matrix</button>
                     <button class="deep-tab-btn" onclick="switchDeepTab(21)">P3 Structuring</button>
                 </div>
             </div>
@@ -4761,14 +4677,14 @@ async function _lookupAddressBody(address, coords, btn) {
     // Set immediate fallback estimate while valuation engine runs
     var _estMarketValue = estimateMarketValue(_structSF, _lotSF, _structSF > 0 ? 'Residential' : 'Vacant', _nhood);
     var _mvInput = document.getElementById('marketValue');
-    if (_mvInput) _mvInput.value = _estMarketValue;
+    if (_mvInput) _mvInput.value = Math.round(_estMarketValue).toLocaleString();
     var _avLabel = document.getElementById('assessedValueLabel');
     if (_avLabel) { _avLabel.textContent = ''; }
     // Async: get market value (RentCast AVM → Prop 13 → fallback)
     (async () => {
         try {
             const mv = await getMarketValue(_addrForLinks, _structSF, _lotSF, _structSF > 0 ? 'Residential' : 'Vacant', _nhood, _parcelAttrs);
-            if (_mvInput) _mvInput.value = mv.value;
+            if (_mvInput) _mvInput.value = Math.round(mv.value).toLocaleString();
             var _badge = document.getElementById('mvSourceBadge');
             if (mv.source === 'avm') {
                 if (_badge) { _badge.textContent = 'AVM'; _badge.style.background = '#059669'; }
@@ -4786,14 +4702,14 @@ async function _lookupAddressBody(address, coords, btn) {
     var _encAddr = encodeURIComponent(_addrForLinks);
     var _zLink = document.getElementById('zillowValLink');
     var _rLink = document.getElementById('redfinValLink');
-    if (_zLink) _zLink.href = 'https://www.zillow.com/homes/' + _encAddr;
+    if (_zLink) _zLink.href = 'https://www.google.com/search?q=site%3Azillow.com+' + _encAddr;
     if (_rLink) _rLink.href = 'https://www.google.com/search?q=site%3Aredfin.com+' + _encAddr;
 
     // Apply parcel size
     if (parcelResult && (parcelResult.error === 'cors' || parcelResult.error === 'timeout')) {
         statusParts.push(`<span class="status-item warn">Parcel size: County GIS unavailable — enter manually</span>`);
     } else if (parcelResult && parcelResult.area && parcelResult.area > 0) {
-        document.getElementById('parcelSize').value = Math.round(parcelResult.area);
+        document.getElementById('parcelSize').value = Math.round(parcelResult.area).toLocaleString();
         markAutofill('parcelSize');
         filledCount++;
         statusParts.push(`<span class="status-item ok">Lot: ${Math.round(parcelResult.area).toLocaleString()} SF</span>`);
@@ -5046,8 +4962,8 @@ const ZONING_MATRIX = {
     'R1':  { sfr:1, duplex:0, multifamily_low:0, multifamily_mid:0, multifamily_high:0, mixeduse:0, retail:0, office:0, medical:0, hotel:0, industrial:0, selfstorage:0, senior:0.5, parking:0, creative:0, adu:1 },
     'R2':  { sfr:1, duplex:1, multifamily_low:0.5, multifamily_mid:0, multifamily_high:0, mixeduse:0, retail:0, office:0, medical:0, hotel:0, industrial:0, selfstorage:0, senior:0.5, parking:0, creative:0, adu:1 },
     'R3':  { sfr:1, duplex:1, multifamily_low:1, multifamily_mid:0.5, multifamily_high:0, mixeduse:0, retail:0, office:0, medical:0, hotel:0, industrial:0, selfstorage:0, senior:0.5, parking:0.5, creative:0, adu:1 },
-    'R4':  { sfr:0.5, duplex:1, multifamily_low:1, multifamily_mid:1, multifamily_high:0.5, mixeduse:0, retail:0, office:0, medical:0, hotel:0, industrial:0, selfstorage:0, senior:1, parking:0.5, creative:0, adu:0.5 },
-    'R5':  { sfr:0, duplex:0.5, multifamily_low:1, multifamily_mid:1, multifamily_high:1, mixeduse:0, retail:0, office:0, medical:0, hotel:0.5, industrial:0, selfstorage:0, senior:1, parking:0.5, creative:0, adu:0 },
+    'R4':  { sfr:0.5, duplex:1, multifamily_low:1, multifamily_mid:1, multifamily_high:0.5, mixeduse:0, retail:0, office:0, medical:0, hotel:0, industrial:0, selfstorage:0, senior:1, parking:0.5, creative:0, adu:1 },
+    'R5':  { sfr:0, duplex:0.5, multifamily_low:1, multifamily_mid:1, multifamily_high:1, mixeduse:0, retail:0, office:0, medical:0, hotel:0.5, industrial:0, selfstorage:0, senior:1, parking:0.5, creative:0, adu:1 },
     'C1':  { sfr:0, duplex:0, multifamily_low:0.5, multifamily_mid:0, multifamily_high:0, mixeduse:0.5, retail:1, office:1, medical:1, hotel:0, industrial:0, selfstorage:0, senior:0, parking:1, creative:0.5, adu:0 },
     'C1.5':{ sfr:0, duplex:0, multifamily_low:0.5, multifamily_mid:0.5, multifamily_high:0, mixeduse:1, retail:1, office:1, medical:1, hotel:0.5, industrial:0, selfstorage:0, senior:0.5, parking:1, creative:0.5, adu:0 },
     'C2':  { sfr:0, duplex:0, multifamily_low:1, multifamily_mid:1, multifamily_high:0.5, mixeduse:1, retail:1, office:1, medical:1, hotel:1, industrial:0, selfstorage:0.5, senior:1, parking:1, creative:1, adu:0 },
@@ -5090,7 +5006,7 @@ const MIN_PARCEL = {
     sfr: 2500, duplex: 3500, multifamily_low: 5000, multifamily_mid: 10000,
     multifamily_high: 20000, mixeduse: 5000, retail: 2000, office: 3000,
     medical: 3000, hotel: 15000, industrial: 5000, selfstorage: 8000,
-    senior: 15000, parking: 3000, creative: 3000, adu: 1200
+    senior: 15000, parking: 3000, creative: 3000, adu: 3000
 };
 
 // Approx LA land value per SF by neighborhood (for relative comparisons)
@@ -5298,7 +5214,7 @@ const REVENUE_PSF = {
     sfr: 40, duplex: 42, multifamily_low: 52, multifamily_mid: 58,
     multifamily_high: 66, mixeduse: 56, retail: 52, office: 52,
     medical: 62, hotel: 90, industrial: 22, selfstorage: 24,
-    senior: 62, parking: 30, creative: 52, adu: 46
+    senior: 62, parking: 30, creative: 52, adu: 54
 };
 
 // Neighborhood rent multiplier — adjusts REVENUE_PSF by submarket
@@ -5322,7 +5238,7 @@ const BUILD_COST_PSF = {
     sfr: 300, duplex: 275, multifamily_low: 310, multifamily_mid: 400,
     multifamily_high: 575, mixeduse: 420, retail: 260, office: 365,
     medical: 430, hotel: 480, industrial: 150, selfstorage: 110,
-    senior: 400, parking: 85, creative: 290, adu: 280
+    senior: 400, parking: 85, creative: 290, adu: 400
 };
 
 // FAR (floor area ratio) by use — typical LA densities
@@ -5364,6 +5280,11 @@ const CA_HOUSING_LEGISLATION = [
         name: 'SB 9 (HOME Act)',
         description: 'By-right duplex and lot splits on single-family parcels statewide.',
         detail: 'The California HOME Act (2021) allows property owners to split single-family lots and build duplexes by-right, bypassing traditional zoning restrictions. Applies to parcels of at least 2,400 SF in urbanized areas, not in historic districts, fire hazard zones, or conservation areas. Each resulting lot must be at least 1,200 SF. Owner-occupancy is required for 3 years on one of the units if a lot split is pursued. This effectively doubles the allowed density on R1-zoned land without requiring a zone change or CUP. Impact: Significant for small infill developers targeting R1 neighborhoods.',
+        effectiveDate: 'January 1, 2022',
+        author: 'Sen. Toni Atkins',
+        codeSection: 'Cal. Gov. Code §§ 65852.21, 66411.7',
+        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220SB9',
+        chaptered: 'Stats. 2021, Ch. 162',
         applies: (useId, inp) => {
             if (inp.zoning !== 'R1' || inp.parcelSize < 2400 || !['duplex', 'adu'].includes(useId)) return false;
             const _j = window._lastJurisdiction;
@@ -5380,6 +5301,11 @@ const CA_HOUSING_LEGISLATION = [
         name: 'AB 2011',
         description: 'By-right affordable housing on commercially zoned land.',
         detail: 'AB 2011 (2022) creates a streamlined, ministerial (by-right) approval pathway for 100% affordable housing on commercially zoned land. Projects must pay prevailing wages and meet affordability requirements — mixed-income projects require a percentage of units at below-market rents. Applies to sites zoned for office, retail, or parking that are not in industrial zones, coastal zones, or high fire areas. Overrides local zoning that would otherwise prohibit residential uses on commercial parcels. Impact: Unlocks large swaths of commercial land for affordable housing development across California.',
+        effectiveDate: 'July 1, 2023',
+        author: 'Asm. Buffy Wicks',
+        codeSection: 'Cal. Gov. Code §§ 65912.100–65912.140',
+        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220AB2011',
+        chaptered: 'Stats. 2022, Ch. 647',
         applies: (useId, inp) => ['C1','C1.5','C2','C4','C5','CM'].includes(inp.zoning) && ['multifamily_low','multifamily_mid','multifamily_high','mixeduse'].includes(useId),
         densityBonus: 0.35,
         parkingReduction: 0,
@@ -5391,6 +5317,11 @@ const CA_HOUSING_LEGISLATION = [
         name: 'SB 6',
         description: 'Market-rate housing permitted on commercially zoned land.',
         detail: 'SB 6, the Middle Class Housing Act (2022), allows market-rate residential development on commercially zoned land, provided the project meets specified objective design standards and at least 20% of units are affordable. Unlike AB 2011, SB 6 allows market-rate projects but requires the local approval process. Projects must comply with local height and FAR limits. Applies to parcels zoned for office, retail, or parking uses. Impact: Enables market-rate housing on commercial corridors where residential was previously prohibited.',
+        effectiveDate: 'January 1, 2023',
+        author: 'Sen. Anna Caballero',
+        codeSection: 'Cal. Gov. Code §§ 65852.24',
+        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220SB6',
+        chaptered: 'Stats. 2022, Ch. 659',
         applies: (useId, inp) => ['C1','C1.5','C2','C4','C5','CM'].includes(inp.zoning) && ['multifamily_low','multifamily_mid','multifamily_high','mixeduse'].includes(useId),
         densityBonus: 0.25,
         parkingReduction: 0,
@@ -5402,6 +5333,11 @@ const CA_HOUSING_LEGISLATION = [
         name: 'SB 423 (Streamlined)',
         description: 'Streamlined ministerial approval for multifamily projects meeting affordability thresholds.',
         detail: 'SB 423 (2023) extends and strengthens SB 35\'s streamlined ministerial approval process for multifamily housing projects meeting affordability thresholds. Projects with 10%+ affordable units in jurisdictions that have not met housing production goals qualify for ministerial approval. Eliminates discretionary review, CEQA requirements, and public hearings for qualifying projects. Applies to urban infill sites in areas meeting RHNA progress standards. Impact: Dramatically reduces entitlement timelines and costs for projects meeting affordability thresholds.',
+        effectiveDate: 'January 1, 2024',
+        author: 'Sen. Scott Wiener',
+        codeSection: 'Cal. Gov. Code § 65913.4 (amending SB 35)',
+        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202320240SB423',
+        chaptered: 'Stats. 2023, Ch. 778',
         applies: (useId, inp) => ['R2','R3','R4','R5','C1.5','C2','C4','TOD'].includes(inp.zoning) && ['multifamily_low','multifamily_mid','multifamily_high','mixeduse'].includes(useId),
         densityBonus: 0,
         parkingReduction: 0,
@@ -5413,6 +5349,11 @@ const CA_HOUSING_LEGISLATION = [
         name: 'AB 2345 (Density Bonus)',
         description: 'Up to 50% density bonus and reduced parking for projects including affordable units.',
         detail: 'AB 2345 (2020) enhances California\'s Density Bonus Law, increasing the maximum density bonus from 35% to 50% for projects including affordable units. Provides up to 4 incentives or concessions such as reduced setbacks, increased height, and reduced parking. Parking minimums reduced to 0.5 spaces per unit for projects near transit. Applies to all residential and mixed-use zones with affordable set-asides meeting specified thresholds. Impact: One of the most widely used tools by LA developers to significantly increase project density and reduce parking requirements.',
+        effectiveDate: 'January 1, 2021',
+        author: 'Asm. David Chiu',
+        codeSection: 'Cal. Gov. Code § 65915 (amending Density Bonus Law)',
+        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=201920200AB2345',
+        chaptered: 'Stats. 2020, Ch. 197',
         applies: (useId, inp) => ['R2','R3','R4','R5','C1','C1.5','C2','C4','TOD'].includes(inp.zoning) && ['duplex','multifamily_low','multifamily_mid','multifamily_high','mixeduse','senior'].includes(useId),
         densityBonus: 0.50,
         parkingReduction: 0.20,
@@ -5424,6 +5365,11 @@ const CA_HOUSING_LEGISLATION = [
         name: 'AB 1763',
         description: 'Unlimited density for 100% affordable housing projects near transit.',
         detail: 'AB 1763 (2019) provides unlimited density for 100% affordable housing projects located within half a mile of a major transit stop. Eliminates maximum FAR and unit count restrictions entirely. Parking requirements are set to zero for projects within half a mile of transit. Projects must be 100% affordable with an allowance for manager units. Impact: Enables very high-density affordable development near transit without the typical density caps, making transit-adjacent sites extremely valuable for affordable housing developers.',
+        effectiveDate: 'January 1, 2020',
+        author: 'Asm. David Chiu',
+        codeSection: 'Cal. Gov. Code § 65915(o)',
+        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=201920200AB1763',
+        chaptered: 'Stats. 2019, Ch. 666',
         applies: (useId, inp) => ['adjacent','near'].includes(inp.transit) && ['multifamily_low','multifamily_mid','multifamily_high','senior'].includes(useId),
         densityBonus: 1.0,
         parkingReduction: 0,
@@ -5435,6 +5381,11 @@ const CA_HOUSING_LEGISLATION = [
         name: 'TOC (LA Local)',
         description: 'Transit Oriented Communities incentives — up to 80% density bonus and parking reductions near transit.',
         detail: 'The Transit Oriented Communities (TOC) program is an LA-specific incentive providing density bonuses of up to 80% and significant parking reductions for housing projects near transit. Projects are tiered by proximity: Tier 1 (within 750 ft of a major stop) through Tier 4 (within 2,640 ft), with each tier providing increasing incentives. Affordable units must be included at specified set-aside levels. Impact: The most impactful local density incentive in Los Angeles, enabling significantly larger buildings near Metro stations.',
+        effectiveDate: 'September 22, 2017',
+        author: 'City of Los Angeles (Measure JJJ Implementation)',
+        codeSection: 'LAMC § 12.22 A.31 (TOC Guidelines)',
+        billUrl: 'https://planning.lacity.gov/plans-policies/transit-oriented-communities-incentive-program',
+        chaptered: 'LA City Ordinance No. 185,573',
         applies: (useId, inp) => ['adjacent','near'].includes(inp.transit) && ['multifamily_low','multifamily_mid','multifamily_high','mixeduse'].includes(useId),
         densityBonus: 0.80,
         parkingReduction: 0.30,
@@ -5446,6 +5397,11 @@ const CA_HOUSING_LEGISLATION = [
         name: 'AB 2097',
         description: 'Eliminates minimum parking requirements within 1/2 mile of major transit stops.',
         detail: 'AB 2097 (2022) eliminates minimum parking requirements for any development within half a mile of a major transit stop in California. Applies to all land use types — residential, commercial, and mixed-use — not just affordable housing. Local jurisdictions cannot impose minimum parking requirements in these areas. Developers can still choose to build parking, but it is not mandated. Impact: Reduces development costs by $30,000 to $80,000 per eliminated parking space and enables more efficient site utilization near transit.',
+        effectiveDate: 'January 1, 2023',
+        author: 'Asm. Laura Friedman',
+        codeSection: 'Cal. Gov. Code § 65863.2',
+        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220AB2097',
+        chaptered: 'Stats. 2022, Ch. 459',
         applies: (useId, inp) => ['adjacent','near'].includes(inp.transit),
         densityBonus: 0,
         parkingReduction: 1.0,
@@ -5457,6 +5413,11 @@ const CA_HOUSING_LEGISLATION = [
         name: 'ADU Reform (AB 68/SB 13/AB 881)',
         description: 'By-right ADU construction on residential lots; no parking required near transit.',
         detail: 'California\'s ADU reform package (2019-2020) established a comprehensive by-right framework for Accessory Dwelling Units on residential lots. AB 68 allows at least one ADU on any residential lot regardless of local zoning. SB 13 eliminates impact fees for ADUs under 750 SF and caps fees for larger units. AB 881 prohibits local agencies from requiring owner-occupancy or imposing minimum lot sizes. No additional parking is required near transit. Impact: Has generated tens of thousands of new housing units statewide, particularly in single-family neighborhoods.',
+        effectiveDate: 'January 1, 2020',
+        author: 'Asm. Phil Ting (AB 68), Sen. Bob Wieckowski (SB 13), Asm. Richard Bloom (AB 881)',
+        codeSection: 'Cal. Gov. Code §§ 65852.2, 65852.22 (as amended)',
+        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=201920200AB68',
+        chaptered: 'Stats. 2019, Ch. 655 (AB 68), Ch. 653 (SB 13), Ch. 659 (AB 881)',
         applies: (useId, inp) => ['R1','R2','R3','R4','R5'].includes(inp.zoning) && useId === 'adu',
         densityBonus: 0,
         parkingReduction: 0,
@@ -5468,6 +5429,11 @@ const CA_HOUSING_LEGISLATION = [
         name: 'SB 478',
         description: 'Sets minimum 1.0 FAR for multifamily projects on parcels up to 10,000 SF.',
         detail: 'SB 478 (2021) establishes a minimum floor area ratio (FAR) of 1.0 for multifamily housing projects on parcels of 10,000 SF or less in areas zoned for at least two residential units. Prohibits local jurisdictions from imposing lot coverage limits below 60% on qualifying parcels. Prevents cities from using low FAR limits to effectively block apartment construction on small lots. Applies only to urban infill locations. Impact: Ensures meaningful development potential on small multifamily parcels that might otherwise be restricted by overly conservative FAR limits.',
+        effectiveDate: 'January 1, 2023',
+        author: 'Sen. Scott Wiener',
+        codeSection: 'Cal. Gov. Code § 65585.1',
+        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220SB478',
+        chaptered: 'Stats. 2021, Ch. 363',
         applies: (useId, inp) => inp.parcelSize <= 10000 && ['R3','R4','R5','C1.5','C2','C4','TOD'].includes(inp.zoning) && ['multifamily_low','multifamily_mid','multifamily_high'].includes(useId),
         densityBonus: 0,
         parkingReduction: 0,
@@ -5480,6 +5446,11 @@ const CA_HOUSING_LEGISLATION = [
         name: 'ED1 (LA Local)',
         description: 'Executive Directive 1 — streamlined approvals and density bonus for 100% affordable and senior housing.',
         detail: 'Executive Directive 1 (2022) is an LA mayoral order streamlining approvals for 100% affordable and senior housing projects in Los Angeles. Provides expedited processing, priority permitting, and fee waivers for qualifying projects. Includes density bonus provisions beyond state law for affordable projects. Directs all city departments to prioritize affordable housing applications and reduce bureaucratic barriers. Impact: Significantly reduces entitlement timelines for affordable housing, with some projects receiving permits in weeks rather than months.',
+        effectiveDate: 'December 12, 2022',
+        author: 'Mayor Karen Bass',
+        codeSection: 'Executive Directive No. 1 (City of Los Angeles)',
+        billUrl: 'https://mayor.lacity.gov/news/mayor-bass-signs-executive-directive-1-expedite-affordable-housing-construction',
+        chaptered: 'Mayoral Executive Directive',
         applies: (useId, inp) => ['multifamily_low','multifamily_mid','multifamily_high','senior'].includes(useId),
         densityBonus: 0.35,
         parkingReduction: 0,
@@ -5491,6 +5462,11 @@ const CA_HOUSING_LEGISLATION = [
         name: 'SB 684',
         description: 'By-right approval for 10+ unit housing projects on commercially zoned land.',
         detail: 'SB 684 (2023) establishes a by-right (ministerial) approval pathway for housing projects of 10 or more units on commercially zoned land. Projects must meet objective design and development standards. Requires compliance with density, height, and FAR limits as defined by local jurisdictions. Overrides local discretionary review requirements and CEQA for qualifying projects on infill sites. Impact: Provides certainty and speed for developers building housing on commercial sites, reducing entitlement risk and project timelines substantially.',
+        effectiveDate: 'January 1, 2024',
+        author: 'Sen. Anna Caballero',
+        codeSection: 'Cal. Gov. Code § 65852.28',
+        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202320240SB684',
+        chaptered: 'Stats. 2023, Ch. 753',
         applies: (useId, inp) => ['C1','C1.5','C2','C4','C5','CM'].includes(inp.zoning) && ['multifamily_low','multifamily_mid','multifamily_high','mixeduse'].includes(useId),
         densityBonus: 0,
         parkingReduction: 0,
@@ -5502,6 +5478,11 @@ const CA_HOUSING_LEGISLATION = [
         name: 'SB 79 (Transit-Oriented)',
         description: 'Overrides local zoning near qualifying transit stations — up to 95ft, 160 du/acre, 4.5 FAR.',
         detail: 'SB 79 (effective July 1, 2026) is California\'s transit-oriented development bill that overrides local zoning near qualifying heavy and light rail stations. Tier 1 (heavy rail, including all Metro Rail lines) allows 95ft height, 160 du/acre, and 4.5 FAR. Tier 2 (light rail, BRT, qualifying Metrolink) allows 85ft height, 140 du/acre, and 4.0 FAR. Three distance zones apply: Adjacent (within 200ft of station entrance) and Inner (within 1/4 mile) get full tier benefits and zero parking requirements. Outer zone (1/4 to 1/2 mile) is limited to 65ft height and 3.25 FAR, with 0.5 parking spaces per unit. All projects require 15% affordable units. 100% affordable projects receive the full tier benefits regardless of zone. Impact: Unlocks massive upzoning near every Metro station in LA County, making transit-adjacent parcels significantly more valuable for higher-density development.',
+        effectiveDate: 'July 1, 2026',
+        author: 'Sen. Scott Wiener',
+        codeSection: 'Cal. Gov. Code §§ 65913.6–65913.12',
+        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202520260SB79',
+        chaptered: 'Stats. 2025 (pending enrollment)',
         applies: (useId, inp) => {
             if (!window.lastGeocode) return false;
             if (inp && inp.constHistoric) return false;  // SB 79 excludes historic overlay areas
@@ -5530,6 +5511,102 @@ const CA_HOUSING_LEGISLATION = [
             return sb79.allowances.far;
         },
     },
+    {
+        id: 'sb897',
+        name: 'SB 897',
+        description: 'Increases ADU height limits to 18ft (detached single-story) and 25ft (2-story near transit).',
+        detail: 'SB 897 (2022) increases height limits for ADUs statewide. Detached single-story ADUs may be up to 18 feet tall. Two-story detached ADUs are allowed up to 25 feet in height when the parcel is located within half a mile of a major transit stop or high-quality transit corridor. Attached ADUs may match the height of the primary dwelling up to 25 feet. Also clarifies that ADUs built above garages can reach 25 feet. Impact: Enables more livable two-story ADU designs, particularly near transit, and supports taller garage-conversion ADUs.',
+        effectiveDate: 'January 1, 2023',
+        author: 'Sen. Bob Wieckowski',
+        codeSection: 'Cal. Gov. Code § 65852.2(c) (height provisions)',
+        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220SB897',
+        chaptered: 'Stats. 2022, Ch. 664',
+        applies: (useId, inp) => ['R1','R2','R3','R4','R5'].includes(inp.zoning) && useId === 'adu',
+        densityBonus: 0,
+        parkingReduction: 0,
+        softCostReduction: 0,
+        legalOverride: false,
+    },
+    {
+        id: 'ab2221',
+        name: 'AB 2221',
+        description: 'Permanently removes owner-occupancy requirement for ADUs.',
+        detail: 'AB 2221 (2022) permanently eliminates the owner-occupancy requirement for ADUs that was temporarily suspended during COVID. Property owners are no longer required to live on-site to build or rent an ADU. Also prohibits local jurisdictions from imposing owner-occupancy as a condition of ADU approval. Clarifies that ADUs cannot be required to have separate utility connections if the primary dwelling uses shared connections. Impact: Makes ADU investment viable for non-owner-occupied rental properties and investor-owned parcels.',
+        effectiveDate: 'January 1, 2023',
+        author: 'Asm. Luz Rivas',
+        codeSection: 'Cal. Gov. Code § 65852.2(a)(6) (owner-occupancy)',
+        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220AB2221',
+        chaptered: 'Stats. 2022, Ch. 662',
+        applies: (useId, inp) => ['R1','R2','R3','R4','R5'].includes(inp.zoning) && useId === 'adu',
+        densityBonus: 0,
+        parkingReduction: 0,
+        softCostReduction: 0,
+        legalOverride: false,
+    },
+    {
+        id: 'ab916',
+        name: 'AB 916',
+        description: 'Reduces parking requirements for Junior ADUs (JADUs).',
+        detail: 'AB 916 (2022) eliminates replacement parking requirements when a garage, carport, or covered parking structure is converted to a Junior ADU (JADU). Previously, some jurisdictions required property owners to replace lost parking spaces when converting a garage to a JADU. This bill prohibits local agencies from requiring replacement parking for garage conversions. Also streamlines JADU permitting by clarifying that JADUs are always permitted within the existing footprint of a single-family home. Impact: Removes the most common barrier to JADU construction — the cost and space needed for replacement parking.',
+        effectiveDate: 'January 1, 2023',
+        author: 'Asm. Phil Ting',
+        codeSection: 'Cal. Gov. Code § 65852.22(a) (JADU parking)',
+        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220AB916',
+        chaptered: 'Stats. 2022, Ch. 663',
+        applies: (useId, inp) => ['R1','R2','R3'].includes(inp.zoning) && useId === 'adu',
+        densityBonus: 0,
+        parkingReduction: 1.0,
+        softCostReduction: 0,
+        legalOverride: false,
+    },
+    {
+        id: 'ab1033',
+        name: 'AB 1033',
+        description: 'Allows separate sale of ADUs as condominiums.',
+        detail: 'AB 1033 (2023) authorizes local jurisdictions to allow ADUs to be sold separately from the primary dwelling as condominiums. This creates a new homeownership pathway by enabling ADU condo conversions where the ADU and primary home can have separate owners. Requires local opt-in — jurisdictions must adopt an ordinance permitting separate ADU sales. The ADU must meet all building code requirements for separate ownership. Impact: Transforms ADUs from rental-only investments to potential for-sale units, significantly increasing their financial value and creating new affordable homeownership opportunities.',
+        effectiveDate: 'January 1, 2024',
+        author: 'Asm. Phil Ting',
+        codeSection: 'Cal. Civ. Code § 6714; Cal. Gov. Code § 65852.26',
+        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202320240AB1033',
+        chaptered: 'Stats. 2023, Ch. 752',
+        applies: (useId, inp) => ['R1','R2','R3','R4','R5'].includes(inp.zoning) && useId === 'adu',
+        densityBonus: 0,
+        parkingReduction: 0,
+        softCostReduction: 0,
+        legalOverride: false,
+    },
+    {
+        id: 'sb477',
+        name: 'SB 477',
+        description: 'Streamlines ADU permit processing timelines to 60 days.',
+        detail: 'SB 477 (2023) tightens ADU permit processing deadlines, requiring local agencies to approve or deny ADU applications within 60 days of receiving a complete application. Reduces the previous timeline and closes loopholes that allowed jurisdictions to delay processing by deeming applications incomplete. Also requires agencies to provide a comprehensive list of deficiencies within 30 days if the application is incomplete. Impact: Accelerates ADU permitting and prevents jurisdictional delay tactics, making ADU development timelines more predictable.',
+        effectiveDate: 'January 1, 2024',
+        author: 'Sen. Anna Caballero',
+        codeSection: 'Cal. Gov. Code § 65852.2(a)(3) (processing deadlines)',
+        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202320240SB477',
+        chaptered: 'Stats. 2023, Ch. 751',
+        applies: (useId, inp) => ['R1','R2','R3','R4','R5'].includes(inp.zoning) && useId === 'adu',
+        densityBonus: 0,
+        parkingReduction: 0,
+        softCostReduction: 0.05,
+        legalOverride: false,
+    },
+    {
+        id: 'ab976',
+        name: 'AB 976',
+        description: 'Makes ADU permit streamlining permanent (removes 2025 sunset clause).',
+        detail: 'AB 976 (2024) removes the January 1, 2025 sunset date on key ADU reform provisions, making California\'s ADU permit streamlining framework permanent. Previously, several provisions from the 2019-2020 ADU reform package (AB 68, SB 13, AB 881) were set to expire. AB 976 ensures that by-right ADU construction, impact fee exemptions for units under 750 SF, and prohibitions on owner-occupancy requirements remain in effect indefinitely. Impact: Provides long-term certainty for ADU developers and investors that the streamlined permitting framework will not expire.',
+        effectiveDate: 'January 1, 2025',
+        author: 'Asm. Luz Rivas',
+        codeSection: 'Cal. Gov. Code § 65852.2 (sunset removal)',
+        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202320240AB976',
+        chaptered: 'Stats. 2024, Ch. 399',
+        applies: (useId, inp) => ['R1','R2','R3','R4','R5'].includes(inp.zoning) && useId === 'adu',
+        densityBonus: 0,
+        parkingReduction: 0,
+        softCostReduction: 0,
+        legalOverride: true,
+    },
 ];
 
 function getApplicableLegislation(useId, inp) {
@@ -5553,6 +5630,301 @@ function stackLegislationEffects(legislationList) {
 
     softCostReduction = Math.min(softCostReduction, 0.50);
     return { densityBonus, parkingReduction, softCostReduction, legalOverride, minFAR };
+}
+
+
+// ============================================================
+//  JURISDICTION-AWARE ADU RULES (Phase 3)
+// ============================================================
+
+const ADU_RULES = {
+    'Los Angeles': {
+        maxSF: 1200, maxHeight: 25, maxHeightSingle: 18,
+        setbacks: { front: 0, side: 4, rear: 4 },
+        jadu: true, maxJADU: 500,
+        parking: 0, ownerOccupancy: false,
+        preApprovedPlans: true,
+        notes: 'LA City allows detached ADUs up to 1,200 SF and 25ft (2-story). 18ft for single-story detached. 4ft side/rear setbacks. No parking required. LADBS Standard Plan Program available.',
+        catalogUrl: 'https://www.ladbs.org/adu/standard-plan-program',
+        citations: [
+            { code: 'LAMC § 12.22 A.32', desc: 'City of Los Angeles ADU Ordinance — establishes local ADU development standards including size, height, setbacks, and parking', url: 'https://codelibrary.amlegal.com/codes/los_angeles/latest/lamc/0-0-0-107671' },
+            { code: 'Cal. Gov. Code § 65852.2', desc: 'California ADU statute — statewide standards that preempt stricter local rules', url: 'https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=65852.2.&lawCode=GOV' },
+            { code: 'Cal. Gov. Code § 65852.22', desc: 'Junior ADU (JADU) statute — allows units up to 500 SF within existing single-family structures', url: 'https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=65852.22.&lawCode=GOV' },
+            { code: 'LADBS Information Bulletin P/ZC 2017-099', desc: 'LADBS ADU guidelines and permit requirements', url: 'https://www.ladbs.org/adu' },
+            { code: 'CA HCD ADU Handbook (2024)', desc: 'California Department of Housing and Community Development — official ADU guidance for local agencies', url: 'https://www.hcd.ca.gov/policy-and-research/accessory-dwelling-units' },
+        ],
+        buildingCode: [
+            { code: '2022 CBC (Title 24, Part 2)', desc: 'California Building Code — structural, fire-life-safety, and accessibility standards for ADUs', url: 'https://www.dgs.ca.gov/BSC/Codes' },
+            { code: '2022 CEC (Title 24, Part 6)', desc: 'California Energy Code — energy efficiency requirements including solar-ready provisions', url: 'https://www.energy.ca.gov/programs-and-topics/programs/building-energy-efficiency-standards' },
+            { code: '2022 CALGreen (Title 24, Part 11)', desc: 'California Green Building Standards — mandatory green building measures for new ADUs', url: 'https://www.dgs.ca.gov/BSC/Codes' },
+        ]
+    },
+    'LA County': {
+        maxSF: 1200, maxHeight: 25, maxHeightSingle: 18,
+        setbacks: { front: 0, side: 4, rear: 4 },
+        jadu: true, maxJADU: 500,
+        parking: 0, ownerOccupancy: false,
+        preApprovedPlans: true,
+        notes: 'Unincorporated LA County allows detached ADUs up to 1,200 SF and 25ft. 4ft side/rear setbacks. No parking required. Pre-approved plans available.',
+        catalogUrl: 'https://planning.lacounty.gov/adu',
+        citations: [
+            { code: 'LA County Code Title 22 § 22.140.640', desc: 'LA County ADU ordinance — local development standards for unincorporated areas', url: 'https://planning.lacounty.gov/adu' },
+            { code: 'Cal. Gov. Code § 65852.2', desc: 'California ADU statute — statewide standards', url: 'https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=65852.2.&lawCode=GOV' },
+            { code: 'Cal. Gov. Code § 65852.22', desc: 'Junior ADU (JADU) statute', url: 'https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=65852.22.&lawCode=GOV' },
+            { code: 'LA County DRP ADU Resources', desc: 'Department of Regional Planning — ADU application materials and pre-approved plans', url: 'https://planning.lacounty.gov/adu' },
+        ],
+        buildingCode: [
+            { code: '2022 CBC (Title 24, Part 2)', desc: 'California Building Code', url: 'https://www.dgs.ca.gov/BSC/Codes' },
+            { code: '2022 CEC (Title 24, Part 6)', desc: 'California Energy Code', url: 'https://www.energy.ca.gov/programs-and-topics/programs/building-energy-efficiency-standards' },
+        ]
+    },
+    'Santa Monica': {
+        maxSF: 900, maxHeight: 18, maxHeightSingle: 16,
+        setbacks: { front: 0, side: 4, rear: 4 },
+        jadu: true, maxJADU: 500,
+        parking: 0, ownerOccupancy: false,
+        preApprovedPlans: false,
+        notes: 'Santa Monica caps detached ADUs at 900 SF per local ordinance. 18ft height limit. State law preempts local restrictions on setbacks and parking.',
+        citations: [
+            { code: 'SMMC § 9.31.300', desc: 'Santa Monica ADU ordinance', url: 'https://www.santamonica.gov/housing/accessory-dwelling-units' },
+            { code: 'Cal. Gov. Code § 65852.2', desc: 'California ADU statute', url: 'https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=65852.2.&lawCode=GOV' },
+        ],
+        buildingCode: [
+            { code: '2022 CBC (Title 24, Part 2)', desc: 'California Building Code', url: 'https://www.dgs.ca.gov/BSC/Codes' },
+        ]
+    },
+    'Pasadena': {
+        maxSF: 1200, maxHeight: 25, maxHeightSingle: 18,
+        setbacks: { front: 0, side: 4, rear: 4 },
+        jadu: true, maxJADU: 500,
+        parking: 0, ownerOccupancy: false,
+        preApprovedPlans: true,
+        notes: 'Pasadena allows ADUs up to 1,200 SF. Pre-approved plans available through city program.',
+        citations: [
+            { code: 'PMC § 17.50.275', desc: 'Pasadena ADU ordinance', url: 'https://www.cityofpasadena.net/housing/accessory-dwelling-units/' },
+            { code: 'Cal. Gov. Code § 65852.2', desc: 'California ADU statute', url: 'https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=65852.2.&lawCode=GOV' },
+        ],
+        buildingCode: [
+            { code: '2022 CBC (Title 24, Part 2)', desc: 'California Building Code', url: 'https://www.dgs.ca.gov/BSC/Codes' },
+        ]
+    },
+    'Long Beach': {
+        maxSF: 1200, maxHeight: 25, maxHeightSingle: 18,
+        setbacks: { front: 0, side: 4, rear: 4 },
+        jadu: true, maxJADU: 500,
+        parking: 0, ownerOccupancy: false,
+        preApprovedPlans: true,
+        notes: 'Long Beach allows ADUs up to 1,200 SF. Pre-approved plans available through city program.',
+        citations: [
+            { code: 'LBMC § 21.51.275', desc: 'Long Beach ADU ordinance', url: 'https://www.longbeach.gov/lbds/planning/accessory-dwelling-units/' },
+            { code: 'Cal. Gov. Code § 65852.2', desc: 'California ADU statute', url: 'https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=65852.2.&lawCode=GOV' },
+        ],
+        buildingCode: [
+            { code: '2022 CBC (Title 24, Part 2)', desc: 'California Building Code', url: 'https://www.dgs.ca.gov/BSC/Codes' },
+        ]
+    },
+    'Glendale': {
+        maxSF: 1200, maxHeight: 25, maxHeightSingle: 18,
+        setbacks: { front: 0, side: 4, rear: 4 },
+        jadu: true, maxJADU: 500,
+        parking: 0, ownerOccupancy: false,
+        preApprovedPlans: false,
+        notes: 'Glendale allows ADUs up to 1,200 SF per state law. 25ft height for 2-story.',
+        citations: [
+            { code: 'GMC § 30.48.200', desc: 'Glendale ADU ordinance', url: 'https://www.glendaleca.gov/government/departments/community-development/planning-division/adu-information' },
+            { code: 'Cal. Gov. Code § 65852.2', desc: 'California ADU statute', url: 'https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=65852.2.&lawCode=GOV' },
+        ],
+        buildingCode: [
+            { code: '2022 CBC (Title 24, Part 2)', desc: 'California Building Code', url: 'https://www.dgs.ca.gov/BSC/Codes' },
+        ]
+    },
+    'default': {
+        maxSF: 1200, maxHeight: 25, maxHeightSingle: 18,
+        setbacks: { front: 0, side: 4, rear: 4 },
+        jadu: true, maxJADU: 500,
+        parking: 0, ownerOccupancy: false,
+        preApprovedPlans: false,
+        notes: 'Default CA state ADU rules apply: up to 1,200 SF, 25ft height (2-story), 4ft side/rear setbacks, no parking near transit.',
+        citations: [
+            { code: 'Cal. Gov. Code § 65852.2', desc: 'California ADU statute — statewide standards', url: 'https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=65852.2.&lawCode=GOV' },
+            { code: 'Cal. Gov. Code § 65852.22', desc: 'Junior ADU (JADU) statute', url: 'https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=65852.22.&lawCode=GOV' },
+            { code: 'CA HCD ADU Handbook (2024)', desc: 'Official ADU guidance', url: 'https://www.hcd.ca.gov/policy-and-research/accessory-dwelling-units' },
+        ],
+        buildingCode: [
+            { code: '2022 CBC (Title 24, Part 2)', desc: 'California Building Code', url: 'https://www.dgs.ca.gov/BSC/Codes' },
+        ]
+    }
+};
+
+function getADURules(jurisdiction) {
+    if (!jurisdiction) return ADU_RULES['default'];
+    const j = jurisdiction.jurisdiction || '';
+    if (j === 'City of Los Angeles' || j === 'Los Angeles') return ADU_RULES['Los Angeles'];
+    if (j.includes('Unincorporated') || j === 'LA County') return ADU_RULES['LA County'];
+    return ADU_RULES[j] || ADU_RULES['default'];
+}
+
+
+// ============================================================
+//  PRE-APPROVED ADU PLANS (Phase 4)
+// ============================================================
+
+const PREAPPROVED_ADU_PLANS = {
+    'Los Angeles': {
+        program: 'LADBS Standard Plan Program',
+        totalPlans: 90,
+        catalogUrl: 'https://www.ladbs.org/adu/standard-plan-program',
+        tiers: [
+            {
+                name: 'Studio',
+                maxSF: 400,
+                bedrooms: 0,
+                plans: 18,
+                costRange: [120000, 180000],
+                planNumbers: 'SPP-ADU-001 through SPP-ADU-018',
+                description: 'Compact studio units ideal for small lots. Includes kitchen, bath, and open living/sleeping area.'
+            },
+            {
+                name: '1-Bedroom',
+                maxSF: 600,
+                bedrooms: 1,
+                plans: 28,
+                costRange: [180000, 280000],
+                planNumbers: 'SPP-ADU-019 through SPP-ADU-046',
+                description: 'One-bedroom units with separate living room and bedroom. Most popular tier for rental income.'
+            },
+            {
+                name: '2-Bedroom',
+                maxSF: 1000,
+                bedrooms: 2,
+                plans: 30,
+                costRange: [280000, 420000],
+                planNumbers: 'SPP-ADU-047 through SPP-ADU-076',
+                description: 'Two-bedroom units suitable for families. Includes full kitchen, living area, and 1-2 bathrooms.'
+            },
+            {
+                name: '2-Bedroom+',
+                maxSF: 1200,
+                bedrooms: 2,
+                plans: 14,
+                costRange: [400000, 520000],
+                planNumbers: 'SPP-ADU-077 through SPP-ADU-090',
+                description: 'Larger two-bedroom units up to the 1,200 SF max. Premium finishes, 2 full baths, larger living areas.'
+            }
+        ],
+        benefits: [
+            'Pre-reviewed structural and architectural plans — faster permit approval',
+            'Reduced plan check fees (up to 50% savings)',
+            'Typical permit timeline: 1-2 weeks vs 4-8 weeks for custom plans',
+            'All plans meet current LA building code and Title 24 energy requirements'
+        ]
+    },
+    'LA County': {
+        program: 'LA County Pre-Approved ADU Plans',
+        totalPlans: 3,
+        catalogUrl: 'https://planning.lacounty.gov/adu',
+        tiers: [
+            {
+                name: 'Plan A — Studio',
+                maxSF: 400,
+                bedrooms: 0,
+                plans: 1,
+                costRange: [130000, 180000],
+                dimensions: '20\' x 20\'',
+                description: 'Compact studio with efficiency kitchen, full bath, and open living area. Single-story.'
+            },
+            {
+                name: 'Plan B — 1-Bedroom',
+                maxSF: 600,
+                bedrooms: 1,
+                plans: 1,
+                costRange: [200000, 300000],
+                dimensions: '20\' x 30\'',
+                description: 'One-bedroom unit with separate bedroom, full kitchen, bath, and living room. Single-story.'
+            },
+            {
+                name: 'Plan C — 2-Bedroom',
+                maxSF: 1200,
+                bedrooms: 2,
+                plans: 1,
+                costRange: [380000, 520000],
+                dimensions: '30\' x 40\' (two-story)',
+                description: 'Two-bedroom, two-story unit with full kitchen, 2 baths, living/dining area. Maximum size allowed.'
+            }
+        ],
+        benefits: [
+            'Expedited permit review — pre-approved structural calculations',
+            'Consistent construction quality standards',
+            'Simplified contractor bidding with standardized plans'
+        ]
+    }
+};
+
+function getMatchingADUPlans(jurisdiction, lotSizeSF) {
+    const jurisName = (!jurisdiction || jurisdiction.isLA) ? 'Los Angeles' :
+        (jurisdiction.jurisdiction && jurisdiction.jurisdiction.includes('Unincorporated')) ? 'LA County' :
+        jurisdiction.jurisdiction || 'Los Angeles';
+    const planSet = PREAPPROVED_ADU_PLANS[jurisName] || PREAPPROVED_ADU_PLANS['Los Angeles'];
+    if (!planSet) return null;
+
+    // Filter tiers by lot size feasibility (need at least footprint + setbacks)
+    const rules = getADURules(jurisdiction);
+    const minSetback = (rules.setbacks.side * 2) + (rules.setbacks.rear);
+    const usableLot = lotSizeSF - (minSetback * 10); // rough usable area estimate
+
+    const matching = planSet.tiers.filter(tier => {
+        return tier.maxSF <= Math.min(usableLot, rules.maxSF);
+    });
+
+    return {
+        program: planSet.program,
+        catalogUrl: planSet.catalogUrl,
+        totalPlans: planSet.totalPlans,
+        benefits: planSet.benefits,
+        matchingTiers: matching.length > 0 ? matching : planSet.tiers.slice(0, 2), // fallback to smallest tiers
+    };
+}
+
+function renderPreApprovedPlansHTML(jurisdiction, lotSizeSF) {
+    const plans = getMatchingADUPlans(jurisdiction, lotSizeSF);
+    if (!plans) return '';
+
+    let html = '<div class="analysis-section" style="background:#f0fff4;border:1px solid #c6f6d5;border-radius:8px;padding:1.25rem;margin-top:1rem;">';
+    html += '<h3 style="color:#276749;margin-top:0;">Pre-Approved ADU Designs</h3>';
+    html += '<p style="font-size:0.85rem;color:#2d3748;margin-bottom:1rem;">' +
+        plans.program + ' — ' + plans.totalPlans + ' pre-approved designs available. ' +
+        'Using pre-approved plans expedites permit review and reduces design costs.</p>';
+
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.75rem;">';
+    for (const tier of plans.matchingTiers) {
+        html += '<div style="background:white;border:1px solid #e2e8f0;border-radius:6px;padding:1rem;">';
+        html += '<div style="font-weight:700;color:#276749;margin-bottom:0.25rem;">' + tier.name + '</div>';
+        html += '<div style="font-size:0.82rem;color:#4a5568;">';
+        html += 'Up to ' + tier.maxSF.toLocaleString() + ' SF';
+        if (tier.bedrooms !== undefined) html += ' &bull; ' + (tier.bedrooms === 0 ? 'Studio' : tier.bedrooms + ' BR');
+        if (tier.plans) html += ' &bull; ' + tier.plans + ' plan' + (tier.plans > 1 ? 's' : '');
+        html += '</div>';
+        if (tier.dimensions) html += '<div style="font-size:0.78rem;color:#718096;">Dimensions: ' + tier.dimensions + '</div>';
+        if (tier.costRange) {
+            html += '<div style="font-size:0.82rem;font-weight:600;color:#2d3748;margin-top:0.5rem;">$' +
+                tier.costRange[0].toLocaleString() + ' – $' + tier.costRange[1].toLocaleString() + '</div>';
+        }
+        html += '<div style="font-size:0.78rem;color:#718096;margin-top:0.25rem;">' + tier.description + '</div>';
+        html += '</div>';
+    }
+    html += '</div>';
+
+    if (plans.benefits && plans.benefits.length > 0) {
+        html += '<div style="margin-top:0.75rem;font-size:0.8rem;color:#4a5568;">';
+        html += '<strong>Benefits:</strong> ' + plans.benefits.join(' • ');
+        html += '</div>';
+    }
+
+    html += '<div style="margin-top:0.75rem;text-align:right;">';
+    html += '<a href="' + plans.catalogUrl + '" target="_blank" rel="noopener" style="font-size:0.82rem;color:#276749;font-weight:600;text-decoration:underline;">View Full Catalog →</a>';
+    html += '</div>';
+    html += '</div>';
+    return html;
 }
 
 
@@ -5696,7 +6068,7 @@ const BUILDING_PARAMS = {
     senior:           { stories: 5,  floorH: 10, eff: 0.78, unitSF: 600,  parkRatio: 0.5,  setF: 10, setS: 5,  opex: 0.50, cap: 0.058 },
     parking:          { stories: 5,  floorH: 11, eff: 0.90, unitSF: null, parkRatio: null, setF: 0,  setS: 0,  opex: 0.25, cap: 0.065 },
     creative:         { stories: 3,  floorH: 14, eff: 0.85, unitSF: null, parkRatio: 2.5,  setF: 0,  setS: 0,  opex: 0.32, cap: 0.058 },
-    adu:              { stories: 2,  floorH: 9,  eff: 0.90, unitSF: 600,  parkRatio: 0,    setF: 5,  setS: 4,  opex: 0.30, cap: 0.048 },
+    adu:              { stories: 2,  floorH: 16, eff: 0.90, unitSF: 800,  parkRatio: 0,    setF: 4,  setS: 4,  opex: 0.30, cap: 0.048 },
 };
 
 const TIMELINE_MONTHS = {
@@ -5755,9 +6127,33 @@ const USE_COLORS = {
 //  SCORING FUNCTIONS
 // ============================================================
 
+// Strip commas from formatted number inputs before parsing
+function parseNumericInput(id, fallback) {
+    var el = document.getElementById(id);
+    if (!el) return fallback || 0;
+    return parseFloat(String(el.value).replace(/,/g, '')) || fallback || 0;
+}
+
+// Format a number input with commas on blur, strip on focus
+function setupCommaFormatting(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('focus', function() {
+        var raw = String(this.value).replace(/,/g, '').replace(/^\$/, '');
+        this.value = raw === '0' ? '' : raw;
+    });
+    el.addEventListener('blur', function() {
+        var raw = parseFloat(String(this.value).replace(/,/g, '').replace(/^\$/, '')) || 0;
+        this.value = raw > 0 ? Math.round(raw).toLocaleString() : '0';
+    });
+    // Format initial value
+    var initVal = parseFloat(String(el.value).replace(/,/g, '')) || 0;
+    if (initVal > 0) el.value = Math.round(initVal).toLocaleString();
+}
+
 function getInputs() {
     return {
-        parcelSize:    parseFloat(document.getElementById('parcelSize').value) || 10000,
+        parcelSize:    parseNumericInput('parcelSize', 10000),
         frontage:      parseFloat(document.getElementById('frontage').value) || 80,
         zoning:        document.getElementById('zoning').value,
         neighborhood:  document.getElementById('neighborhood').value,
@@ -5861,13 +6257,18 @@ function scoreFinancial(useId, inp, effects) {
     }
 
     const params = BUILDING_PARAMS[useId];
-    const buildableSF = inp.parcelSize * far;
+    let buildableSF = inp.parcelSize * far;
+    // ADU: cap to jurisdiction max size
+    if (useId === 'adu') {
+        const aduRules = getADURules(window._lastJurisdiction);
+        buildableSF = Math.min(buildableSF, aduRules.maxSF);
+    }
     const nsf = buildableSF * (params ? params.eff : 0.82);
     const landValuePSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
     // Land cost: use assessor value if available, checkbox zeroes it out
     const _ownProp = document.getElementById('ownProperty');
     const landCost = (useId === 'adu' || (_ownProp && _ownProp.checked)) ? 0
-        : (parseFloat((document.getElementById('marketValue') || {}).value) > 0) ? parseFloat(document.getElementById('marketValue').value)
+        : (parseFloat(String((document.getElementById('marketValue') || {}).value).replace(/,/g, '')) > 0) ? parseFloat(String(document.getElementById('marketValue').value).replace(/,/g, ''))
         : inp.parcelSize * landValuePSF;
 
     // Build cost with parking reduction from legislation
@@ -5960,7 +6361,7 @@ function scoreFinancial(useId, inp, effects) {
         // Boost reflects: minimal entitlement risk, 13-month timeline, no parking cost.
         score = Math.max(score, 0.55);
         // Extra lift for residential zones where ADU is by-right
-        if (['R1','R2','R3'].includes(inp.zoning)) score *= 1.25;
+        if (['R1','R2','R3','R4','R5'].includes(inp.zoning)) score *= 1.25;
         // ADU excels on smaller/mid-size parcels with existing structures
         if (inp.siteCondition === 'improved' || inp.siteCondition === 'vacant') score *= 1.10;
     }
@@ -5977,7 +6378,12 @@ function scoreProductive(useId, inp, effects) {
         if (effects.minFAR > 0) far = Math.max(far, effects.minFAR);
     }
 
-    const buildableSF = inp.parcelSize * far;
+    let buildableSF = inp.parcelSize * far;
+    // ADU: cap to jurisdiction max size
+    if (useId === 'adu') {
+        const aduRules = getADURules(window._lastJurisdiction);
+        buildableSF = Math.min(buildableSF, aduRules.maxSF);
+    }
     const revenuePSF = REVENUE_PSF[useId] || 30;
     const rentMult = NEIGHBORHOOD_RENT_MULT[inp.neighborhood] || 1.0;
     const totalAnnualRev = buildableSF * revenuePSF * rentMult;
@@ -6002,7 +6408,7 @@ function scoreProductive(useId, inp, effects) {
     // property. Adjust to reflect incremental value-add ROI.
     if (useId === 'adu') {
         score = Math.max(score, 0.45);
-        if (['R1','R2','R3'].includes(inp.zoning)) score *= 1.20;
+        if (['R1','R2','R3','R4','R5'].includes(inp.zoning)) score *= 1.20;
     }
 
     return Math.min(score, 1.0);
@@ -6464,7 +6870,14 @@ function generateBudget(useId, inp, effects) {
         if (effects.minFAR > 0) far = Math.max(far, effects.minFAR);
     }
 
-    const gsf = Math.round(inp.parcelSize * far);
+    let gsf = Math.round(inp.parcelSize * far);
+    // ADU: cap GSF to jurisdiction max size and use jurisdiction-aware setbacks
+    if (useId === 'adu') {
+        const aduRules = getADURules(window._lastJurisdiction);
+        gsf = Math.min(gsf, aduRules.maxSF);
+        params.setF = aduRules.setbacks.rear;
+        params.setS = aduRules.setbacks.side;
+    }
     const nsf = Math.round(gsf * params.eff);
     const stories = Math.max(params.stories, Math.ceil(gsf / (inp.parcelSize * 0.7)));
     const buildingHeight = stories * params.floorH;
@@ -6488,7 +6901,7 @@ function generateBudget(useId, inp, effects) {
     // Land cost: use assessor value if available, checkbox zeroes it out
     const _ownProp2 = document.getElementById('ownProperty');
     const landCost = (useId === 'adu' || (_ownProp2 && _ownProp2.checked)) ? 0
-        : (parseFloat((document.getElementById('marketValue') || {}).value) > 0) ? parseFloat(document.getElementById('marketValue').value)
+        : (parseFloat(String((document.getElementById('marketValue') || {}).value).replace(/,/g, '')) > 0) ? parseFloat(String(document.getElementById('marketValue').value).replace(/,/g, ''))
         : inp.parcelSize * landValuePSF;
 
     // Hard costs — Site work broken into sub-components
@@ -6762,116 +7175,11 @@ function computeRiskLevel(useId, inp, legalScore, physicalScore) {
     return { level: 'Low', color: '#276749', bg: '#f0fff4' };
 }
 
-// Time-horizon metadata for each incentive program.
-// 'years' = raw financialImpact spans this many years (divide to annualize).
-// 'annual' = already an annual figure. 'oneTime' = a single event benefit.
-var INCENTIVE_PERIODS = {
-    toc:          { type: 'oneTime',  label: 'One-Time' },
-    densityBonus: { type: 'oneTime',  label: 'One-Time' },
-    lihtc:        { type: 'multi',    years: 10, label: '10-Yr Credit' },
-    welfare:      { type: 'annual',   label: 'Annual' },
-    eifd:         { type: 'multi',    years: 30, label: '30-Yr Revenue' },
-    oz:           { type: 'oneTime',  label: 'One-Time' },
-    nmtc:         { type: 'multi',    years: 7,  label: '7-Yr Credit' },
-    htc:          { type: 'oneTime',  label: 'One-Time' },
-    sb35:         { type: 'oneTime',  label: 'One-Time' },
-    mills:        { type: 'annual',   label: 'Annual' }
-};
-
-function getIncentiveAnnual(inc) {
-    var p = INCENTIVE_PERIODS[inc.id];
-    if (!p) return { annual: inc.financialImpact, period: { type: 'oneTime', label: 'One-Time' } };
-    if (p.type === 'multi') return { annual: Math.round(inc.financialImpact / p.years), period: p };
-    // 'annual' values are already per-year; 'oneTime' stays as-is for display but won't be annualized in total
-    return { annual: inc.financialImpact, period: p };
-}
-
-function getIncentivesSummaryForUse(useId, inp, effects) {
-    var budget = generateBudget(useId, inp, effects);
-    var st = {
-        computed: {
-            totalDev: budget.totalDev,
-            noi: budget.noi,
-            totalHard: budget.totalHard,
-            stabilizedValue: budget.stabilizedValue,
-            units: budget.units || 0,
-            capRate: budget.capRate,
-            landCost: budget.landCost
-        },
-        inp: inp
-    };
-    var defs = getIncentiveDefinitions(st);
-    var eligible = defs.filter(function(d) { return d.eligible; });
-
-    // Separate one-time vs recurring for the summary totals
-    var oneTimeTotal = 0;
-    var annualTotal = 0;
-    eligible.forEach(function(d) {
-        var info = getIncentiveAnnual(d);
-        if (info.period.type === 'oneTime') {
-            oneTimeTotal += d.financialImpact;
-        } else {
-            annualTotal += info.annual;
-        }
-    });
-    return { all: defs, eligible: eligible, oneTimeTotal: oneTimeTotal, annualTotal: annualTotal, count: eligible.length };
-}
-
-function generateIncentiveSummaryHTML(useId, inp, effects) {
-    var summary = getIncentivesSummaryForUse(useId, inp, effects);
-    if (summary.count === 0) {
-        return '<div class="incentive-summary" style="background:#f7fafc;border-color:#e2e8f0;"><div class="incentive-summary-header"><span class="incentive-summary-title" style="color:#718096;">Incentive Programs</span><span class="incentive-count-badge" style="background:#e2e8f0;color:#718096;">0 eligible</span></div><div style="font-size:0.72rem;color:#a0aec0;">No incentive programs applicable for this use type.</div></div>';
-    }
-    var html = '<div class="incentive-summary">';
-    html += '<div class="incentive-summary-header">';
-    html += '<span class="incentive-summary-title">Applicable Incentive Programs</span>';
-    html += '<span class="incentive-count-badge">' + summary.count + ' of ' + summary.all.length + ' eligible</span>';
-    html += '</div>';
-
-    // Show separate one-time and annual totals
-    html += '<div style="display:flex;gap:0.75rem;margin-bottom:0.45rem;flex-wrap:wrap;">';
-    if (summary.oneTimeTotal > 0) {
-        html += '<div class="incentive-total-benefit" style="margin-bottom:0;">One-Time: ' + formatCompactDollars(summary.oneTimeTotal) + '</div>';
-    }
-    if (summary.annualTotal > 0) {
-        html += '<div class="incentive-total-benefit" style="margin-bottom:0;">' + formatCompactDollars(summary.annualTotal) + '<span style="font-size:0.68rem;font-weight:500;color:#4a5568;"> /yr est.</span></div>';
-    }
-    html += '</div>';
-
-    // Show eligible programs sorted by annualized impact
-    var sorted = summary.eligible.slice().sort(function(a, b) {
-        return getIncentiveAnnual(b).annual - getIncentiveAnnual(a).annual;
-    });
-    sorted.forEach(function(inc) {
-        var info = getIncentiveAnnual(inc);
-        var displayAmt = info.annual;
-        var suffix = '';
-        if (info.period.type === 'annual') suffix = ' /yr';
-        else if (info.period.type === 'multi') suffix = ' /yr';
-        // one-time shows no suffix
-
-        html += '<div class="incentive-row">';
-        html += '<span class="incentive-row-name">' + inc.name.split('(')[0].trim() + '</span>';
-        html += '<span class="incentive-row-type">' + info.period.label + '</span>';
-        html += '<span class="incentive-row-amount">' + formatCompactDollars(displayAmt) + suffix + '</span>';
-        html += '</div>';
-    });
-    // Show up to 3 ineligible as grayed out
-    var ineligible = summary.all.filter(function(d) { return !d.eligible; });
-    ineligible.slice(0, 3).forEach(function(inc) {
-        html += '<div class="incentive-row ineligible">';
-        html += '<span class="incentive-row-name">' + inc.name.split('(')[0].trim() + '</span>';
-        html += '<span class="incentive-row-type">Not Eligible</span>';
-        html += '<span class="incentive-row-amount">—</span>';
-        html += '</div>';
-    });
-    if (ineligible.length > 3) {
-        html += '<div style="font-size:0.65rem;color:#a0aec0;padding-top:2px;">+' + (ineligible.length - 3) + ' more not eligible</div>';
-    }
-    html += '<div class="incentive-note">Estimates use rule-of-thumb formulas (% of dev cost, NOI, or hard costs) — not project-specific underwriting. Actual benefits depend on program applications, allocations, and compliance. Programs may be stackable — see Deep Analysis for full Incentive Matrix.</div>';
-    html += '</div>';
-    return html;
-}
+// Incentive summary functions removed — dollar estimates were not credible
+var INCENTIVE_PERIODS = {};
+function getIncentiveAnnual(inc) { return { annual: 0, period: { type: 'oneTime', label: '' } }; }
+function getIncentivesSummaryForUse() { return { all: [], eligible: [], oneTimeTotal: 0, annualTotal: 0, count: 0 }; }
+function generateIncentiveSummaryHTML() { return ''; }
 
 function generateCardMetricsHTML(useId, inp, effects, result) {
     const budget = generateBudget(useId, inp, effects);
@@ -6927,7 +7235,7 @@ function generateCardMetricsHTML(useId, inp, effects, result) {
                 </div>
             </div>
         </div>
-        ${generateIncentiveSummaryHTML(useId, inp, effects)}`;
+        `;
 }
 
 function generateRisksHTML(useId, inp) {
@@ -7035,7 +7343,12 @@ function getDefaultAssumptions(useId, inp, effects) {
 function computeFromAssumptions(useId, inp, assumptions, effects) {
     const params = BUILDING_PARAMS[useId];
     const far = assumptions.far;
-    const gsf = Math.round(inp.parcelSize * far);
+    let gsf = Math.round(inp.parcelSize * far);
+    // ADU: cap to jurisdiction max size
+    if (useId === 'adu') {
+        const aduRules = getADURules(window._lastJurisdiction);
+        gsf = Math.min(gsf, aduRules.maxSF);
+    }
 
     // Configurator-aware efficiency & amenity
     const effPct = (assumptions.efficiencyPct != null ? assumptions.efficiencyPct : Math.round(params.eff * 100)) / 100;
@@ -7068,7 +7381,7 @@ function computeFromAssumptions(useId, inp, assumptions, effects) {
     // Land cost: use assessor value if available, checkbox zeroes it out
     const _ownProp3 = document.getElementById('ownProperty');
     const landCost = (useId === 'adu' || (_ownProp3 && _ownProp3.checked)) ? 0
-        : (parseFloat((document.getElementById('marketValue') || {}).value) > 0) ? parseFloat(document.getElementById('marketValue').value)
+        : (parseFloat(String((document.getElementById('marketValue') || {}).value).replace(/,/g, '')) > 0) ? parseFloat(String(document.getElementById('marketValue').value).replace(/,/g, ''))
         : inp.parcelSize * landValuePSF;
 
     // Hard costs — Site work with user-overridable sub-components
@@ -7509,21 +7822,175 @@ function renderMassingSatelliteMap(useId, inp, computed, containerId) {
         map.fitBounds(parcelPoly.getBounds().pad(0.15));
     }
 
-    // Build footprint rectangle
+    // Build footprint
     var footprintSF = computed.buildingFootprint || (computed.gsf / (computed.stories || 1));
     var stories = computed.stories || params.stories || 1;
     var bldgHeight = computed.buildingHeight || (stories * (params.floorH || 10));
+    var ftPerDegLat = 364000;
+    var ftPerDegLon = 288200;
+    var color2 = color;
 
-    // Calculate footprint dimensions (assume ~2:1 aspect ratio)
-    var fpWidth = Math.sqrt(footprintSF / 2); // short side
-    var fpDepth = fpWidth * 2; // long side (depth along lot)
+    // === ADU MODE: completely separate placement using parcel bounding box ===
+    if (useId === 'adu' && parcelLatLngs && parcelLatLngs[0] && parcelLatLngs[0].length >= 3) {
+        var ring = parcelLatLngs[0];
 
-    // Convert feet to degrees at LA latitude
-    var ftPerDegLat = 364000; // ~1 degree lat in feet at 34°N
-    var ftPerDegLon = 288200; // ~1 degree lon in feet at 34°N
+        // Get parcel bounding box
+        var minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
+        for (var bi = 0; bi < ring.length; bi++) {
+            if (ring[bi][0] < minLat) minLat = ring[bi][0];
+            if (ring[bi][0] > maxLat) maxLat = ring[bi][0];
+            if (ring[bi][1] < minLng) minLng = ring[bi][1];
+            if (ring[bi][1] > maxLng) maxLng = ring[bi][1];
+        }
+        var latSpan = maxLat - minLat;
+        var lngSpan = maxLng - minLng;
+        var latSpanFt = latSpan * ftPerDegLat;
+        var lngSpanFt = lngSpan * ftPerDegLon;
 
-    // Compute parcel orientation angle from geometry
-    var parcelAngle = 0; // radians, 0 = north-south aligned
+        // Determine lot orientation: is the long axis N-S or E-W?
+        var lotIsNS = latSpanFt >= lngSpanFt; // true = long axis runs north-south
+        var lotLengthFt = Math.max(latSpanFt, lngSpanFt);
+        var lotWidthFt = Math.min(latSpanFt, lngSpanFt);
+
+        // Determine which end is "front" (street-facing) using geocode point
+        // Geocode point is usually at or near the street address (front of lot)
+        var geoLat = geo.lat, geoLng = geo.lon;
+
+        // Find the "front fraction" — where the geocode sits along the long axis (0=min, 1=max)
+        var frontFrac;
+        if (lotIsNS) {
+            frontFrac = latSpan > 0 ? (geoLat - minLat) / latSpan : 0.5;
+        } else {
+            frontFrac = lngSpan > 0 ? (geoLng - minLng) / lngSpan : 0.5;
+        }
+        // If geocode is in the lower half, front is at the min side; else front is at max side
+        var frontAtMin = frontFrac < 0.5;
+
+        // --- Setback zone ---
+        if (setF > 0 || setS > 0) {
+            L.polygon(parcelLatLngs, {
+                color: 'transparent', weight: 0,
+                fillColor: '#fbd38d', fillOpacity: 0.15, interactive: false
+            }).addTo(map);
+        }
+
+        // Helper: build axis-aligned rectangle from center, half-widths in lat/lng feet
+        function buildAARect(ctrLat, ctrLng, halfLatFt, halfLngFt) {
+            var dLat = halfLatFt / ftPerDegLat;
+            var dLng = halfLngFt / ftPerDegLon;
+            return [
+                [ctrLat - dLat, ctrLng - dLng],
+                [ctrLat - dLat, ctrLng + dLng],
+                [ctrLat + dLat, ctrLng + dLng],
+                [ctrLat + dLat, ctrLng - dLng]
+            ];
+        }
+
+        // --- Existing structure: place in front 35% of lot ---
+        var existSF = (geo && geo.structureSqFt > 0) ? geo.structureSqFt : Math.round(inp.parcelSize * 0.28);
+        var exAspect = 1.5; // typical house is wider than deep
+        var exDepthFt, exWidthFt;
+        if (lotIsNS) {
+            exDepthFt = Math.sqrt(existSF / exAspect); // along N-S (lat)
+            exWidthFt = exDepthFt * exAspect; // along E-W (lng)
+        } else {
+            exWidthFt = Math.sqrt(existSF / exAspect);
+            exDepthFt = exWidthFt * exAspect;
+        }
+        // Clamp to lot width minus setbacks
+        var availWidth = lotWidthFt - setS * 2;
+        if (lotIsNS && exWidthFt > availWidth) exWidthFt = availWidth;
+        if (!lotIsNS && exDepthFt > availWidth) exDepthFt = availWidth;
+
+        // Position: 25% along long axis from front edge
+        var exFrac = frontAtMin ? 0.25 : 0.75;
+        var exCtrLat, exCtrLng;
+        if (lotIsNS) {
+            exCtrLat = minLat + exFrac * latSpan;
+            exCtrLng = minLng + 0.5 * lngSpan; // centered E-W
+        } else {
+            exCtrLat = minLat + 0.5 * latSpan; // centered N-S
+            exCtrLng = minLng + exFrac * lngSpan;
+        }
+
+        var exHalfLat = (lotIsNS ? exDepthFt : exWidthFt) / 2;
+        var exHalfLng = (lotIsNS ? exWidthFt : exDepthFt) / 2;
+        var exRect = buildAARect(exCtrLat, exCtrLng, exHalfLat, exHalfLng);
+
+        L.polygon(exRect, {
+            color: '#718096', weight: 2, opacity: 0.8, dashArray: '4, 3',
+            fillColor: '#718096', fillOpacity: 0.25,
+        }).addTo(map).bindTooltip(
+            '<strong>Existing Structure</strong><br>Approx. ' + Math.round(existSF).toLocaleString() + ' SF',
+            { permanent: false, direction: 'top', className: 'massing-tooltip' }
+        );
+
+        // --- ADU: place in rear 20% of lot (garage replacement zone) ---
+        var aduSF = Math.min(footprintSF, 1200); // cap at 1200 SF footprint
+        var aduAspect = 1.5;
+        var aduDepthFt, aduWidthFt;
+        if (lotIsNS) {
+            aduDepthFt = Math.sqrt(aduSF / aduAspect);
+            aduWidthFt = aduDepthFt * aduAspect;
+        } else {
+            aduWidthFt = Math.sqrt(aduSF / aduAspect);
+            aduDepthFt = aduWidthFt * aduAspect;
+        }
+        if (lotIsNS && aduWidthFt > availWidth) aduWidthFt = availWidth;
+        if (!lotIsNS && aduDepthFt > availWidth) aduDepthFt = availWidth;
+
+        // Position: 82% along long axis from front edge (deep in rear yard)
+        var aduFrac = frontAtMin ? 0.82 : 0.18;
+        var aduCtrLat, aduCtrLng;
+        if (lotIsNS) {
+            aduCtrLat = minLat + aduFrac * latSpan;
+            aduCtrLng = minLng + 0.5 * lngSpan;
+        } else {
+            aduCtrLat = minLat + 0.5 * latSpan;
+            aduCtrLng = minLng + aduFrac * lngSpan;
+        }
+
+        var aduHalfLat = (lotIsNS ? aduDepthFt : aduWidthFt) / 2;
+        var aduHalfLng = (lotIsNS ? aduWidthFt : aduDepthFt) / 2;
+        var fpRect = buildAARect(aduCtrLat, aduCtrLng, aduHalfLat, aduHalfLng);
+
+        L.polygon(fpRect, {
+            color: color2, weight: 2, opacity: 0.9,
+            fillColor: color2, fillOpacity: 0.45,
+        }).addTo(map).bindTooltip(
+            '<strong>Proposed ADU</strong><br>' +
+            'Footprint: ' + Math.round(aduSF).toLocaleString() + ' SF<br>' +
+            'Stories: ' + stories + ' (' + Math.round(bldgHeight) + ' ft)<br>' +
+            'GSF: ' + (computed.gsf || 0).toLocaleString() + ' SF<br>' +
+            'Setbacks: ' + setF + '\' rear / ' + setS + '\' side',
+            { permanent: false, direction: 'top', className: 'massing-tooltip' }
+        );
+
+        // Label for ADU
+        var aduLabelHtml = '<div style="background:rgba(255,255,255,0.92);padding:4px 8px;border-radius:4px;font-size:0.72rem;line-height:1.4;box-shadow:0 1px 4px rgba(0,0,0,0.2);">' +
+            '<strong style="color:' + color2 + ';">Proposed ADU — ' + Math.round(aduSF).toLocaleString() + ' SF</strong><br>' +
+            stories + ' stories / ' + Math.round(bldgHeight) + ' ft<br>' +
+            'Rear setback: ' + setF + '\' / Side: ' + setS + '\'' +
+            '</div>';
+        var aduLabelLat = Math.max(fpRect[0][0], fpRect[1][0], fpRect[2][0], fpRect[3][0]) + 0.00002;
+        var aduLabelLng = (fpRect[0][1] + fpRect[1][1] + fpRect[2][1] + fpRect[3][1]) / 4;
+        L.marker([aduLabelLat, aduLabelLng], {
+            icon: L.divIcon({ html: aduLabelHtml, className: '', iconSize: [200, 60], iconAnchor: [100, 60] }),
+            interactive: false
+        }).addTo(map);
+
+        // Fit to parcel
+        map.fitBounds(L.polygon(parcelLatLngs).getBounds().pad(0.2));
+        setTimeout(function() { map.invalidateSize(); }, 200);
+        setTimeout(function() { map.invalidateSize(); }, 600);
+        return; // ADU done — skip generic building code below
+    }
+
+    // === NON-ADU MODE: generic building placement ===
+    var fpWidth = Math.sqrt(footprintSF / 2);
+    var fpDepth = fpWidth * 2;
+
+    var parcelAngle = 0;
     var fpCenter;
     if (parcelLatLngs && parcelLatLngs[0] && parcelLatLngs[0].length >= 3) {
         var ring = parcelLatLngs[0];
@@ -7533,67 +8000,36 @@ function renderMassingSatelliteMap(useId, inp, computed, containerId) {
         }
         cLat /= ring.length; cLng /= ring.length;
 
-        // Find parcel's principal axis: longest edge determines orientation
-        var longestLen = 0;
-        var longestDx = 0, longestDy = 0;
+        var longestLen = 0, longestDx = 0, longestDy = 0;
         for (var ei = 0; ei < ring.length - 1; ei++) {
             var dx = (ring[ei + 1][1] - ring[ei][1]) * ftPerDegLon;
             var dy = (ring[ei + 1][0] - ring[ei][0]) * ftPerDegLat;
             var edgeLen = Math.sqrt(dx * dx + dy * dy);
-            if (edgeLen > longestLen) {
-                longestLen = edgeLen;
-                longestDx = dx; longestDy = dy;
-            }
+            if (edgeLen > longestLen) { longestLen = edgeLen; longestDx = dx; longestDy = dy; }
         }
-        if (longestLen > 0) {
-            parcelAngle = Math.atan2(longestDx, longestDy); // angle from north
-        }
+        if (longestLen > 0) parcelAngle = Math.atan2(longestDx, longestDy);
 
-        // Determine which dimension aligns with the long axis
-        // The building's depth (long side) should align with the parcel's long axis
-        // If parcel is wider than deep, swap
-        var parcelW = longestLen; // longest edge in feet
-        // Find perpendicular extent
+        var parcelW = longestLen;
         var cosA = Math.cos(parcelAngle), sinA = Math.sin(parcelAngle);
         var minProj = Infinity, maxProj = -Infinity;
         for (var pi2 = 0; pi2 < ring.length; pi2++) {
             var px = (ring[pi2][1] - cLng) * ftPerDegLon;
             var py = (ring[pi2][0] - cLat) * ftPerDegLat;
-            // Project onto perpendicular axis
             var perpProj = -px * cosA + py * sinA;
             if (perpProj < minProj) minProj = perpProj;
             if (perpProj > maxProj) maxProj = perpProj;
         }
         var parcelPerpExtent = maxProj - minProj;
 
-        // Clamp building to fit within parcel (with setbacks)
-        var availableDepth = parcelW - setF - setF; // along long axis
-        var availableWidth = parcelPerpExtent - setS - setS; // perpendicular
+        var availableDepth = parcelW - setF - setF;
+        var availableWidth = parcelPerpExtent - setS - setS;
         if (fpDepth > availableDepth && availableDepth > 0) fpDepth = availableDepth;
         if (fpWidth > availableWidth && availableWidth > 0) fpWidth = availableWidth;
-
         fpCenter = [cLat, cLng];
-
-        // For ADU: offset center to rear of lot (away from street)
-        // Typical residential lots: street faces the short edge (front), long axis runs front-to-back
-        // We shift the ADU ~35% of lot depth toward the rear
-        if (useId === 'adu') {
-            // Determine front vs rear: geocoded point is usually near the street/front
-            // Shift ADU center along the long axis toward the far end from geocode point
-            var geoAlongProj = ((geo.lon - cLng) * ftPerDegLon * sinA + (geo.lat - cLat) * ftPerDegLat * cosA);
-            // If geocode projects positive along the axis, rear is negative direction, and vice versa
-            var rearSign = geoAlongProj >= 0 ? -1 : 1;
-            var shiftFt = parcelW * 0.30; // shift 30% of lot length toward rear
-            fpCenter = [
-                cLat + (rearSign * shiftFt * cosA2) / ftPerDegLat,
-                cLng + (rearSign * shiftFt * sinA2) / ftPerDegLon
-            ];
-        }
     } else {
         fpCenter = [geo.lat, geo.lon];
     }
 
-    // Helper: build rotated rectangle at a given center
     var cosA2 = Math.cos(parcelAngle), sinA2 = Math.sin(parcelAngle);
     function buildRotatedRect(centerLatLng, halfAlongFt, halfPerpFt) {
         function rc(alongFt, perpFt) {
@@ -7604,11 +8040,8 @@ function renderMassingSatelliteMap(useId, inp, computed, containerId) {
         return [rc(-halfAlongFt, -halfPerpFt), rc(-halfAlongFt, +halfPerpFt), rc(+halfAlongFt, +halfPerpFt), rc(+halfAlongFt, -halfPerpFt)];
     }
 
-    var halfW = fpWidth / 2;
-    var halfD = fpDepth / 2;
-    var fpRect = buildRotatedRect(fpCenter, halfD, halfW);
+    var fpRect = buildRotatedRect(fpCenter, fpDepth / 2, fpWidth / 2);
 
-    // Draw setback zone (hatched area between parcel edge and building)
     if (parcelLatLngs && (setF > 0 || setS > 0)) {
         L.polygon(parcelLatLngs, {
             color: 'transparent', weight: 0,
@@ -7616,31 +8049,7 @@ function renderMassingSatelliteMap(useId, inp, computed, containerId) {
         }).addTo(map);
     }
 
-    // For ADU: draw existing structure near the front of the lot
-    if (useId === 'adu' && parcelLatLngs && parcelLatLngs[0]) {
-        var existSF = (geo && geo.structureSqFt > 0) ? geo.structureSqFt : Math.round(inp.parcelSize * 0.30);
-        var exW = Math.sqrt(existSF / 1.5); // ~1.5:1 aspect ratio for existing house
-        var exD = exW * 1.5;
-        // Place existing structure toward the front (opposite of ADU shift)
-        var rearSignEx = (typeof rearSign !== 'undefined') ? -rearSign : 1;
-        var exShiftFt = (typeof parcelW !== 'undefined') ? parcelW * 0.18 : 30;
-        var exCenter = [
-            (typeof cLat !== 'undefined' ? cLat : geo.lat) + (rearSignEx * exShiftFt * cosA2) / ftPerDegLat,
-            (typeof cLng !== 'undefined' ? cLng : geo.lon) + (rearSignEx * exShiftFt * sinA2) / ftPerDegLon
-        ];
-        var exRect = buildRotatedRect(exCenter, exD / 2, exW / 2);
-        L.polygon(exRect, {
-            color: '#718096', weight: 2, opacity: 0.8, dashArray: '4, 3',
-            fillColor: '#718096', fillOpacity: 0.30,
-        }).addTo(map).bindTooltip(
-            '<strong>Existing Structure</strong><br>' +
-            'Approx. ' + Math.round(existSF).toLocaleString() + ' SF',
-            { permanent: false, direction: 'top', className: 'massing-tooltip' }
-        );
-    }
-
-    // Draw proposed building footprint
-    var bldgLabel = useId === 'adu' ? 'Proposed ADU' : 'Proposed Building';
+    var bldgLabel = 'Proposed Building';
     var fpPoly = L.polygon(fpRect, {
         color: color, weight: 2, opacity: 0.9,
         fillColor: color, fillOpacity: 0.45,
@@ -7651,15 +8060,14 @@ function renderMassingSatelliteMap(useId, inp, computed, containerId) {
         'Footprint: ' + Math.round(footprintSF).toLocaleString() + ' SF<br>' +
         'Stories: ' + stories + ' (' + Math.round(bldgHeight) + ' ft)<br>' +
         'GSF: ' + (computed.gsf || 0).toLocaleString() + ' SF<br>' +
-        (setF > 0 || setS > 0 ? 'Setbacks: ' + setF + '\' rear / ' + setS + '\' side' : ''),
+        (setF > 0 || setS > 0 ? 'Setbacks: ' + setF + '\' front / ' + setS + '\' side' : ''),
         { permanent: false, direction: 'top', className: 'massing-tooltip' }
     );
 
-    // Add labels overlay
     var labelHtml = '<div style="background:rgba(255,255,255,0.9);padding:4px 8px;border-radius:4px;font-size:0.72rem;line-height:1.4;box-shadow:0 1px 4px rgba(0,0,0,0.2);">' +
         '<strong style="color:' + color + ';">' + bldgLabel + ' — ' + Math.round(footprintSF).toLocaleString() + ' SF</strong><br>' +
         stories + ' stories / ' + Math.round(bldgHeight) + ' ft' +
-        (useId === 'adu' ? '<br>Rear setback: ' + setF + '\' / Side: ' + setS + '\'' : (setF > 0 ? '<br>Front setback: ' + setF + '\'' : '') + (setS > 0 ? '<br>Side setback: ' + setS + '\'' : '')) +
+        ((setF > 0 ? '<br>Front setback: ' + setF + '\'' : '') + (setS > 0 ? '<br>Side setback: ' + setS + '\'' : '')) +
         '</div>';
     var labelLat = Math.max(fpRect[0][0], fpRect[1][0], fpRect[2][0], fpRect[3][0]) + 0.00002;
     var labelLng = (fpRect[0][1] + fpRect[1][1] + fpRect[2][1] + fpRect[3][1]) / 4;
@@ -7668,12 +8076,9 @@ function renderMassingSatelliteMap(useId, inp, computed, containerId) {
         interactive: false
     }).addTo(map);
 
-    // Re-fit bounds after everything is drawn
     if (parcelLatLngs) {
         map.fitBounds(L.polygon(parcelLatLngs).getBounds().pad(0.2));
     }
-
-    // Invalidate size after a tick (modal may still be rendering)
     setTimeout(function() { map.invalidateSize(); }, 200);
     setTimeout(function() { map.invalidateSize(); }, 600);
 }
@@ -7965,12 +8370,139 @@ function openAnalysis(resultIndex) {
     <div class="timeline-legend">Entitlement &rarr; Design &rarr; Permits &rarr; Construction &rarr; Lease-Up / Stabilization</div>
     </div>`;
 
-    // --- Legislation (with clickable cards) ---
+    // --- Legislation (with clickable cards + citations) ---
     if (r.legislation && r.legislation.length > 0) {
         html += `<div class="analysis-section"><h3>Applicable California Housing Legislation</h3>
         <div class="legislation-cards">
-            ${r.legislation.map(b => `<div class="legislation-card clickable" onclick="showLegislationDetail('${b.id}')"><strong>${b.name}</strong><p>${b.description}</p></div>`).join('')}
+            ${r.legislation.map(b => {
+                const cite = b.codeSection ? `<div style="font-size:0.72rem;color:#718096;margin-top:0.25rem;font-style:italic;">${b.codeSection}${b.effectiveDate ? ' — Eff. ' + b.effectiveDate : ''}</div>` : '';
+                const link = b.billUrl ? `<div style="margin-top:0.35rem;"><a href="${b.billUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation();" style="font-size:0.72rem;color:#2b6cb0;text-decoration:underline;">View Bill Text →</a></div>` : '';
+                return `<div class="legislation-card clickable" onclick="showLegislationDetail('${b.id}')" style="position:relative;">
+                    <strong>${b.name}</strong>
+                    <p>${b.description}</p>
+                    ${cite}${link}
+                </div>`;
+            }).join('')}
         </div></div>`;
+    }
+
+    // --- Pre-Approved ADU Plans (ADU only) ---
+    if (r.id === 'adu') {
+        const aduRules = getADURules(window._lastJurisdiction);
+        const jurisLabel = (window._lastJurisdiction && window._lastJurisdiction.jurisdiction) || 'City of Los Angeles';
+
+        // --- Jurisdiction Rules with Citations ---
+        html += `<div class="analysis-section"><h3>Jurisdiction-Specific ADU Rules — ${jurisLabel}</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.5rem;margin-bottom:1rem;">
+            <div style="background:#ebf8ff;padding:0.75rem;border-radius:6px;text-align:center;">
+                <div style="font-size:0.75rem;color:#2b6cb0;">Max Size</div>
+                <div style="font-size:1.25rem;font-weight:700;color:#2b6cb0;">${aduRules.maxSF.toLocaleString()} SF</div>
+            </div>
+            <div style="background:#ebf8ff;padding:0.75rem;border-radius:6px;text-align:center;">
+                <div style="font-size:0.75rem;color:#2b6cb0;">Max Height</div>
+                <div style="font-size:1.25rem;font-weight:700;color:#2b6cb0;">${aduRules.maxHeight} ft</div>
+                <div style="font-size:0.68rem;color:#718096;">(${aduRules.maxHeightSingle} ft single-story)</div>
+            </div>
+            <div style="background:#ebf8ff;padding:0.75rem;border-radius:6px;text-align:center;">
+                <div style="font-size:0.75rem;color:#2b6cb0;">Setbacks</div>
+                <div style="font-size:1.25rem;font-weight:700;color:#2b6cb0;">${aduRules.setbacks.side}ft side / ${aduRules.setbacks.rear}ft rear</div>
+            </div>
+            <div style="background:#ebf8ff;padding:0.75rem;border-radius:6px;text-align:center;">
+                <div style="font-size:0.75rem;color:#2b6cb0;">Parking</div>
+                <div style="font-size:1.25rem;font-weight:700;color:#2b6cb0;">${aduRules.parking === 0 ? 'None Required' : aduRules.parking + ' spaces'}</div>
+            </div>
+        </div>
+        <div style="font-size:0.82rem;color:#4a5568;">${aduRules.notes}</div>
+        ${aduRules.jadu ? '<div style="font-size:0.82rem;color:#276749;margin-top:0.5rem;">✓ Junior ADU (JADU) allowed — up to ' + aduRules.maxJADU + ' SF within existing structure (Cal. Gov. Code § 65852.22)</div>' : ''}`;
+
+        // Regulatory Citations Table
+        if (aduRules.citations && aduRules.citations.length > 0) {
+            html += `<div style="margin-top:1rem;background:#f7fafc;border:1px solid #e2e8f0;border-radius:6px;padding:1rem;">
+                <div style="font-weight:700;color:#2d3748;margin-bottom:0.5rem;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.05em;">Regulatory Authority</div>
+                <table style="width:100%;border-collapse:collapse;font-size:0.78rem;">
+                    <thead><tr style="border-bottom:2px solid #e2e8f0;">
+                        <th style="text-align:left;padding:0.35rem 0.5rem;color:#4a5568;font-weight:600;">Source</th>
+                        <th style="text-align:left;padding:0.35rem 0.5rem;color:#4a5568;font-weight:600;">Description</th>
+                        <th style="text-align:center;padding:0.35rem 0.5rem;color:#4a5568;font-weight:600;">Link</th>
+                    </tr></thead><tbody>`;
+            for (const c of aduRules.citations) {
+                html += `<tr style="border-bottom:1px solid #edf2f7;">
+                    <td style="padding:0.35rem 0.5rem;color:#1a202c;font-weight:500;white-space:nowrap;">${c.code}</td>
+                    <td style="padding:0.35rem 0.5rem;color:#4a5568;">${c.desc}</td>
+                    <td style="padding:0.35rem 0.5rem;text-align:center;">${c.url ? '<a href="' + c.url + '" target="_blank" rel="noopener" style="color:#2b6cb0;text-decoration:underline;font-size:0.75rem;">Verify →</a>' : '—'}</td>
+                </tr>`;
+            }
+            html += `</tbody></table></div>`;
+        }
+
+        // Building Code References (Architect-grade)
+        if (aduRules.buildingCode && aduRules.buildingCode.length > 0) {
+            html += `<div style="margin-top:0.75rem;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px;padding:1rem;">
+                <div style="font-weight:700;color:#276749;margin-bottom:0.5rem;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.05em;">Applicable Building Codes</div>
+                <table style="width:100%;border-collapse:collapse;font-size:0.78rem;">`;
+            for (const bc of aduRules.buildingCode) {
+                html += `<tr style="border-bottom:1px solid #e2e8f0;">
+                    <td style="padding:0.3rem 0.5rem;color:#1a202c;font-weight:500;white-space:nowrap;">${bc.code}</td>
+                    <td style="padding:0.3rem 0.5rem;color:#4a5568;">${bc.desc}</td>
+                    <td style="padding:0.3rem 0.5rem;text-align:center;">${bc.url ? '<a href="' + bc.url + '" target="_blank" rel="noopener" style="color:#276749;text-decoration:underline;font-size:0.75rem;">Reference →</a>' : '—'}</td>
+                </tr>`;
+            }
+            html += `</table></div>`;
+        }
+
+        html += `</div>`;
+
+        // Pre-approved plans
+        html += renderPreApprovedPlansHTML(window._lastJurisdiction, inp.parcelSize);
+
+        // --- Sources & Verification Footer ---
+        html += `<div class="analysis-section" style="background:#fffbeb;border:1px solid #fef3c7;border-radius:8px;padding:1.25rem;margin-top:1rem;">
+            <h3 style="color:#92400e;margin-top:0;font-size:0.95rem;">Sources & Verification</h3>
+            <p style="font-size:0.78rem;color:#78350f;margin-bottom:0.75rem;">
+                This ADU analysis is derived from the following authoritative sources. All cited code sections, legislation, and regulatory standards
+                should be independently verified before relying on them for legal, architectural, or investment decisions.
+            </p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;font-size:0.78rem;">
+                <div>
+                    <div style="font-weight:700;color:#92400e;margin-bottom:0.35rem;">State Legislation</div>
+                    <ul style="margin:0;padding-left:1.25rem;color:#78350f;line-height:1.6;">
+                        <li><a href="https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=65852.2.&lawCode=GOV" target="_blank" rel="noopener" style="color:#92400e;">Cal. Gov. Code § 65852.2</a> — ADU Statute</li>
+                        <li><a href="https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=65852.22.&lawCode=GOV" target="_blank" rel="noopener" style="color:#92400e;">Cal. Gov. Code § 65852.22</a> — JADU Statute</li>
+                        <li><a href="https://www.hcd.ca.gov/policy-and-research/accessory-dwelling-units" target="_blank" rel="noopener" style="color:#92400e;">CA HCD ADU Handbook</a> — Official Guidance</li>
+                    </ul>
+                </div>
+                <div>
+                    <div style="font-weight:700;color:#92400e;margin-bottom:0.35rem;">Building & Design Standards</div>
+                    <ul style="margin:0;padding-left:1.25rem;color:#78350f;line-height:1.6;">
+                        <li><a href="https://www.dgs.ca.gov/BSC/Codes" target="_blank" rel="noopener" style="color:#92400e;">2022 California Building Code</a> (Title 24, Part 2)</li>
+                        <li><a href="https://www.energy.ca.gov/programs-and-topics/programs/building-energy-efficiency-standards" target="_blank" rel="noopener" style="color:#92400e;">2022 CA Energy Code</a> (Title 24, Part 6)</li>
+                        <li><a href="https://www.dgs.ca.gov/BSC/Codes" target="_blank" rel="noopener" style="color:#92400e;">2022 CALGreen Code</a> (Title 24, Part 11)</li>
+                    </ul>
+                </div>
+                <div>
+                    <div style="font-weight:700;color:#92400e;margin-bottom:0.35rem;">Local Jurisdiction</div>
+                    <ul style="margin:0;padding-left:1.25rem;color:#78350f;line-height:1.6;">
+                        ${aduRules.citations ? aduRules.citations.filter(c => !c.code.startsWith('Cal.')).map(c => '<li><a href="' + (c.url || '#') + '" target="_blank" rel="noopener" style="color:#92400e;">' + c.code + '</a></li>').join('') : '<li>State defaults apply</li>'}
+                    </ul>
+                </div>
+                <div>
+                    <div style="font-weight:700;color:#92400e;margin-bottom:0.35rem;">Data Currency</div>
+                    <ul style="margin:0;padding-left:1.25rem;color:#78350f;line-height:1.6;">
+                        <li>Legislation: Verified March 2026</li>
+                        <li>Construction costs: 2025-2026 LA market</li>
+                        <li>Rental rates: Current LA County comps</li>
+                        <li>Pre-approved plans: Program data as of 2026</li>
+                    </ul>
+                </div>
+            </div>
+            <div style="margin-top:0.75rem;padding-top:0.5rem;border-top:1px solid #fef3c7;font-size:0.72rem;color:#92400e;font-style:italic;">
+                This report is generated for informational purposes only and does not constitute legal, architectural, or financial advice.
+                All numerical parameters, code sections, and regulatory citations should be independently confirmed with the relevant jurisdiction
+                and qualified professionals (licensed attorney, registered architect, or certified general contractor) prior to reliance.
+                Source code sections may be amended by subsequent legislation — verify current status at
+                <a href="https://leginfo.legislature.ca.gov" target="_blank" rel="noopener" style="color:#92400e;">leginfo.legislature.ca.gov</a>.
+            </div>
+        </div>`;
     }
 
     // --- Risks ---
@@ -8083,6 +8615,32 @@ function showLegislationDetail(billId) {
     const bill = CA_HOUSING_LEGISLATION.find(b => b.id === billId);
     if (!bill) return;
 
+    // Build citation block
+    let citationHTML = '';
+    if (bill.codeSection || bill.effectiveDate || bill.chaptered || bill.author) {
+        citationHTML = '<div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:6px;padding:1rem;margin-top:1rem;font-size:0.82rem;">';
+        citationHTML += '<div style="font-weight:700;color:#2d3748;margin-bottom:0.5rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;">Legal Citation</div>';
+        citationHTML += '<table style="width:100%;border-collapse:collapse;font-size:0.82rem;">';
+        if (bill.codeSection) citationHTML += '<tr><td style="padding:0.25rem 0.5rem 0.25rem 0;font-weight:600;color:#4a5568;white-space:nowrap;vertical-align:top;width:120px;">Code Section</td><td style="padding:0.25rem 0;color:#1a202c;">' + bill.codeSection + '</td></tr>';
+        if (bill.effectiveDate) citationHTML += '<tr><td style="padding:0.25rem 0.5rem 0.25rem 0;font-weight:600;color:#4a5568;white-space:nowrap;vertical-align:top;">Effective Date</td><td style="padding:0.25rem 0;color:#1a202c;">' + bill.effectiveDate + '</td></tr>';
+        if (bill.chaptered) citationHTML += '<tr><td style="padding:0.25rem 0.5rem 0.25rem 0;font-weight:600;color:#4a5568;white-space:nowrap;vertical-align:top;">Chaptered</td><td style="padding:0.25rem 0;color:#1a202c;">' + bill.chaptered + '</td></tr>';
+        if (bill.author) citationHTML += '<tr><td style="padding:0.25rem 0.5rem 0.25rem 0;font-weight:600;color:#4a5568;white-space:nowrap;vertical-align:top;">Author</td><td style="padding:0.25rem 0;color:#1a202c;">' + bill.author + '</td></tr>';
+        citationHTML += '</table>';
+        if (bill.billUrl) {
+            citationHTML += '<div style="margin-top:0.75rem;padding-top:0.5rem;border-top:1px solid #e2e8f0;">';
+            citationHTML += '<a href="' + bill.billUrl + '" target="_blank" rel="noopener" style="color:#2b6cb0;font-weight:600;text-decoration:none;font-size:0.82rem;">View Full Bill Text on California Legislative Information →</a>';
+            citationHTML += '</div>';
+        }
+        citationHTML += '</div>';
+    }
+
+    // Verification note
+    const verifyHTML = '<div style="margin-top:0.75rem;padding:0.75rem;background:#fffff0;border:1px solid #fefcbf;border-radius:4px;font-size:0.75rem;color:#744210;">' +
+        '<strong>Verification:</strong> All legislation data is sourced from the California Legislative Information system (leginfo.legislature.ca.gov) and the California Department of Housing and Community Development (HCD). ' +
+        'Code sections reference the California Government Code unless otherwise noted. ' +
+        'Last verified: March 2026. Independent verification is recommended before relying on this information for legal decisions.' +
+        '</div>';
+
     const modal = document.getElementById('legDetailModal');
     modal.innerHTML = `<div class="leg-detail-content">
         <div class="leg-detail-header">
@@ -8092,6 +8650,8 @@ function showLegislationDetail(billId) {
         <div class="leg-detail-body">
             <p class="leg-summary">${bill.description}</p>
             <p class="leg-full">${bill.detail || bill.description}</p>
+            ${citationHTML}
+            ${verifyHTML}
         </div>
     </div>`;
     modal.style.display = 'flex';
@@ -10534,7 +11094,7 @@ function renderFinderResults2(station) {
     const propLinks = (addr, apn) => {
         const enc = encodeURIComponent(addr);
         const apnClean = (apn || '').replace(/[^0-9]/g, '');
-        return `<span class="prop-links" onclick="event.stopPropagation()"><a href="https://www.zillow.com/homes/${enc}" target="_blank" title="Zillow">Z</a> | <a href="https://www.google.com/search?q=site%3Aredfin.com+${enc}" target="_blank" title="Redfin">R</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" title="LA County Assessor">LA</a></span>`;
+        return `<span class="prop-links" onclick="event.stopPropagation()"><a href="https://www.google.com/search?q=site%3Azillow.com+${enc}" target="_blank" title="Zillow">Z</a> | <a href="https://www.google.com/search?q=site%3Aredfin.com+${enc}" target="_blank" title="Redfin">R</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" title="LA County Assessor">LA</a></span>`;
     };
 
     let html = `<div id="finderSelectionBar" class="selection-bar" style="display:none;">
@@ -10711,7 +11271,7 @@ function exportFinderCSV2() {
             r.apn, r.lotSizeSqFt, r.useType, r.yearBuilt || '',
             r.landVal, r.impVal, r.impRatio < 100 ? r.impRatio.toFixed(3) : '',
             r.zone, a.height || '', a.density || '', a.far || '', a.parking ?? '',
-            `https://www.zillow.com/homes/${enc}`,
+            `https://www.google.com/search?q=site%3Azillow.com+${enc}`,
             `https://portal.assessor.lacounty.gov/parceldetail/${apnClean}`,
             r.lat, r.lon,
         ].join(',');
@@ -10853,7 +11413,7 @@ function renderSavedList() {
     body.innerHTML = saved.map((r, i) => {
         const enc = encodeURIComponent(r.address || '');
         const apnClean = (r.apn || '').replace(/[^0-9]/g, '');
-        const links = `<span class="prop-links"><a href="https://www.zillow.com/homes/${enc}" target="_blank" title="Zillow">Z</a> | <a href="https://www.google.com/search?q=site%3Aredfin.com+${enc}" target="_blank" title="Redfin">R</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" title="LA County Assessor">LA</a></span>`;
+        const links = `<span class="prop-links"><a href="https://www.google.com/search?q=site%3Azillow.com+${enc}" target="_blank" title="Zillow">Z</a> | <a href="https://www.google.com/search?q=site%3Aredfin.com+${enc}" target="_blank" title="Redfin">R</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" title="LA County Assessor">LA</a></span>`;
         return `<tr>
             <td><input type="checkbox" class="saved-select" data-idx="${i}"></td>
             <td>${r.address}</td>
@@ -11047,7 +11607,7 @@ function exportSavedCSV() {
             r.apn, r.lotSizeSqFt, r.useType, r.yearBuilt || '',
             r.landVal, r.impVal, r.impRatio < 100 ? r.impRatio.toFixed(3) : '',
             r.zone, a.height || '', a.density || '', a.far || '',
-            `https://www.zillow.com/homes/${enc}`,
+            `https://www.google.com/search?q=site%3Azillow.com+${enc}`,
             `https://portal.assessor.lacounty.gov/parceldetail/${apnClean}`,
             r.lat, r.lon,
         ].join(',');
@@ -13322,6 +13882,7 @@ function analyzeTaxImplications(useId, inp, computed) {
 }
 
 function renderTaxIncentivesTab(st) {
+    return ''; // Removed — incentive dollar estimates are not credible without project-specific underwriting
     const { bestUse, inp, computed } = st;
     const tax = analyzeTaxImplications(bestUse, inp, computed);
     const nh = inp.neighborhood;
@@ -18792,8 +19353,6 @@ function renderExportTab(st) {
                 <li>Pro Forma &amp; Scenarios</li>
                 <li>KPI Dashboard</li>
                 <li>Public Finance</li>
-                <li>Tax &amp; Incentives</li>
-                <li>Incentive Matrix</li>
                 <li>P3 Structuring</li>
                 <li>Investor Module</li>
                 <li>Dev Timeline</li>
@@ -20027,14 +20586,7 @@ function buildIncentiveMatrixContent() {
 }
 
 function renderIncentiveMatrixTab(st) {
-    var html = '<div class="deep-tab-panel">';
-    html += '<div class="analysis-section"><h3>Development Incentive Matrix</h3>';
-    html += '<p style="font-size:0.78rem;color:#718096;margin-bottom:1rem;">Select which incentive programs to apply to your analysis. Check/uncheck programs to see their combined financial impact. Only eligible programs are pre-selected by default.</p>';
-    html += '<div id="incentiveMatrixContent">';
-    html += buildIncentiveMatrixContent();
-    html += '</div>';
-    html += '</div></div>';
-    return html;
+    return ''; // Removed — incentive dollar estimates are not credible without project-specific underwriting
 }
 
 // ===================================================================
@@ -21706,6 +22258,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 document.addEventListener('DOMContentLoaded', function() {
   attachDevScenarioHandlers();
+});
+
+// Comma formatting for large number inputs
+document.addEventListener('DOMContentLoaded', function() {
+  setupCommaFormatting('parcelSize');
+  setupCommaFormatting('marketValue');
 });
 
 
