@@ -4501,12 +4501,11 @@ async function lookupAddress() {
             }
         } catch {}
     })();
-    var _zillowAddr = _addrForLinks.trim().replace(/[,#\.]+/g, '').replace(/\s+/g, '-');
     var _encAddr = encodeURIComponent(_addrForLinks);
     var _zLink = document.getElementById('zillowValLink');
     var _rLink = document.getElementById('redfinValLink');
-    if (_zLink) _zLink.href = 'https://www.zillow.com/homes/' + _zillowAddr + '_rb/';
-    if (_rLink) _rLink.href = 'https://www.redfin.com/search?q=' + _encAddr;
+    if (_zLink) _zLink.href = 'https://www.zillow.com/homes/' + _encAddr;
+    if (_rLink) _rLink.href = 'https://www.redfin.com/search#query=' + _encAddr;
 
     // Apply parcel size
     if (parcelResult && (parcelResult.error === 'cors' || parcelResult.error === 'timeout')) {
@@ -9785,9 +9784,8 @@ function renderFinderResults2(station) {
     const fmt = (v) => v ? '$' + v.toLocaleString() : '-';
     const propLinks = (addr, apn) => {
         const enc = encodeURIComponent(addr);
-        const zEnc = addr.trim().replace(/[,#\.]+/g, '').replace(/\s+/g, '-');
         const apnClean = (apn || '').replace(/[^0-9]/g, '');
-        return `<span class="prop-links" onclick="event.stopPropagation()"><a href="https://www.zillow.com/homes/${zEnc}_rb/" target="_blank" title="Zillow">Z</a> | <a href="https://www.redfin.com/search?q=${enc}" target="_blank" title="Redfin">R</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" title="LA County Assessor">LA</a></span>`;
+        return `<span class="prop-links" onclick="event.stopPropagation()"><a href="https://www.zillow.com/homes/${enc}" target="_blank" title="Zillow">Z</a> | <a href="https://www.redfin.com/search#query=${enc}" target="_blank" title="Redfin">R</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" title="LA County Assessor">LA</a></span>`;
     };
 
     let html = `<div id="finderSelectionBar" class="selection-bar" style="display:none;">
@@ -9956,14 +9954,14 @@ function exportFinderCSV2() {
     const headers = ['Address', 'APN', 'Lot Size (sf)', 'Use Type', 'Year Built', 'Land Value', 'Imp Value', 'Imp/Land Ratio', 'SB79 Zone', 'Max Height (ft)', 'Max Density (du/ac)', 'Max FAR', 'Parking Req', 'Zillow URL', 'Assessor URL', 'Latitude', 'Longitude'];
     const rows = finderResults2.map(r => {
         const a = r.allowances || {};
-        const zEnc = (r.address || '').trim().replace(/[,#\.]+/g, '').replace(/\s+/g, '-');
+        const enc = encodeURIComponent(r.address || '');
         const apnClean = (r.apn || '').replace(/[^0-9]/g, '');
         return [
             `"${(r.address || '').replace(/"/g, '""')}"`,
             r.apn, r.lotSizeSqFt, r.useType, r.yearBuilt || '',
             r.landVal, r.impVal, r.impRatio < 100 ? r.impRatio.toFixed(3) : '',
             r.zone, a.height || '', a.density || '', a.far || '', a.parking ?? '',
-            `https://www.zillow.com/homes/${zEnc}_rb/`,
+            `https://www.zillow.com/homes/${enc}`,
             `https://portal.assessor.lacounty.gov/parceldetail/${apnClean}`,
             r.lat, r.lon,
         ].join(',');
@@ -10103,9 +10101,8 @@ function renderSavedList() {
 
     body.innerHTML = saved.map((r, i) => {
         const enc = encodeURIComponent(r.address || '');
-        const zEnc = (r.address || '').trim().replace(/[,#\.]+/g, '').replace(/\s+/g, '-');
         const apnClean = (r.apn || '').replace(/[^0-9]/g, '');
-        const links = `<span class="prop-links"><a href="https://www.zillow.com/homes/${zEnc}_rb/" target="_blank" title="Zillow">Z</a> | <a href="https://www.redfin.com/search?q=${enc}" target="_blank" title="Redfin">R</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" title="LA County Assessor">LA</a></span>`;
+        const links = `<span class="prop-links"><a href="https://www.zillow.com/homes/${enc}" target="_blank" title="Zillow">Z</a> | <a href="https://www.redfin.com/search#query=${enc}" target="_blank" title="Redfin">R</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" title="LA County Assessor">LA</a></span>`;
         return `<tr>
             <td><input type="checkbox" class="saved-select" data-idx="${i}"></td>
             <td>${r.address}</td>
@@ -10199,14 +10196,14 @@ function exportSavedCSV() {
     const headers = ['Address', 'APN', 'Lot Size (sf)', 'Use Type', 'Year Built', 'Land Value', 'Imp Value', 'Imp/Land Ratio', 'SB79 Zone', 'Max Height (ft)', 'Max Density (du/ac)', 'Max FAR', 'Zillow URL', 'Assessor URL', 'Latitude', 'Longitude'];
     const rows = saved.map(r => {
         const a = r.allowances || {};
-        const zEnc = (r.address || '').trim().replace(/[,#\.]+/g, '').replace(/\s+/g, '-');
+        const enc = encodeURIComponent(r.address || '');
         const apnClean = (r.apn || '').replace(/[^0-9]/g, '');
         return [
             `"${(r.address || '').replace(/"/g, '""')}"`,
             r.apn, r.lotSizeSqFt, r.useType, r.yearBuilt || '',
             r.landVal, r.impVal, r.impRatio < 100 ? r.impRatio.toFixed(3) : '',
             r.zone, a.height || '', a.density || '', a.far || '',
-            `https://www.zillow.com/homes/${zEnc}_rb/`,
+            `https://www.zillow.com/homes/${enc}`,
             `https://portal.assessor.lacounty.gov/parceldetail/${apnClean}`,
             r.lat, r.lon,
         ].join(',');
