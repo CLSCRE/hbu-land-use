@@ -4505,7 +4505,7 @@ async function lookupAddress() {
     var _zLink = document.getElementById('zillowValLink');
     var _rLink = document.getElementById('redfinValLink');
     if (_zLink) _zLink.href = 'https://www.zillow.com/homes/' + _encAddr;
-    if (_rLink) _rLink.href = 'https://www.redfin.com/search#query=' + _encAddr;
+    if (_rLink) _rLink.href = 'https://www.google.com/search?q=site%3Aredfin.com+' + _encAddr;
 
     // Apply parcel size
     if (parcelResult && (parcelResult.error === 'cors' || parcelResult.error === 'timeout')) {
@@ -9785,7 +9785,7 @@ function renderFinderResults2(station) {
     const propLinks = (addr, apn) => {
         const enc = encodeURIComponent(addr);
         const apnClean = (apn || '').replace(/[^0-9]/g, '');
-        return `<span class="prop-links" onclick="event.stopPropagation()"><a href="https://www.zillow.com/homes/${enc}" target="_blank" title="Zillow">Z</a> | <a href="https://www.redfin.com/search#query=${enc}" target="_blank" title="Redfin">R</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" title="LA County Assessor">LA</a></span>`;
+        return `<span class="prop-links" onclick="event.stopPropagation()"><a href="https://www.zillow.com/homes/${enc}" target="_blank" title="Zillow">Z</a> | <a href="https://www.google.com/search?q=site%3Aredfin.com+${enc}" target="_blank" title="Redfin">R</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" title="LA County Assessor">LA</a></span>`;
     };
 
     let html = `<div id="finderSelectionBar" class="selection-bar" style="display:none;">
@@ -10102,7 +10102,7 @@ function renderSavedList() {
     body.innerHTML = saved.map((r, i) => {
         const enc = encodeURIComponent(r.address || '');
         const apnClean = (r.apn || '').replace(/[^0-9]/g, '');
-        const links = `<span class="prop-links"><a href="https://www.zillow.com/homes/${enc}" target="_blank" title="Zillow">Z</a> | <a href="https://www.redfin.com/search#query=${enc}" target="_blank" title="Redfin">R</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" title="LA County Assessor">LA</a></span>`;
+        const links = `<span class="prop-links"><a href="https://www.zillow.com/homes/${enc}" target="_blank" title="Zillow">Z</a> | <a href="https://www.google.com/search?q=site%3Aredfin.com+${enc}" target="_blank" title="Redfin">R</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank" title="LA County Assessor">LA</a></span>`;
         return `<tr>
             <td><input type="checkbox" class="saved-select" data-idx="${i}"></td>
             <td>${r.address}</td>
