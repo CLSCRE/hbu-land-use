@@ -4454,28 +4454,68 @@ async function fetchZoning(lat, lon) {
 }
 
 // Query LA County parcel layer for lot size
-async function fetchParcelInfo(lat, lon) {
+async function fetchParcelInfo(lat, lon, addressInfo) {
     try {
-        // Use 30m buffer because Nominatim geocodes to road centerline, not parcel centroid
+        // Use 50m buffer because Nominatim geocodes to road centerline, not parcel centroid
         const url = `https://public.gis.lacounty.gov/public/rest/services/LACounty_Cache/LACounty_Parcel/MapServer/0/query?` +
             `geometry=${lon},${lat}&geometryType=esriGeometryPoint&inSR=4326&outSR=4326` +
             `&spatialRel=esriSpatialRelIntersects&outFields=*&returnGeometry=true` +
-            `&distance=30&units=esriSRUnit_Meter&f=json`;
+            `&distance=50&units=esriSRUnit_Meter&f=json`;
         const resp = await fetch(url, { signal: AbortSignal.timeout(10000) });
         if (!resp.ok) throw new Error('Parcel service unavailable');
         const data = await resp.json();
         if (data.features && data.features.length > 0) {
-            // If buffer returned multiple parcels, pick the one closest to the geocoded point
-            let bestFeature = data.features[0];
-            if (data.features.length > 1) {
-                let bestDist = Infinity;
+            // PRIORITY 1: Match by house number in SitusFullAddress
+            // This is far more reliable than proximity to geocode point
+            let bestFeature = null;
+            const inputHouseNum = (addressInfo && addressInfo.house_number) ? String(addressInfo.house_number).trim() : '';
+            const inputStreet = (addressInfo && addressInfo.road) ? addressInfo.road.replace(/\b(Avenue|Street|Boulevard|Drive|Place|Court|Lane|Way|Road|Circle|Terrace)\b/gi, '').trim().toLowerCase() : '';
+
+            if (inputHouseNum && data.features.length > 1) {
+                // Try exact house number match first
                 for (let fi = 0; fi < data.features.length; fi++) {
-                    const fa = data.features[fi].attributes;
-                    const clat = parseFloat(fa.CENTER_LAT) || 0;
-                    const clon = parseFloat(fa.CENTER_LON) || 0;
-                    if (clat && clon) {
-                        const d = Math.pow(clat - lat, 2) + Math.pow(clon - lon, 2);
-                        if (d < bestDist) { bestDist = d; bestFeature = data.features[fi]; }
+                    const situs = String(data.features[fi].attributes.SitusFullAddress || '').trim();
+                    if (!situs) continue;
+                    const situsNum = situs.match(/^(\d+)/);
+                    if (situsNum && situsNum[1] === inputHouseNum) {
+                        bestFeature = data.features[fi];
+                        break;
+                    }
+                }
+                // Try nearby house numbers (e.g. 7951 matches 7949 — same property, dual address)
+                if (!bestFeature) {
+                    const targetNum = parseInt(inputHouseNum);
+                    let closestNumDiff = Infinity;
+                    for (let fi = 0; fi < data.features.length; fi++) {
+                        const situs = String(data.features[fi].attributes.SitusFullAddress || '').trim();
+                        if (!situs) continue;
+                        const situsNum = situs.match(/^(\d+)/);
+                        if (situsNum) {
+                            const diff = Math.abs(parseInt(situsNum[1]) - targetNum);
+                            // Within 4 house numbers and same street
+                            const situsStreet = situs.replace(/^\d+\s*/, '').replace(/\b(AVE|ST|BLVD|DR|PL|CT|LN|WAY|RD|CIR|TER)\b/gi, '').trim().toLowerCase();
+                            if (diff <= 4 && diff < closestNumDiff && (inputStreet === '' || situsStreet.includes(inputStreet) || inputStreet.includes(situsStreet))) {
+                                closestNumDiff = diff;
+                                bestFeature = data.features[fi];
+                            }
+                        }
+                    }
+                }
+            }
+
+            // PRIORITY 2: Fall back to closest by distance
+            if (!bestFeature) {
+                bestFeature = data.features[0];
+                if (data.features.length > 1) {
+                    let bestDist = Infinity;
+                    for (let fi = 0; fi < data.features.length; fi++) {
+                        const fa = data.features[fi].attributes;
+                        const clat = parseFloat(fa.CENTER_LAT) || 0;
+                        const clon = parseFloat(fa.CENTER_LON) || 0;
+                        if (clat && clon) {
+                            const d = Math.pow(clat - lat, 2) + Math.pow(clon - lon, 2);
+                            if (d < bestDist) { bestDist = d; bestFeature = data.features[fi]; }
+                        }
                     }
                 }
             }
@@ -4615,7 +4655,7 @@ async function _lookupAddressBody(address, coords, btn) {
     try {
         [zoningResult, parcelResult] = await Promise.all([
             fetchWithTimeout(fetchZoning(coords.lat, coords.lon), 12000),
-            fetchWithTimeout(fetchParcelInfo(coords.lat, coords.lon), 12000),
+            fetchWithTimeout(fetchParcelInfo(coords.lat, coords.lon, coords.address), 12000),
         ]);
     } catch (e) {
         console.warn('Zoning/parcel query error:', e);
