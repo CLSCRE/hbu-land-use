@@ -10,7 +10,13 @@
 // --- Auth Gate ---
 var VALID_HASHES = [
     '6ca13d52ca70c883e0f0bb101e425a89e8624de51db2d2392593af6a84118090',
+    'eed9899e026ac5d73d0230db369e2461a4d5358db80898f5b7981a0526a03bd9', // LandYield2026 — 90-day trial, expires 2026-06-22
 ];
+
+// Trial code expiration map: hash → expiry date (ISO string)
+var HASH_EXPIRY = {
+    'eed9899e026ac5d73d0230db369e2461a4d5358db80898f5b7981a0526a03bd9': '2026-06-22'
+};
 
 async function sha256(message) {
     var msgBuffer = new TextEncoder().encode(message);
@@ -29,6 +35,12 @@ async function checkAuth() {
     }
     var hash = await sha256(code);
     if (VALID_HASHES.indexOf(hash) !== -1) {
+        // Check if this code has an expiration date
+        if (HASH_EXPIRY[hash] && new Date() > new Date(HASH_EXPIRY[hash] + 'T23:59:59')) {
+            if (errEl) errEl.textContent = 'This trial code has expired.';
+            if (input) { input.value = ''; input.focus(); }
+            return;
+        }
         sessionStorage.setItem('hbu_auth', 'ok');
         var overlay = document.getElementById('authOverlay');
         if (overlay) {
