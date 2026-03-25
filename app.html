@@ -3866,19 +3866,40 @@ const METRO_STATIONS = [
     // --- Regional Connector — LIGHT RAIL (Tier 2) ---
     { lat: 34.0550, lon: -118.2512, name: 'Grand Av Arts/Bunker Hill', line: 'connector', tier: 2, serviceType: 'Light Rail' },
     { lat: 34.05216, lon: -118.24632, name: 'Historic Broadway', line: 'connector', tier: 2, serviceType: 'Light Rail' },
-    // --- Key Metrolink Stations (LA County) — COMMUTER RAIL (Tier 2) ---
+    // --- Metrolink Stations (LA County) — COMMUTER RAIL (Tier 2) ---
+    // Shared hub
     { lat: 34.0562, lon: -118.2365, name: 'LA Union Station (Metrolink)', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.2113, lon: -118.4467, name: 'Van Nuys', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.2529, lon: -118.5993, name: 'Chatsworth', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.2925, lon: -118.4502, name: 'Sylmar/San Fernando', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.1236, lon: -118.2592, name: 'Glendale', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.2064, lon: -118.3495, name: 'Burbank Airport North', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.1786, lon: -118.3120, name: 'Burbank Downtown', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.0622, lon: -118.1715, name: 'Cal State LA', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.0765, lon: -118.0362, name: 'El Monte', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.0854, lon: -117.9581, name: 'Baldwin Park', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.0922, lon: -117.8885, name: 'Covina', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.0592, lon: -117.7512, name: 'Pomona Downtown', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    // Antelope Valley Line
+    { lat: 34.29250, lon: -118.45020, name: 'Sylmar/San Fernando', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    { lat: 34.22239, lon: -118.37335, name: 'Sun Valley', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    { lat: 34.20640, lon: -118.34950, name: 'Burbank Airport North', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    { lat: 34.17860, lon: -118.31200, name: 'Burbank Downtown', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    { lat: 34.12370, lon: -118.25900, name: 'Glendale', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    { lat: 34.37933, lon: -118.52691, name: 'Newhall', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    { lat: 34.41372, lon: -118.52503, name: 'Santa Clarita', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    { lat: 34.40846, lon: -118.46924, name: 'Via Princessa', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    { lat: 34.41297, lon: -118.43400, name: 'Vista Canyon', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    { lat: 34.49797, lon: -118.11826, name: 'Vincent Grade/Acton', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    { lat: 34.59083, lon: -118.11960, name: 'Palmdale', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    { lat: 34.69659, lon: -118.13624, name: 'Lancaster', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    // Ventura County Line (LA County stations)
+    { lat: 34.19295, lon: -118.35351, name: 'Burbank Airport-South', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    { lat: 34.23046, lon: -118.54515, name: 'Northridge', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    { lat: 34.25290, lon: -118.59930, name: 'Chatsworth', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    { lat: 34.21130, lon: -118.44670, name: 'Van Nuys', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    // San Bernardino Line (LA County stations)
+    { lat: 34.06220, lon: -118.17150, name: 'Cal State LA', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    { lat: 34.07650, lon: -118.03620, name: 'El Monte', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    { lat: 34.08540, lon: -117.95810, name: 'Baldwin Park', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    { lat: 34.09220, lon: -117.88850, name: 'Covina', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    { lat: 34.00695, lon: -118.12610, name: 'Montebello/Commerce', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    { lat: 34.09375, lon: -117.75233, name: 'Pomona-North', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    { lat: 34.09396, lon: -117.71692, name: 'Claremont', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    // Orange County / 91-Perris Valley / IEOC Line (LA County stations)
+    { lat: 33.99069, lon: -118.14391, name: 'Commerce', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    { lat: 33.91636, lon: -118.05983, name: 'Norwalk/Santa Fe Springs', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
+    // Riverside Line (LA County station)
+    { lat: 34.00807, lon: -117.84545, name: 'Industry', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
 ];
 
 // SB 79 Transit-Oriented Development tier definitions (effective July 1, 2026)
