@@ -3488,10 +3488,14 @@ function mapZoningCode(rawZone) {
 
 // Geocode via OpenStreetMap Nominatim (CORS-friendly)
 async function geocodeAddress(address) {
-    // Append Los Angeles CA if not already present to improve results
+    // Append county/state hint only if no city/state info is already present
     let query = address;
-    if (!/los\s*angeles/i.test(query) && !/\bLA\b/.test(query)) {
-        query += ', Los Angeles, CA';
+    const hasCity = /,\s*\w/.test(query) || /\b(CA|California)\b/i.test(query) ||
+        /\b(Los Angeles|Glendale|Burbank|Pasadena|Long Beach|Santa Monica|Beverly Hills|Culver City|Inglewood|Torrance|Pomona|West Hollywood|Alhambra|Arcadia|Azusa|Baldwin Park|Bell|Bellflower|Cerritos|Claremont|Compton|Covina|Downey|Duarte|El Monte|El Segundo|Gardena|Glendora|Hawthorne|Hermosa Beach|Huntington Park|La Mirada|La Verne|Lakewood|Lancaster|Lawndale|Lomita|Lynwood|Malibu|Manhattan Beach|Maywood|Monrovia|Montebello|Monterey Park|Norwalk|Palmdale|Palos Verdes|Paramount|Pico Rivera|Rancho Palos Verdes|Redondo Beach|Rosemead|San Dimas|San Fernando|San Gabriel|San Marino|Santa Clarita|Sierra Madre|Signal Hill|South El Monte|South Gate|South Pasadena|Temple City|Walnut|West Covina|Whittier)\b/i.test(query);
+    if (!hasCity) {
+        query += ', Los Angeles County, CA';
+    } else if (!/\b(CA|California)\b/i.test(query)) {
+        query += ', CA';
     }
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=1&countrycodes=us`;
     const resp = await fetch(url, {
