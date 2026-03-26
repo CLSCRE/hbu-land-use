@@ -4750,22 +4750,35 @@ async function _lookupAddressBody(address, coords, btn) {
     if (_mvInput) _mvInput.value = Math.round(_estMarketValue).toLocaleString();
     var _avLabel = document.getElementById('assessedValueLabel');
     if (_avLabel) { _avLabel.textContent = ''; }
-    // Async: get market value (RentCast AVM → Prop 13 → fallback)
+    // Async: get market value (ATTOM AVM → RentCast → Prop 13 → fallback)
     (async () => {
         try {
             const mv = await getMarketValue(_addrForLinks, _structSF, _lotSF, _structSF > 0 ? 'Residential' : 'Vacant', _nhood, _parcelAttrs);
             if (_mvInput) _mvInput.value = Math.round(mv.value).toLocaleString();
             var _badge = document.getElementById('mvSourceBadge');
             if (mv.source === 'avm') {
-                if (_badge) { _badge.textContent = 'AVM'; _badge.style.background = '#059669'; }
-                if (_avLabel) _avLabel.textContent = '';
+                var badgeLabel = mv.avmSource === 'attom' ? 'ATTOM AVM' : 'AVM';
+                if (mv.confidence) badgeLabel += ' (' + mv.confidence + ')';
+                if (_badge) { _badge.textContent = badgeLabel; _badge.style.background = '#059669'; }
+                // Show value range and last sale info
+                var rangeInfo = '';
+                if (mv.priceLow && mv.priceHigh) {
+                    rangeInfo = '$' + Math.round(mv.priceLow).toLocaleString() + ' – $' + Math.round(mv.priceHigh).toLocaleString();
+                }
+                if (mv.lastSalePrice && mv.lastSaleDate) {
+                    var saleYear = String(mv.lastSaleDate).substring(0, 4);
+                    rangeInfo += (rangeInfo ? ' · ' : '') + 'Last sale: $' + Math.round(mv.lastSalePrice).toLocaleString() + ' (' + saleYear + ')';
+                }
+                if (_avLabel) _avLabel.textContent = rangeInfo;
             } else if (mv.source === 'assessor') {
                 if (_badge) { _badge.textContent = 'Assessor'; _badge.style.background = '#6366f1'; }
-                if (_avLabel) _avLabel.textContent = '';
+                if (_avLabel) _avLabel.textContent = 'Prop 13 adjusted — verify with comps';
             } else {
                 if (_badge) { _badge.textContent = 'Est.'; _badge.style.background = ''; }
-                if (_avLabel) _avLabel.textContent = '';
+                if (_avLabel) _avLabel.textContent = 'Neighborhood estimate — verify with comps';
             }
+            // Store ATTOM data globally for use in analysis
+            if (mv.source === 'avm') window._lastAVM = mv;
         } catch {}
     })();
     // Set Zillow/Redfin valuation links
@@ -5226,8 +5239,8 @@ function incomeApproachValue(structureSqFt, lotSizeSqFt, useType, neighborhood, 
     return Math.round(noi / caps.residential);
 }
 
-// ── RentCast AVM (Approach 4) ────────────────────────────────────
-const RENTCAST_PROXY_URL = 'https://lty-avm-proxy.clscre.workers.dev';
+// ── AVM Proxy (ATTOM primary, RentCast fallback) ────────────────
+const AVM_PROXY_URL = 'https://lty-avm-proxy.clscre.workers.dev';
 function _avmCacheKey(address) { return 'lty_avm_' + address.toLowerCase().trim().replace(/\s+/g, ' '); }
 function _avmCacheGet(address) {
     try {
@@ -5241,27 +5254,38 @@ function _avmCacheGet(address) {
 function _avmCacheSet(address, data) {
     try { localStorage.setItem(_avmCacheKey(address), JSON.stringify({ ...data, timestamp: Date.now() })); } catch {}
 }
-async function fetchRentCastAVM(address) {
-    if (!address || RENTCAST_PROXY_URL.includes('YOUR_SUBDOMAIN')) return null;
+async function fetchAVM(address) {
+    if (!address) return null;
     const cached = _avmCacheGet(address);
     if (cached && cached.price) return cached;
     try {
-        const resp = await fetch(RENTCAST_PROXY_URL + '?address=' + encodeURIComponent(address), { signal: AbortSignal.timeout(8000) });
+        const resp = await fetch(AVM_PROXY_URL + '?address=' + encodeURIComponent(address), { signal: AbortSignal.timeout(12000) });
         if (!resp.ok) return null;
         const data = await resp.json();
         if (data.price) { _avmCacheSet(address, data); return data; }
         return null;
     } catch { return null; }
 }
+// Backward compat alias
+async function fetchRentCastAVM(address) { return fetchAVM(address); }
 
 /**
- * MARKET VALUE — single number, RentCast AVM preferred (closest to Zillow)
+ * MARKET VALUE — ATTOM AVM preferred (professional-grade), with fallback chain
  */
 async function getMarketValue(address, structureSqFt, lotSizeSqFt, useType, neighborhood, parcelAttrs) {
-    // Priority 1: RentCast AVM (closest to Zillow Zestimate)
-    const avm = await fetchRentCastAVM(address);
+    // Priority 1: ATTOM/RentCast AVM via proxy (professional-grade valuation)
+    const avm = await fetchAVM(address);
     if (avm && avm.price) {
-        return { value: Math.round(avm.price), source: 'avm' };
+        const result = { value: Math.round(avm.price), source: 'avm' };
+        // Store extra ATTOM data for display
+        if (avm.confidence) result.confidence = avm.confidence;
+        if (avm.priceLow) result.priceLow = avm.priceLow;
+        if (avm.priceHigh) result.priceHigh = avm.priceHigh;
+        if (avm.lastSalePrice) result.lastSalePrice = avm.lastSalePrice;
+        if (avm.lastSaleDate) result.lastSaleDate = avm.lastSaleDate;
+        if (avm.assessedTotal) result.assessedTotal = avm.assessedTotal;
+        if (avm.source) result.avmSource = avm.source;  // 'attom' or 'rentcast'
+        return result;
     }
 
     // Priority 2: Prop 13 base-year adjusted (uses real assessor data)
