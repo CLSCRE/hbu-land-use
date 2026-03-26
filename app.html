@@ -5349,17 +5349,44 @@ const CA_HOUSING_LEGISLATION = [
         id: 'sb9',
         name: 'SB 9 (HOME Act)',
         description: 'By-right duplex and lot splits on single-family parcels statewide.',
-        detail: 'The California HOME Act (2021) allows property owners to split single-family lots and build duplexes by-right, bypassing traditional zoning restrictions. Applies to parcels of at least 2,400 SF in urbanized areas, not in historic districts, fire hazard zones, or conservation areas. Each resulting lot must be at least 1,200 SF. Owner-occupancy is required for 3 years on one of the units if a lot split is pursued. This effectively doubles the allowed density on R1-zoned land without requiring a zone change or CUP. Impact: Significant for small infill developers targeting R1 neighborhoods.',
+        detail: 'The California HOME Act (2021) allows property owners to split single-family lots and build duplexes by-right, bypassing traditional zoning restrictions. Applies to parcels of at least 2,400 SF in urbanized areas zoned for single-family residential (R1, R1V, RE, RS, RA, RD, and equivalents). Exclusions: historic districts, very high fire hazard severity zones (VHFHSZ), earthquake fault zones (Alquist-Priolo), flood zones, conservation/habitat areas, and coastal zone. Each resulting lot must be at least 1,200 SF. Owner-occupancy required for 3 years on one unit if lot split is pursued. Development standards: max 800 SF per unit (or 60% of existing if larger), 4 ft rear/side setbacks, no parking required within 0.5 mi of transit. Lot split + duplex on each lot = up to 4 units total on a single R1 parcel. Impact: Significant for small infill developers targeting single-family neighborhoods.',
         effectiveDate: 'January 1, 2022',
         author: 'Sen. Toni Atkins',
         codeSection: 'Cal. Gov. Code §§ 65852.21, 66411.7',
         billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220SB9',
         chaptered: 'Stats. 2021, Ch. 162',
         applies: (useId, inp) => {
-            if (inp.zoning !== 'R1' || inp.parcelSize < 2400 || !['duplex', 'adu'].includes(useId)) return false;
+            // SB 9 applies to ALL single-family residential zones, not just R1
+            const sfZones = ['R1', 'R1V', 'R1V1', 'R1V2', 'R1V3', 'RE', 'RE9', 'RE11', 'RE15', 'RE20', 'RE40', 'RS', 'RA', 'RD', 'RD1.5', 'RD2', 'RD3', 'RD4', 'RD5', 'RD6', 'RW1'];
+            if (!sfZones.includes(inp.zoning) || inp.parcelSize < 2400 || !['duplex', 'adu', 'sfr'].includes(useId)) return false;
+            // Exclusion: historic districts / historic overlay
+            if (inp.constHistoric) return false;
+            // Exclusion: very high fire hazard severity zones
+            if (inp.constFire || inp.constHillside) return false;
+            // Exclusion: earthquake fault zones (Alquist-Priolo)
+            if (inp.constFault) return false;
+            // Exclusion: flood zones (FEMA special flood hazard area)
+            if (inp.constFlood) return false;
+            // Exclusion: coastal zone
+            if (inp.constCoastal) return false;
+            // Jurisdiction-specific: South Pasadena historic districts
             const _j = window._lastJurisdiction;
-            if (_j && _j.jurisdiction === 'South Pasadena' && inp.constHistoric) return false;
+            if (_j && _j.jurisdiction === 'South Pasadena') return false;
             return true;
+        },
+        // SB 9 development envelope
+        sb9Envelope: {
+            maxUnitSize: 800,           // Max 800 SF per unit (or 60% of existing structure, whichever greater)
+            minLotForSplit: 2400,       // Min lot size to qualify for lot split
+            minResultingLot: 1200,      // Each resulting lot must be at least 1,200 SF
+            maxUnitsPerLot: 2,          // Duplex (2 units) per lot
+            maxUnitsWithSplit: 4,       // Lot split + duplex each side = 4 units total
+            setbacks: { front: 'existing', side: 4, rear: 4 },  // 4 ft side/rear setbacks
+            maxHeight: 25,              // 25 ft (two stories) for new construction
+            parkingPerUnit: 1,          // 1 space per unit max
+            parkingTransitExempt: 0.5,  // No parking within 0.5 mi of transit
+            ownerOccupancy: true,       // Required for 3 years if lot split
+            ownerOccupancyYears: 3,
         },
         densityBonus: 1.0,
         parkingReduction: 0,
@@ -6434,6 +6461,33 @@ function scoreFinancial(useId, inp, effects) {
         if (['R1','R2','R3','R4','R5'].includes(inp.zoning)) score *= 1.25;
         // ADU excels on smaller/mid-size parcels with existing structures
         if (inp.siteCondition === 'improved' || inp.siteCondition === 'vacant') score *= 1.10;
+    }
+
+    // SB 9 Lot Split + Duplex bonus: models 4-unit scenario on qualifying R1 parcels
+    // Lot split creates two lots, each with a duplex = 4 units total from a single R1 parcel
+    if (useId === 'duplex') {
+        const sfZones = ['R1', 'R1V', 'R1V1', 'R1V2', 'R1V3', 'RE', 'RE9', 'RE11', 'RE15', 'RE20', 'RE40', 'RS', 'RA', 'RD', 'RD1.5', 'RD2', 'RD3', 'RD4', 'RD5', 'RD6', 'RW1'];
+        const sb9Eligible = sfZones.includes(inp.zoning) && inp.parcelSize >= 2400
+            && !inp.constHistoric && !inp.constFire && !inp.constHillside
+            && !inp.constFault && !inp.constFlood && !inp.constCoastal;
+        if (sb9Eligible) {
+            // SB 9 makes duplex by-right on single-family lots — significant entitlement advantage
+            score = Math.max(score, 0.50);
+            // Lot split potential: if lot is large enough to split (each lot ≥ 1,200 SF)
+            if (inp.parcelSize >= 2400) {
+                const lotA = Math.floor(inp.parcelSize * 0.5);
+                const lotB = inp.parcelSize - lotA;
+                if (lotA >= 1200 && lotB >= 1200) {
+                    // 4-unit scenario: 2 duplexes, each max 800 SF/unit = 3,200 SF total
+                    // Higher revenue from 4 units vs 2, with same land cost
+                    score *= 1.30;  // 30% boost for lot split optionality
+                }
+            }
+            // Transit proximity: SB 9 waives parking within 0.5 mi of transit
+            if (inp.transit === 'adjacent' || inp.transit === 'near') {
+                score *= 1.10;  // No parking required = lower cost, more buildable area
+            }
+        }
     }
 
     return Math.min(score, 1.0);

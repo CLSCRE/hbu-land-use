@@ -5051,17 +5051,30 @@ const CA_HOUSING_LEGISLATION = [
         id: 'sb9',
         name: 'SB 9 (HOME Act)',
         description: 'By-right duplex and lot splits on single-family parcels statewide.',
-        detail: 'The California HOME Act (2021) allows property owners to split single-family lots and build duplexes by-right, bypassing traditional zoning restrictions. Applies to parcels of at least 2,400 SF in urbanized areas, not in historic districts, fire hazard zones, or conservation areas. Each resulting lot must be at least 1,200 SF. Owner-occupancy is required for 3 years on one of the units if a lot split is pursued. This effectively doubles the allowed density on R1-zoned land without requiring a zone change or CUP. Impact: Significant for small infill developers targeting R1 neighborhoods.',
+        detail: 'The California HOME Act (2021) allows property owners to split single-family lots and build duplexes by-right, bypassing traditional zoning restrictions. Applies to parcels of at least 2,400 SF in urbanized areas zoned for single-family residential (R1, R1V, RE, RS, RA, RD, and equivalents). Exclusions: historic districts, very high fire hazard severity zones (VHFHSZ), earthquake fault zones (Alquist-Priolo), flood zones, conservation/habitat areas, and coastal zone. Each resulting lot must be at least 1,200 SF. Owner-occupancy required for 3 years on one unit if lot split is pursued. Development standards: max 800 SF per unit (or 60% of existing if larger), 4 ft rear/side setbacks, no parking required within 0.5 mi of transit. Lot split + duplex on each lot = up to 4 units total on a single R1 parcel. Impact: Significant for small infill developers targeting single-family neighborhoods.',
         effectiveDate: 'January 1, 2022',
         author: 'Sen. Toni Atkins',
         codeSection: 'Cal. Gov. Code §§ 65852.21, 66411.7',
         billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220SB9',
         chaptered: 'Stats. 2021, Ch. 162',
         applies: (useId, inp) => {
-            if (inp.zoning !== 'R1' || inp.parcelSize < 2400 || !['duplex', 'adu'].includes(useId)) return false;
+            const sfZones = ['R1', 'R1V', 'R1V1', 'R1V2', 'R1V3', 'RE', 'RE9', 'RE11', 'RE15', 'RE20', 'RE40', 'RS', 'RA', 'RD', 'RD1.5', 'RD2', 'RD3', 'RD4', 'RD5', 'RD6', 'RW1'];
+            if (!sfZones.includes(inp.zoning) || inp.parcelSize < 2400 || !['duplex', 'adu', 'sfr'].includes(useId)) return false;
+            if (inp.constHistoric) return false;
+            if (inp.constFire || inp.constHillside) return false;
+            if (inp.constFault) return false;
+            if (inp.constFlood) return false;
+            if (inp.constCoastal) return false;
             const _j = window._lastJurisdiction;
-            if (_j && _j.jurisdiction === 'South Pasadena' && inp.constHistoric) return false;
+            if (_j && _j.jurisdiction === 'South Pasadena') return false;
             return true;
+        },
+        sb9Envelope: {
+            maxUnitSize: 800, minLotForSplit: 2400, minResultingLot: 1200,
+            maxUnitsPerLot: 2, maxUnitsWithSplit: 4,
+            setbacks: { front: 'existing', side: 4, rear: 4 },
+            maxHeight: 25, parkingPerUnit: 1, parkingTransitExempt: 0.5,
+            ownerOccupancy: true, ownerOccupancyYears: 3,
         },
         densityBonus: 1.0,
         parkingReduction: 0,
@@ -5834,6 +5847,27 @@ function scoreFinancial(useId, inp, effects) {
         if (['R1','R2','R3'].includes(inp.zoning)) score *= 1.25;
         // ADU excels on smaller/mid-size parcels with existing structures
         if (inp.siteCondition === 'improved' || inp.siteCondition === 'vacant') score *= 1.10;
+    }
+
+    // SB 9 Lot Split + Duplex bonus
+    if (useId === 'duplex') {
+        const sfZones = ['R1', 'R1V', 'R1V1', 'R1V2', 'R1V3', 'RE', 'RE9', 'RE11', 'RE15', 'RE20', 'RE40', 'RS', 'RA', 'RD', 'RD1.5', 'RD2', 'RD3', 'RD4', 'RD5', 'RD6', 'RW1'];
+        const sb9Eligible = sfZones.includes(inp.zoning) && inp.parcelSize >= 2400
+            && !inp.constHistoric && !inp.constFire && !inp.constHillside
+            && !inp.constFault && !inp.constFlood && !inp.constCoastal;
+        if (sb9Eligible) {
+            score = Math.max(score, 0.50);
+            if (inp.parcelSize >= 2400) {
+                const lotA = Math.floor(inp.parcelSize * 0.5);
+                const lotB = inp.parcelSize - lotA;
+                if (lotA >= 1200 && lotB >= 1200) {
+                    score *= 1.30;
+                }
+            }
+            if (inp.transit === 'adjacent' || inp.transit === 'near') {
+                score *= 1.10;
+            }
+        }
     }
 
     return Math.min(score, 1.0);
