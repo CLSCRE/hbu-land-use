@@ -3763,22 +3763,33 @@ async function lookupAddress() {
     if (_mvInput) _mvInput.value = Math.round(_estMarketValue).toLocaleString();
     var _avLabel = document.getElementById('assessedValueLabel');
     if (_avLabel) { _avLabel.textContent = ''; }
-    // Async: get market value (RentCast AVM → Prop 13 → fallback)
+    // Async: get market value (ATTOM AVM → RentCast → Prop 13 → fallback)
     (async () => {
         try {
             const mv = await getMarketValue(_addrForLinks, _structSF, _lotSF, _structSF > 0 ? 'Residential' : 'Vacant', _nhood, _parcelAttrs);
             if (_mvInput) _mvInput.value = Math.round(mv.value).toLocaleString();
             var _badge = document.getElementById('mvSourceBadge');
             if (mv.source === 'avm') {
-                if (_badge) { _badge.textContent = 'AVM'; _badge.style.background = '#059669'; }
-                if (_avLabel) _avLabel.textContent = '';
+                var badgeLabel = mv.avmSource === 'attom' ? 'ATTOM AVM' : 'AVM';
+                if (mv.confidence) badgeLabel += ' (' + mv.confidence + ')';
+                if (_badge) { _badge.textContent = badgeLabel; _badge.style.background = '#059669'; }
+                var rangeInfo = '';
+                if (mv.priceLow && mv.priceHigh) {
+                    rangeInfo = '$' + Math.round(mv.priceLow).toLocaleString() + ' – $' + Math.round(mv.priceHigh).toLocaleString();
+                }
+                if (mv.lastSalePrice && mv.lastSaleDate) {
+                    var saleYear = String(mv.lastSaleDate).substring(0, 4);
+                    rangeInfo += (rangeInfo ? ' · ' : '') + 'Last sale: $' + Math.round(mv.lastSalePrice).toLocaleString() + ' (' + saleYear + ')';
+                }
+                if (_avLabel) _avLabel.textContent = rangeInfo;
             } else if (mv.source === 'assessor') {
                 if (_badge) { _badge.textContent = 'Assessor'; _badge.style.background = '#6366f1'; }
-                if (_avLabel) _avLabel.textContent = '';
+                if (_avLabel) _avLabel.textContent = 'Prop 13 adjusted — verify with comps';
             } else {
                 if (_badge) { _badge.textContent = 'Est.'; _badge.style.background = ''; }
-                if (_avLabel) _avLabel.textContent = '';
+                if (_avLabel) _avLabel.textContent = 'Neighborhood estimate — verify with comps';
             }
+            if (mv.source === 'avm') window._lastAVM = mv;
         } catch {}
     })();
     var _encAddr = encodeURIComponent(_addrForLinks);
@@ -4195,7 +4206,7 @@ function incomeApproachValue(structureSqFt, lotSizeSqFt, useType, neighborhood, 
 // ── AVM Proxy (ATTOM primary, RentCast fallback) ────────────────
 const AVM_PROXY_URL = 'https://lty-avm-proxy.clscre.workers.dev';
 const RENTCAST_PROXY_URL = AVM_PROXY_URL; // backward compat
-function _avmCacheKey(address) { return 'lty_avm_' + address.toLowerCase().trim().replace(/\s+/g, ' '); }
+function _avmCacheKey(address) { return 'lty_avm2_' + address.toLowerCase().trim().replace(/\s+/g, ' '); }
 function _avmCacheGet(address) {
     try {
         const raw = localStorage.getItem(_avmCacheKey(address));
