@@ -4456,11 +4456,55 @@ async function geocodeAddress(address) {
     };
 }
 
-// Query ZIMAS zoning layer
-async function fetchZoning(lat, lon) {
+// ── Multi-city zoning GIS endpoints ─────────────────────────────
+// Each entry: { url, field, descField? } — all support inSR=4326
+const CITY_ZONING_GIS = {
+    'glendale':       { url: 'https://gismap.glendaleca.gov/arcgis/rest/services/Common/Zoning/MapServer/2/query', field: 'ZONE_DISTR', descField: 'ZONE_DESC' },
+    'long beach':     { url: 'https://services6.arcgis.com/yCArG7wGXGyWLqav/ArcGIS/rest/services/Zoning/FeatureServer/0/query', field: 'ZONING_SYMBOL' },
+    'pasadena':       { url: 'https://services2.arcgis.com/zNjnZafDYCAJAbN0/arcgis/rest/services/Zoning/FeatureServer/0/query', field: 'ZONE_CODE' },
+    'santa monica':   { url: 'https://gis.santamonica.gov/server/rest/services/Zoning/FeatureServer/2/query', field: 'zoning', descField: 'zonedesc' },
+    'west hollywood': { url: 'https://gis.weho.org/arcgis/rest/services/Planning/Zoning_Map_2018/MapServer/1/query', field: 'ZONECLASS', descField: 'ZONEDESC' },
+    'beverly hills':  { url: 'https://gis.beverlyhills.org/arcgis/rest/services/Zoning/MapServer/2/query', field: 'ZONE' },
+    'inglewood':      { url: 'https://gisweb.cityofinglewood.org/arcgis/rest/services/CityofInglewoodZoning/MapServer/0/query', field: 'ZNGCODE', descField: 'ZONEDESCRP' },
+    'pomona':         { url: 'https://gismaps.ci.pomona.ca.us/arcgis/rest/services/CommunityDevelopment/Zoning/MapServer/0/query', field: 'Label', descField: 'Zone_Defin' },
+    'arcadia':        { url: 'https://arcgis.gis.lacounty.gov/arcgis/rest/services/Arcadia/Zoning/MapServer/1/query', field: 'Zones' },
+    'torrance':       { url: 'https://services1.arcgis.com/38fAqAZVRCrVtPUU/ArcGIS/rest/services/Zoning/FeatureServer/20/query', field: 'ZONING' },
+    'culver city':    { url: 'https://services2.arcgis.com/LNAhiRpezPbHTIUO/arcgis/rest/services/Final_Zoning_Map_100924/FeatureServer/0/query', field: 'Zoning' },
+    'alhambra':       { url: 'https://services6.arcgis.com/GZCJsJngT6kRZkzb/arcgis/rest/services/Alhambra_Planning/FeatureServer/9/query', field: 'Zoning', descField: 'Zoning_Description' },
+};
+
+// Query zoning — routes to city-specific GIS or ZIMAS for LA City
+async function fetchZoning(lat, lon, cityName) {
+    const city = (cityName || '').toLowerCase().trim();
+    const cityGIS = CITY_ZONING_GIS[city];
+
+    if (cityGIS) {
+        // Use city-specific ArcGIS endpoint
+        try {
+            const fields = [cityGIS.field];
+            if (cityGIS.descField) fields.push(cityGIS.descField);
+            const url = `${cityGIS.url}?where=1%3D1&geometry=${lon},${lat}` +
+                `&geometryType=esriGeometryPoint&inSR=4326` +
+                `&spatialRel=esriSpatialRelIntersects&outFields=${fields.join(',')}&returnGeometry=false` +
+                `&distance=30&units=esriSRUnit_Meter&f=json`;
+            const resp = await fetch(url, { signal: AbortSignal.timeout(10000) });
+            if (!resp.ok) throw new Error(city + ' GIS unavailable');
+            const data = await resp.json();
+            if (data.features && data.features.length > 0) {
+                const attrs = data.features[0].attributes;
+                const raw = attrs[cityGIS.field] || Object.values(attrs).find(v => typeof v === 'string' && v.length > 0) || '';
+                const desc = cityGIS.descField ? (attrs[cityGIS.descField] || '') : '';
+                return { raw: raw, mapped: mapZoningCode(raw), city: city, description: desc };
+            }
+            return null;
+        } catch (e) {
+            console.warn(city + ' zoning query failed:', e);
+            return { error: 'cors' };
+        }
+    }
+
+    // Default: ZIMAS (City of Los Angeles)
     try {
-        // ZIMAS uses CA State Plane Zone 5 (feet) but we can pass WGS84 with inSR=4326
-        // Use 30m buffer because Nominatim geocodes to road centerline, not parcel centroid
         const url = `https://zimas.lacity.org/arcgis/rest/services/zma/zoning/MapServer/1102/query?` +
             `geometry=${lon},${lat}&geometryType=esriGeometryPoint&inSR=4326` +
             `&spatialRel=esriSpatialRelIntersects&outFields=ZONE_CMPLT&returnGeometry=false` +
@@ -4677,10 +4721,13 @@ async function _lookupAddressBody(address, coords, btn) {
         ]);
     }
 
+    // Extract city name from geocoded address for multi-city zoning routing
+    const _geocodedCity = (coords.address && (coords.address.city || coords.address.town || coords.address.municipality || coords.address.village)) || '';
+
     let zoningResult, parcelResult;
     try {
         [zoningResult, parcelResult] = await Promise.all([
-            fetchWithTimeout(fetchZoning(coords.lat, coords.lon), 12000),
+            fetchWithTimeout(fetchZoning(coords.lat, coords.lon, _geocodedCity), 12000),
             fetchWithTimeout(fetchParcelInfo(coords.lat, coords.lon, coords.address), 12000),
         ]);
     } catch (e) {
