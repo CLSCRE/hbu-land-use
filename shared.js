@@ -147,6 +147,151 @@ if (typeof _debouncedCall === 'undefined') {
     }
 }
 
+// --- Multi-city Zoning GIS Endpoints ---
+if (typeof SHARED_CITY_ZONING_GIS === 'undefined') {
+    var SHARED_CITY_ZONING_GIS = {
+        'glendale':       { url: 'https://gismap.glendaleca.gov/arcgis/rest/services/Common/Zoning/MapServer/2/query', field: 'ZONE_DISTR', descField: 'ZONE_DESC' },
+        'long beach':     { url: 'https://services6.arcgis.com/yCArG7wGXGyWLqav/ArcGIS/rest/services/Zoning/FeatureServer/0/query', field: 'ZONING_SYMBOL' },
+        'pasadena':       { url: 'https://services2.arcgis.com/zNjnZafDYCAJAbN0/arcgis/rest/services/Zoning/FeatureServer/0/query', field: 'ZONE_CODE' },
+        'santa monica':   { url: 'https://gis.santamonica.gov/server/rest/services/Zoning/FeatureServer/2/query', field: 'zoning', descField: 'zonedesc' },
+        'west hollywood': { url: 'https://gis.weho.org/arcgis/rest/services/Planning/Zoning_Map_2018/MapServer/1/query', field: 'ZONECLASS', descField: 'ZONEDESC' },
+        'beverly hills':  { url: 'https://gis.beverlyhills.org/arcgis/rest/services/Zoning/MapServer/2/query', field: 'ZONE' },
+        'inglewood':      { url: 'https://gisweb.cityofinglewood.org/arcgis/rest/services/CityofInglewoodZoning/MapServer/0/query', field: 'ZNGCODE', descField: 'ZONEDESCRP' },
+        'pomona':         { url: 'https://gismaps.ci.pomona.ca.us/arcgis/rest/services/CommunityDevelopment/Zoning/MapServer/0/query', field: 'Label', descField: 'Zone_Defin' },
+        'arcadia':        { url: 'https://arcgis.gis.lacounty.gov/arcgis/rest/services/Arcadia/Zoning/MapServer/1/query', field: 'Zones' },
+        'torrance':       { url: 'https://services1.arcgis.com/38fAqAZVRCrVtPUU/ArcGIS/rest/services/Zoning/FeatureServer/20/query', field: 'ZONING' },
+        'culver city':    { url: 'https://services2.arcgis.com/LNAhiRpezPbHTIUO/arcgis/rest/services/Final_Zoning_Map_100924/FeatureServer/0/query', field: 'Zoning' },
+        'alhambra':       { url: 'https://services6.arcgis.com/GZCJsJngT6kRZkzb/arcgis/rest/services/Alhambra_Planning/FeatureServer/9/query', field: 'Zoning', descField: 'Zoning_Description' },
+    };
+}
+
+// --- SB 9 Lot Split Scenario Card ---
+if (typeof buildSB9Card === 'undefined') {
+    function buildSB9Card(inp, transitProximity) {
+        var SF_ZONES = ['R1', 'R1V', 'R1V1', 'R1V2', 'R1V3', 'RE', 'RE9', 'RE11', 'RE15', 'RE20', 'RE40', 'RS', 'RA', 'RD', 'RD1.5', 'RD2', 'RD3', 'RD4', 'RD5', 'RD6', 'RW1'];
+        if (!SF_ZONES.includes(inp.zoning) || inp.parcelSize < 2400) return null;
+        if (inp.constHistoric || inp.constFire || inp.constHillside || inp.constFault || inp.constFlood || inp.constCoastal) return null;
+
+        var canSplit = inp.parcelSize >= 2400;
+        var lotA = Math.floor(inp.parcelSize * 0.5);
+        var lotB = inp.parcelSize - lotA;
+        var splitValid = lotA >= 1200 && lotB >= 1200;
+        var nearTransit = (transitProximity === 'adjacent' || transitProximity === 'near');
+        var maxUnits = splitValid ? 4 : 2;
+        var parkingPerUnit = nearTransit ? 0 : 1;
+        var totalParking = maxUnits * parkingPerUnit;
+        var maxSFPerUnit = 800;
+        var totalBuildable = maxUnits * maxSFPerUnit;
+
+        return {
+            eligible: true,
+            canSplit: canSplit && splitValid,
+            maxUnits: maxUnits,
+            lotA: splitValid ? lotA : inp.parcelSize,
+            lotB: splitValid ? lotB : 0,
+            maxSFPerUnit: maxSFPerUnit,
+            totalBuildable: totalBuildable,
+            parkingPerUnit: parkingPerUnit,
+            totalParking: totalParking,
+            nearTransit: nearTransit,
+            setbacks: { front: 'existing', side: 4, rear: 4 },
+            maxHeight: 25,
+            ownerOccupancy: splitValid,
+            ownerOccupancyYears: 3,
+            // Render as HTML card
+            html: '<div class="sb9-card" style="background:#1a2332;border:1px solid #2d6a4f;border-radius:8px;padding:12px;margin:8px 0;">' +
+                '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">' +
+                '<span style="background:#2d6a4f;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">SB 9 ELIGIBLE</span>' +
+                '<span style="color:#a7f3d0;font-weight:600;">Lot Split + Duplex</span></div>' +
+                '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;color:#94a3b8;">' +
+                '<div><b style="color:#e2e8f0;">' + maxUnits + ' Units</b> possible</div>' +
+                '<div><b style="color:#e2e8f0;">' + totalBuildable.toLocaleString() + ' SF</b> buildable</div>' +
+                (splitValid ? '<div>Lot A: <b style="color:#e2e8f0;">' + lotA.toLocaleString() + ' SF</b></div>' +
+                '<div>Lot B: <b style="color:#e2e8f0;">' + lotB.toLocaleString() + ' SF</b></div>' : '') +
+                '<div>Max/unit: <b style="color:#e2e8f0;">' + maxSFPerUnit + ' SF</b></div>' +
+                '<div>Parking: <b style="color:#e2e8f0;">' + (nearTransit ? 'None (transit)' : totalParking + ' spaces') + '</b></div>' +
+                '<div>Setbacks: <b style="color:#e2e8f0;">4 ft side/rear</b></div>' +
+                '<div>Height: <b style="color:#e2e8f0;">25 ft (2 stories)</b></div>' +
+                '</div>' +
+                (splitValid ? '<div style="margin-top:6px;font-size:11px;color:#fbbf24;">⚠ Owner-occupancy required for 3 years if lot split</div>' : '') +
+                '</div>'
+        };
+    }
+}
+
+// --- Fire Perimeter Check (CalFire/NIFC) ---
+if (typeof checkFirePerimeter === 'undefined') {
+    var FIRE_PERIMETER_URL = null; // Set after research agent returns
+    async function checkFirePerimeter(lat, lon) {
+        if (!FIRE_PERIMETER_URL) return null;
+        try {
+            var url = FIRE_PERIMETER_URL + '?where=1%3D1&geometry=' + lon + ',' + lat +
+                '&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects' +
+                '&outFields=*&returnGeometry=false&f=json';
+            var resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
+            if (!resp.ok) return null;
+            var data = await resp.json();
+            if (data.features && data.features.length > 0) {
+                var attrs = data.features[0].attributes;
+                return {
+                    inFireZone: true,
+                    fireName: attrs.FIRE_NAME || attrs.IncidentName || attrs.poly_Incid || 'Unknown',
+                    fireYear: attrs.YEAR_ || attrs.FireDiscoveryDateTime || attrs.ALARM_DATE || '',
+                    acres: attrs.GIS_ACRES || attrs.ACRES || attrs.DailyAcres || 0,
+                    html: '<div style="background:#451a03;border:1px solid #f97316;border-radius:8px;padding:10px;margin:8px 0;">' +
+                        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">' +
+                        '<span style="background:#f97316;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">FIRE REBUILD ZONE</span>' +
+                        '<span style="color:#fdba74;font-weight:600;">' + (attrs.FIRE_NAME || attrs.IncidentName || attrs.poly_Incid || 'Recent Fire') + '</span></div>' +
+                        '<div style="font-size:13px;color:#fed7aa;">' +
+                        'This parcel is within a recent fire perimeter. Potential benefits: expedited permitting, ' +
+                        'insurance-funded demolition, opportunity to rebuild at higher density under current zoning and SB 9/SB 35.' +
+                        '</div></div>'
+                };
+            }
+            return null;
+        } catch { return null; }
+    }
+}
+
+// --- ATTOM Enrichment (comps, assessment history) ---
+if (typeof fetchAttomComps === 'undefined') {
+    var AVM_PROXY_BASE = 'https://lty-avm-proxy.clscre.workers.dev';
+    async function fetchAttomComps(address) {
+        // Sales comps are available via the ATTOM proxy if we add a /comps route
+        // For now, store the AVM data from the main fetch and display extended fields
+        return window._lastAVM || null;
+    }
+
+    function buildAttomEnrichmentCard(avm) {
+        if (!avm || avm.avmSource !== 'attom') return '';
+        var parts = [];
+        if (avm.value && avm.assessedTotal) {
+            var gap = avm.value - avm.assessedTotal;
+            var gapPct = Math.round((gap / avm.assessedTotal) * 100);
+            parts.push('<div>Market vs Assessed gap: <b style="color:#e2e8f0;">$' + Math.round(gap).toLocaleString() + '</b> (' + gapPct + '% above assessed)</div>');
+        }
+        if (avm.priceLow && avm.priceHigh) {
+            parts.push('<div>Value range: <b style="color:#e2e8f0;">$' + Math.round(avm.priceLow).toLocaleString() + ' – $' + Math.round(avm.priceHigh).toLocaleString() + '</b></div>');
+        }
+        if (avm.confidence) {
+            var confColor = avm.confidence >= 80 ? '#4ade80' : avm.confidence >= 60 ? '#fbbf24' : '#f87171';
+            parts.push('<div>Confidence: <b style="color:' + confColor + ';">' + avm.confidence + '/100</b></div>');
+        }
+        if (avm.lastSalePrice && avm.lastSaleDate) {
+            var saleYear = String(avm.lastSaleDate).substring(0, 4);
+            var appreciation = avm.value ? Math.round(((avm.value - avm.lastSalePrice) / avm.lastSalePrice) * 100) : 0;
+            parts.push('<div>Last sale: <b style="color:#e2e8f0;">$' + Math.round(avm.lastSalePrice).toLocaleString() + '</b> (' + saleYear + ')' +
+                (appreciation > 0 ? ' · <span style="color:#4ade80;">+' + appreciation + '% since</span>' : '') + '</div>');
+        }
+        if (parts.length === 0) return '';
+        return '<div class="attom-card" style="background:#1a2332;border:1px solid #3b82f6;border-radius:8px;padding:12px;margin:8px 0;">' +
+            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">' +
+            '<span style="background:#3b82f6;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">ATTOM VALUATION</span></div>' +
+            '<div style="display:grid;grid-template-columns:1fr;gap:4px;font-size:13px;color:#94a3b8;">' +
+            parts.join('') + '</div></div>';
+    }
+}
+
 // ============================================================
 //  NOTE TO DEVELOPERS:
 //

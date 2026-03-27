@@ -3730,6 +3730,10 @@ async function lookupAddress() {
     addStatus('<br><span class="loading">Querying zoning &amp; parcel data...</span>');
 
     const _geocodedCity = (coords.address && (coords.address.city || coords.address.town || coords.address.municipality || coords.address.village)) || '';
+    window._lastFireCheck = null;
+    if (typeof checkFirePerimeter === 'function') {
+        checkFirePerimeter(coords.lat, coords.lon).then(function(f) { window._lastFireCheck = f; }).catch(function() {});
+    }
     let zoningResult = null, parcelResult = null;
     try {
         const _dataTimeout = new Promise(resolve => setTimeout(() => resolve([{ error: 'timeout' }, { error: 'timeout' }]), 12000));
@@ -6879,6 +6883,18 @@ function openAnalysis(resultIndex) {
     if (r.legislation && r.legislation.length > 0) {
         html += `<div class="analysis-section"><h3>Applicable Legislation</h3><div class="legislation-cards">${r.legislation.map(b => `<div class="legislation-card clickable" onclick="showLegislationDetail('${b.id}')"><strong>${b.name}</strong><p>${b.description}</p></div>`).join('')}</div></div>`;
     }
+    // SB 9 Lot Split Card
+    if (typeof buildSB9Card === 'function' && window._lastScoringInput) {
+        const sb9 = buildSB9Card(window._lastScoringInput, window._lastScoringInput.transit || '');
+        if (sb9 && sb9.eligible && ['duplex', 'adu', 'sfr'].includes(r.id)) html += sb9.html;
+    }
+    // ATTOM Valuation Enrichment
+    if (typeof buildAttomEnrichmentCard === 'function' && window._lastAVM) {
+        const ac = buildAttomEnrichmentCard(window._lastAVM);
+        if (ac) html += ac;
+    }
+    // Fire Rebuild Zone
+    if (window._lastFireCheck && window._lastFireCheck.inFireZone) html += window._lastFireCheck.html;
     html += generateRisksHTML(r.id, inp);
     html += `<div class="disclaimer" style="margin-top:1.5rem;"><strong>Disclaimer:</strong> This pro forma is a preliminary estimate for educational purposes only.</div>`;
     document.getElementById('modalBody').innerHTML = html;
@@ -7373,6 +7389,7 @@ function getLegislationForResult(result) {
     var zoning = 'C2'; if ((result.allowances && result.allowances.far >= 4.0) || result.zone === 'adjacent' || result.zone === 'inner') zoning = 'TOD';
     var prevGeocode = window.lastGeocode; if (result.lat && result.lon) window.lastGeocode = { lat: result.lat, lon: result.lon };
     var inp = { parcelSize: lotSf, frontage: Math.round(Math.sqrt(lotSf)*0.8), zoning, neighborhood: 'dtla', siteCondition: result.useType === 'Vacant' ? 'vacant' : 'demolition', topography: 'flat', cornerLot: false, transit, arterial: 'major', utilities: 'full', constFlood: false, constHillside: false, constHistoric: false, constFault: false, constCoastal: false, constParking: false };
+    window._lastScoringInput = inp;
     for (var u = 0; u < useTypes.length; u++) { try { var bills = getApplicableLegislation(useTypes[u], inp); for (var b = 0; b < bills.length; b++) allBills[bills[b].id] = bills[b]; if (bills.length > bestCount) { bestCount = bills.length; bestUseType = useTypes[u]; } } catch(e) {} }
     window.lastGeocode = prevGeocode;
     var billList = []; for (var key in allBills) { if (allBills.hasOwnProperty(key)) billList.push(allBills[key]); }

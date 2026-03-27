@@ -4483,6 +4483,10 @@ async function lookupAddress() {
     // Run zoning + parcel queries in parallel
     addStatus('<br><span class="loading">Querying zoning &amp; parcel data...</span>');
     const _geocodedCity = (coords.address && (coords.address.city || coords.address.town || coords.address.municipality || coords.address.village)) || '';
+    window._lastFireCheck = null;
+    if (typeof checkFirePerimeter === 'function') {
+        checkFirePerimeter(coords.lat, coords.lon).then(function(f) { window._lastFireCheck = f; }).catch(function() {});
+    }
 
     const _dataTimeout = new Promise(resolve => setTimeout(() => resolve([{ error: 'timeout' }, { error: 'timeout' }]), 12000));
     const [zoningResult, parcelResult] = await Promise.race([
@@ -8291,6 +8295,7 @@ function getLegislationForResult(result) {
         constCoastal: false,
         constParking: false,
     };
+    window._lastScoringInput = inp;
 
     // Test each use type
     for (var u = 0; u < useTypes.length; u++) {
@@ -8769,6 +8774,19 @@ function renderFinderDetailPanel(r, idx) {
         html += '<p style="color:#a0aec0;font-size:0.8rem;margin:0;">No specific legislation applies to this parcel.</p>';
     }
     html += '</div>';
+
+    // SB 9 Lot Split Card
+    if (typeof buildSB9Card === 'function' && window._lastScoringInput) {
+        var sb9 = buildSB9Card(window._lastScoringInput, window._lastScoringInput.transit || '');
+        if (sb9 && sb9.eligible && ['duplex', 'adu', 'sfr'].includes(r.id)) html += sb9.html;
+    }
+    // ATTOM Valuation Enrichment
+    if (typeof buildAttomEnrichmentCard === 'function' && window._lastAVM) {
+        var ac = buildAttomEnrichmentCard(window._lastAVM);
+        if (ac) html += ac;
+    }
+    // Fire Rebuild Zone
+    if (window._lastFireCheck && window._lastFireCheck.inFireZone) html += window._lastFireCheck.html;
 
     html += '</div>'; // close flex container
     return html;

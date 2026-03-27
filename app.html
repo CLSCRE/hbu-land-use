@@ -4724,6 +4724,12 @@ async function _lookupAddressBody(address, coords, btn) {
     // Extract city name from geocoded address for multi-city zoning routing
     const _geocodedCity = (coords.address && (coords.address.city || coords.address.town || coords.address.municipality || coords.address.village)) || '';
 
+    // Fire perimeter check (run in parallel, non-blocking)
+    window._lastFireCheck = null;
+    if (typeof checkFirePerimeter === 'function') {
+        checkFirePerimeter(coords.lat, coords.lon).then(function(f) { window._lastFireCheck = f; }).catch(function() {});
+    }
+
     let zoningResult, parcelResult;
     try {
         [zoningResult, parcelResult] = await Promise.all([
@@ -8656,6 +8662,25 @@ function openAnalysis(resultIndex) {
         </div></div>`;
     }
 
+    // --- SB 9 Lot Split Card (duplex/adu/sfr on single-family zones) ---
+    if (typeof buildSB9Card === 'function' && window._lastScoringInput) {
+        const sb9 = buildSB9Card(window._lastScoringInput, window._lastScoringInput.transit || '');
+        if (sb9 && sb9.eligible && ['duplex', 'adu', 'sfr'].includes(r.id)) {
+            html += sb9.html;
+        }
+    }
+
+    // --- ATTOM Valuation Enrichment Card ---
+    if (typeof buildAttomEnrichmentCard === 'function' && window._lastAVM) {
+        const attomCard = buildAttomEnrichmentCard(window._lastAVM);
+        if (attomCard) html += attomCard;
+    }
+
+    // --- Fire Rebuild Zone Card ---
+    if (window._lastFireCheck && window._lastFireCheck.inFireZone) {
+        html += window._lastFireCheck.html;
+    }
+
     // --- Pre-Approved ADU Plans (ADU only) ---
     if (r.id === 'adu') {
         const aduRules = getADURules(window._lastJurisdiction);
@@ -9504,6 +9529,7 @@ function getLegislationForResult(result) {
         constCoastal: false,
         constParking: false,
     };
+    window._lastScoringInput = inp;  // Store for SB9 card + other enrichment cards
 
     // Test each use type
     for (var u = 0; u < useTypes.length; u++) {
