@@ -221,30 +221,40 @@ if (typeof buildSB9Card === 'undefined') {
 
 // --- Fire Perimeter Check (CalFire/NIFC) ---
 if (typeof checkFirePerimeter === 'undefined') {
-    var FIRE_PERIMETER_URL = null; // Set after research agent returns
+    var FIRE_PERIMETER_URL = 'https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/California_Fire_Perimeters_Time_Enabled_View/FeatureServer/0/query';
     async function checkFirePerimeter(lat, lon) {
         if (!FIRE_PERIMETER_URL) return null;
         try {
-            var url = FIRE_PERIMETER_URL + '?where=1%3D1&geometry=' + lon + ',' + lat +
+            var url = FIRE_PERIMETER_URL + '?where=YEAR_%3E%3D2024&geometry=' + lon + ',' + lat +
                 '&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects' +
-                '&outFields=*&returnGeometry=false&f=json';
+                '&outFields=FIRE_NAME,ALARM_DATE,CONT_DATE,GIS_ACRES,YEAR_&returnGeometry=false&f=json';
             var resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
             if (!resp.ok) return null;
             var data = await resp.json();
             if (data.features && data.features.length > 0) {
                 var attrs = data.features[0].attributes;
+                var fireName = attrs.FIRE_NAME || 'Unknown';
+                var fireYear = attrs.YEAR_ || '';
+                var acres = attrs.GIS_ACRES ? Math.round(attrs.GIS_ACRES).toLocaleString() : '?';
+                var alarmDate = attrs.ALARM_DATE ? new Date(attrs.ALARM_DATE).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '';
                 return {
                     inFireZone: true,
-                    fireName: attrs.FIRE_NAME || attrs.IncidentName || attrs.poly_Incid || 'Unknown',
-                    fireYear: attrs.YEAR_ || attrs.FireDiscoveryDateTime || attrs.ALARM_DATE || '',
-                    acres: attrs.GIS_ACRES || attrs.ACRES || attrs.DailyAcres || 0,
-                    html: '<div style="background:#451a03;border:1px solid #f97316;border-radius:8px;padding:10px;margin:8px 0;">' +
-                        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">' +
+                    fireName: fireName,
+                    fireYear: fireYear,
+                    acres: attrs.GIS_ACRES || 0,
+                    html: '<div style="background:#451a03;border:1px solid #f97316;border-radius:8px;padding:12px;margin:8px 0;">' +
+                        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">' +
                         '<span style="background:#f97316;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">FIRE REBUILD ZONE</span>' +
-                        '<span style="color:#fdba74;font-weight:600;">' + (attrs.FIRE_NAME || attrs.IncidentName || attrs.poly_Incid || 'Recent Fire') + '</span></div>' +
-                        '<div style="font-size:13px;color:#fed7aa;">' +
-                        'This parcel is within a recent fire perimeter. Potential benefits: expedited permitting, ' +
-                        'insurance-funded demolition, opportunity to rebuild at higher density under current zoning and SB 9/SB 35.' +
+                        '<span style="color:#fdba74;font-weight:600;">' + fireName + ' Fire</span>' +
+                        (alarmDate ? '<span style="color:#fed7aa;font-size:12px;">(' + alarmDate + ' · ' + acres + ' acres)</span>' : '') + '</div>' +
+                        '<div style="display:grid;grid-template-columns:1fr;gap:4px;font-size:13px;color:#fed7aa;">' +
+                        '<div>This parcel is within the <b style="color:#fb923c;">' + fireName + '</b> fire perimeter.</div>' +
+                        '<div style="margin-top:4px;"><b style="color:#fbbf24;">Development opportunities:</b></div>' +
+                        '<div>• Expedited permitting for fire rebuilds</div>' +
+                        '<div>• Insurance-funded demolition & site clearance</div>' +
+                        '<div>• Rebuild at higher density under current zoning + SB 9/SB 35</div>' +
+                        '<div>• Potential property tax reassessment advantage (Prop 13 reset)</div>' +
+                        '<div>• State/federal disaster recovery funding may apply</div>' +
                         '</div></div>'
                 };
             }

@@ -3597,11 +3597,27 @@ async function fetchZoning(lat, lon, cityName) {
             const raw = data.features[0].attributes.ZONE_CMPLT || data.features[0].attributes.zone_cmplt;
             return { raw, mapped: mapZoningCode(raw) };
         }
-        return null;
+        return await fetchUnincorporatedZoning(lat, lon);
     } catch (e) {
         console.warn('ZIMAS zoning query failed:', e);
-        return { error: 'cors' };
+        try { return await fetchUnincorporatedZoning(lat, lon); } catch { return { error: 'cors' }; }
     }
+}
+
+async function fetchUnincorporatedZoning(lat, lon) {
+    try {
+        const url = `https://arcgis.gis.lacounty.gov/arcgis/rest/services/DRP/ZNET_Public/MapServer/4/query?` +
+            `where=1%3D1&geometry=${lon},${lat}&geometryType=esriGeometryPoint&inSR=4326` +
+            `&spatialRel=esriSpatialRelIntersects&outFields=ZONE,Z_DESC,Z_CATEGORY,PLNG_AREA&returnGeometry=false&f=json`;
+        const resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
+        if (!resp.ok) return null;
+        const data = await resp.json();
+        if (data.features && data.features.length > 0) {
+            const attrs = data.features[0].attributes;
+            return { raw: attrs.ZONE || '', mapped: mapZoningCode(attrs.ZONE || ''), city: 'unincorporated', description: attrs.Z_DESC || '' };
+        }
+        return null;
+    } catch { return null; }
 }
 
 // Query LA County parcel layer for lot size
