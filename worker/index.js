@@ -17,6 +17,9 @@
  *   GET /?address=...              — ATTOM AVM (primary), RentCast fallback
  *   GET /?address=...&provider=attom    — force ATTOM only
  *   GET /?address=...&provider=rentcast — force RentCast only
+ *   POST /track                    — Log search event (address, portal, timestamp)
+ *   GET /stats?key=<admin_key>     — View usage stats (requires ADMIN_KEY secret)
+ *   GET /stats/recent?key=<admin_key> — View recent searches
  */
 
 const ALLOWED_ORIGINS = [
@@ -148,11 +151,93 @@ export default {
       return new Response(null, { status: 204, headers: cors });
     }
 
+    const url = new URL(request.url);
+    const path = url.pathname;
+
+    // ── Analytics: POST /track ─────────────────────────────────
+    if (request.method === 'POST' && path === '/track') {
+      try {
+        const body = await request.json();
+        const event = {
+          address: body.address || '',
+          portal: body.portal || 'unknown',    // 'developer', 'agent', 'lender'
+          city: body.city || '',
+          zoning: body.zoning || '',
+          timestamp: Date.now(),
+          date: new Date().toISOString().slice(0, 10),
+          ua: request.headers.get('User-Agent') || '',
+        };
+        if (env.AVM_CACHE) {
+          // Store individual event (kept for 180 days)
+          const eventKey = `evt:${event.date}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+          ctx.waitUntil(env.AVM_CACHE.put(eventKey, JSON.stringify(event), { expirationTtl: 15552000 }));
+
+          // Increment daily counter
+          const dayKey = `day:${event.date}`;
+          const dayCount = parseInt(await env.AVM_CACHE.get(dayKey) || '0') + 1;
+          ctx.waitUntil(env.AVM_CACHE.put(dayKey, String(dayCount), { expirationTtl: 15552000 }));
+
+          // Increment portal counter
+          const portalKey = `portal:${event.portal}:${event.date}`;
+          const portalCount = parseInt(await env.AVM_CACHE.get(portalKey) || '0') + 1;
+          ctx.waitUntil(env.AVM_CACHE.put(portalKey, String(portalCount), { expirationTtl: 15552000 }));
+
+          // Track unique addresses searched
+          const addrKey = `addr:${event.address.toLowerCase().trim()}`;
+          ctx.waitUntil(env.AVM_CACHE.put(addrKey, JSON.stringify({ last: event.timestamp, count: 1, portal: event.portal }), { expirationTtl: 15552000 }));
+        }
+        return Response.json({ ok: true }, { headers: cors });
+      } catch (err) {
+        return Response.json({ error: 'Track error', detail: err.message }, { status: 400, headers: cors });
+      }
+    }
+
+    // ── Analytics: GET /stats ──────────────────────────────────
+    if (request.method === 'GET' && path.startsWith('/stats')) {
+      const adminKey = url.searchParams.get('key');
+      if (!env.ADMIN_KEY || adminKey !== env.ADMIN_KEY) {
+        return Response.json({ error: 'Unauthorized' }, { status: 401, headers: cors });
+      }
+
+      if (path === '/stats/recent' && env.AVM_CACHE) {
+        // List recent events
+        const list = await env.AVM_CACHE.list({ prefix: 'evt:', limit: 50 });
+        const events = [];
+        for (const key of list.keys) {
+          const val = await env.AVM_CACHE.get(key.name, 'json');
+          if (val) events.push(val);
+        }
+        events.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        return Response.json({ count: events.length, events }, { headers: { ...cors, 'Content-Type': 'application/json' } });
+      }
+
+      // Daily stats for last 30 days
+      const stats = { daily: {}, portals: {} };
+      const today = new Date();
+      for (let i = 0; i < 30; i++) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().slice(0, 10);
+        if (env.AVM_CACHE) {
+          const dayCount = await env.AVM_CACHE.get(`day:${dateStr}`);
+          if (dayCount) stats.daily[dateStr] = parseInt(dayCount);
+          for (const p of ['developer', 'agent', 'lender']) {
+            const pc = await env.AVM_CACHE.get(`portal:${p}:${dateStr}`);
+            if (pc) {
+              if (!stats.portals[p]) stats.portals[p] = {};
+              stats.portals[p][dateStr] = parseInt(pc);
+            }
+          }
+        }
+      }
+      const totalSearches = Object.values(stats.daily).reduce((a, b) => a + b, 0);
+      return Response.json({ totalSearches, ...stats }, { headers: { ...cors, 'Content-Type': 'application/json' } });
+    }
+
     if (request.method !== 'GET') {
       return Response.json({ error: 'Method not allowed' }, { status: 405, headers: cors });
     }
 
-    const url = new URL(request.url);
     const address = url.searchParams.get('address');
     const provider = url.searchParams.get('provider') || 'auto';  // auto, attom, rentcast
 

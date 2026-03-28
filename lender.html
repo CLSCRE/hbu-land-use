@@ -4497,8 +4497,9 @@ async function lookupAddress() {
     let filledCount = 0;
 
     // Run zoning + parcel queries in parallel
-    addStatus('<br><span class="loading">Querying zoning &amp; parcel data...</span>');
     const _geocodedCity = (coords.address && (coords.address.city || coords.address.town || coords.address.municipality || coords.address.village)) || '';
+    if (typeof trackSearch === 'function') trackSearch(address, 'lender', _geocodedCity, '');
+    addStatus('<br><span class="loading">Querying zoning &amp; parcel data...</span>');
     window._lastFireCheck = null;
     if (typeof checkFirePerimeter === 'function') {
         checkFirePerimeter(coords.lat, coords.lon).then(function(f) { window._lastFireCheck = f; }).catch(function() {});

@@ -4731,6 +4731,9 @@ async function _lookupAddressBody(address, coords, btn) {
     // Detect neighborhood early so fallback zoning estimation can use it
     const hood = detectNeighborhood(coords.lat, coords.lon, coords.address);
 
+    // Track this search
+    if (typeof trackSearch === 'function') trackSearch(address, 'developer', _geocodedCity, '');
+
     // Run zoning + parcel queries in parallel with timeout
     addStatus('<br><span class="loading">Querying zoning &amp; parcel data...</span>');
 

@@ -3743,6 +3743,7 @@ async function lookupAddress() {
     filledCount++;
 
     // Run zoning + parcel queries in parallel (with hard 12s timeout)
+    if (typeof trackSearch === 'function') trackSearch(address, 'agent', _geocodedCity, '');
     addStatus('<br><span class="loading">Querying zoning &amp; parcel data...</span>');
 
     const _geocodedCity = (coords.address && (coords.address.city || coords.address.town || coords.address.municipality || coords.address.village)) || '';

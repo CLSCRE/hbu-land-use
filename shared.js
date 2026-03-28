@@ -302,6 +302,24 @@ if (typeof fetchAttomComps === 'undefined') {
     }
 }
 
+// --- Usage Analytics ---
+if (typeof trackSearch === 'undefined') {
+    function trackSearch(address, portal, city, zoning) {
+        try {
+            var payload = { address: address || '', portal: portal || 'unknown', city: city || '', zoning: zoning || '' };
+            navigator.sendBeacon('https://lty-avm-proxy.clscre.workers.dev/track', JSON.stringify(payload));
+        } catch (e) { /* silent fail — analytics should never break the app */ }
+    }
+
+    // Auto-detect portal from URL
+    function detectPortal() {
+        var path = window.location.pathname.toLowerCase();
+        if (path.includes('agent')) return 'agent';
+        if (path.includes('lender')) return 'lender';
+        return 'developer';
+    }
+}
+
 // ============================================================
 //  NOTE TO DEVELOPERS:
 //
