@@ -11177,7 +11177,9 @@ function initFinderMap() {
     });
     L.control.layers({'Street': finderStreet, 'Satellite': finderSatellite}, {'Lot Lines': finderParcelLyr, 'Historic Districts (HPOZ)': finderHistoricLayer}, {position: 'topright'}).addTo(finderMapInstance);
 
-    // Add all station markers
+    // Add all station markers — Tier 1 (heavy rail) larger + diamond, Tier 2 (light rail) smaller + circle
+    const tier1Layer = L.layerGroup();
+    const tier2Layer = L.layerGroup();
     const seenCoords = new Set();
     METRO_STATIONS.forEach((s, idx) => {
         const key = `${s.lat.toFixed(4)},${s.lon.toFixed(4)},${s.line}`;
@@ -11185,9 +11187,14 @@ function initFinderMap() {
         seenCoords.add(key);
 
         const color = LINE_COLORS[s.line] || '#718096';
+        const isTier1 = s.tier === 1;
+        const size = isTier1 ? 14 : 10;
+        const shape = isTier1
+            ? `<div style="background:${color};width:${size}px;height:${size}px;transform:rotate(45deg);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);"></div>`
+            : `<div style="background:${color};width:${size}px;height:${size}px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>`;
         const icon = L.divIcon({
-            html: `<div style="background:${color};width:10px;height:10px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>`,
-            iconSize: [10, 10], iconAnchor: [5, 5], className: '',
+            html: shape,
+            iconSize: [size, size], iconAnchor: [size/2, size/2], className: '',
         });
         const tierData = SB79_TIERS[s.tier];
         const lineName = LINE_LABELS[s.line] || s.line;
@@ -11206,8 +11213,16 @@ function initFinderMap() {
                 selectFinderStation2(idx);
                 drawFinderStationRadii(s);
             });
-        marker.addTo(finderMapInstance);
+        if (isTier1) { tier1Layer.addLayer(marker); } else { tier2Layer.addLayer(marker); }
     });
+    tier1Layer.addTo(finderMapInstance);
+    tier2Layer.addTo(finderMapInstance);
+
+    // Add station layers to the layer control
+    L.control.layers(null, {
+        '◆ Tier 1 — Heavy Rail': tier1Layer,
+        '● Tier 2 — Light Rail / Metrolink': tier2Layer,
+    }, { position: 'topright', collapsed: true }).addTo(finderMapInstance);
 
     // Native DOM click handler for zone identification (bypasses all Leaflet layers)
     attachZoneClickHandler(finderMapInstance);
