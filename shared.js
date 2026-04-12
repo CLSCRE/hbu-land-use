@@ -11,6 +11,7 @@
 var VALID_HASHES = [
     '6ca13d52ca70c883e0f0bb101e425a89e8624de51db2d2392593af6a84118090',
     'eed9899e026ac5d73d0230db369e2461a4d5358db80898f5b7981a0526a03bd9', // LandYield2026 — 90-day trial, expires 2026-06-22
+    '73b6eb82efc03253d1c12a3d3139beb939ff6417cbd50f098e80c71998975626', // PraxisLTY2026 — Jim De Vico, permanent collaborator access
 ];
 
 // Trial code expiration map: hash → expiry date (ISO string)
