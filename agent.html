@@ -1700,34 +1700,12 @@
     </div>
 </div>
 <script>
-(function() {
-    var AUTH_HASH = '6ca13d52ca70c883e0f0bb101e425a89e8624de51db2d2392593af6a84118090';
-    function _sha256(msg) {
-        return crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg)).then(function(buf) {
-            return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2,'0'); }).join('');
-        });
-    }
-    if (sessionStorage.getItem('hbu_auth') === 'ok') {
-        var ov = document.getElementById('authOverlay');
-        if (ov) ov.remove();
-    }
-    window.checkAuth = window.checkAuth || function() {
-        var inp = document.getElementById('authPassword');
-        var err = document.getElementById('authError');
-        var code = (inp ? inp.value : '').trim();
-        if (!code) { if (err) err.textContent = 'Please enter an access code.'; return; }
-        _sha256(code).then(function(hash) {
-            if (hash === AUTH_HASH) {
-                sessionStorage.setItem('hbu_auth', 'ok');
-                var overlay = document.getElementById('authOverlay');
-                if (overlay) { overlay.classList.add('fade-out'); setTimeout(function() { overlay.remove(); }, 500); }
-            } else {
-                if (err) err.textContent = 'Invalid access code.';
-                if (inp) { inp.value = ''; inp.focus(); }
-            }
-        });
-    };
-})();
+// Auth handled by shared.js (VALID_HASHES, HASH_EXPIRY, sha256, checkAuth)
+// Just check session on load
+if (sessionStorage.getItem('hbu_auth') === 'ok') {
+    var _ov = document.getElementById('authOverlay');
+    if (_ov) _ov.remove();
+}
 </script>
 
 <div id="demoBanner" class="demo-banner" style="display:none;">DEMO MODE &#8212; Sample data for illustration only</div>
@@ -2449,10 +2427,27 @@
 </div>
 
 <footer>
-    &copy; 2026 CLS CRE &mdash; Land to Yield. All rights reserved. For educational and professional use only.
+    &copy; 2026 Land to Yield. All rights reserved. For educational and professional use only.
 </footer>
 
 <script src="shared.js"></script>
+
+<!-- Portal config (must be before core files) -->
+<script>
+window.HBU_PORTAL_CONFIG = {
+    portalId: 'agent',
+    aduZoneBoostList: ['R1','R2','R3'],
+    aduJurisdictionCap: false,
+    feasibilityGateMode: 'boost-and-penalty',
+};
+</script>
+
+<!-- Core shared modules -->
+<script src="core-data.js"></script>
+<script src="core-geo.js"></script>
+<script src="core-hbu.js"></script>
+<script src="core-finance.js"></script>
+
 <script>
 // ============================================================
 //  PARCEL LOT LINES — Shared Functions
@@ -2577,52 +2572,6 @@ function setupParcelLayer(map) {
 //  AUTH GATE — handled by shared.js (ADMIN_HASH, VALID_CODES, sha256, checkAuth)
 // ============================================================
 // === Sources & Uses ===
-function renderSourcesAndUses(budget, isSimplified) {
-  var panel = document.getElementById('sources-uses-panel');
-  var grid = document.getElementById('sources-uses-grid');
-  if (!panel || !grid || !budget) return;
-  function fmt(n) { return '$' + Math.round(n).toLocaleString(); }
-  var totalDev = budget.totalDev || 0;
-  var seniorDebt = Math.round(totalDev * 0.65);
-  var equity = totalDev - seniorDebt;
-  var html = '<div class="su-columns">';
-  // Uses column
-  html += '<div class="su-col"><h3>Uses of Funds</h3><table class="su-table">';
-  if (isSimplified) {
-    html += '<tr><td>Land Acquisition</td><td>' + fmt(budget.landCost || 0) + '</td></tr>';
-    html += '<tr><td>Hard Costs</td><td>' + fmt(budget.totalHard || 0) + '</td></tr>';
-    html += '<tr><td>Soft Costs</td><td>' + fmt(budget.totalSoft || 0) + '</td></tr>';
-  } else {
-    html += '<tr><td>Land Acquisition</td><td>' + fmt(budget.landCost || 0) + '</td></tr>';
-    html += '<tr class="su-subtotal"><td colspan="2" style="padding-top:8px;">Hard Costs</td></tr>';
-    html += '<tr><td>&nbsp;&nbsp;Site Work</td><td>' + fmt(budget.siteWork || 0) + '</td></tr>';
-    if (budget.demolition > 0) html += '<tr><td>&nbsp;&nbsp;Demolition</td><td>' + fmt(budget.demolition) + '</td></tr>';
-    html += '<tr><td>&nbsp;&nbsp;Construction</td><td>' + fmt(budget.construction || 0) + '</td></tr>';
-    html += '<tr><td>&nbsp;&nbsp;Parking</td><td>' + fmt(budget.parkingCost || 0) + '</td></tr>';
-    html += '<tr><td>&nbsp;&nbsp;Landscaping</td><td>' + fmt(budget.landscaping || 0) + '</td></tr>';
-    html += '<tr><td>&nbsp;&nbsp;Contingency (7%)</td><td>' + fmt(budget.hardContingency || 0) + '</td></tr>';
-    html += '<tr class="su-subtotal"><td>Hard Cost Subtotal</td><td>' + fmt(budget.totalHard || 0) + '</td></tr>';
-    html += '<tr class="su-subtotal"><td colspan="2" style="padding-top:8px;">Soft Costs</td></tr>';
-    html += '<tr><td>&nbsp;&nbsp;Architecture &amp; Engineering</td><td>' + fmt(budget.archEng || 0) + '</td></tr>';
-    html += '<tr><td>&nbsp;&nbsp;Permits &amp; Fees</td><td>' + fmt(budget.permits || 0) + '</td></tr>';
-    html += '<tr><td>&nbsp;&nbsp;Legal</td><td>' + fmt(budget.legal || 0) + '</td></tr>';
-    html += '<tr><td>&nbsp;&nbsp;Financing / Interest Reserve</td><td>' + fmt(budget.financing || 0) + '</td></tr>';
-    html += '<tr><td>&nbsp;&nbsp;Marketing &amp; Lease-Up</td><td>' + fmt(budget.marketing || 0) + '</td></tr>';
-    html += '<tr><td>&nbsp;&nbsp;Developer Fee</td><td>' + fmt(budget.devFee || 0) + '</td></tr>';
-    html += '<tr class="su-subtotal"><td>Soft Cost Subtotal</td><td>' + fmt(budget.totalSoft || 0) + '</td></tr>';
-  }
-  html += '<tr class="su-total"><td>Total Uses</td><td>' + fmt(totalDev) + '</td></tr>';
-  html += '</table></div>';
-  // Sources column
-  html += '<div class="su-col"><h3>Sources of Funds</h3><table class="su-table">';
-  html += '<tr><td>Senior Debt (65% LTC)</td><td>' + fmt(seniorDebt) + '</td></tr>';
-  html += '<tr><td>Sponsor Equity (35% LTC)</td><td>' + fmt(equity) + '</td></tr>';
-  html += '<tr class="su-total"><td>Total Sources</td><td>' + fmt(totalDev) + '</td></tr>';
-  html += '</table></div>';
-  html += '</div>';
-  grid.innerHTML = html;
-  panel.style.display = '';
-}
 
 // === Demo Mode ===
 function activateDemo() {
@@ -2675,296 +2624,14 @@ async function generateCodeHash(code) {
 }
 
 // Neighborhood centroids (lat, lon)
-const NEIGHBORHOOD_CENTROIDS = {
-    dtla:         { lat: 34.0407, lon: -118.2468 },
-    hollywood:    { lat: 34.0928, lon: -118.3287 },
-    koreatown:    { lat: 34.0578, lon: -118.3010 },
-    westside:     { lat: 34.0367, lon: -118.4376 },
-    santamonica:  { lat: 34.0906, lon: -118.3856 },
-    beverly:      { lat: 34.0736, lon: -118.4004 },
-    midcity:      { lat: 34.0483, lon: -118.3396 },
-    southla:      { lat: 33.9425, lon: -118.2820 },
-    valleyeast:   { lat: 34.2219, lon: -118.4157 },
-    valleywest:   { lat: 34.1866, lon: -118.5353 },
-    silverlake:   { lat: 34.0869, lon: -118.2697 },
-    highland:     { lat: 34.1133, lon: -118.1902 },
-    venice:       { lat: 33.9850, lon: -118.4695 },
-    culver:       { lat: 34.0211, lon: -118.3965 },
-    exposition:   { lat: 34.0183, lon: -118.2932 },
-    southbay:     { lat: 33.8358, lon: -118.3406 },
-    harbor:       { lat: 33.7361, lon: -118.2922 },
-    boyleheights: { lat: 34.0345, lon: -118.2120 },
-};
 
 // Map Nominatim suburb/neighbourhood names → our dropdown IDs
-const SUBURB_TO_NEIGHBORHOOD = {
-    'downtown': 'dtla',
-    'downtown los angeles': 'dtla',
-    'little tokyo': 'dtla',
-    'arts district': 'dtla',
-    'chinatown': 'dtla',
-    'civic center': 'dtla',
-    'bunker hill': 'dtla',
-    'financial district': 'dtla',
-    'skid row': 'dtla',
-    'hollywood': 'hollywood',
-    'east hollywood': 'hollywood',
-    'thai town': 'hollywood',
-    'hollywood hills': 'hollywood',
-    'los feliz': 'silverlake',
-    'koreatown': 'koreatown',
-    'pico-union': 'koreatown',
-    'westlake': 'koreatown',
-    'west los angeles': 'westside',
-    'west la': 'westside',
-    'sawtelle': 'westside',
-    'westwood': 'westside',
-    'brentwood': 'westside',
-    'bel air': 'westside',
-    'santa monica': 'santamonica',
-    'west hollywood': 'santamonica',
-    'weho': 'santamonica',
-    'beverly hills': 'beverly',
-    'beverly grove': 'beverly',
-    'beverlywood': 'beverly',
-    'century city': 'beverly',
-    'mid-wilshire': 'midcity',
-    'mid wilshire': 'midcity',
-    'mid-city': 'midcity',
-    'mid city': 'midcity',
-    'miracle mile': 'midcity',
-    'hancock park': 'midcity',
-    'larchmont': 'midcity',
-    'windsor square': 'midcity',
-    'park la brea': 'midcity',
-    'fairfax': 'midcity',
-    'south los angeles': 'southla',
-    'south la': 'southla',
-    'watts': 'southla',
-    'florence': 'southla',
-    'vermont square': 'southla',
-    'vermont-slauson': 'southla',
-    'green meadows': 'southla',
-    'north hollywood': 'valleyeast',
-    'noho': 'valleyeast',
-    'studio city': 'valleyeast',
-    'valley village': 'valleyeast',
-    'sun valley': 'valleyeast',
-    'panorama city': 'valleyeast',
-    'arleta': 'valleyeast',
-    'pacoima': 'valleyeast',
-    'sylmar': 'valleyeast',
-    'sherman oaks': 'valleywest',
-    'encino': 'valleywest',
-    'tarzana': 'valleywest',
-    'woodland hills': 'valleywest',
-    'reseda': 'valleywest',
-    'canoga park': 'valleywest',
-    'winnetka': 'valleywest',
-    'chatsworth': 'valleywest',
-    'northridge': 'valleywest',
-    'granada hills': 'valleywest',
-    'west hills': 'valleywest',
-    'silver lake': 'silverlake',
-    'silverlake': 'silverlake',
-    'echo park': 'silverlake',
-    'elysian valley': 'silverlake',
-    'atwater village': 'silverlake',
-    'highland park': 'highland',
-    'eagle rock': 'highland',
-    'glassell park': 'highland',
-    'mount washington': 'highland',
-    'cypress park': 'highland',
-    'el sereno': 'highland',
-    'venice': 'venice',
-    'mar vista': 'venice',
-    'del rey': 'venice',
-    'playa vista': 'venice',
-    'playa del rey': 'venice',
-    'marina del rey': 'venice',
-    'culver city': 'culver',
-    'palms': 'culver',
-    'rancho park': 'culver',
-    'cheviot hills': 'culver',
-    'castle heights': 'culver',
-    'exposition park': 'exposition',
-    'university park': 'exposition',
-    'leimert park': 'exposition',
-    'jefferson park': 'exposition',
-    'west adams': 'exposition',
-    'baldwin hills': 'exposition',
-    'crenshaw': 'exposition',
-    'torrance': 'southbay',
-    'gardena': 'southbay',
-    'carson': 'southbay',
-    'hawthorne': 'southbay',
-    'inglewood': 'southbay',
-    'lawndale': 'southbay',
-    'el segundo': 'southbay',
-    'manhattan beach': 'southbay',
-    'hermosa beach': 'southbay',
-    'redondo beach': 'southbay',
-    'san pedro': 'harbor',
-    'wilmington': 'harbor',
-    'harbor city': 'harbor',
-    'harbor gateway': 'harbor',
-    'boyle heights': 'boyleheights',
-    'east los angeles': 'boyleheights',
-    'east la': 'boyleheights',
-    'lincoln heights': 'boyleheights',
-};
 
 // LA Metro Rail & Metrolink stations { lat, lon, name, line, tier, serviceType }
 // Tier is determined by SERVICE TYPE, not distance:
 //   Tier 1 = Heavy Rail (subway): Red/B Line, Purple/D Line
 //   Tier 2 = Light Rail: Blue/A, Expo/E, Gold/L, Green/C, K Line, Regional Connector
 //   Tier 2 = Commuter Rail: Metrolink
-const METRO_STATIONS = [
-    // --- Red Line (B Line) — HEAVY RAIL (Tier 1): Union Station → North Hollywood ---
-    { lat: 34.0557, lon: -118.2343, name: 'Union Station', line: 'red', tier: 1, serviceType: 'Heavy Rail' },
-    { lat: 34.0548, lon: -118.2461, name: 'Civic Center/Grand Park', line: 'red', tier: 1, serviceType: 'Heavy Rail' },
-    { lat: 34.0485, lon: -118.2516, name: 'Pershing Square', line: 'red', tier: 1, serviceType: 'Heavy Rail' },
-    { lat: 34.0487, lon: -118.2585, name: '7th St/Metro Center', line: 'red', tier: 1, serviceType: 'Heavy Rail' },
-    { lat: 34.0628, lon: -118.2906, name: 'Wilshire/Vermont', line: 'red', tier: 1, serviceType: 'Heavy Rail' },
-    { lat: 34.1015, lon: -118.3090, name: 'Hollywood/Western', line: 'red', tier: 1, serviceType: 'Heavy Rail' },
-    { lat: 34.1015, lon: -118.3257, name: 'Hollywood/Vine', line: 'red', tier: 1, serviceType: 'Heavy Rail' },
-    { lat: 34.1018, lon: -118.3392, name: 'Hollywood/Highland', line: 'red', tier: 1, serviceType: 'Heavy Rail' },
-    { lat: 34.14000, lon: -118.36270, name: 'Universal City/Studio City', line: 'red', tier: 1, serviceType: 'Heavy Rail' },
-    { lat: 34.1687, lon: -118.3770, name: 'North Hollywood', line: 'red', tier: 1, serviceType: 'Heavy Rail' },
-    // --- Purple Line (D Line) — HEAVY RAIL (Tier 1): Wilshire corridor ---
-    { lat: 34.0614, lon: -118.3009, name: 'Wilshire/Normandie', line: 'purple', tier: 1, serviceType: 'Heavy Rail' },
-    { lat: 34.0621, lon: -118.3089, name: 'Wilshire/Western', line: 'purple', tier: 1, serviceType: 'Heavy Rail' },
-    { lat: 34.0617, lon: -118.3448, name: 'Wilshire/La Brea', line: 'purple', tier: 1, serviceType: 'Heavy Rail' },
-    { lat: 34.0622, lon: -118.3601, name: 'Wilshire/Fairfax', line: 'purple', tier: 1, serviceType: 'Heavy Rail' },
-    { lat: 34.0655, lon: -118.3759, name: 'Wilshire/La Cienega', line: 'purple', tier: 1, serviceType: 'Heavy Rail' },
-    { lat: 34.0669, lon: -118.3983, name: 'Wilshire/Rodeo', line: 'purple', tier: 1, serviceType: 'Heavy Rail' },
-    { lat: 34.0597, lon: -118.4150, name: 'Century City/Constellation', line: 'purple', tier: 1, serviceType: 'Heavy Rail' },
-    { lat: 34.0586, lon: -118.4444, name: 'Westwood/UCLA', line: 'purple', tier: 1, serviceType: 'Heavy Rail' },
-    { lat: 34.0544, lon: -118.4536, name: 'Westwood/VA Hospital', line: 'purple', tier: 1, serviceType: 'Heavy Rail' },
-    // --- Blue/A Line — LIGHT RAIL (Tier 2): 7th/Metro → Long Beach ---
-    { lat: 34.04074, lon: -118.26612, name: 'Pico', line: 'blue_a', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.02911, lon: -118.27360, name: 'LATTC/Ortho Institute', line: 'blue_a', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.02681, lon: -118.25551, name: 'San Pedro St', line: 'blue_a', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.01965, lon: -118.24308, name: 'Washington', line: 'blue_a', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.00292, lon: -118.24330, name: 'Vernon', line: 'blue_a', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.98876, lon: -118.24340, name: 'Slauson', line: 'blue_a', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.97374, lon: -118.24327, name: 'Florence', line: 'blue_a', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.95961, lon: -118.24321, name: 'Firestone', line: 'blue_a', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.94222, lon: -118.24316, name: '103rd St/Watts Towers', line: 'blue_a', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.92805, lon: -118.23756, name: 'Willowbrook/Rosa Parks', line: 'blue_a', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.89749, lon: -118.22425, name: 'Compton', line: 'blue_a', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.87608, lon: -118.22250, name: 'Artesia', line: 'blue_a', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.84822, lon: -118.21102, name: 'Del Amo', line: 'blue_a', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.81987, lon: -118.19609, name: 'Wardlow', line: 'blue_a', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.80708, lon: -118.18983, name: 'Willow St', line: 'blue_a', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.78909, lon: -118.18938, name: 'Pacific Coast Hwy', line: 'blue_a', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.7686, lon: -118.1891, name: '1st St (Long Beach)', line: 'blue_a', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.76807, lon: -118.19292, name: 'Downtown Long Beach', line: 'blue_a', tier: 2, serviceType: 'Light Rail' },
-    // --- Expo/E Line — LIGHT RAIL (Tier 2): 7th/Metro → Downtown Santa Monica ---
-    { lat: 34.01823, lon: -118.28573, name: 'Expo Park/USC', line: 'expo_e', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.01825, lon: -118.29154, name: 'Expo/Vermont', line: 'expo_e', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.01833, lon: -118.30891, name: 'Expo/Western', line: 'expo_e', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.02253, lon: -118.33508, name: 'Expo/Crenshaw', line: 'expo_e', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.02398, lon: -118.34610, name: 'Farmdale', line: 'expo_e', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.02480, lon: -118.35516, name: 'Expo/La Brea', line: 'expo_e', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.02636, lon: -118.37212, name: 'La Cienega/Jefferson', line: 'expo_e', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.02790, lon: -118.38899, name: 'Culver City', line: 'expo_e', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.02932, lon: -118.40426, name: 'Palms', line: 'expo_e', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.03682, lon: -118.42458, name: 'Westwood/Rancho Park', line: 'expo_e', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.03541, lon: -118.43423, name: 'Expo/Sepulveda', line: 'expo_e', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.03171, lon: -118.45290, name: 'Expo/Bundy', line: 'expo_e', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.02800, lon: -118.46912, name: '26th St/Bergamot', line: 'expo_e', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.01401, lon: -118.49138, name: 'Downtown Santa Monica', line: 'expo_e', tier: 2, serviceType: 'Light Rail' },
-    // --- Gold/L Line — LIGHT RAIL (Tier 2): East LA → Azusa/APU ---
-    { lat: 34.0501, lon: -118.2379, name: 'Little Tokyo/Arts District', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0561, lon: -118.2361, name: 'Union Station (Gold)', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0638, lon: -118.2359, name: 'Chinatown', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0808, lon: -118.2207, name: 'Lincoln/Cypress', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0871, lon: -118.2126, name: 'Heritage Square/Arroyo', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0982, lon: -118.2067, name: 'Southwest Museum', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1111, lon: -118.1930, name: 'Highland Park', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1153, lon: -118.1578, name: 'South Pasadena', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1334, lon: -118.1481, name: 'Fillmore', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1419, lon: -118.1482, name: 'Del Mar', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1485, lon: -118.1475, name: 'Memorial Park', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1519, lon: -118.1325, name: 'Lake', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1518, lon: -118.1130, name: 'Allen', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1485, lon: -118.0815, name: 'Sierra Madre Villa', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1429, lon: -118.0292, name: 'Arcadia', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1332, lon: -118.0035, name: 'Monrovia', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1325, lon: -117.9675, name: 'Duarte/City of Hope', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1288, lon: -117.9333, name: 'Irwindale', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1359, lon: -117.9067, name: 'Azusa Downtown', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.1371, lon: -117.8908, name: 'APU/Citrus College', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    // Gold/L Line East LA branch
-    { lat: 34.0476, lon: -118.2260, name: 'Pico/Aliso', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.04722, lon: -118.21965, name: 'Mariachi Plaza/Boyle Heights', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.04375, lon: -118.21006, name: 'Soto', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.03430, lon: -118.19218, name: 'Indiana', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.03332, lon: -118.16814, name: 'Maravilla', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.03336, lon: -118.16121, name: 'East LA Civic Center', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.03340, lon: -118.15447, name: 'Atlantic', line: 'gold_l', tier: 2, serviceType: 'Light Rail' },
-    // --- Green/C Line — LIGHT RAIL (Tier 2): Norwalk → Aviation/LAX ---
-    { lat: 33.9140, lon: -118.1046, name: 'Norwalk', line: 'green_c', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.9131, lon: -118.1406, name: 'Lakewood Blvd', line: 'green_c', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.92488, lon: -118.20995, name: 'Long Beach Blvd', line: 'green_c', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.9275, lon: -118.2652, name: 'Avalon', line: 'green_c', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.92826, lon: -118.23805, name: 'Willowbrook/Rosa Parks (Green)', line: 'green_c', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.9287, lon: -118.2919, name: 'Vermont/Athens', line: 'green_c', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.9287, lon: -118.2813, name: 'Harbor Freeway', line: 'green_c', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.92520, lon: -118.32655, name: 'Crenshaw (Green)', line: 'green_c', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.9335, lon: -118.3520, name: 'Hawthorne/Lennox', line: 'green_c', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.92962, lon: -118.37713, name: 'Aviation/LAX', line: 'green_c', tier: 2, serviceType: 'Light Rail' },
-    // --- K Line (Crenshaw/LAX + South Bay) — LIGHT RAIL (Tier 2) ---
-    { lat: 34.02216, lon: -118.33485, name: 'Expo/Crenshaw (K)', line: 'k_line', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.0046, lon: -118.3327, name: 'Leimert Park', line: 'k_line', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.9884, lon: -118.3308, name: 'Hyde Park', line: 'k_line', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.9752, lon: -118.3363, name: 'Fairview Heights', line: 'k_line', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.9673, lon: -118.3514, name: 'Downtown Inglewood', line: 'k_line', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.9620, lon: -118.3746, name: 'Westchester/Veterans', line: 'k_line', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.94557, lon: -118.37868, name: 'Aviation/Century', line: 'k_line', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.9232, lon: -118.3876, name: 'Mariposa', line: 'k_line', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.9162, lon: -118.3867, name: 'El Segundo', line: 'k_line', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.9051, lon: -118.3829, name: 'Douglas', line: 'k_line', tier: 2, serviceType: 'Light Rail' },
-    { lat: 33.8945, lon: -118.3690, name: 'Redondo Beach', line: 'k_line', tier: 2, serviceType: 'Light Rail' },
-    // --- Regional Connector — LIGHT RAIL (Tier 2) ---
-    { lat: 34.0550, lon: -118.2512, name: 'Grand Av Arts/Bunker Hill', line: 'connector', tier: 2, serviceType: 'Light Rail' },
-    { lat: 34.05216, lon: -118.24632, name: 'Historic Broadway', line: 'connector', tier: 2, serviceType: 'Light Rail' },
-    // --- Metrolink Stations (LA County) — COMMUTER RAIL (Tier 2) ---
-    // Shared hub
-    { lat: 34.0562, lon: -118.2365, name: 'LA Union Station (Metrolink)', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    // Antelope Valley Line
-    { lat: 34.29250, lon: -118.45020, name: 'Sylmar/San Fernando', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.22239, lon: -118.37335, name: 'Sun Valley', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.20640, lon: -118.34950, name: 'Burbank Airport North', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.17860, lon: -118.31200, name: 'Burbank Downtown', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.12370, lon: -118.25900, name: 'Glendale', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.37933, lon: -118.52691, name: 'Newhall', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.41372, lon: -118.52503, name: 'Santa Clarita', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.40846, lon: -118.46924, name: 'Via Princessa', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.41297, lon: -118.43400, name: 'Vista Canyon', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.49797, lon: -118.11826, name: 'Vincent Grade/Acton', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.59083, lon: -118.11960, name: 'Palmdale', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.69659, lon: -118.13624, name: 'Lancaster', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    // Ventura County Line (LA County stations)
-    { lat: 34.19295, lon: -118.35351, name: 'Burbank Airport-South', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.23046, lon: -118.54515, name: 'Northridge', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.25290, lon: -118.59930, name: 'Chatsworth', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.21130, lon: -118.44670, name: 'Van Nuys', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    // San Bernardino Line (LA County stations)
-    { lat: 34.06220, lon: -118.17150, name: 'Cal State LA', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.07650, lon: -118.03620, name: 'El Monte', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.08540, lon: -117.95810, name: 'Baldwin Park', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.09220, lon: -117.88850, name: 'Covina', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.00695, lon: -118.12610, name: 'Montebello/Commerce', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.09375, lon: -117.75233, name: 'Pomona-North', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 34.09396, lon: -117.71692, name: 'Claremont', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    // Orange County / 91-Perris Valley / IEOC Line (LA County stations)
-    { lat: 33.99069, lon: -118.14391, name: 'Commerce', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    { lat: 33.91636, lon: -118.05983, name: 'Norwalk/Santa Fe Springs', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-    // Riverside Line (LA County station)
-    { lat: 34.00807, lon: -117.84545, name: 'Industry', line: 'metrolink', tier: 2, serviceType: 'Commuter Rail' },
-];
 
 // LA County ZIP Code centroids (approx center for radius-based scanning)
 const LA_ZIP_CENTROIDS = {
@@ -3037,36 +2704,8 @@ const SB79_ZONES = {
 };
 
 // Line display colors for map markers
-const LINE_COLORS = {
-    red: '#e53e3e', purple: '#805ad5', blue_a: '#3182ce', expo_e: '#d69e2e',
-    gold_l: '#b7791f', green_c: '#38a169', k_line: '#00bcd4', connector: '#ed64a6',
-    metrolink: '#e53e3e',
-};
-const LINE_LABELS = {
-    red: 'Red/B Line', purple: 'Purple/D Line', blue_a: 'Blue/A Line', expo_e: 'Expo/E Line',
-    gold_l: 'Gold/L Line', green_c: 'Green/C Line', k_line: 'K Line (Crenshaw)', connector: 'Regional Connector',
-    metrolink: 'Metrolink',
-};
 
 // Major LA arterials for street detection
-const MAJOR_ARTERIALS = [
-    'wilshire', 'sunset', 'santa monica', 'hollywood', 'venice', 'olympic',
-    'pico', 'la cienega', 'figueroa', 'vermont', 'western', 'crenshaw',
-    'sepulveda', 'van nuys', 'ventura', 'victory', 'sherman way', 'lincoln',
-    'pacific coast', 'pch', 'florence', 'manchester', 'century', 'imperial',
-    'alameda', 'broadway', 'spring', 'main st', 'san fernando', 'glendale',
-    'beverly', 'la brea', 'fairfax', 'robertson', 'melrose', 'highland',
-    'cahuenga', 'vine', 'western ave', 'normandie', 'hoover', 'alvarado',
-    'temple', 'cesar chavez', 'first', '1st st', '3rd st', '6th st',
-    'whittier', 'washington', 'jefferson', 'exposition', 'mlk',
-    'martin luther king', 'slauson', 'gage', 'rosecrans', 'artesia',
-    'el segundo', 'hawthorne', 'inglewood', 'prairie', 'aviation',
-    'centinela', 'overland', 'motor', 'sawtelle', 'barrington',
-    'balboa', 'reseda', 'tampa', 'winnetka', 'de soto', 'topanga',
-    'canoga', 'fallbrook', 'laurel canyon', 'coldwater canyon',
-    'lankershim', 'vineland', 'tujunga', 'foothill', 'glenoaks',
-    'brand', 'colorado', 'huntington', 'atlantic', 'soto',
-];
 
 // Haversine distance in miles
 function haversine(lat1, lon1, lat2, lon2) {
@@ -3080,187 +2719,20 @@ function haversine(lat1, lon1, lat2, lon2) {
 }
 
 // Detect nearest neighborhood from coordinates + Nominatim address details
-function detectNeighborhood(lat, lon, addressDetails) {
-    // Try Nominatim address fields (neighbourhood is most specific, then suburb)
-    if (addressDetails) {
-        const fields = [
-            addressDetails.neighbourhood,
-            addressDetails.suburb,
-            addressDetails.city_district,
-            addressDetails.quarter,
-        ];
-        for (const field of fields) {
-            if (field) {
-                const key = field.toLowerCase().trim();
-                if (SUBURB_TO_NEIGHBORHOOD[key]) {
-                    return SUBURB_TO_NEIGHBORHOOD[key];
-                }
-            }
-        }
-    }
-    // Fall back to centroid distance
-    let best = 'westside';
-    let bestDist = Infinity;
-    for (const [key, c] of Object.entries(NEIGHBORHOOD_CENTROIDS)) {
-        const d = haversine(lat, lon, c.lat, c.lon);
-        if (d < bestDist) { bestDist = d; best = key; }
-    }
-    return best;
-}
 
 // Detect transit proximity from coordinates
-function detectTransitProximity(lat, lon) {
-    let minDist = Infinity;
-    for (const s of METRO_STATIONS) {
-        const d = haversine(lat, lon, s.lat, s.lon);
-        if (d < minDist) minDist = d;
-    }
-    if (minDist <= 0.25) return 'adjacent';
-    if (minDist <= 0.5) return 'near';
-    if (minDist <= 1.0) return 'moderate';
-    return 'far';
-}
 
 // Detect SB 79 eligibility from coordinates
-function detectSB79Eligibility(lat, lon) {
-    let nearest = null;
-    let nearestDist = Infinity;
-    let nearestIdx = -1;
-    for (let i = 0; i < METRO_STATIONS.length; i++) {
-        const s = METRO_STATIONS[i];
-        const d = haversine(lat, lon, s.lat, s.lon);
-        if (d < nearestDist) {
-            nearestDist = d;
-            nearest = s;
-            nearestIdx = i;
-        }
-    }
-    if (!nearest || nearestDist > 0.5) {
-        return { eligible: false, station: nearest, distMiles: nearestDist, nearestIdx };
-    }
-    const tier = nearest.tier;
-    const tierData = SB79_TIERS[tier];
-    let zone, zoneKey;
-    if (nearestDist <= SB79_ZONES.adjacent.maxDist) { zone = SB79_ZONES.adjacent; zoneKey = 'adjacent'; }
-    else if (nearestDist <= SB79_ZONES.inner.maxDist) { zone = SB79_ZONES.inner; zoneKey = 'inner'; }
-    else { zone = SB79_ZONES.outer; zoneKey = 'outer'; }
-
-    const height = Math.round(tierData.height * zone.heightMult);
-    const far = parseFloat((tierData.far * zone.heightMult).toFixed(2));
-    const density = Math.round(tierData.density * zone.heightMult);
-    return {
-        eligible: true,
-        station: nearest,
-        nearestIdx,
-        tier,
-        tierLabel: tierData.label,
-        zone: zoneKey,
-        zoneLabel: zone.label,
-        distMiles: nearestDist,
-        allowances: { height, density, far, parking: zone.parking },
-    };
-}
 
 // Detect if address is on a major arterial
-function detectArterial(addressString, addressDetails) {
-    // Try Nominatim road field first (most accurate — avoids matching neighborhood names)
-    if (addressDetails && addressDetails.road) {
-        const road = addressDetails.road.toLowerCase();
-        for (const art of MAJOR_ARTERIALS) {
-            if (road.includes(art)) return 'major';
-        }
-        if (/\bblvd\b|\bboulevard\b|\bave\b|\bavenue\b/.test(road)) return 'secondary';
-        return 'residential';
-    }
-    // Fall back to full address string
-    const lower = addressString.toLowerCase();
-    for (const art of MAJOR_ARTERIALS) {
-        if (lower.includes(art)) return 'major';
-    }
-    if (/\bblvd\b|\bboulevard\b|\bave\b|\bavenue\b/.test(lower)) return 'secondary';
-    return 'residential';
-}
 
 // Detect site condition from Nominatim result
 // For HBU analysis, any existing structure implies redevelopment → demolition
-function detectSiteCondition(osmClass, osmType) {
-    // Named structures (buildings, amenities, commercial, etc.)
-    const structureClasses = ['building', 'amenity', 'shop', 'office', 'tourism', 'leisure', 'craft', 'club', 'healthcare'];
-    if (structureClasses.includes(osmClass)) return 'demolition';
-    // Address resolving to a house/building → existing structure for HBU redevelopment
-    if (osmClass === 'place' && ['house', 'building', 'apartments', 'residential'].includes(osmType)) return 'demolition';
-    // Other place types (most LA parcels have structures)
-    if (osmClass === 'place') return 'demolition';
-    return 'vacant';
-}
 
 // ====================================================================
 //  SITE CONSTRAINT AUTO-DETECTION (heuristics + API refinement)
 // ====================================================================
 
-const LA_FAULT_SEGMENTS = [
-    [34.1015, -118.3640, 34.0975, -118.3290], [34.0975, -118.3290, 34.0942, -118.3010],
-    [34.0942, -118.3010, 34.0905, -118.2700], [34.0905, -118.2700, 34.0880, -118.2440],
-    [34.0880, -118.2440, 34.0860, -118.2250], [34.0490, -118.5100, 34.0430, -118.4700],
-    [34.0430, -118.4700, 34.0370, -118.4350], [34.0370, -118.4350, 34.0310, -118.3960],
-    [34.1600, -118.1700, 34.1480, -118.1200], [34.1480, -118.1200, 34.1400, -118.0900],
-    [33.9600, -118.3960, 33.9850, -118.3800], [33.9850, -118.3800, 34.0100, -118.3650],
-    [34.0100, -118.3650, 34.0350, -118.3530], [34.1850, -118.1200, 34.1750, -118.0600],
-    [34.1750, -118.0600, 34.1650, -118.0100], [34.2200, -118.2800, 34.2000, -118.2400],
-    [34.2000, -118.2400, 34.1850, -118.2100],
-];
-const COASTAL_NEIGHBORHOODS = ['venice','marina_del_rey','playa_del_rey','westchester','pacific_palisades','malibu','san_pedro','wilmington'];
-function isCoastalHeuristic(lat, lon, hood) {
-    if (COASTAL_NEIGHBORHOODS.includes(hood)) return true;
-    if (lon < -118.47 && lat < 34.08) return true;
-    if (lon < -118.52) return true;
-    if (lat < 33.76 && lon < -118.30) return true;
-    return false;
-}
-const HILLSIDE_REGIONS = [
-    { latMin: 34.105, latMax: 34.160, lonMin: -118.420, lonMax: -118.280 },
-    { latMin: 34.095, latMax: 34.125, lonMin: -118.230, lonMax: -118.195 },
-    { latMin: 33.990, latMax: 34.015, lonMin: -118.380, lonMax: -118.340 },
-    { latMin: 34.120, latMax: 34.160, lonMin: -118.320, lonMax: -118.260 },
-    { latMin: 34.088, latMax: 34.105, lonMin: -118.270, lonMax: -118.250 },
-    { latMin: 34.080, latMax: 34.100, lonMin: -118.185, lonMax: -118.160 },
-    { latMin: 34.050, latMax: 34.090, lonMin: -118.530, lonMax: -118.470 },
-    { latMin: 34.075, latMax: 34.110, lonMin: -118.460, lonMax: -118.420 },
-];
-function isHillsideHeuristic(lat, lon) {
-    for (const r of HILLSIDE_REGIONS) {
-        if (lat >= r.latMin && lat <= r.latMax && lon >= r.lonMin && lon <= r.lonMax) return true;
-    }
-    return false;
-}
-const HPOZ_NEIGHBORHOODS = ['hancock_park','windsor_square','west_adams','highland_park','jefferson_park','country_club_park','carthay','south_carthay','spaulding_square','melrose_hill','vinegar_hill','whitley_heights','banning'];
-function isHistoricHeuristic(hood) { return HPOZ_NEIGHBORHOODS.includes(hood); }
-const FLOOD_CORRIDORS = [
-    { lat: 34.145, lon: -118.260 }, { lat: 34.115, lon: -118.245 }, { lat: 34.085, lon: -118.230 },
-    { lat: 34.060, lon: -118.220 }, { lat: 34.030, lon: -118.210 }, { lat: 33.980, lon: -118.200 },
-    { lat: 33.940, lon: -118.195 }, { lat: 33.900, lon: -118.210 }, { lat: 33.770, lon: -118.215 },
-    { lat: 33.980, lon: -118.420 }, { lat: 33.975, lon: -118.440 }, { lat: 34.200, lon: -118.370 },
-    { lat: 34.175, lon: -118.355 }, { lat: 33.870, lon: -118.260 }, { lat: 33.905, lon: -118.220 },
-];
-const FLOOD_BUFFER_MI = 0.20;
-function isFloodHeuristic(lat, lon) {
-    for (const pt of FLOOD_CORRIDORS) { if (haversine(lat, lon, pt.lat, pt.lon) <= FLOOD_BUFFER_MI) return true; }
-    return false;
-}
-function pointToSegmentDist(lat, lon, lat1, lon1, lat2, lon2) {
-    const dx = lon2 - lon1, dy = lat2 - lat1, lenSq = dx * dx + dy * dy;
-    if (lenSq === 0) return haversine(lat, lon, lat1, lon1);
-    let t = Math.max(0, Math.min(1, ((lon - lon1) * dx + (lat - lat1) * dy) / lenSq));
-    return haversine(lat, lon, lat1 + t * dy, lon1 + t * dx);
-}
-function isFaultHeuristic(lat, lon) {
-    const FAULT_BUFFER_MI = 0.15;
-    for (const seg of LA_FAULT_SEGMENTS) { if (pointToSegmentDist(lat, lon, seg[0], seg[1], seg[2], seg[3]) <= FAULT_BUFFER_MI) return true; }
-    return false;
-}
-function detectSiteConstraints(lat, lon, hood) {
-    return { constFlood: isFloodHeuristic(lat, lon), constHillside: isHillsideHeuristic(lat, lon), constHistoric: isHistoricHeuristic(hood), constFault: isFaultHeuristic(lat, lon), constCoastal: isCoastalHeuristic(lat, lon, hood) };
-}
 function applyConstraintDetection(constraints) {
     var anySet = false;
     ['constFlood','constHillside','constHistoric','constFault','constCoastal'].forEach(function(id) {
@@ -3303,206 +2775,19 @@ async function refineConstraintsFromGIS(lat, lon) {
 }
 
 // Detect jurisdiction from coordinates + Nominatim address details
-const JURISDICTIONS = [
-    { name: 'Beverly Hills', lat: 34.0736, lon: -118.4004, radius: 1.8, note: 'Beverly Hills Municipal Code applies — different density/height rules than LA.' },
-    { name: 'Santa Monica', lat: 34.0195, lon: -118.4912, radius: 2.5, note: 'Santa Monica zoning code applies — rent control, strict height limits, Coastal Zone overlay likely.' },
-    { name: 'West Hollywood', lat: 34.0900, lon: -118.3617, radius: 1.2, note: 'West Hollywood Municipal Code applies — strong rent stabilization, unique zoning districts.' },
-    { name: 'Culver City', lat: 34.0211, lon: -118.3965, radius: 2.0, note: 'Culver City zoning applies — TOD incentives near Expo Line, distinct fee schedules.' },
-    { name: 'Glendale', lat: 34.1425, lon: -118.2551, radius: 3.0, note: 'Glendale Municipal Code applies — own specific plan areas and development standards.' },
-    { name: 'Burbank', lat: 34.1808, lon: -118.3090, radius: 2.8, note: 'Burbank zoning code applies — media district incentives, own entitlement process.' },
-    { name: 'Pasadena', lat: 34.1478, lon: -118.1445, radius: 3.5, note: 'Pasadena zoning code applies — historic preservation focus, Central District Specific Plan.' },
-    { name: 'Inglewood', lat: 33.9617, lon: -118.3531, radius: 2.5, note: 'Inglewood zoning applies — SoFi Stadium area incentives, own development review.' },
-    { name: 'Long Beach', lat: 33.7701, lon: -118.1937, radius: 5.0, note: 'Long Beach Municipal Code applies — own zoning, PD districts, and Coastal Zone rules.' },
-    { name: 'Malibu', lat: 34.0259, lon: -118.7798, radius: 8.0, note: 'City of Malibu — Coastal Commission jurisdiction, severe height/density limits, LCP applies.' },
-    { name: 'Torrance', lat: 33.8358, lon: -118.3406, radius: 3.0, note: 'Torrance zoning code applies — own development standards and review process.' },
-    { name: 'Hawthorne', lat: 33.9164, lon: -118.3526, radius: 1.5, note: 'Hawthorne zoning applies — distinct fee schedule and entitlement process.' },
-    { name: 'Carson', lat: 33.8317, lon: -118.2620, radius: 2.5, note: 'Carson Municipal Code applies — own specific plans and environmental review.' },
-    { name: 'Redondo Beach', lat: 33.8492, lon: -118.3884, radius: 2.0, note: 'Redondo Beach zoning code applies — Coastal Zone, own height/density standards.' },
-    { name: 'Pomona', lat: 34.0551, lon: -117.7500, radius: 3.5, note: 'Pomona zoning code applies — own downtown specific plan and development incentives.' },
-    { name: 'South Pasadena', lat: 34.1161, lon: -118.1503, radius: 1.5, note: 'South Pasadena Municipal Code (SPMC Ch. 36) applies — zones RE/RS/RM/RH (not LA R1-R5). Strong historic preservation (11+ historic districts, 50+ landmarks). ADUs allowed with 4 ft setbacks. SB 9 prohibited in historic districts. Downtown Specific Plan covers Mission St & Fair Oaks Ave corridors.' },
-    { name: 'Arcadia', lat: 34.1397, lon: -118.0353, radius: 2.5, note: 'Arcadia zoning code applies — own development standards and review process.' },
-    { name: 'Monrovia', lat: 34.1442, lon: -117.9990, radius: 2.0, note: 'Monrovia zoning code applies — Old Town specific plan, own entitlement process.' },
-    { name: 'Alhambra', lat: 34.0953, lon: -118.1270, radius: 2.0, note: 'Alhambra zoning code applies — own specific plans and development standards.' },
-    { name: 'San Gabriel', lat: 34.0961, lon: -118.1058, radius: 1.5, note: 'San Gabriel zoning code applies — Mission District overlay, own development standards.' },
-    { name: 'Whittier', lat: 33.9792, lon: -118.0328, radius: 3.0, note: 'Whittier zoning code applies — Uptown specific plan, own development standards.' },
-    { name: 'Downey', lat: 33.9401, lon: -118.1332, radius: 2.5, note: 'Downey zoning code applies — own specific plans and development review.' },
-    { name: 'El Monte', lat: 34.0686, lon: -118.0276, radius: 2.5, note: 'El Monte zoning code applies — own development standards and review process.' },
-    { name: 'Covina', lat: 34.0900, lon: -117.8903, radius: 2.5, note: 'Covina zoning code applies — own downtown specific plan and development standards.' },
-    { name: 'West Covina', lat: 34.0686, lon: -117.9390, radius: 3.0, note: 'West Covina zoning code applies — own development standards and review process.' },
-    { name: 'Diamond Bar', lat: 34.0286, lon: -117.8103, radius: 3.0, note: 'Diamond Bar zoning code applies — hillside management, own development standards.' },
-    { name: 'Claremont', lat: 34.0967, lon: -117.7198, radius: 2.5, note: 'Claremont zoning code applies — Village specific plan, own development standards.' },
-    { name: 'Azusa', lat: 34.1336, lon: -117.9076, radius: 2.0, note: 'Azusa zoning code applies — TOD district near Gold Line, own development standards.' },
-    { name: 'Compton', lat: 33.8958, lon: -118.2201, radius: 2.5, note: 'Compton zoning code applies — own development standards and review process.' },
-    { name: 'Lakewood', lat: 33.8536, lon: -118.1340, radius: 2.5, note: 'Lakewood zoning code applies — own development standards and review process.' },
-    { name: 'Norwalk', lat: 33.9022, lon: -118.0817, radius: 2.5, note: 'Norwalk zoning code applies — own specific plans and development standards.' },
-    { name: 'Cerritos', lat: 33.8583, lon: -118.0647, radius: 2.0, note: 'Cerritos zoning code applies — own development standards and review process.' },
-    { name: 'Hermosa Beach', lat: 33.8622, lon: -118.3995, radius: 1.0, note: 'Hermosa Beach zoning code applies — Coastal Zone, own height/density standards.' },
-    { name: 'Manhattan Beach', lat: 33.8847, lon: -118.4109, radius: 1.5, note: 'Manhattan Beach zoning code applies — Coastal Zone, strict R-1 protections.' },
-];
-const LA_CITY_CENTER = { lat: 34.0522, lon: -118.2437 };
-const LA_CITY_APPROX_RADIUS = 15;
 
-function detectJurisdiction(lat, lon, addressDetails) {
-    if (addressDetails) {
-        const city = (addressDetails.city || addressDetails.town || addressDetails.municipality || '').toLowerCase().trim();
-        if (city) {
-            // First pass: exact match (prevents "South Pasadena" matching "Pasadena")
-            for (const j of JURISDICTIONS) {
-                if (city === j.name.toLowerCase()) {
-                    return { jurisdiction: j.name, isLA: false, note: j.note };
-                }
-            }
-            // Second pass: substring match (fallback for variations like "City of ...")
-            for (const j of JURISDICTIONS) {
-                if (city.includes(j.name.toLowerCase())) {
-                    return { jurisdiction: j.name, isLA: false, note: j.note };
-                }
-            }
-            if (city.includes('los angeles')) {
-                return { jurisdiction: 'City of Los Angeles', isLA: true, note: 'City of LA zoning (LAMC) applies. ZIMAS is the authoritative zoning source.' };
-            }
-        }
-        const county = (addressDetails.county || '').toLowerCase();
-        if (county.includes('los angeles') && !city) {
-            return { jurisdiction: 'Unincorporated LA County', isLA: false, note: 'Unincorporated LA County — County zoning code applies, not City of LA. Different entitlement process through County DRP.' };
-        }
-    }
-    for (const j of JURISDICTIONS) {
-        const d = haversine(lat, lon, j.lat, j.lon);
-        if (d < j.radius) {
-            return { jurisdiction: j.name, isLA: false, note: j.note };
-        }
-    }
-    const dLA = haversine(lat, lon, LA_CITY_CENTER.lat, LA_CITY_CENTER.lon);
-    if (dLA < LA_CITY_APPROX_RADIUS) {
-        return { jurisdiction: 'City of Los Angeles', isLA: true, note: 'City of LA zoning (LAMC) applies. ZIMAS is the authoritative zoning source.' };
-    }
-    return { jurisdiction: 'Unincorporated LA County', isLA: false, note: 'Unincorporated LA County — County zoning code applies, not City of LA. Different entitlement process through County DRP.' };
-}
 
 // Jurisdiction-specific development standards — override LA City defaults
-const JURISDICTION_STANDARDS = {
-    'South Pasadena': {
-        // Zone mapping: LA zoning → South Pasadena equivalent
-        zoneMap: { 'R1': 'RS', 'R2': 'RM', 'R3': 'RM', 'R4': 'RH', 'R5': 'RH' },
-        zones: {
-            RS: { maxHeight: 45, maxFAR: 0.50, maxDensity: 5, minLot: 10000, parking: { sfr: 2, duplex: 2.5 },
-                   setbacks: { front: 10, side: 4, rear: 15 }, maxCoverage: 0.50, label: 'RS (Residential Single-Family)' },
-            RE: { maxHeight: 35, maxFAR: 0.35, maxDensity: 3, minLot: 12500, parking: { sfr: 2 },
-                   setbacks: { front: 25, side: '10%', rear: 25 }, maxCoverage: 0.40, label: 'RE (Residential Estate)' },
-            RM: { maxHeight: 45, maxFAR: 1.50, maxDensity: 30, minLot: 10000, parking: { studio: 0.5, '1br': 1, '2br': 1.5 },
-                   setbacks: { front: 7.5, side: 4, rear: 15 }, openSpace: 200, label: 'RM (Residential Medium Density)' },
-            RH: { maxHeight: 45, maxFAR: 2.50, maxDensity: 45, minLot: 10000, parking: { studio: 0.5, '1br': 1, '2br': 1.5 },
-                   setbacks: { front: 7.5, side: 4, rear: 15 }, openSpace: 200, label: 'RH (Residential High Density)' },
-        },
-        adu: { maxSize: 1200, attachedMax: '50% of primary or 1200 SF', maxHeight: 16, setbacks: 4,
-               parking: 1, parkingWaiver: 'Within 0.5 mi of transit or in historic district', permitDays: 60 },
-        sb9: { eligible: true, maxUnitSize: 850, maxTotal: 1700, minLotForSplit: 1200, parking: 1,
-               prohibited: 'Historic districts, State Historic Resources Inventory, designated landmarks, slopes >15%' },
-        historic: { districts: 11, landmarks: 50, millsAct: true, chc: 'Cultural Heritage Commission',
-                    aduRules: 'Secretary of Interior Standards apply for ADUs on historic properties',
-                    sb9Prohibited: true },
-        dtsp: { name: 'Downtown Specific Plan (2023, amended 2025)', corridors: 'Mission St & Fair Oaks Ave',
-                muc70: { density: '20-70 du/acre', height: 55 }, muc50: { density: '20-50 du/acre', height: 50 } },
-        fees: { school: 4.79, schoolThreshold: 500, note: 'Park and growth capital fees set by Council resolution — contact (626) 403-7220 for current amounts.' },
-        // FAR overrides by use type
-        farOverrides: { sfr: 0.50, duplex: 0.55, multifamily_low: 1.50, multifamily_mid: 2.50, multifamily_high: 2.50,
-                        mixeduse: 2.50, adu: 0.50, senior: 2.50 },
-        // Parking overrides (spaces per unit)
-        parkingOverrides: { sfr: 2, duplex: 2.5, multifamily_low: 1.25, multifamily_mid: 1.25,
-                            multifamily_high: 1.25, mixeduse: 1.25, senior: 0.75, adu: 1 },
-    },
-};
 
 // Get jurisdiction-adjusted FAR for a use type
-function getJurisdictionFAR(useId, jurisdiction) {
-    if (!jurisdiction || jurisdiction.isLA) return null;
-    const std = JURISDICTION_STANDARDS[jurisdiction.jurisdiction];
-    if (!std || !std.farOverrides) return null;
-    return std.farOverrides[useId] || null;
-}
 
 // Get jurisdiction-adjusted parking ratio
-function getJurisdictionParking(useId, jurisdiction) {
-    if (!jurisdiction || jurisdiction.isLA) return null;
-    const std = JURISDICTION_STANDARDS[jurisdiction.jurisdiction];
-    if (!std || !std.parkingOverrides) return null;
-    return std.parkingOverrides[useId] || null;
-}
 
 // Get jurisdiction development standards summary for display
-function getJurisdictionSummary(jurisdiction, zoning) {
-    if (!jurisdiction || jurisdiction.isLA) return null;
-    const std = JURISDICTION_STANDARDS[jurisdiction.jurisdiction];
-    if (!std) return null;
-    // Map LA zoning to local equivalent
-    const localZone = std.zoneMap && std.zoneMap[zoning] ? std.zoneMap[zoning] : null;
-    const zoneData = localZone && std.zones[localZone] ? std.zones[localZone] : null;
-    return { standards: std, localZone, zoneData };
-}
 
 // Estimate zoning when ZIMAS is blocked (fallback heuristic)
-function estimateZoningFallback(addressString, addressDetails, neighborhood) {
-    const lower = (addressString || '').toLowerCase();
-    const road = (addressDetails && addressDetails.road) ? addressDetails.road.toLowerCase() : '';
-
-    // Check if on a major commercial corridor
-    const commercialCorridors = [
-        'wilshire', 'sunset blvd', 'santa monica blvd', 'hollywood blvd', 'venice blvd',
-        'olympic', 'pico blvd', 'beverly blvd', 'melrose ave', '3rd st', 'la brea',
-        'la cienega', 'fairfax ave', 'robertson', 'highland ave', 'western ave',
-        'vermont ave', 'figueroa', 'broadway', 'spring st', 'main st',
-        'ventura blvd', 'lankershim', 'sepulveda blvd', 'van nuys blvd',
-        'colorado blvd', 'brand blvd', 'glendale ave',
-    ];
-    const isCommercialCorridor = commercialCorridors.some(c => road.includes(c) || lower.includes(c));
-
-    // Industrial areas
-    const industrialAreas = ['arts district', 'vernon', 'commerce', 'boyle heights industrial'];
-    const isIndustrial = industrialAreas.some(a => lower.includes(a));
-
-    // DTLA is mostly commercial/mixed
-    if (neighborhood === 'dtla') return isIndustrial ? 'M1' : 'C2';
-
-    // Commercial corridors
-    if (isCommercialCorridor) return 'C2';
-
-    // Check for apartment-style addresses (Nominatim type)
-    if (addressDetails && addressDetails.type === 'apartments') return 'R3';
-
-    // Residential streets — check street suffix patterns
-    const residentialSuffixes = /\b(ave|avenue|st|street|dr|drive|pl|place|way|ln|lane|ct|court|rd|road|blvd|ter|terrace|cir|circle)\b/i;
-    const isResidential = residentialSuffixes.test(road) && !isCommercialCorridor;
-
-    // Residential neighborhoods default to R1
-    const residentialHoods = ['beverly', 'westside', 'santamonica', 'valleyeast', 'valleywest',
-        'silverlake', 'highland', 'venice', 'culver', 'southbay', 'harbor'];
-    if (residentialHoods.includes(neighborhood) && isResidential) return 'R1';
-
-    // Dense residential neighborhoods
-    const denseHoods = ['koreatown', 'hollywood', 'midcity', 'exposition'];
-    if (denseHoods.includes(neighborhood) && isResidential) return 'R3';
-
-    // South LA residential
-    if (['southla', 'boyleheights'].includes(neighborhood) && isResidential) return 'R1';
-
-    // Default: R1 for residential streets, C2 for commercial
-    if (isResidential) return 'R1';
-    return null; // Can't determine — let user select
-}
 
 // Map ZIMAS zoning code to our dropdown values
-function mapZoningCode(rawZone) {
-    if (!rawZone) return null;
-    // ZIMAS returns codes like "C2-1VL", "[Q]R3-1XL", "M1-1", "R1-1-HCR" etc.
-    // Strip Q conditions, D limitations, and supplemental use districts
-    let z = rawZone.toUpperCase().replace(/\[.*?\]/g, '').trim();
-    // Extract the base zone (letters + optional digits before the dash-height suffix)
-    const match = z.match(/^(R[1-5]|C[1-5]|C1\.5|CM|M[1-3]|PF|OS|LAX)/);
-    if (match) return match[1];
-    // TOD areas are usually identified via overlay, not base zone
-    return null;
-}
 
 // === API CALLS ===
 
@@ -3542,20 +2827,6 @@ async function geocodeAddress(address) {
 }
 
 // ── Multi-city zoning GIS endpoints ─────────────────────────────
-const CITY_ZONING_GIS = {
-    'glendale':       { url: 'https://gismap.glendaleca.gov/arcgis/rest/services/Common/Zoning/MapServer/2/query', field: 'ZONE_DISTR', descField: 'ZONE_DESC' },
-    'long beach':     { url: 'https://services6.arcgis.com/yCArG7wGXGyWLqav/ArcGIS/rest/services/Zoning/FeatureServer/0/query', field: 'ZONING_SYMBOL' },
-    'pasadena':       { url: 'https://services2.arcgis.com/zNjnZafDYCAJAbN0/arcgis/rest/services/Zoning/FeatureServer/0/query', field: 'ZONE_CODE' },
-    'santa monica':   { url: 'https://gis.santamonica.gov/server/rest/services/Zoning/FeatureServer/2/query', field: 'zoning', descField: 'zonedesc' },
-    'west hollywood': { url: 'https://gis.weho.org/arcgis/rest/services/Planning/Zoning_Map_2018/MapServer/1/query', field: 'ZONECLASS', descField: 'ZONEDESC' },
-    'beverly hills':  { url: 'https://gis.beverlyhills.org/arcgis/rest/services/Zoning/MapServer/2/query', field: 'ZONE' },
-    'inglewood':      { url: 'https://gisweb.cityofinglewood.org/arcgis/rest/services/CityofInglewoodZoning/MapServer/0/query', field: 'ZNGCODE', descField: 'ZONEDESCRP' },
-    'pomona':         { url: 'https://gismaps.ci.pomona.ca.us/arcgis/rest/services/CommunityDevelopment/Zoning/MapServer/0/query', field: 'Label', descField: 'Zone_Defin' },
-    'arcadia':        { url: 'https://arcgis.gis.lacounty.gov/arcgis/rest/services/Arcadia/Zoning/MapServer/1/query', field: 'Zones' },
-    'torrance':       { url: 'https://services1.arcgis.com/38fAqAZVRCrVtPUU/ArcGIS/rest/services/Zoning/FeatureServer/20/query', field: 'ZONING' },
-    'culver city':    { url: 'https://services2.arcgis.com/LNAhiRpezPbHTIUO/arcgis/rest/services/Final_Zoning_Map_100924/FeatureServer/0/query', field: 'Zoning' },
-    'alhambra':       { url: 'https://services6.arcgis.com/GZCJsJngT6kRZkzb/arcgis/rest/services/Alhambra_Planning/FeatureServer/9/query', field: 'Zoning', descField: 'Zoning_Description' },
-};
 
 // Query zoning — routes to city-specific GIS or ZIMAS for LA City
 async function fetchZoning(lat, lon, cityName) {
@@ -3742,10 +3013,9 @@ async function lookupAddress() {
     filledCount++;
 
     // Run zoning + parcel queries in parallel (with hard 12s timeout)
+    const _geocodedCity = (coords.address && (coords.address.city || coords.address.town || coords.address.municipality || coords.address.village)) || '';
     if (typeof trackSearch === 'function') trackSearch(address, 'agent', _geocodedCity, '');
     addStatus('<br><span class="loading">Querying zoning &amp; parcel data...</span>');
-
-    const _geocodedCity = (coords.address && (coords.address.city || coords.address.town || coords.address.municipality || coords.address.village)) || '';
     window._lastFireCheck = null;
     if (typeof checkFirePerimeter === 'function') {
         checkFirePerimeter(coords.lat, coords.lon).then(function(f) { window._lastFireCheck = f; }).catch(function() {});
@@ -3980,101 +3250,19 @@ async function lookupAddress() {
 //  LA-Specific Data & Scoring Engine
 // ============================================================
 
-const LAND_USES = [
-    { id: 'sfr',            name: 'Single-Family Residential',      icon: '🏡' },
-    { id: 'duplex',         name: 'Duplex / Two-Unit',              icon: '🏘️' },
-    { id: 'multifamily_low', name: 'Multi-Family (Low-Rise)',       icon: '🏢' },
-    { id: 'multifamily_mid', name: 'Multi-Family (Mid-Rise)',       icon: '🏙️' },
-    { id: 'multifamily_high', name: 'Multi-Family (High-Rise)',     icon: '🏗️' },
-    { id: 'mixeduse',       name: 'Mixed-Use (Retail + Residential)', icon: '🏬' },
-    { id: 'retail',         name: 'Retail / Restaurant',            icon: '🛍️' },
-    { id: 'office',         name: 'Office / Professional',          icon: '🏛️' },
-    { id: 'medical',        name: 'Medical Office',                 icon: '🏥' },
-    { id: 'hotel',          name: 'Hotel / Hospitality',            icon: '🏨' },
-    { id: 'industrial',     name: 'Industrial / Warehouse',         icon: '🏭' },
-    { id: 'selfstorage',    name: 'Self-Storage',                   icon: '📦' },
-    { id: 'senior',         name: 'Senior Living / Assisted',       icon: '🧓' },
-    { id: 'parking',        name: 'Parking Structure / Lot',        icon: '🅿️' },
-    { id: 'creative',       name: 'Creative Office / Flex',         icon: '🎨' },
-    { id: 'adu',            name: 'ADU / Small-Lot Subdivision',    icon: '🏠' },
-];
 
 // Zoning → which uses are legally permissible
 // 0 = not permitted, 0.5 = conditional/CUP required, 1.0 = by-right
-const ZONING_MATRIX = {
-    'R1':  { sfr:1, duplex:0, multifamily_low:0, multifamily_mid:0, multifamily_high:0, mixeduse:0, retail:0, office:0, medical:0, hotel:0, industrial:0, selfstorage:0, senior:0.5, parking:0, creative:0, adu:1 },
-    'R2':  { sfr:1, duplex:1, multifamily_low:0.5, multifamily_mid:0, multifamily_high:0, mixeduse:0, retail:0, office:0, medical:0, hotel:0, industrial:0, selfstorage:0, senior:0.5, parking:0, creative:0, adu:1 },
-    'R3':  { sfr:1, duplex:1, multifamily_low:1, multifamily_mid:0.5, multifamily_high:0, mixeduse:0, retail:0, office:0, medical:0, hotel:0, industrial:0, selfstorage:0, senior:0.5, parking:0.5, creative:0, adu:1 },
-    'R4':  { sfr:0.5, duplex:1, multifamily_low:1, multifamily_mid:1, multifamily_high:0.5, mixeduse:0, retail:0, office:0, medical:0, hotel:0, industrial:0, selfstorage:0, senior:1, parking:0.5, creative:0, adu:1 },
-    'R5':  { sfr:0, duplex:0.5, multifamily_low:1, multifamily_mid:1, multifamily_high:1, mixeduse:0, retail:0, office:0, medical:0, hotel:0.5, industrial:0, selfstorage:0, senior:1, parking:0.5, creative:0, adu:1 },
-    'C1':  { sfr:0, duplex:0, multifamily_low:0.5, multifamily_mid:0, multifamily_high:0, mixeduse:0.5, retail:1, office:1, medical:1, hotel:0, industrial:0, selfstorage:0, senior:0, parking:1, creative:0.5, adu:0 },
-    'C1.5':{ sfr:0, duplex:0, multifamily_low:0.5, multifamily_mid:0.5, multifamily_high:0, mixeduse:1, retail:1, office:1, medical:1, hotel:0.5, industrial:0, selfstorage:0, senior:0.5, parking:1, creative:0.5, adu:0 },
-    'C2':  { sfr:0, duplex:0, multifamily_low:1, multifamily_mid:1, multifamily_high:0.5, mixeduse:1, retail:1, office:1, medical:1, hotel:1, industrial:0, selfstorage:0.5, senior:1, parking:1, creative:1, adu:0 },
-    'C4':  { sfr:0, duplex:0, multifamily_low:0.5, multifamily_mid:1, multifamily_high:0.5, mixeduse:1, retail:1, office:1, medical:1, hotel:1, industrial:0, selfstorage:0.5, senior:0.5, parking:1, creative:1, adu:0 },
-    'C5':  { sfr:0, duplex:0, multifamily_low:0, multifamily_mid:0.5, multifamily_high:0, mixeduse:0.5, retail:1, office:1, medical:0.5, hotel:0.5, industrial:0, selfstorage:0.5, senior:0, parking:1, creative:0.5, adu:0 },
-    'CM':  { sfr:0, duplex:0, multifamily_low:0, multifamily_mid:0, multifamily_high:0, mixeduse:0.5, retail:0.5, office:1, medical:0.5, hotel:0, industrial:0.5, selfstorage:1, senior:0, parking:1, creative:1, adu:0 },
-    'M1':  { sfr:0, duplex:0, multifamily_low:0, multifamily_mid:0, multifamily_high:0, mixeduse:0, retail:0.5, office:0.5, medical:0, hotel:0, industrial:1, selfstorage:1, senior:0, parking:1, creative:1, adu:0 },
-    'M2':  { sfr:0, duplex:0, multifamily_low:0, multifamily_mid:0, multifamily_high:0, mixeduse:0, retail:0, office:0, medical:0, hotel:0, industrial:1, selfstorage:1, senior:0, parking:1, creative:0.5, adu:0 },
-    'M3':  { sfr:0, duplex:0, multifamily_low:0, multifamily_mid:0, multifamily_high:0, mixeduse:0, retail:0, office:0, medical:0, hotel:0, industrial:1, selfstorage:0.5, senior:0, parking:1, creative:0, adu:0 },
-    'PF':  { sfr:0, duplex:0, multifamily_low:0, multifamily_mid:0, multifamily_high:0, mixeduse:0, retail:0, office:0.5, medical:0.5, hotel:0, industrial:0, selfstorage:0, senior:0.5, parking:0.5, creative:0, adu:0 },
-    'OS':  { sfr:0, duplex:0, multifamily_low:0, multifamily_mid:0, multifamily_high:0, mixeduse:0, retail:0, office:0, medical:0, hotel:0, industrial:0, selfstorage:0, senior:0, parking:0, creative:0, adu:0 },
-    'LAX': { sfr:0, duplex:0, multifamily_low:0, multifamily_mid:0, multifamily_high:0, mixeduse:0, retail:0.5, office:0.5, medical:0, hotel:0.5, industrial:0.5, selfstorage:0.5, senior:0, parking:1, creative:0, adu:0 },
-    'TOD': { sfr:0, duplex:0.5, multifamily_low:1, multifamily_mid:1, multifamily_high:1, mixeduse:1, retail:1, office:1, medical:1, hotel:1, industrial:0, selfstorage:0, senior:1, parking:0.5, creative:1, adu:0.5 },
-};
 
 // Neighborhood market demand multipliers (1.0 = average)
-const NEIGHBORHOOD_DEMAND = {
-    dtla:         { sfr:0.3, duplex:0.4, multifamily_low:1.1, multifamily_mid:1.3, multifamily_high:1.4, mixeduse:1.4, retail:1.2, office:1.3, medical:0.7, hotel:1.3, industrial:0.5, selfstorage:0.7, senior:0.6, parking:1.3, creative:1.4, adu:0.3 },
-    hollywood:    { sfr:0.5, duplex:0.7, multifamily_low:1.2, multifamily_mid:1.3, multifamily_high:1.1, mixeduse:1.3, retail:1.2, office:1.0, medical:0.8, hotel:1.2, industrial:0.3, selfstorage:0.7, senior:0.5, parking:1.1, creative:1.3, adu:0.6 },
-    koreatown:    { sfr:0.4, duplex:0.6, multifamily_low:1.3, multifamily_mid:1.4, multifamily_high:1.2, mixeduse:1.3, retail:1.2, office:0.9, medical:1.1, hotel:1.0, industrial:0.3, selfstorage:0.8, senior:0.8, parking:1.2, creative:0.9, adu:0.5 },
-    westside:     { sfr:1.0, duplex:0.9, multifamily_low:1.1, multifamily_mid:1.2, multifamily_high:0.9, mixeduse:1.2, retail:1.1, office:1.2, medical:1.3, hotel:1.0, industrial:0.2, selfstorage:0.6, senior:1.0, parking:1.0, creative:1.1, adu:0.9 },
-    santamonica:  { sfr:0.8, duplex:0.8, multifamily_low:1.0, multifamily_mid:1.1, multifamily_high:0.8, mixeduse:1.2, retail:1.3, office:1.1, medical:1.0, hotel:1.1, industrial:0.2, selfstorage:0.4, senior:0.8, parking:1.0, creative:1.2, adu:0.7 },
-    beverly:      { sfr:1.2, duplex:0.8, multifamily_low:1.0, multifamily_mid:1.1, multifamily_high:0.9, mixeduse:1.1, retail:1.1, office:1.3, medical:1.4, hotel:1.1, industrial:0.1, selfstorage:0.3, senior:1.0, parking:0.9, creative:0.9, adu:0.7 },
-    midcity:      { sfr:0.7, duplex:0.8, multifamily_low:1.2, multifamily_mid:1.2, multifamily_high:0.8, mixeduse:1.2, retail:1.0, office:0.9, medical:1.0, hotel:0.8, industrial:0.3, selfstorage:0.8, senior:0.9, parking:0.9, creative:1.0, adu:0.8 },
-    southla:      { sfr:0.9, duplex:1.0, multifamily_low:1.1, multifamily_mid:0.8, multifamily_high:0.4, mixeduse:0.8, retail:0.8, office:0.5, medical:0.7, hotel:0.4, industrial:0.9, selfstorage:1.1, senior:0.7, parking:0.6, creative:0.6, adu:1.1 },
-    valleyeast:   { sfr:1.1, duplex:1.0, multifamily_low:1.0, multifamily_mid:0.8, multifamily_high:0.5, mixeduse:0.9, retail:0.9, office:0.8, medical:0.9, hotel:0.6, industrial:1.0, selfstorage:1.1, senior:0.9, parking:0.7, creative:0.7, adu:1.0 },
-    valleywest:   { sfr:1.2, duplex:1.0, multifamily_low:0.9, multifamily_mid:0.8, multifamily_high:0.4, mixeduse:0.9, retail:0.9, office:0.9, medical:1.0, hotel:0.6, industrial:0.8, selfstorage:1.0, senior:1.0, parking:0.6, creative:0.7, adu:1.0 },
-    silverlake:   { sfr:0.9, duplex:0.9, multifamily_low:1.2, multifamily_mid:1.0, multifamily_high:0.5, mixeduse:1.2, retail:1.1, office:0.8, medical:0.7, hotel:0.7, industrial:0.3, selfstorage:0.5, senior:0.5, parking:0.7, creative:1.3, adu:1.0 },
-    highland:     { sfr:0.9, duplex:0.9, multifamily_low:1.1, multifamily_mid:0.9, multifamily_high:0.4, mixeduse:1.1, retail:1.0, office:0.7, medical:0.7, hotel:0.5, industrial:0.5, selfstorage:0.7, senior:0.5, parking:0.6, creative:1.1, adu:1.0 },
-    venice:       { sfr:0.9, duplex:0.8, multifamily_low:1.0, multifamily_mid:0.9, multifamily_high:0.5, mixeduse:1.2, retail:1.2, office:1.0, medical:0.7, hotel:1.0, industrial:0.2, selfstorage:0.3, senior:0.6, parking:0.8, creative:1.3, adu:0.8 },
-    culver:       { sfr:0.8, duplex:0.8, multifamily_low:1.1, multifamily_mid:1.1, multifamily_high:0.7, mixeduse:1.2, retail:1.0, office:1.2, medical:1.0, hotel:0.9, industrial:0.5, selfstorage:0.7, senior:0.8, parking:0.8, creative:1.3, adu:0.8 },
-    exposition:   { sfr:0.6, duplex:0.7, multifamily_low:1.2, multifamily_mid:1.2, multifamily_high:0.9, mixeduse:1.2, retail:1.0, office:0.9, medical:0.8, hotel:0.7, industrial:0.4, selfstorage:0.8, senior:0.7, parking:0.9, creative:1.0, adu:0.8 },
-    southbay:     { sfr:1.0, duplex:0.9, multifamily_low:0.9, multifamily_mid:0.7, multifamily_high:0.3, mixeduse:0.8, retail:0.9, office:0.8, medical:1.0, hotel:0.7, industrial:1.2, selfstorage:1.1, senior:0.9, parking:0.6, creative:0.6, adu:0.9 },
-    harbor:       { sfr:0.7, duplex:0.7, multifamily_low:0.8, multifamily_mid:0.6, multifamily_high:0.3, mixeduse:0.7, retail:0.7, office:0.5, medical:0.6, hotel:0.6, industrial:1.3, selfstorage:1.1, senior:0.7, parking:0.7, creative:0.5, adu:0.7 },
-    boyleheights: { sfr:0.9, duplex:1.0, multifamily_low:1.1, multifamily_mid:0.7, multifamily_high:0.3, mixeduse:0.9, retail:0.9, office:0.5, medical:0.6, hotel:0.3, industrial:0.8, selfstorage:0.9, senior:0.6, parking:0.5, creative:0.8, adu:1.1 },
-};
 
 // Minimum parcel sizes (sq ft) for feasibility
-const MIN_PARCEL = {
-    sfr: 2500, duplex: 3500, multifamily_low: 5000, multifamily_mid: 10000,
-    multifamily_high: 20000, mixeduse: 5000, retail: 2000, office: 3000,
-    medical: 3000, hotel: 15000, industrial: 5000, selfstorage: 8000,
-    senior: 15000, parking: 3000, creative: 3000, adu: 3000
-};
 
 // Approx LA land value per SF by neighborhood (for relative comparisons)
-const LAND_VALUE_PSF = {
-    dtla: 250, hollywood: 250, koreatown: 200, westside: 350, santamonica: 400,
-    beverly: 450, midcity: 180, southla: 85, valleyeast: 110, valleywest: 130,
-    silverlake: 220, highland: 150, venice: 350, culver: 260, exposition: 160,
-    southbay: 120, harbor: 80, boyleheights: 110
-};
 
 // Median market value per structure SF by neighborhood (2025 LA County comps)
-const MARKET_VALUE_PSF = {
-    dtla: 650, hollywood: 700, koreatown: 550, westside: 900, santamonica: 1100,
-    beverly: 1000, midcity: 750, southla: 450, valleyeast: 550, valleywest: 600,
-    silverlake: 800, highland: 600, venice: 1000, culver: 800, exposition: 550,
-    southbay: 700, harbor: 450, boyleheights: 500
-};
 
 // Simple neighborhood median $/SF (fast fallback for bulk scans)
-function estimateMarketValue(structureSqFt, lotSizeSqFt, useType, neighborhood) {
-    const mvPSF = MARKET_VALUE_PSF[neighborhood] || 600;
-    const landPSF = LAND_VALUE_PSF[neighborhood] || 150;
-    if (useType === 'Vacant' || structureSqFt <= 0) return Math.round(lotSizeSqFt * landPSF);
-    return Math.round(structureSqFt * mvPSF);
-}
 
 // ══════════════════════════════════════════════════════════════════
 //  MULTI-APPROACH PROPERTY VALUATION ENGINE
@@ -4087,201 +3275,35 @@ function estimateMarketValue(structureSqFt, lotSizeSqFt, useType, neighborhood) 
 // ══════════════════════════════════════════════════════════════════
 
 // ── Market Intelligence Data (from archive version) ──────────────
-const MARKET_RENTS_2025 = {
-    dtla:         { studio: 1950, br1: 2550, br2: 3400, br3: 4200, retail_psf: 42, office_psf: 48 },
-    hollywood:    { studio: 2100, br1: 2800, br2: 3650, br3: 4500, retail_psf: 48, office_psf: 52 },
-    koreatown:    { studio: 1650, br1: 2150, br2: 2850, br3: 3500, retail_psf: 36, office_psf: 38 },
-    westside:     { studio: 2400, br1: 3100, br2: 4100, br3: 5200, retail_psf: 54, office_psf: 58 },
-    santamonica:  { studio: 2600, br1: 3400, br2: 4500, br3: 5800, retail_psf: 62, office_psf: 65 },
-    beverly:      { studio: 2500, br1: 3200, br2: 4200, br3: 5400, retail_psf: 55, office_psf: 68 },
-    midcity:      { studio: 1850, br1: 2400, br2: 3200, br3: 4000, retail_psf: 38, office_psf: 42 },
-    southla:      { studio: 1300, br1: 1700, br2: 2200, br3: 2750, retail_psf: 24, office_psf: 28 },
-    valleyeast:   { studio: 1500, br1: 1950, br2: 2600, br3: 3200, retail_psf: 30, office_psf: 34 },
-    valleywest:   { studio: 1600, br1: 2100, br2: 2800, br3: 3400, retail_psf: 32, office_psf: 36 },
-    silverlake:   { studio: 2000, br1: 2600, br2: 3500, br3: 4300, retail_psf: 44, office_psf: 46 },
-    highland:     { studio: 1700, br1: 2200, br2: 2900, br3: 3600, retail_psf: 34, office_psf: 38 },
-    venice:       { studio: 2400, br1: 3100, br2: 4100, br3: 5100, retail_psf: 56, office_psf: 54 },
-    culver:       { studio: 2200, br1: 2850, br2: 3800, br3: 4700, retail_psf: 48, office_psf: 52 },
-    exposition:   { studio: 1650, br1: 2150, br2: 2850, br3: 3500, retail_psf: 34, office_psf: 38 },
-    southbay:     { studio: 1600, br1: 2050, br2: 2700, br3: 3350, retail_psf: 32, office_psf: 36 },
-    harbor:       { studio: 1300, br1: 1650, br2: 2200, br3: 2700, retail_psf: 22, office_psf: 26 },
-    boyleheights: { studio: 1350, br1: 1750, br2: 2300, br3: 2850, retail_psf: 26, office_psf: 28 },
-};
 
-const VACANCY_RATES = {
-    dtla: { residential: 0.072, retail: 0.085, office: 0.185 },
-    hollywood: { residential: 0.055, retail: 0.062, office: 0.145 },
-    koreatown: { residential: 0.048, retail: 0.070, office: 0.160 },
-    westside: { residential: 0.042, retail: 0.055, office: 0.125 },
-    santamonica: { residential: 0.038, retail: 0.058, office: 0.135 },
-    beverly: { residential: 0.035, retail: 0.048, office: 0.110 },
-    midcity: { residential: 0.052, retail: 0.068, office: 0.155 },
-    southla: { residential: 0.058, retail: 0.095, office: 0.200 },
-    valleyeast: { residential: 0.050, retail: 0.075, office: 0.165 },
-    valleywest: { residential: 0.045, retail: 0.070, office: 0.155 },
-    silverlake: { residential: 0.040, retail: 0.055, office: 0.130 },
-    highland: { residential: 0.048, retail: 0.072, office: 0.160 },
-    venice: { residential: 0.042, retail: 0.060, office: 0.140 },
-    culver: { residential: 0.038, retail: 0.052, office: 0.120 },
-    exposition: { residential: 0.055, retail: 0.078, office: 0.170 },
-    southbay: { residential: 0.048, retail: 0.072, office: 0.160 },
-    harbor: { residential: 0.062, retail: 0.092, office: 0.195 },
-    boyleheights: { residential: 0.055, retail: 0.088, office: 0.190 },
-};
 
 // Comparable land sales $/SF by neighborhood (recent transactions 2024-2025)
-const COMP_LAND_SALES = {
-    dtla:         { low: 200, median: 275, high: 400, sampleSize: 18 },
-    hollywood:    { low: 180, median: 260, high: 380, sampleSize: 14 },
-    koreatown:    { low: 140, median: 210, high: 320, sampleSize: 22 },
-    westside:     { low: 280, median: 370, high: 520, sampleSize: 8 },
-    santamonica:  { low: 320, median: 420, high: 600, sampleSize: 5 },
-    beverly:      { low: 350, median: 470, high: 650, sampleSize: 6 },
-    midcity:      { low: 130, median: 185, high: 280, sampleSize: 16 },
-    southla:      { low: 55, median: 90, high: 140, sampleSize: 24 },
-    valleyeast:   { low: 70, median: 115, high: 180, sampleSize: 20 },
-    valleywest:   { low: 85, median: 135, high: 200, sampleSize: 15 },
-    silverlake:   { low: 165, median: 230, high: 340, sampleSize: 10 },
-    highland:     { low: 100, median: 155, high: 240, sampleSize: 12 },
-    venice:       { low: 280, median: 365, high: 500, sampleSize: 7 },
-    culver:       { low: 200, median: 275, high: 380, sampleSize: 9 },
-    exposition:   { low: 110, median: 165, high: 250, sampleSize: 14 },
-    southbay:     { low: 80, median: 125, high: 190, sampleSize: 18 },
-    harbor:       { low: 50, median: 82, high: 130, sampleSize: 16 },
-    boyleheights: { low: 70, median: 115, high: 175, sampleSize: 15 },
-};
 
 // Cap rates by neighborhood and property type (2025 LA County)
-const CAP_RATES = {
-    dtla: { residential: 0.045, retail: 0.055, office: 0.065 },
-    hollywood: { residential: 0.042, retail: 0.052, office: 0.060 },
-    koreatown: { residential: 0.048, retail: 0.058, office: 0.068 },
-    westside: { residential: 0.038, retail: 0.048, office: 0.055 },
-    santamonica: { residential: 0.035, retail: 0.045, office: 0.052 },
-    beverly: { residential: 0.038, retail: 0.045, office: 0.052 },
-    midcity: { residential: 0.047, retail: 0.057, office: 0.067 },
-    southla: { residential: 0.055, retail: 0.068, office: 0.078 },
-    valleyeast: { residential: 0.050, retail: 0.062, office: 0.072 },
-    valleywest: { residential: 0.048, retail: 0.060, office: 0.070 },
-    silverlake: { residential: 0.040, retail: 0.050, office: 0.058 },
-    highland: { residential: 0.048, retail: 0.058, office: 0.068 },
-    venice: { residential: 0.038, retail: 0.048, office: 0.055 },
-    culver: { residential: 0.040, retail: 0.050, office: 0.058 },
-    exposition: { residential: 0.048, retail: 0.058, office: 0.068 },
-    southbay: { residential: 0.050, retail: 0.060, office: 0.070 },
-    harbor: { residential: 0.055, retail: 0.068, office: 0.078 },
-    boyleheights: { residential: 0.052, retail: 0.065, office: 0.075 },
-};
 
 // ── LA County Home Price Index ───────────────────────────────────
-const LA_PRICE_INDEX = {
-    1975: 14.0, 1976: 12.5, 1977: 10.8, 1978: 9.0, 1979: 7.5,
-    1980: 6.8, 1981: 6.3, 1982: 6.0, 1983: 5.7, 1984: 5.4,
-    1985: 5.0, 1986: 4.5, 1987: 3.8, 1988: 3.2, 1989: 2.8,
-    1990: 2.7, 1991: 2.9, 1992: 3.1, 1993: 3.3, 1994: 3.4,
-    1995: 3.5, 1996: 3.5, 1997: 3.4, 1998: 3.2, 1999: 3.0,
-    2000: 2.9, 2001: 2.7, 2002: 2.4, 2003: 2.1, 2004: 1.8,
-    2005: 1.55, 2006: 1.6, 2007: 1.75, 2008: 2.2, 2009: 2.6,
-    2010: 2.5, 2011: 2.6, 2012: 2.4, 2013: 2.1, 2014: 1.95,
-    2015: 1.85, 2016: 1.75, 2017: 1.6, 2018: 1.5, 2019: 1.45,
-    2020: 1.38, 2021: 1.18, 2022: 1.08, 2023: 1.05, 2024: 1.02,
-    2025: 1.0, 2026: 1.0
-};
-function getAppreciationMultiplier(baseYear) {
-    const yr = parseInt(baseYear) || 2020;
-    if (yr < 1975) return LA_PRICE_INDEX[1975];
-    if (yr > 2026) return 1.0;
-    return LA_PRICE_INDEX[yr] || 1.0;
-}
 
 // ── Dollar formatter ─────────────────────────────────────────────
-function fmtDollar(n) { return '$' + Math.round(n).toLocaleString(); }
 
 /**
  * Approach 1: Prop 13 Base Year Adjusted Value
  */
-function prop13AdjustedValue(rollLandVal, rollImpVal, landBaseYear, impBaseYear) {
-    const landVal = parseFloat(rollLandVal) || 0;
-    const impVal = parseFloat(rollImpVal) || 0;
-    if (landVal + impVal <= 0) return 0;
-    const landMult = getAppreciationMultiplier(landBaseYear);
-    const impMult = getAppreciationMultiplier(impBaseYear || landBaseYear);
-    return Math.round(landVal * landMult + impVal * impMult);
-}
 
 // Property-type discount: multi-family trades at lower $/SF than SFR
-function getPropertyTypeMultiplier(units, useDesc) {
-    const desc = (useDesc || '').toLowerCase();
-    if (units >= 5 || desc.includes('five or more')) return 0.45;
-    if (units === 4 || desc.includes('four')) return 0.52;
-    if (units === 3 || desc.includes('three') || desc.includes('triplex')) return 0.58;
-    if (units === 2 || desc.includes('two') || desc.includes('duplex')) return 0.65;
-    if (desc.includes('condo')) return 0.85;
-    return 1.0; // SFR
-}
 
 /**
  * Approach 2: Sales Comp via Assessor + Land Comp Data
  * Adjusted by property type — duplexes, triplexes etc. trade at lower $/SF
  */
-function compBasedValue(structureSqFt, lotSizeSqFt, useType, neighborhood, units, useDesc) {
-    const landComps = COMP_LAND_SALES[neighborhood] || COMP_LAND_SALES.dtla;
-    if (useType === 'Vacant' || structureSqFt <= 0) {
-        return Math.round(lotSizeSqFt * landComps.median);
-    }
-    const mvPSF = MARKET_VALUE_PSF[neighborhood] || 600;
-    const typeMult = getPropertyTypeMultiplier(units, useDesc);
-    return Math.round(structureSqFt * mvPSF * typeMult);
-}
 
 /**
  * Approach 3: Income Approach — NOI / Cap Rate
  * Uses actual unit count from assessor when available.
  */
-function incomeApproachValue(structureSqFt, lotSizeSqFt, useType, neighborhood, units, useDesc) {
-    if (useType === 'Vacant' || structureSqFt <= 0) return 0;
-    const rents = MARKET_RENTS_2025[neighborhood] || MARKET_RENTS_2025.dtla;
-    const vacancy = VACANCY_RATES[neighborhood] || VACANCY_RATES.dtla;
-    const caps = CAP_RATES[neighborhood] || CAP_RATES.dtla;
-
-    // Use actual unit count if available, otherwise estimate
-    const actualUnits = (units && units > 0) ? units : Math.max(1, Math.floor(structureSqFt * 0.85 / 850));
-    // Adjust rent mix by unit count
-    let avgRent;
-    if (actualUnits <= 2) {
-        // Duplexes: typically 2BR units
-        avgRent = rents.br2;
-    } else if (actualUnits <= 4) {
-        // Small multi: mix of 1BR and 2BR
-        avgRent = rents.br1 * 0.5 + rents.br2 * 0.5;
-    } else {
-        // Larger buildings: studio/1BR heavy
-        avgRent = rents.studio * 0.20 + rents.br1 * 0.45 + rents.br2 * 0.30 + rents.br3 * 0.05;
-    }
-    const grossAnnual = actualUnits * avgRent * 12;
-    const vacancyLoss = grossAnnual * vacancy.residential;
-    const opex = grossAnnual * (actualUnits <= 4 ? 0.40 : 0.35); // Higher expense ratio for small multi
-    const noi = grossAnnual - vacancyLoss - opex;
-    if (noi <= 0 || caps.residential <= 0) return 0;
-    return Math.round(noi / caps.residential);
-}
 
 // ── AVM Proxy (ATTOM primary, RentCast fallback) ────────────────
-const AVM_PROXY_URL = 'https://lty-avm-proxy.clscre.workers.dev';
-const RENTCAST_PROXY_URL = AVM_PROXY_URL; // backward compat
-function _avmCacheKey(address) { return 'lty_avm2_' + address.toLowerCase().trim().replace(/\s+/g, ' '); }
-function _avmCacheGet(address) {
-    try {
-        const raw = localStorage.getItem(_avmCacheKey(address));
-        if (!raw) return null;
-        const obj = JSON.parse(raw);
-        if (Date.now() - obj.timestamp > 90 * 86400000) { localStorage.removeItem(_avmCacheKey(address)); return null; }
-        return obj;
-    } catch { return null; }
-}
-function _avmCacheSet(address, data) {
-    try { localStorage.setItem(_avmCacheKey(address), JSON.stringify({ ...data, timestamp: Date.now() })); } catch {}
-}
+// AVM_PROXY_URL is defined in core-hbu.js
+if (typeof RENTCAST_PROXY_URL === 'undefined') var RENTCAST_PROXY_URL = AVM_PROXY_URL; // backward compat
 async function fetchAVM(address) {
     if (!address) return null;
     const cached = _avmCacheGet(address);
@@ -4329,434 +3351,19 @@ async function getMarketValue(address, structureSqFt, lotSizeSqFt, useType, neig
 // ══════════════════════════════════════════════════════════════════
 
 // Revenue potential per NSF of building (annual $/SF, new-construction achievable rents)
-const REVENUE_PSF = {
-    sfr: 40, duplex: 42, multifamily_low: 52, multifamily_mid: 58,
-    multifamily_high: 66, mixeduse: 56, retail: 52, office: 52,
-    medical: 62, hotel: 90, industrial: 22, selfstorage: 24,
-    senior: 62, parking: 30, creative: 52, adu: 54
-};
 
 // Neighborhood rent multiplier — adjusts REVENUE_PSF by submarket
-const NEIGHBORHOOD_RENT_MULT = {
-    dtla: 0.95, hollywood: 1.10, koreatown: 0.88, westside: 1.25, santamonica: 1.35,
-    beverly: 1.40, midcity: 1.00, southla: 0.70, valleyeast: 0.82, valleywest: 0.85,
-    silverlake: 1.08, highland: 0.88, venice: 1.25, culver: 1.12, exposition: 0.88,
-    southbay: 0.85, harbor: 0.70, boyleheights: 0.75
-};
 
 // Parking cost per space by building type
-const PARKING_COST_MAP = {
-    sfr: 8000, duplex: 8000, multifamily_low: 30000, multifamily_mid: 40000,
-    multifamily_high: 65000, mixeduse: 40000, retail: 8000, office: 40000,
-    medical: 40000, hotel: 55000, industrial: 5000, selfstorage: 5000,
-    senior: 30000, parking: 35000, creative: 8000, adu: 5000
-};
 
 // Build cost per SF (LA 2024-2025 market)
-const BUILD_COST_PSF = {
-    sfr: 300, duplex: 275, multifamily_low: 310, multifamily_mid: 400,
-    multifamily_high: 575, mixeduse: 420, retail: 260, office: 365,
-    medical: 430, hotel: 480, industrial: 150, selfstorage: 110,
-    senior: 400, parking: 85, creative: 290, adu: 400
-};
 
 // FAR (floor area ratio) by use — typical LA densities
-const FAR_TYPICAL = {
-    sfr: 0.5, duplex: 0.6, multifamily_low: 1.5, multifamily_mid: 3.0,
-    multifamily_high: 6.0, mixeduse: 3.0, retail: 0.5, office: 2.0,
-    medical: 1.5, hotel: 4.0, industrial: 0.5, selfstorage: 2.5,
-    senior: 2.5, parking: 3.0, creative: 1.5, adu: 0.5
-};
 
 // Rationale templates
-const RATIONALE = {
-    sfr:             'Single-family development suits the site due to residential zoning, neighborhood character, and stable demand for ownership housing.',
-    duplex:          'Duplex development provides moderate density with manageable entitlement complexity, strong for owner-occupant or rental income strategies.',
-    multifamily_low: 'Low-rise multifamily maximizes unit count within a manageable building type, aligning well with LA\'s housing demand and density incentives.',
-    multifamily_mid: 'Mid-rise multifamily leverages the parcel size and zoning to achieve meaningful density, supported by strong rental market fundamentals.',
-    multifamily_high:'High-rise multifamily captures maximum density bonus potential in a high-demand corridor, though construction costs are significantly higher.',
-    mixeduse:        'Mixed-use development combines ground-floor commercial revenue with residential density above, ideal for transit-accessible commercial corridors.',
-    retail:          'Retail use leverages street frontage, visibility, and pedestrian traffic in a commercial corridor with demonstrated consumer demand.',
-    office:          'Office development responds to professional service demand in the submarket, with viable access and infrastructure to support employment density.',
-    medical:         'Medical office benefits from proximity to health care services, strong tenant demand, and premium rents typical of medical-zoned uses.',
-    hotel:           'Hotel/hospitality use leverages tourism and business travel demand, arterial visibility, and transit proximity for viable room-night revenue.',
-    industrial:      'Industrial/warehouse use provides strong yield potential with lower construction costs, supported by limited industrial land supply in LA.',
-    selfstorage:     'Self-storage is operationally efficient with low staffing costs, serves population density demand, and tolerates suboptimal site configurations.',
-    senior:          'Senior living addresses the growing aging population with premium per-unit revenue and purpose-built care facilities.',
-    parking:         'Parking structure use addresses chronic parking deficits in dense urban areas, with modest build costs and reliable demand.',
-    creative:        'Creative office/flex space appeals to tech and media tenants seeking character space, commanding premium rents in emerging neighborhoods.',
-    adu:             'ADU or small-lot subdivision maximizes yield on smaller parcels under CA housing legislation (SB 9, AB 68) with minimal entitlement friction.',
-};
 
-const CA_HOUSING_LEGISLATION = [
-    {
-        id: 'sb9',
-        name: 'SB 9 (HOME Act)',
-        description: 'By-right duplex and lot splits on single-family parcels statewide.',
-        effectiveDate: 'January 1, 2022',
-        author: 'Sen. Toni Atkins',
-        codeSection: 'Cal. Gov. Code §§ 65852.21, 66411.7',
-        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220SB9',
-        chaptered: 'Stats. 2021, Ch. 162',
-        detail: 'The California HOME Act (2021) allows property owners to split single-family lots and build duplexes by-right, bypassing traditional zoning restrictions. Applies to parcels of at least 2,400 SF in urbanized areas zoned for single-family residential (R1, R1V, RE, RS, RA, RD, and equivalents). Exclusions: historic districts, very high fire hazard severity zones (VHFHSZ), earthquake fault zones (Alquist-Priolo), flood zones, conservation/habitat areas, and coastal zone. Each resulting lot must be at least 1,200 SF. Owner-occupancy required for 3 years on one unit if lot split is pursued. Development standards: max 800 SF per unit (or 60% of existing if larger), 4 ft rear/side setbacks, no parking required within 0.5 mi of transit. Lot split + duplex on each lot = up to 4 units total on a single R1 parcel. Impact: Significant for small infill developers targeting single-family neighborhoods.',
-        applies: (useId, inp) => {
-            const sfZones = ['R1', 'R1V', 'R1V1', 'R1V2', 'R1V3', 'RE', 'RE9', 'RE11', 'RE15', 'RE20', 'RE40', 'RS', 'RA', 'RD', 'RD1.5', 'RD2', 'RD3', 'RD4', 'RD5', 'RD6', 'RW1'];
-            if (!sfZones.includes(inp.zoning) || inp.parcelSize < 2400 || !['duplex', 'adu', 'sfr'].includes(useId)) return false;
-            if (inp.constHistoric) return false;
-            if (inp.constFire || inp.constHillside) return false;
-            if (inp.constFault) return false;
-            if (inp.constFlood) return false;
-            if (inp.constCoastal) return false;
-            const _j = window._lastJurisdiction;
-            if (_j && _j.jurisdiction === 'South Pasadena') return false;
-            return true;
-        },
-        sb9Envelope: {
-            maxUnitSize: 800, minLotForSplit: 2400, minResultingLot: 1200,
-            maxUnitsPerLot: 2, maxUnitsWithSplit: 4,
-            setbacks: { front: 'existing', side: 4, rear: 4 },
-            maxHeight: 25, parkingPerUnit: 1, parkingTransitExempt: 0.5,
-            ownerOccupancy: true, ownerOccupancyYears: 3,
-        },
-        densityBonus: 1.0,
-        parkingReduction: 0,
-        softCostReduction: 0,
-        legalOverride: true,
-    },
-    {
-        id: 'ab2011',
-        name: 'AB 2011',
-        description: 'By-right affordable housing on commercially zoned land.',
-        effectiveDate: 'July 1, 2023',
-        author: 'Asm. Buffy Wicks',
-        codeSection: 'Cal. Gov. Code §§ 65912.100–65912.140',
-        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220AB2011',
-        chaptered: 'Stats. 2022, Ch. 647',
-        detail: 'AB 2011 (2022) creates a streamlined, ministerial (by-right) approval pathway for 100% affordable housing on commercially zoned land. Projects must pay prevailing wages and meet affordability requirements — mixed-income projects require a percentage of units at below-market rents. Applies to sites zoned for office, retail, or parking that are not in industrial zones, coastal zones, or high fire areas. Overrides local zoning that would otherwise prohibit residential uses on commercial parcels. Impact: Unlocks large swaths of commercial land for affordable housing development across California.',
-        applies: (useId, inp) => ['C1','C1.5','C2','C4','C5','CM'].includes(inp.zoning) && ['multifamily_low','multifamily_mid','multifamily_high','mixeduse'].includes(useId),
-        densityBonus: 0.35,
-        parkingReduction: 0,
-        softCostReduction: 0,
-        legalOverride: true,
-    },
-    {
-        id: 'sb6',
-        name: 'SB 6',
-        description: 'Market-rate housing permitted on commercially zoned land.',
-        effectiveDate: 'January 1, 2023',
-        author: 'Sen. Anna Caballero',
-        codeSection: 'Cal. Gov. Code §§ 65852.24',
-        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220SB6',
-        chaptered: 'Stats. 2022, Ch. 659',
-        detail: 'SB 6, the Middle Class Housing Act (2022), allows market-rate residential development on commercially zoned land, provided the project meets specified objective design standards and at least 20% of units are affordable. Unlike AB 2011, SB 6 allows market-rate projects but requires the local approval process. Projects must comply with local height and FAR limits. Applies to parcels zoned for office, retail, or parking uses. Impact: Enables market-rate housing on commercial corridors where residential was previously prohibited.',
-        applies: (useId, inp) => ['C1','C1.5','C2','C4','C5','CM'].includes(inp.zoning) && ['multifamily_low','multifamily_mid','multifamily_high','mixeduse'].includes(useId),
-        densityBonus: 0.25,
-        parkingReduction: 0,
-        softCostReduction: 0,
-        legalOverride: false,
-    },
-    {
-        id: 'sb423',
-        name: 'SB 423 (Streamlined)',
-        description: 'Streamlined ministerial approval for multifamily projects meeting affordability thresholds.',
-        effectiveDate: 'January 1, 2024',
-        author: 'Sen. Scott Wiener',
-        codeSection: 'Cal. Gov. Code § 65913.4 (amending SB 35)',
-        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202320240SB423',
-        chaptered: 'Stats. 2023, Ch. 778',
-        detail: 'SB 423 (2023) extends and strengthens SB 35\'s streamlined ministerial approval process for multifamily housing projects meeting affordability thresholds. Projects with 10%+ affordable units in jurisdictions that have not met housing production goals qualify for ministerial approval. Eliminates discretionary review, CEQA requirements, and public hearings for qualifying projects. Applies to urban infill sites in areas meeting RHNA progress standards. Impact: Dramatically reduces entitlement timelines and costs for projects meeting affordability thresholds.',
-        applies: (useId, inp) => ['R2','R3','R4','R5','C1.5','C2','C4','TOD'].includes(inp.zoning) && ['multifamily_low','multifamily_mid','multifamily_high','mixeduse'].includes(useId),
-        densityBonus: 0,
-        parkingReduction: 0,
-        softCostReduction: 0.15,
-        legalOverride: false,
-    },
-    {
-        id: 'ab2345',
-        name: 'AB 2345 (Density Bonus)',
-        description: 'Up to 50% density bonus and reduced parking for projects including affordable units.',
-        effectiveDate: 'January 1, 2021',
-        author: 'Asm. David Chiu',
-        codeSection: 'Cal. Gov. Code § 65915 (amending Density Bonus Law)',
-        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=201920200AB2345',
-        chaptered: 'Stats. 2020, Ch. 197',
-        detail: 'AB 2345 (2020) enhances California\'s Density Bonus Law, increasing the maximum density bonus from 35% to 50% for projects including affordable units. Provides up to 4 incentives or concessions such as reduced setbacks, increased height, and reduced parking. Parking minimums reduced to 0.5 spaces per unit for projects near transit. Applies to all residential and mixed-use zones with affordable set-asides meeting specified thresholds. Impact: One of the most widely used tools by LA developers to significantly increase project density and reduce parking requirements.',
-        applies: (useId, inp) => ['R2','R3','R4','R5','C1','C1.5','C2','C4','TOD'].includes(inp.zoning) && ['duplex','multifamily_low','multifamily_mid','multifamily_high','mixeduse','senior'].includes(useId),
-        densityBonus: 0.50,
-        parkingReduction: 0.20,
-        softCostReduction: 0,
-        legalOverride: false,
-    },
-    {
-        id: 'ab1763',
-        name: 'AB 1763',
-        description: 'Unlimited density for 100% affordable housing projects near transit.',
-        effectiveDate: 'January 1, 2020',
-        author: 'Asm. David Chiu',
-        codeSection: 'Cal. Gov. Code § 65915(o)',
-        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=201920200AB1763',
-        chaptered: 'Stats. 2019, Ch. 666',
-        detail: 'AB 1763 (2019) provides unlimited density for 100% affordable housing projects located within half a mile of a major transit stop. Eliminates maximum FAR and unit count restrictions entirely. Parking requirements are set to zero for projects within half a mile of transit. Projects must be 100% affordable with an allowance for manager units. Impact: Enables very high-density affordable development near transit without the typical density caps, making transit-adjacent sites extremely valuable for affordable housing developers.',
-        applies: (useId, inp) => ['adjacent','near'].includes(inp.transit) && ['multifamily_low','multifamily_mid','multifamily_high','senior'].includes(useId),
-        densityBonus: 1.0,
-        parkingReduction: 0,
-        softCostReduction: 0,
-        legalOverride: true,
-    },
-    {
-        id: 'toc',
-        name: 'TOC (LA Local)',
-        description: 'Transit Oriented Communities incentives — up to 80% density bonus and parking reductions near transit.',
-        effectiveDate: 'September 22, 2017',
-        author: 'City of Los Angeles (Measure JJJ Implementation)',
-        codeSection: 'LAMC § 12.22 A.31 (TOC Guidelines)',
-        billUrl: 'https://planning.lacity.gov/plans-policies/transit-oriented-communities-incentive-program',
-        chaptered: 'LA City Ordinance No. 185,573',
-        detail: 'The Transit Oriented Communities (TOC) program is an LA-specific incentive providing density bonuses of up to 80% and significant parking reductions for housing projects near transit. Projects are tiered by proximity: Tier 1 (within 750 ft of a major stop) through Tier 4 (within 2,640 ft), with each tier providing increasing incentives. Affordable units must be included at specified set-aside levels. Impact: The most impactful local density incentive in Los Angeles, enabling significantly larger buildings near Metro stations.',
-        applies: (useId, inp) => ['adjacent','near'].includes(inp.transit) && ['multifamily_low','multifamily_mid','multifamily_high','mixeduse'].includes(useId),
-        densityBonus: 0.80,
-        parkingReduction: 0.30,
-        softCostReduction: 0,
-        legalOverride: false,
-    },
-    {
-        id: 'ab2097',
-        name: 'AB 2097',
-        description: 'Eliminates minimum parking requirements within 1/2 mile of major transit stops.',
-        effectiveDate: 'January 1, 2023',
-        author: 'Asm. Laura Friedman',
-        codeSection: 'Cal. Gov. Code § 65863.2',
-        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220AB2097',
-        chaptered: 'Stats. 2022, Ch. 459',
-        detail: 'AB 2097 (2022) eliminates minimum parking requirements for any development within half a mile of a major transit stop in California. Applies to all land use types — residential, commercial, and mixed-use — not just affordable housing. Local jurisdictions cannot impose minimum parking requirements in these areas. Developers can still choose to build parking, but it is not mandated. Impact: Reduces development costs by $30,000 to $80,000 per eliminated parking space and enables more efficient site utilization near transit.',
-        applies: (useId, inp) => ['adjacent','near'].includes(inp.transit),
-        densityBonus: 0,
-        parkingReduction: 1.0,
-        softCostReduction: 0,
-        legalOverride: false,
-    },
-    {
-        id: 'adu_reform',
-        name: 'ADU Reform (AB 68/SB 13/AB 881)',
-        description: 'By-right ADU construction on residential lots; no parking required near transit.',
-        effectiveDate: 'January 1, 2020',
-        author: 'Asm. Phil Ting (AB 68), Sen. Bob Wieckowski (SB 13), Asm. Richard Bloom (AB 881)',
-        codeSection: 'Cal. Gov. Code §§ 65852.2, 65852.22 (as amended)',
-        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=201920200AB68',
-        chaptered: 'Stats. 2019, Ch. 655 (AB 68), Ch. 653 (SB 13), Ch. 659 (AB 881)',
-        detail: 'California\'s ADU reform package (2019-2020) established a comprehensive by-right framework for Accessory Dwelling Units on residential lots. AB 68 allows at least one ADU on any residential lot regardless of local zoning. SB 13 eliminates impact fees for ADUs under 750 SF and caps fees for larger units. AB 881 prohibits local agencies from requiring owner-occupancy or imposing minimum lot sizes. No additional parking is required near transit. Impact: Has generated tens of thousands of new housing units statewide, particularly in single-family neighborhoods.',
-        applies: (useId, inp) => ['R1','R2','R3','R4','R5'].includes(inp.zoning) && useId === 'adu',
-        densityBonus: 0,
-        parkingReduction: 0,
-        softCostReduction: 0,
-        legalOverride: true,
-    },
-    {
-        id: 'sb478',
-        name: 'SB 478',
-        description: 'Sets minimum 1.0 FAR for multifamily projects on parcels up to 10,000 SF.',
-        effectiveDate: 'January 1, 2023',
-        author: 'Sen. Scott Wiener',
-        codeSection: 'Cal. Gov. Code § 65585.1',
-        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220SB478',
-        chaptered: 'Stats. 2021, Ch. 363',
-        detail: 'SB 478 (2021) establishes a minimum floor area ratio (FAR) of 1.0 for multifamily housing projects on parcels of 10,000 SF or less in areas zoned for at least two residential units. Prohibits local jurisdictions from imposing lot coverage limits below 60% on qualifying parcels. Prevents cities from using low FAR limits to effectively block apartment construction on small lots. Applies only to urban infill locations. Impact: Ensures meaningful development potential on small multifamily parcels that might otherwise be restricted by overly conservative FAR limits.',
-        applies: (useId, inp) => inp.parcelSize <= 10000 && ['R3','R4','R5','C1.5','C2','C4','TOD'].includes(inp.zoning) && ['multifamily_low','multifamily_mid','multifamily_high'].includes(useId),
-        densityBonus: 0,
-        parkingReduction: 0,
-        softCostReduction: 0,
-        legalOverride: false,
-        minFAR: 1.0,
-    },
-    {
-        id: 'ed1',
-        name: 'ED1 (LA Local)',
-        description: 'Executive Directive 1 — streamlined approvals and density bonus for 100% affordable and senior housing.',
-        effectiveDate: 'December 12, 2022',
-        author: 'Mayor Karen Bass',
-        codeSection: 'Executive Directive No. 1 (City of Los Angeles)',
-        billUrl: 'https://mayor.lacity.gov/news/mayor-bass-signs-executive-directive-1-expedite-affordable-housing-construction',
-        chaptered: 'Mayoral Executive Directive',
-        detail: 'Executive Directive 1 (2022) is an LA mayoral order streamlining approvals for 100% affordable and senior housing projects in Los Angeles. Provides expedited processing, priority permitting, and fee waivers for qualifying projects. Includes density bonus provisions beyond state law for affordable projects. Directs all city departments to prioritize affordable housing applications and reduce bureaucratic barriers. Impact: Significantly reduces entitlement timelines for affordable housing, with some projects receiving permits in weeks rather than months.',
-        applies: (useId, inp) => ['multifamily_low','multifamily_mid','multifamily_high','senior'].includes(useId),
-        densityBonus: 0.35,
-        parkingReduction: 0,
-        softCostReduction: 0.20,
-        legalOverride: false,
-    },
-    {
-        id: 'sb684',
-        name: 'SB 684',
-        description: 'By-right approval for 10+ unit housing projects on commercially zoned land.',
-        effectiveDate: 'January 1, 2024',
-        author: 'Sen. Anna Caballero',
-        codeSection: 'Cal. Gov. Code § 65852.28',
-        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202320240SB684',
-        chaptered: 'Stats. 2023, Ch. 753',
-        detail: 'SB 684 (2023) establishes a by-right (ministerial) approval pathway for housing projects of 10 or more units on commercially zoned land. Projects must meet objective design and development standards. Requires compliance with density, height, and FAR limits as defined by local jurisdictions. Overrides local discretionary review requirements and CEQA for qualifying projects on infill sites. Impact: Provides certainty and speed for developers building housing on commercial sites, reducing entitlement risk and project timelines substantially.',
-        applies: (useId, inp) => ['C1','C1.5','C2','C4','C5','CM'].includes(inp.zoning) && ['multifamily_low','multifamily_mid','multifamily_high','mixeduse'].includes(useId),
-        densityBonus: 0,
-        parkingReduction: 0,
-        softCostReduction: 0,
-        legalOverride: true,
-    },
-    {
-        id: 'sb79',
-        name: 'SB 79 (Transit-Oriented)',
-        description: 'Overrides local zoning near qualifying transit stations — up to 95ft, 160 du/acre, 4.5 FAR.',
-        effectiveDate: 'July 1, 2026',
-        author: 'Sen. Scott Wiener',
-        codeSection: 'Cal. Gov. Code §§ 65913.6–65913.12',
-        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202520260SB79',
-        chaptered: 'Stats. 2025 (pending enrollment)',
-        detail: 'SB 79 (effective July 1, 2026) is California\'s transit-oriented development bill that overrides local zoning near qualifying heavy and light rail stations. Tier 1 (heavy rail, including all Metro Rail lines) allows 95ft height, 160 du/acre, and 4.5 FAR. Tier 2 (light rail, BRT, qualifying Metrolink) allows 85ft height, 140 du/acre, and 4.0 FAR. Three distance zones apply: Adjacent (within 200ft of station entrance) and Inner (within 1/4 mile) get full tier benefits and zero parking requirements. Outer zone (1/4 to 1/2 mile) is limited to 65ft height and 3.25 FAR, with 0.5 parking spaces per unit. All projects require 15% affordable units. 100% affordable projects receive the full tier benefits regardless of zone. Impact: Unlocks massive upzoning near every Metro station in LA County, making transit-adjacent parcels significantly more valuable for higher-density development.',
-        applies: (useId, inp) => {
-            if (!window.lastGeocode) return false;
-            if (!['multifamily_low','multifamily_mid','multifamily_high','mixeduse','senior','hotel'].includes(useId)) return false;
-            const sb79 = detectSB79Eligibility(window.lastGeocode.lat, window.lastGeocode.lon);
-            return sb79.eligible;
-        },
-        get densityBonus() {
-            if (!window.lastGeocode) return 0;
-            const sb79 = detectSB79Eligibility(window.lastGeocode.lat, window.lastGeocode.lon);
-            if (!sb79.eligible) return 0;
-            return sb79.allowances.far / 3.0 - 1;
-        },
-        get parkingReduction() {
-            if (!window.lastGeocode) return 0;
-            const sb79 = detectSB79Eligibility(window.lastGeocode.lat, window.lastGeocode.lon);
-            if (!sb79.eligible) return 0;
-            return sb79.allowances.parking === 0 ? 1.0 : 0.5;
-        },
-        softCostReduction: 0.10,
-        legalOverride: true,
-        get minFAR() {
-            if (!window.lastGeocode) return 0;
-            const sb79 = detectSB79Eligibility(window.lastGeocode.lat, window.lastGeocode.lon);
-            if (!sb79.eligible) return 0;
-            return sb79.allowances.far;
-        },
-    },
-    {
-        id: 'sb897',
-        name: 'SB 897 (ADU Height)',
-        description: 'Increases ADU height limits to 18 ft (detached) or 25 ft (near transit), allows 2-story ADUs.',
-        effectiveDate: 'January 1, 2023',
-        author: 'Sen. Bob Wieckowski',
-        codeSection: 'Cal. Gov. Code § 65852.2(c) (height provisions)',
-        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220SB897',
-        chaptered: 'Stats. 2022, Ch. 664',
-        detail: 'SB 897 (2022) increases allowable height limits for ADUs. Detached ADUs may now be up to 18 feet tall, and ADUs within half a mile of a major transit stop or high-quality transit corridor may reach 25 feet. Two-story ADUs are explicitly permitted statewide. Attached ADUs may be up to 25 feet or match the primary dwelling height. Local agencies may not impose height restrictions below these thresholds. Impact: Enables larger, more livable ADU designs including two-story units, significantly expanding the feasible building envelope on constrained lots.',
-        applies: (useId, inp) => ['R1','R2','R3','R4','R5'].includes(inp.zoning) && useId === 'adu',
-        densityBonus: 0,
-        parkingReduction: 0,
-        softCostReduction: 0,
-        legalOverride: false,
-    },
-    {
-        id: 'ab2221',
-        name: 'AB 2221 (ADU Owner-Occupancy)',
-        description: 'Permanently removes owner-occupancy requirements for ADUs; clarifies local compliance standards.',
-        effectiveDate: 'January 1, 2023',
-        author: 'Asm. Luz Rivas',
-        codeSection: 'Cal. Gov. Code § 65852.2(a)(6) (owner-occupancy)',
-        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220AB2221',
-        chaptered: 'Stats. 2022, Ch. 662',
-        detail: 'AB 2221 (2022) permanently eliminates owner-occupancy requirements for ADUs that were temporarily suspended through 2025. Clarifies that local agencies cannot impose owner-occupancy as a condition of ADU approval. Also standardizes front setback requirements and clarifies that ADUs must comply with building code but not local design standards that would prevent construction. Impact: Removes a major barrier to ADU investment by allowing landlords to rent both the primary dwelling and ADU without residing on-site.',
-        applies: (useId, inp) => ['R1','R2','R3','R4','R5'].includes(inp.zoning) && useId === 'adu',
-        densityBonus: 0,
-        parkingReduction: 0,
-        softCostReduction: 0,
-        legalOverride: false,
-    },
-    {
-        id: 'ab916',
-        name: 'AB 916 (JADU Parking)',
-        description: 'Prohibits parking requirements for Junior ADUs (JADUs) statewide.',
-        effectiveDate: 'January 1, 2023',
-        author: 'Asm. Phil Ting',
-        codeSection: 'Cal. Gov. Code § 65852.22(a) (JADU parking)',
-        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220AB916',
-        chaptered: 'Stats. 2022, Ch. 663',
-        detail: 'AB 916 (2022) prohibits local agencies from requiring additional parking for Junior Accessory Dwelling Units (JADUs). JADUs are units of 500 SF or less created within the existing footprint of a single-family home. The bill also expands JADU eligibility to include conversions of attached garages and other existing structures. Impact: Eliminates parking as a barrier to JADU creation, making garage conversions and internal subdivisions more feasible for homeowners.',
-        applies: (useId, inp) => ['R1','R2','R3'].includes(inp.zoning) && useId === 'adu',
-        densityBonus: 0,
-        parkingReduction: 1.0,
-        softCostReduction: 0,
-        legalOverride: false,
-    },
-    {
-        id: 'ab1033',
-        name: 'AB 1033 (ADU Condo Sales)',
-        description: 'Allows ADUs to be sold separately as condominiums where local ordinance permits.',
-        effectiveDate: 'January 1, 2024',
-        author: 'Asm. Phil Ting',
-        codeSection: 'Cal. Civ. Code § 6714; Cal. Gov. Code § 65852.26',
-        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202320240AB1033',
-        chaptered: 'Stats. 2023, Ch. 752',
-        detail: 'AB 1033 (2023) authorizes local jurisdictions to allow ADUs to be sold as separate condominium units, independent of the primary dwelling. Requires the local agency to adopt an ordinance opting in. The ADU and primary dwelling would each be a separate unit in a condominium plan. HOAs may not unreasonably restrict ADU construction where permitted by state law. Impact: Creates a potential for-sale ADU market, enabling homeowners to build and sell ADUs as affordable starter homes and expanding homeownership opportunities.',
-        applies: (useId, inp) => ['R1','R2','R3','R4','R5'].includes(inp.zoning) && useId === 'adu',
-        densityBonus: 0,
-        parkingReduction: 0,
-        softCostReduction: 0,
-        legalOverride: false,
-    },
-    {
-        id: 'sb477',
-        name: 'SB 477 (ADU Permit Processing)',
-        description: 'Reduces ADU permit processing deadline to 60 days; standardizes application requirements.',
-        effectiveDate: 'January 1, 2024',
-        author: 'Sen. Anna Caballero',
-        codeSection: 'Cal. Gov. Code § 65852.2(a)(3) (processing deadlines)',
-        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202320240SB477',
-        chaptered: 'Stats. 2023, Ch. 751',
-        detail: 'SB 477 (2023) reduces the maximum time a local agency may take to approve or deny an ADU application from 60 days to 60 days (codifying existing practice and closing loopholes). Standardizes application requirements across jurisdictions to prevent local agencies from imposing excessive documentation requirements. Prohibits agencies from requiring discretionary review for qualifying ADU applications. Impact: Reduces soft costs and timeline uncertainty for ADU developers by ensuring faster, more predictable permitting.',
-        applies: (useId, inp) => ['R1','R2','R3','R4','R5'].includes(inp.zoning) && useId === 'adu',
-        densityBonus: 0,
-        parkingReduction: 0,
-        softCostReduction: 0.05,
-        legalOverride: false,
-    },
-    {
-        id: 'ab976',
-        name: 'AB 976 (ADU Permanent Streamlining)',
-        description: 'Permanently removes ADU owner-occupancy sunset and streamlines statewide ADU provisions.',
-        effectiveDate: 'January 1, 2025',
-        author: 'Asm. Luz Rivas',
-        codeSection: 'Cal. Gov. Code § 65852.2 (sunset removal)',
-        billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202320240AB976',
-        chaptered: 'Stats. 2024, Ch. 399',
-        detail: 'AB 976 (2024) permanently removes the January 1, 2025 sunset date on the prohibition of owner-occupancy requirements for ADUs. Makes the streamlined ADU permitting framework permanent rather than subject to periodic renewal. Ensures that local agencies cannot reimpose owner-occupancy requirements that were temporarily suspended. Impact: Provides long-term regulatory certainty for ADU investors and developers, making ADU construction a permanently viable investment strategy.',
-        applies: (useId, inp) => ['R1','R2','R3','R4','R5'].includes(inp.zoning) && useId === 'adu',
-        densityBonus: 0,
-        parkingReduction: 0,
-        softCostReduction: 0,
-        legalOverride: true,
-    },
-];
 
-function getApplicableLegislation(useId, inp) {
-    return CA_HOUSING_LEGISLATION.filter(bill => bill.applies(useId, inp));
-}
 
-function stackLegislationEffects(legislationList) {
-    let densityBonus = 0;
-    let parkingReduction = 0;
-    let softCostReduction = 0;
-    let legalOverride = false;
-    let minFAR = 0;
-
-    for (const bill of legislationList) {
-        densityBonus = Math.max(densityBonus, bill.densityBonus || 0);
-        parkingReduction = Math.max(parkingReduction, bill.parkingReduction || 0);
-        softCostReduction += (bill.softCostReduction || 0);
-        if (bill.legalOverride) legalOverride = true;
-        minFAR = Math.max(minFAR, bill.minFAR || 0);
-    }
-
-    softCostReduction = Math.min(softCostReduction, 0.50);
-    return { densityBonus, parkingReduction, softCostReduction, legalOverride, minFAR };
-}
 
 /**
  * Calculate site work cost broken into sub-components.
@@ -4775,172 +3382,11 @@ function stackLegislationEffects(legislationList) {
  * @param {object} [rateOverrides] — optional user-overridden $/SF rates for each sub-component
  * @returns {object} { clearing, grading, soilPrep, utilities, erosion, total, rates, assumptions }
  */
-function calcSiteWorkBreakdown(useId, inp, gsf, rateOverrides) {
-    var lot = inp.parcelSize || 10000;
 
-    // ADU: minimal site work scoped to footprint
-    if (useId === 'adu') {
-        var aduArea = Math.min(lot * 0.3, gsf || 800);
-        return { clearing: 0, grading: Math.round(aduArea * 3), soilPrep: Math.round(aduArea * 2),
-                 utilities: Math.round(aduArea * 5), erosion: Math.round(aduArea * 1),
-                 total: Math.round(aduArea * 11), rates: { clearing: 0, grading: 3, soilPrep: 2, utilities: 5, erosion: 1 },
-                 assumptions: 'ADU — site work scoped to ADU footprint only (~' + Math.round(aduArea).toLocaleString() + ' SF). Minimal grading, shared utility laterals.' };
-    }
-
-    // Base rates ($/SF of lot) — typical flat urban infill in LA
-    var rates = {
-        clearing:  2.00,  // vegetation/debris removal
-        grading:   3.50,  // rough grading, cut/fill
-        soilPrep:  2.50,  // compaction, moisture conditioning
-        utilities: 5.00,  // trench & stub all utilities to pad
-        erosion:   1.25,  // SWPPP, silt fence, BMPs
-    };
-
-    // --- Adjust for TOPOGRAPHY ---
-    if (inp.topography === 'steep') {
-        rates.grading = 10.00;   // heavy cut/fill, retaining walls, export
-        rates.soilPrep = 4.50;   // deeper compaction, engineered fill
-        rates.erosion = 2.00;    // extended SWPPP, slope stabilization
-    } else if (inp.topography === 'moderate' || inp.topography === 'sloped') {
-        rates.grading = 6.00;    // moderate cut/fill
-        rates.soilPrep = 3.25;
-        rates.erosion = 1.50;
-    }
-    // flat = base rates
-
-    // --- Adjust for SITE CONDITION ---
-    if (inp.siteCondition === 'vacant') {
-        rates.clearing = 1.50;   // minimal — empty lot, weeds/fence
-    } else if (inp.siteCondition === 'brownfield') {
-        rates.clearing = 4.00;   // hazmat screening, debris, potential contaminated soil handling
-        rates.soilPrep = 4.00;   // over-excavation, clean fill import
-    } else if (inp.siteCondition === 'demolition') {
-        rates.clearing = 3.50;   // post-demo debris, asbestos survey area
-    }
-
-    // --- Adjust for UTILITIES ---
-    if (inp.utilities === 'partial') {
-        rates.utilities = 7.00;  // some laterals need extension
-    } else if (inp.utilities === 'none') {
-        rates.utilities = 12.00; // full utility extension from main to site
-    }
-
-    // --- Adjust for CONSTRAINTS ---
-    if (inp.constFlood) {
-        rates.grading += 2.00;   // flood mitigation grading, raised pad
-        rates.erosion += 0.75;   // extra drainage BMPs
-    }
-    if (inp.constHillside) {
-        rates.grading += 3.00;   // hillside grading ordinance compliance
-    }
-    if (inp.constFault) {
-        rates.soilPrep += 1.50;  // fault zone geotech compliance
-    }
-
-    // Apply user overrides if provided
-    if (rateOverrides) {
-        if (rateOverrides.clearing !== undefined) rates.clearing = rateOverrides.clearing;
-        if (rateOverrides.grading !== undefined) rates.grading = rateOverrides.grading;
-        if (rateOverrides.soilPrep !== undefined) rates.soilPrep = rateOverrides.soilPrep;
-        if (rateOverrides.utilities !== undefined) rates.utilities = rateOverrides.utilities;
-        if (rateOverrides.erosion !== undefined) rates.erosion = rateOverrides.erosion;
-    }
-
-    var clearing  = Math.round(lot * rates.clearing);
-    var grading   = Math.round(lot * rates.grading);
-    var soilPrep  = Math.round(lot * rates.soilPrep);
-    var utilities = Math.round(lot * rates.utilities);
-    var erosion   = Math.round(lot * rates.erosion);
-    var total     = clearing + grading + soilPrep + utilities + erosion;
-
-    // Build human-readable assumption string
-    var assumptionParts = [];
-    if (inp.topography === 'steep') assumptionParts.push('steep slope (+heavy grading, retaining, export)');
-    else if (inp.topography === 'moderate' || inp.topography === 'sloped') assumptionParts.push('moderate slope (+additional grading)');
-    else assumptionParts.push('flat/level grade (standard grading)');
-    if (inp.siteCondition === 'brownfield') assumptionParts.push('brownfield (+over-excavation, clean fill)');
-    else if (inp.siteCondition === 'demolition') assumptionParts.push('post-demo site (+debris handling)');
-    else if (inp.siteCondition === 'vacant') assumptionParts.push('vacant lot (minimal clearing)');
-    if (inp.utilities === 'none') assumptionParts.push('no utilities (+full lateral extension)');
-    else if (inp.utilities === 'partial') assumptionParts.push('partial utilities (+lateral extensions)');
-    if (inp.constFlood) assumptionParts.push('flood zone (+raised pad, drainage)');
-    if (inp.constHillside) assumptionParts.push('hillside (+ordinance compliance)');
-    if (inp.constFault) assumptionParts.push('fault zone (+geotech)');
-
-    return {
-        clearing: clearing, grading: grading, soilPrep: soilPrep, utilities: utilities, erosion: erosion,
-        total: total, rates: rates,
-        assumptions: assumptionParts.join('; '),
-    };
-}
-
-const BUILDING_PARAMS = {
-    sfr:              { stories: 2,  floorH: 10, eff: 0.92, unitSF: 1800, parkRatio: 2.0,  setF: 20, setS: 5,  opex: 0.30, cap: 0.045 },
-    duplex:           { stories: 2,  floorH: 10, eff: 0.90, unitSF: 1200, parkRatio: 1.5,  setF: 15, setS: 5,  opex: 0.32, cap: 0.047 },
-    multifamily_low:  { stories: 4,  floorH: 10, eff: 0.82, unitSF: 850,  parkRatio: 1.25, setF: 10, setS: 5,  opex: 0.35, cap: 0.047 },
-    multifamily_mid:  { stories: 7,  floorH: 10, eff: 0.80, unitSF: 800,  parkRatio: 1.0,  setF: 10, setS: 5,  opex: 0.35, cap: 0.045 },
-    multifamily_high: { stories: 18, floorH: 10, eff: 0.78, unitSF: 750,  parkRatio: 1.0,  setF: 10, setS: 10, opex: 0.38, cap: 0.042 },
-    mixeduse:         { stories: 6,  floorH: 12, eff: 0.80, unitSF: 850,  parkRatio: 1.0,  setF: 0,  setS: 0,  opex: 0.36, cap: 0.048 },
-    retail:           { stories: 1,  floorH: 16, eff: 0.88, unitSF: null, parkRatio: 4.0,  setF: 0,  setS: 0,  opex: 0.32, cap: 0.058 },
-    office:           { stories: 5,  floorH: 13, eff: 0.85, unitSF: null, parkRatio: 3.0,  setF: 5,  setS: 5,  opex: 0.38, cap: 0.065 },
-    medical:          { stories: 4,  floorH: 13, eff: 0.82, unitSF: null, parkRatio: 4.0,  setF: 10, setS: 5,  opex: 0.40, cap: 0.055 },
-    hotel:            { stories: 10, floorH: 11, eff: 0.75, unitSF: 400,  parkRatio: 0.5,  setF: 5,  setS: 5,  opex: 0.55, cap: 0.070 },
-    industrial:       { stories: 1,  floorH: 24, eff: 0.92, unitSF: null, parkRatio: 1.0,  setF: 10, setS: 5,  opex: 0.28, cap: 0.052 },
-    selfstorage:      { stories: 4,  floorH: 9,  eff: 0.88, unitSF: null, parkRatio: 0.2,  setF: 5,  setS: 5,  opex: 0.30, cap: 0.062 },
-    senior:           { stories: 5,  floorH: 10, eff: 0.78, unitSF: 600,  parkRatio: 0.5,  setF: 10, setS: 5,  opex: 0.50, cap: 0.058 },
-    parking:          { stories: 5,  floorH: 11, eff: 0.90, unitSF: null, parkRatio: null, setF: 0,  setS: 0,  opex: 0.25, cap: 0.065 },
-    creative:         { stories: 3,  floorH: 14, eff: 0.85, unitSF: null, parkRatio: 2.5,  setF: 0,  setS: 0,  opex: 0.32, cap: 0.058 },
-    adu:              { stories: 2,  floorH: 16, eff: 0.90, unitSF: 800,  parkRatio: 0,    setF: 4,  setS: 4,  opex: 0.30, cap: 0.048 },
-};
 
 // Scale timeline phases by project size (GSF)
-var TYPICAL_GSF = {
-    sfr: 2500, duplex: 3500, multifamily_low: 35000, multifamily_mid: 80000,
-    multifamily_high: 250000, mixeduse: 50000, retail: 8000, office: 30000,
-    medical: 15000, hotel: 80000, industrial: 25000, selfstorage: 40000,
-    senior: 60000, parking: 50000, creative: 20000, adu: 800
-};
-function getScaledTimeline(useId, gsf) {
-    var tl = TIMELINE_MONTHS[useId] || { entitlement: 6, design: 4, permits: 3, construction: 18, leaseup: 6 };
-    if (!gsf || gsf <= 0) return { entitlement: tl.entitlement, design: tl.design, permits: tl.permits, construction: tl.construction, leaseup: tl.leaseup };
-    var typical = TYPICAL_GSF[useId] || 30000;
-    var ratio = gsf / typical;
-    var scale = Math.max(0.6, Math.min(2.0, Math.pow(ratio, 0.35)));
-    var procScale = Math.max(0.8, Math.min(1.5, Math.pow(ratio, 0.2)));
-    return {
-        entitlement: Math.round(tl.entitlement * procScale),
-        design:      Math.round(tl.design * procScale),
-        permits:     Math.round(tl.permits * procScale),
-        construction: Math.round(tl.construction * scale),
-        leaseup:     Math.round(tl.leaseup * scale)
-    };
-}
 
-const TIMELINE_MONTHS = {
-    sfr:              { entitlement: 2,  design: 2,  permits: 2, construction: 10, leaseup: 1 },
-    duplex:           { entitlement: 3,  design: 2,  permits: 2, construction: 12, leaseup: 1 },
-    multifamily_low:  { entitlement: 6,  design: 4,  permits: 3, construction: 18, leaseup: 6 },
-    multifamily_mid:  { entitlement: 8,  design: 5,  permits: 4, construction: 24, leaseup: 8 },
-    multifamily_high: { entitlement: 12, design: 8,  permits: 6, construction: 36, leaseup: 10 },
-    mixeduse:         { entitlement: 8,  design: 5,  permits: 4, construction: 22, leaseup: 8 },
-    retail:           { entitlement: 4,  design: 3,  permits: 2, construction: 10, leaseup: 4 },
-    office:           { entitlement: 6,  design: 4,  permits: 3, construction: 18, leaseup: 8 },
-    medical:          { entitlement: 6,  design: 5,  permits: 4, construction: 16, leaseup: 6 },
-    hotel:            { entitlement: 10, design: 6,  permits: 5, construction: 28, leaseup: 12 },
-    industrial:       { entitlement: 4,  design: 3,  permits: 2, construction: 10, leaseup: 3 },
-    selfstorage:      { entitlement: 4,  design: 3,  permits: 2, construction: 12, leaseup: 12 },
-    senior:           { entitlement: 8,  design: 5,  permits: 4, construction: 22, leaseup: 10 },
-    parking:          { entitlement: 4,  design: 3,  permits: 2, construction: 14, leaseup: 2 },
-    creative:         { entitlement: 4,  design: 3,  permits: 2, construction: 14, leaseup: 6 },
-    adu:              { entitlement: 1,  design: 1,  permits: 2, construction: 8,  leaseup: 1 },
-};
 
-const USE_COLORS = {
-    sfr: '#4a9e5c', duplex: '#5ba86e', multifamily_low: '#3182ce', multifamily_mid: '#2b6cb0',
-    multifamily_high: '#1a4791', mixeduse: '#805ad5', retail: '#dd6b20', office: '#2c5282',
-    medical: '#38a169', hotel: '#b83280', industrial: '#718096', selfstorage: '#a0aec0',
-    senior: '#d69e2e', parking: '#4a5568', creative: '#ed8936', adu: '#48bb78',
-};
 
 
 // ============================================================
@@ -4948,302 +3394,13 @@ const USE_COLORS = {
 // ============================================================
 
 // Strip commas from formatted number inputs before parsing
-function parseNumericInput(id, fallback) {
-    var el = document.getElementById(id);
-    if (!el) return fallback || 0;
-    return parseFloat(String(el.value).replace(/,/g, '')) || fallback || 0;
-}
 
 // Format a number input with commas on blur, strip on focus
-function setupCommaFormatting(id) {
-    var el = document.getElementById(id);
-    if (!el) return;
-    el.addEventListener('focus', function() {
-        var raw = String(this.value).replace(/,/g, '').replace(/^\$/, '');
-        this.value = raw === '0' ? '' : raw;
-    });
-    el.addEventListener('blur', function() {
-        var raw = parseFloat(String(this.value).replace(/,/g, '').replace(/^\$/, '')) || 0;
-        this.value = raw > 0 ? Math.round(raw).toLocaleString() : '0';
-    });
-    // Format initial value
-    var initVal = parseFloat(String(el.value).replace(/,/g, '')) || 0;
-    if (initVal > 0) el.value = Math.round(initVal).toLocaleString();
-}
 
-function getInputs() {
-    return {
-        parcelSize:    parseNumericInput('parcelSize', 10000),
-        frontage:      parseFloat(document.getElementById('frontage').value) || 80,
-        zoning:        document.getElementById('zoning').value,
-        neighborhood:  document.getElementById('neighborhood').value,
-        siteCondition: document.getElementById('siteCondition').value,
-        topography:    document.getElementById('topography').value,
-        cornerLot:     document.getElementById('cornerLot').value === 'yes',
-        transit:       document.getElementById('transit').value,
-        arterial:      document.getElementById('arterial').value,
-        utilities:     document.getElementById('utilities').value,
-        constFlood:    document.getElementById('constFlood').checked,
-        constHillside: document.getElementById('constHillside').checked,
-        constHistoric: document.getElementById('constHistoric').checked,
-        constFault:    document.getElementById('constFault').checked,
-        constCoastal:  document.getElementById('constCoastal').checked,
-        constParking:  document.getElementById('constParking').checked,
-    };
-}
 
-function scoreLegal(useId, inp, effects) {
-    const zoneRow = ZONING_MATRIX[inp.zoning];
-    if (!zoneRow) return 0;
-    let base = zoneRow[useId] || 0;
 
-    // CA Housing Legislation: by-right override
-    if (effects && effects.legalOverride) {
-        base = 1.0;
-    }
 
-    // Historic overlay reduces redevelopment permission
-    if (inp.constHistoric && ['multifamily_high', 'hotel', 'industrial'].includes(useId)) {
-        base *= 0.5;
-    }
-    // Coastal zone limits industrial, dense residential
-    if (inp.constCoastal && ['industrial', 'multifamily_high', 'selfstorage'].includes(useId)) {
-        base *= 0.4;
-    }
-    // Hillside ordinance restricts density
-    if (inp.constHillside && ['multifamily_mid', 'multifamily_high', 'hotel', 'industrial'].includes(useId)) {
-        base *= 0.3;
-    }
-    return Math.min(base, 1.0);
-}
 
-function scorePhysical(useId, inp) {
-    let score = 1.0;
-
-    // Parcel size check
-    const minSqFt = MIN_PARCEL[useId] || 2000;
-    if (inp.parcelSize < minSqFt) {
-        score *= Math.max(0.1, inp.parcelSize / minSqFt);
-    } else if (inp.parcelSize > minSqFt * 3) {
-        score *= 1.0; // plenty of room
-    }
-
-    // Frontage adequacy
-    const needsFrontage = ['retail', 'mixeduse', 'hotel', 'office', 'medical'];
-    if (needsFrontage.includes(useId) && inp.frontage < 50) {
-        score *= 0.6;
-    }
-
-    // Topography
-    const topoPenalty = { flat: 1.0, gentle: 0.9, moderate: 0.65, steep: 0.3 };
-    const baseTopo = topoPenalty[inp.topography] || 1.0;
-    // Some uses are more topo-tolerant
-    if (['parking', 'selfstorage'].includes(useId)) {
-        score *= Math.max(baseTopo, 0.7);
-    } else if (['industrial', 'multifamily_high', 'hotel'].includes(useId)) {
-        score *= baseTopo * 0.9; // extra sensitive
-    } else {
-        score *= baseTopo;
-    }
-
-    // Utilities
-    if (inp.utilities === 'partial') score *= 0.85;
-    if (inp.utilities === 'none') score *= 0.5;
-
-    // Site condition
-    if (inp.siteCondition === 'demolition') score *= 0.85;
-    if (inp.siteCondition === 'brownfield') score *= 0.6;
-
-    // Flood zone
-    if (inp.constFlood) score *= 0.7;
-
-    // Fault zone — penalizes tall structures
-    if (inp.constFault && ['multifamily_high', 'hotel', 'office'].includes(useId)) {
-        score *= 0.7;
-    }
-
-    return Math.min(score, 1.0);
-}
-
-function scoreFinancial(useId, inp, effects) {
-    // Compute effective FAR with legislation bonuses + jurisdiction overrides
-    const juris = window._lastJurisdiction || null;
-    const jurisdictionFAR = getJurisdictionFAR(useId, juris);
-    const baseFAR = jurisdictionFAR || FAR_TYPICAL[useId] || 1.0;
-    let far = baseFAR;
-    if (effects) {
-        far = baseFAR * (1 + effects.densityBonus);
-        if (effects.minFAR > 0) far = Math.max(far, effects.minFAR);
-    }
-
-    const params = BUILDING_PARAMS[useId];
-    const buildableSF = inp.parcelSize * far;
-    const nsf = buildableSF * (params ? params.eff : 0.82);
-    const landValuePSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
-    // Land cost: use assessor value if available, checkbox zeroes it out
-    const _ownProp = document.getElementById('ownProperty');
-    const landCost = (useId === 'adu' || (_ownProp && _ownProp.checked)) ? 0
-        : (parseFloat(String((document.getElementById('marketValue') || {}).value).replace(/,/g, '')) > 0) ? parseFloat(String(document.getElementById('marketValue').value).replace(/,/g, ''))
-        : inp.parcelSize * landValuePSF;
-
-    // Build cost with parking reduction from legislation
-    let buildCostPerSF = BUILD_COST_PSF[useId] || 300;
-    if (effects && effects.parkingReduction > 0) {
-        buildCostPerSF *= (1 - effects.parkingReduction * 0.18);
-    }
-    const buildCost = buildableSF * buildCostPerSF;
-
-    // Parking cost (use-specific, with jurisdiction override)
-    const parkCostPerSpace = PARKING_COST_MAP[useId] || 35000;
-    const jurisdictionPark = getJurisdictionParking(useId, juris);
-    const baseParkRatio = jurisdictionPark || (params ? (params.parkRatio || 0) : 0);
-    const parkReduction = effects ? effects.parkingReduction : 0;
-    const hasUnits = params && params.unitSF;
-    let parkSpaces = 0;
-    if (useId === 'parking') parkSpaces = Math.round(buildableSF / 350);
-    else if (hasUnits) parkSpaces = Math.max(0, Math.ceil(Math.floor(nsf / params.unitSF) * baseParkRatio * (1 - parkReduction)));
-    else parkSpaces = Math.max(0, Math.ceil(buildableSF / 1000 * baseParkRatio * (1 - parkReduction)));
-    const parkingCost = parkSpaces * parkCostPerSpace;
-
-    // Total cost including overhead (parking, contingency, soft costs)
-    // Site work cost (uses breakdown function for consistency)
-    const siteWorkCost = calcSiteWorkBreakdown(useId, inp, buildableSF).total;
-    const hardCostBase = buildCost + parkingCost + siteWorkCost;
-    const totalHard = hardCostBase * 1.11; // ~4% landscaping + 7% contingency
-    const totalSoft = totalHard * 0.235; // ~23.5% (A&E 8%, permits 5%, legal 2%, financing 4.5%, dev fee 4%)
-    let totalCost = landCost + totalHard + totalSoft;
-    if (effects && effects.softCostReduction > 0) {
-        totalCost -= totalSoft * effects.softCostReduction * 0.20;
-    }
-
-    // Annual NOI with neighborhood rent adjustment
-    const rentMult = NEIGHBORHOOD_RENT_MULT[inp.neighborhood] || 1.0;
-    const opexRate = params ? params.opex : 0.35;
-    const annualNOI = nsf * (REVENUE_PSF[useId] || 30) * rentMult * (1 - opexRate);
-
-    // Yield-on-cost and development margin
-    const yieldOnCost = annualNOI / totalCost;
-    const capRate = params ? params.cap : 0.05;
-    const devMargin = capRate > 0 ? (yieldOnCost / capRate - 1) : 0;
-
-    // Score based on dev margin — directly ties to project profitability
-    let score;
-    if (devMargin >= 0.25) score = 1.0;
-    else if (devMargin >= 0.15) score = 0.75 + (devMargin - 0.15) / 0.10 * 0.25;
-    else if (devMargin >= 0.05) score = 0.45 + (devMargin - 0.05) / 0.10 * 0.30;
-    else if (devMargin >= 0) score = 0.20 + (devMargin / 0.05) * 0.25;
-    else if (devMargin >= -0.15) score = Math.max(0.02, 0.20 + devMargin * 1.2);
-    else score = 0.02;
-
-    // Neighborhood demand multiplier
-    const demandRow = NEIGHBORHOOD_DEMAND[inp.neighborhood];
-    const demand = demandRow ? (demandRow[useId] || 0.7) : 0.7;
-    score *= demand;
-
-    // Corner lot bonus for visibility-dependent uses
-    if (inp.cornerLot && ['retail', 'mixeduse', 'hotel', 'office', 'medical'].includes(useId)) {
-        score *= 1.15;
-    }
-
-    // Transit proximity bonus
-    const transitBonus = { adjacent: 1.2, near: 1.1, moderate: 1.0, far: 0.85 };
-    if (['multifamily_mid', 'multifamily_high', 'mixeduse', 'office', 'hotel'].includes(useId)) {
-        score *= (transitBonus[inp.transit] || 1.0);
-    }
-
-    // Arterial bonus
-    if (inp.arterial === 'major' && ['retail', 'mixeduse', 'hotel', 'office'].includes(useId)) {
-        score *= 1.1;
-    }
-    if (inp.arterial === 'residential' && ['retail', 'hotel', 'industrial'].includes(useId)) {
-        score *= 0.7;
-    }
-
-    // Site condition cost adjustments
-    if (inp.siteCondition === 'demolition') score *= 0.9;
-    if (inp.siteCondition === 'brownfield') score *= 0.7;
-
-    // Parking constraints
-    if (inp.constParking && ['retail', 'office', 'medical', 'hotel'].includes(useId)) {
-        score *= 0.8;
-    }
-
-    // ADU bonus: low total cost, zero parking, by-right, fastest timeline,
-    // can add to existing structure — highest ROI per dollar invested
-    if (useId === 'adu') {
-        // ADU total investment is a fraction of ground-up projects, so the dev-margin
-        // math (which divides NOI by total cost incl. land) understates its attractiveness.
-        // Boost reflects: minimal entitlement risk, 13-month timeline, no parking cost.
-        score = Math.max(score, 0.55);
-        // Extra lift for residential zones where ADU is by-right
-        if (['R1','R2','R3'].includes(inp.zoning)) score *= 1.25;
-        // ADU excels on smaller/mid-size parcels with existing structures
-        if (inp.siteCondition === 'improved' || inp.siteCondition === 'vacant') score *= 1.10;
-    }
-
-    // SB 9 Lot Split + Duplex bonus
-    if (useId === 'duplex') {
-        const sfZones = ['R1', 'R1V', 'R1V1', 'R1V2', 'R1V3', 'RE', 'RE9', 'RE11', 'RE15', 'RE20', 'RE40', 'RS', 'RA', 'RD', 'RD1.5', 'RD2', 'RD3', 'RD4', 'RD5', 'RD6', 'RW1'];
-        const sb9Eligible = sfZones.includes(inp.zoning) && inp.parcelSize >= 2400
-            && !inp.constHistoric && !inp.constFire && !inp.constHillside
-            && !inp.constFault && !inp.constFlood && !inp.constCoastal;
-        if (sb9Eligible) {
-            score = Math.max(score, 0.50);
-            if (inp.parcelSize >= 2400) {
-                const lotA = Math.floor(inp.parcelSize * 0.5);
-                const lotB = inp.parcelSize - lotA;
-                if (lotA >= 1200 && lotB >= 1200) {
-                    score *= 1.30;
-                }
-            }
-            if (inp.transit === 'adjacent' || inp.transit === 'near') {
-                score *= 1.10;
-            }
-        }
-    }
-
-    return Math.min(score, 1.0);
-}
-
-function scoreProductive(useId, inp, effects) {
-    // Compute effective FAR with legislation bonuses
-    const baseFAR = FAR_TYPICAL[useId] || 1.0;
-    let far = baseFAR;
-    if (effects) {
-        far = baseFAR * (1 + effects.densityBonus);
-        if (effects.minFAR > 0) far = Math.max(far, effects.minFAR);
-    }
-
-    const buildableSF = inp.parcelSize * far;
-    const revenuePSF = REVENUE_PSF[useId] || 30;
-    const rentMult = NEIGHBORHOOD_RENT_MULT[inp.neighborhood] || 1.0;
-    const totalAnnualRev = buildableSF * revenuePSF * rentMult;
-    const landValuePSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
-
-    // Revenue-to-land-value ratio (higher = more productive per dollar of land)
-    const revToLand = totalAnnualRev / (inp.parcelSize * landValuePSF);
-
-    // Normalize
-    let score;
-    if (revToLand >= 0.20) score = 1.0;
-    else if (revToLand >= 0.10) score = 0.5 + (revToLand - 0.10) / 0.10 * 0.5;
-    else score = revToLand / 0.10 * 0.5;
-
-    // Demand multiplier
-    const demandRow = NEIGHBORHOOD_DEMAND[inp.neighborhood];
-    const demand = demandRow ? (demandRow[useId] || 0.7) : 0.7;
-    score *= demand;
-
-    // ADU productivity: revenue-to-land-value underrates ADU because it
-    // doesn't require using the full parcel — it adds income to an existing
-    // property. Adjust to reflect incremental value-add ROI.
-    if (useId === 'adu') {
-        score = Math.max(score, 0.45);
-        if (['R1','R2','R3'].includes(inp.zoning)) score *= 1.20;
-    }
-
-    return Math.min(score, 1.0);
-}
 
 
 // ============================================================
@@ -5649,88 +3806,6 @@ function adjustColor(hex, amount) {
     return '#' + [r, g, b].map(c => c.toString(16).padStart(2, '0')).join('');
 }
 
-function generateBudget(useId, inp, effects) {
-    const params = BUILDING_PARAMS[useId];
-    const baseFAR = FAR_TYPICAL[useId] || 1.0;
-    let far = baseFAR;
-    if (effects) {
-        far = baseFAR * (1 + effects.densityBonus);
-        if (effects.minFAR > 0) far = Math.max(far, effects.minFAR);
-    }
-
-    const gsf = Math.round(inp.parcelSize * far);
-    const nsf = Math.round(gsf * params.eff);
-    const stories = Math.max(params.stories, Math.ceil(gsf / (inp.parcelSize * 0.7)));
-    const buildingHeight = stories * params.floorH;
-    const buildingFootprint = Math.min(Math.round(inp.parcelSize * 0.7), Math.round(gsf / stories));
-    const units = params.unitSF ? Math.max(1, Math.floor(nsf / params.unitSF)) : null;
-
-    // Parking (use-specific cost per space)
-    const baseParkRatio = params.parkRatio || 0;
-    const parkReduction = effects ? effects.parkingReduction : 0;
-    let parkingSpaces;
-    if (useId === 'parking') {
-        parkingSpaces = Math.round(gsf / 350);
-    } else if (units) {
-        parkingSpaces = Math.max(0, Math.ceil(units * baseParkRatio * (1 - parkReduction)));
-    } else {
-        parkingSpaces = Math.max(0, Math.ceil(gsf / 1000 * baseParkRatio * (1 - parkReduction)));
-    }
-    const parkingCostPerSpace = PARKING_COST_MAP[useId] || 35000;
-
-    const landValuePSF = LAND_VALUE_PSF[inp.neighborhood] || 150;
-    // Land cost: ADU always $0 (addition to existing property), checkbox zeroes it out
-    const _ownProp2 = document.getElementById('ownProperty');
-    const landCost = (useId === 'adu' || (_ownProp2 && _ownProp2.checked)) ? 0
-        : (parseFloat(String((document.getElementById('marketValue') || {}).value).replace(/,/g, '')) > 0) ? parseFloat(String(document.getElementById('marketValue').value).replace(/,/g, ''))
-        : inp.parcelSize * landValuePSF;
-
-    // Hard costs — Site work broken into sub-components
-    const siteWorkBreakdown = calcSiteWorkBreakdown(useId, inp, gsf);
-    const siteWork = siteWorkBreakdown.total;
-    const demolition = (inp.siteCondition === 'demolition' && useId !== 'adu') ? inp.parcelSize * 12 : 0;
-    let buildCostPSF = BUILD_COST_PSF[useId] || 300;
-    if (effects && effects.parkingReduction > 0) {
-        buildCostPSF *= (1 - effects.parkingReduction * 0.18);
-    }
-    const construction = gsf * buildCostPSF;
-    const parkingCost = parkingSpaces * parkingCostPerSpace;
-    const landscaping = Math.round(construction * 0.04);
-    const hardContingency = Math.round((siteWork + demolition + construction + parkingCost + landscaping) * 0.07);
-    const totalHard = siteWork + demolition + construction + parkingCost + landscaping + hardContingency;
-
-    // Soft costs
-    const archEng = Math.round(totalHard * 0.08);
-    const permits = Math.round(totalHard * 0.05);
-    const legal = Math.round(totalHard * 0.02);
-    const financing = Math.round((landCost + totalHard) * 0.045);
-    const rentMult = NEIGHBORHOOD_RENT_MULT[inp.neighborhood] || 1.0;
-    const revenuePSF = (REVENUE_PSF[useId] || 30) * rentMult;
-    const marketing = Math.round(nsf * revenuePSF * 0.02);
-    const devFee = Math.round((totalHard + archEng + permits) * 0.04);
-    const softCostMult = effects && effects.softCostReduction > 0 ? (1 - effects.softCostReduction * 0.20) : 1;
-    const totalSoft = Math.round((archEng + permits + legal + financing + marketing + devFee) * softCostMult);
-
-    const totalDev = landCost + totalHard + totalSoft;
-
-    // Revenue & returns (neighborhood-adjusted)
-    const grossRevenue = nsf * revenuePSF;
-    const opex = Math.round(grossRevenue * params.opex);
-    const noi = grossRevenue - opex;
-    const capRate = params.cap || 0.05;
-    const stabilizedValue = capRate > 0 ? Math.round(noi / capRate) : 0;
-    const yieldOnCost = totalDev > 0 ? noi / totalDev : 0;
-    const devMargin = totalDev > 0 ? (stabilizedValue - totalDev) / totalDev : 0;
-
-    return {
-        gsf, nsf, revenueNSF: nsf, stories, buildingHeight, buildingFootprint, units, parkingSpaces, far,
-        landCost, landValuePSF, siteWork, siteWorkBreakdown, demolition, construction, buildCostPSF, parkingCost, parkingCostPerSpace, landscaping, hardContingency, totalHard,
-        archEng, permits, legal, financing, marketing, devFee, totalSoft,
-        totalDev,
-        grossRevenue, opex, noi, capRate, stabilizedValue, yieldOnCost, devMargin,
-        params, revenuePSF,
-    };
-}
 
 // --- SVG Rendering ---
 
@@ -5844,89 +3919,9 @@ function generateElevationSVG(useId, inp, budget) {
 //  KEY METRICS HELPERS (for result cards)
 // ============================================================
 
-function formatCompactDollars(n) {
-    if (n >= 1e9) return '$' + (n / 1e9).toFixed(1) + 'B';
-    if (n >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M';
-    if (n >= 1e3) return '$' + (n / 1e3).toFixed(0) + 'K';
-    return '$' + Math.round(n).toLocaleString();
-}
 
-function approxIRR(devMargin, totalMonths) {
-    if (totalMonths <= 0 || devMargin <= -1) return 0;
-    return Math.pow(1 + devMargin, 12 / totalMonths) - 1;
-}
 
-function computeEaseOfExecution(useId, inp, effects, legalScore) {
-    let ease = 50; // base score
 
-    // Entitlement timeline — shorter is easier
-    const tl = getScaledTimeline(useId, (typeof computed !== 'undefined' && computed ? computed.gsf : (typeof budget !== 'undefined' && budget ? budget.gsf : 0)));
-    const totalMo = tl.entitlement + tl.design + tl.permits + tl.construction + tl.leaseup;
-    if (totalMo <= 20) ease += 20;
-    else if (totalMo <= 35) ease += 10;
-    else if (totalMo >= 55) ease -= 15;
-    else if (totalMo >= 45) ease -= 8;
-
-    // Legal permissibility bonus
-    if (legalScore >= 80) ease += 12;
-    else if (legalScore >= 60) ease += 6;
-    else if (legalScore < 30) ease -= 15;
-
-    // Legislation streamlining bonuses
-    if (effects && effects.legalOverride) ease += 8;
-    if (effects && effects.softCostReduction > 0) ease += Math.round(effects.softCostReduction * 10);
-    if (effects && effects.parkingReduction > 0) ease += 5;
-
-    // Site constraints penalties
-    if (inp.constHistoric) ease -= 10;
-    if (inp.constHillside) ease -= 8;
-    if (inp.constCoastal) ease -= 8;
-    if (inp.constFault) ease -= 5;
-    if (inp.constFlood) ease -= 5;
-    if (inp.siteCondition === 'brownfield') ease -= 10;
-    if (inp.topography === 'steep') ease -= 7;
-    if (inp.utilities === 'none') ease -= 10;
-    else if (inp.utilities === 'partial') ease -= 5;
-
-    // Construction complexity — high-rise / hotel harder
-    const params = BUILDING_PARAMS[useId];
-    if (params && params.stories >= 10) ease -= 10;
-    else if (params && params.stories >= 6) ease -= 5;
-
-    return Math.max(0, Math.min(100, ease));
-}
-
-function computeRiskLevel(useId, inp, legalScore, physicalScore) {
-    let riskPts = 0;
-
-    // Site constraint risks
-    if (inp.constFlood) riskPts += 12;
-    if (inp.constHillside) riskPts += 10;
-    if (inp.constHistoric) riskPts += 10;
-    if (inp.constFault) riskPts += 12;
-    if (inp.constCoastal) riskPts += 8;
-    if (inp.siteCondition === 'brownfield') riskPts += 14;
-    if (inp.topography === 'steep') riskPts += 8;
-    if (inp.utilities === 'none') riskPts += 10;
-    else if (inp.utilities === 'partial') riskPts += 5;
-
-    // Score-based risk
-    if (legalScore < 40) riskPts += 15;
-    else if (legalScore < 60) riskPts += 8;
-    if (physicalScore < 40) riskPts += 10;
-
-    // Building complexity
-    const params = BUILDING_PARAMS[useId];
-    if (params && params.stories >= 10) riskPts += 10;
-    else if (params && params.stories >= 6) riskPts += 5;
-
-    // Market risk for certain types
-    if (['office', 'retail', 'hotel'].includes(useId)) riskPts += 6;
-
-    if (riskPts >= 35) return { level: 'High', color: '#c53030', bg: '#fff5f5' };
-    if (riskPts >= 18) return { level: 'Moderate', color: '#b7791f', bg: '#fffff0' };
-    return { level: 'Low', color: '#276749', bg: '#f0fff4' };
-}
 
 function generateCardMetricsHTML(useId, inp, effects, result) {
     const budget = generateBudget(useId, inp, effects);
@@ -6444,142 +4439,9 @@ function generateRisksHTML(useId, inp) {
 
 let analysisState = { resultIndex: null, useId: null, inp: null, effects: null, legislation: null, assumptions: null };
 
-function getDefaultAssumptions(useId, inp, effects) {
-    const params = BUILDING_PARAMS[useId];
-    const baseFAR = FAR_TYPICAL[useId] || 1.0;
-    let far = baseFAR;
-    if (effects) { far = baseFAR * (1 + effects.densityBonus); if (effects.minFAR > 0) far = Math.max(far, effects.minFAR); }
-    const gsf = Math.round(inp.parcelSize * far);
-    const nsf = Math.round(gsf * params.eff);
-    const hasUnits = !!params.unitSF;
-    const unitsOrNSF = hasUnits ? Math.max(1, Math.floor(nsf / params.unitSF)) : nsf;
-    const baseParkRatio = params.parkRatio || 0;
-    const parkReduction = effects ? effects.parkingReduction : 0;
-    let parkingSpaces;
-    if (useId === 'parking') { parkingSpaces = Math.round(gsf / 350); }
-    else if (hasUnits) { parkingSpaces = Math.max(0, Math.ceil(unitsOrNSF * baseParkRatio * (1 - parkReduction))); }
-    else { parkingSpaces = Math.max(0, Math.ceil(gsf / 1000 * baseParkRatio * (1 - parkReduction))); }
-    let buildCostPSF = BUILD_COST_PSF[useId] || 300;
-    if (effects && effects.parkingReduction > 0) { buildCostPSF = Math.round(buildCostPSF * (1 - effects.parkingReduction * 0.18)); }
-    const rentMult = NEIGHBORHOOD_RENT_MULT[inp.neighborhood] || 1.0;
-    var swBreakdown = calcSiteWorkBreakdown(useId, inp, gsf);
-    var siteWorkTotalPSF = inp.parcelSize > 0 ? Math.round(swBreakdown.total / inp.parcelSize) : 18;
-    return {
-        far: parseFloat(far.toFixed(2)), unitsOrNSF, parkingSpaces,
-        buildCostPSF: Math.round(buildCostPSF),
-        landValuePSF: LAND_VALUE_PSF[inp.neighborhood] || 150,
-        revenuePSF: Math.round((REVENUE_PSF[useId] || 30) * rentMult),
-        opexPct: Math.round(params.opex * 100),
-        capRatePct: parseFloat((params.cap * 100).toFixed(1)),
-        parkingCostPerSpace: PARKING_COST_MAP[useId] || 35000,
-        siteWorkPSF: siteWorkTotalPSF, siteWorkTotal: swBreakdown.total, siteWorkOverride: null,
-        parcelSize: inp.parcelSize || 10000,
-        coveragePct: 70, efficiencyPct: Math.round(params.eff * 100),
-        setbackFront: params.setF, setbackSide: params.setS, setbackRear: params.setS,
-        amenityPct: 0, parkingType: 'surface',
-        unitMixStudio: Math.round(((UNIT_MIX_PROFILES[inp.neighborhood] || UNIT_MIX_PROFILES.dtla).studio) * 100),
-        unitMixBr1: Math.round(((UNIT_MIX_PROFILES[inp.neighborhood] || UNIT_MIX_PROFILES.dtla).br1) * 100),
-        unitMixBr2: Math.round(((UNIT_MIX_PROFILES[inp.neighborhood] || UNIT_MIX_PROFILES.dtla).br2) * 100),
-    };
-}
 
-function computeFromAssumptions(useId, inp, assumptions, effects) {
-    const params = BUILDING_PARAMS[useId];
-    const far = assumptions.far;
-    const gsf = Math.round(inp.parcelSize * far);
-    const effPct = (assumptions.efficiencyPct != null ? assumptions.efficiencyPct : Math.round(params.eff * 100)) / 100;
-    const amenityPct = (assumptions.amenityPct || 0) / 100;
-    const nsf = Math.round(gsf * effPct * (1 - amenityPct));
-    const amenitySF = Math.round(gsf * effPct * amenityPct);
-    const setF = assumptions.setbackFront != null ? assumptions.setbackFront : params.setF;
-    const setS = assumptions.setbackSide != null ? assumptions.setbackSide : params.setS;
-    const setR = assumptions.setbackRear != null ? assumptions.setbackRear : params.setS;
-    const frontage = inp.frontage || Math.sqrt(inp.parcelSize * 2);
-    const depth = inp.parcelSize / frontage;
-    const buildableW = Math.max(0, frontage - 2 * setS);
-    const buildableD = Math.max(0, depth - setF - setR);
-    const buildableArea = Math.round(buildableW * buildableD);
-    const covPct = (assumptions.coveragePct != null ? assumptions.coveragePct : 70) / 100;
-    const maxFootprint = Math.min(Math.round(inp.parcelSize * covPct), buildableArea);
-    const stories = Math.max(params.stories, Math.ceil(gsf / Math.max(maxFootprint, 1)));
-    const buildingHeight = stories * params.floorH;
-    const buildingFootprint = Math.min(maxFootprint, Math.round(gsf / stories));
-    const hasUnits = !!params.unitSF;
-    const units = hasUnits ? assumptions.unitsOrNSF : null;
-    const revenueNSF = hasUnits ? assumptions.unitsOrNSF * params.unitSF : assumptions.unitsOrNSF;
-    const parkingSpaces = assumptions.parkingSpaces;
-    const landValuePSF = assumptions.landValuePSF;
-    // Land cost: use assessor value if available, checkbox zeroes it out
-    const _ownProp3 = document.getElementById('ownProperty');
-    const landCost = (useId === 'adu' || (_ownProp3 && _ownProp3.checked)) ? 0
-        : (parseFloat(String((document.getElementById('marketValue') || {}).value).replace(/,/g, '')) > 0) ? parseFloat(String(document.getElementById('marketValue').value).replace(/,/g, ''))
-        : inp.parcelSize * landValuePSF;
-    let siteWorkBreakdown;
-    if (assumptions.siteWorkOverride !== undefined && assumptions.siteWorkOverride !== null) {
-        siteWorkBreakdown = { total: assumptions.siteWorkOverride, grading: 0, utilities: 0, erosion: 0, soilPrep: 0, clearing: 0, isOverride: true };
-    } else { siteWorkBreakdown = calcSiteWorkBreakdown(useId, inp, gsf, assumptions.siteWorkRates); }
-    const siteWork = siteWorkBreakdown.total;
-    const demolition = (inp.siteCondition === 'demolition' && useId !== 'adu') ? inp.parcelSize * 12 : 0;
-    const buildCostPSF = assumptions.buildCostPSF;
-    const construction = gsf * buildCostPSF;
-    const parkingCost = parkingSpaces * assumptions.parkingCostPerSpace;
-    const landscaping = Math.round(construction * 0.04);
-    const hardContingency = Math.round((siteWork + demolition + construction + parkingCost + landscaping) * 0.07);
-    const totalHard = siteWork + demolition + construction + parkingCost + landscaping + hardContingency;
-    const archEng = Math.round(totalHard * 0.08);
-    const permits = Math.round(totalHard * 0.05);
-    const legal = Math.round(totalHard * 0.02);
-    const financing = Math.round((landCost + totalHard) * 0.045);
-    const revenuePSF = assumptions.revenuePSF;
-    const marketing = Math.round(revenueNSF * revenuePSF * 0.02);
-    const devFee = Math.round((totalHard + archEng + permits) * 0.04);
-    const softCostMult = effects && effects.softCostReduction > 0 ? (1 - effects.softCostReduction * 0.20) : 1;
-    const totalSoft = Math.round((archEng + permits + legal + financing + marketing + devFee) * softCostMult);
-    const totalDev = landCost + totalHard + totalSoft;
-    const grossRevenue = revenueNSF * revenuePSF;
-    const opexRate = assumptions.opexPct / 100;
-    const opex = Math.round(grossRevenue * opexRate);
-    const noi = grossRevenue - opex;
-    const capRate = assumptions.capRatePct / 100;
-    const stabilizedValue = capRate > 0 ? Math.round(noi / capRate) : 0;
-    const yieldOnCost = totalDev > 0 ? noi / totalDev : 0;
-    const devMargin = totalDev > 0 ? (stabilizedValue - totalDev) / totalDev : 0;
-    return {
-        gsf, nsf, revenueNSF, stories, buildingHeight, buildingFootprint, units, parkingSpaces, far,
-        landCost, siteWork, siteWorkBreakdown, demolition, construction, buildCostPSF, parkingCost, landscaping, hardContingency, totalHard,
-        archEng, permits, legal, financing, marketing, devFee, totalSoft, totalDev,
-        grossRevenue, opex, noi, capRate, stabilizedValue, yieldOnCost, devMargin,
-        params, landValuePSF, revenuePSF, parkingCostPerSpace: assumptions.parkingCostPerSpace,
-        amenitySF, buildableArea, setbacks: { front: setF, side: setS, rear: setR },
-        coveragePct: covPct * 100, efficiencyPct: effPct * 100,
-    };
-}
 
-function renderProgramDisplay(computed) {
-    return `<div class="program-grid">
-        <div class="program-item"><div class="program-value">${computed.stories}</div><div class="program-label">Stories / ${computed.buildingHeight} ft</div></div>
-        <div class="program-item"><div class="program-value">${computed.gsf.toLocaleString()}</div><div class="program-label">Gross SF</div></div>
-        ${computed.units
-            ? `<div class="program-item"><div class="program-value">${computed.units}</div><div class="program-label">Units</div></div>`
-            : `<div class="program-item"><div class="program-value">${computed.nsf.toLocaleString()}</div><div class="program-label">Net Leasable SF</div></div>`}
-        <div class="program-item"><div class="program-value">${computed.parkingSpaces}</div><div class="program-label">Parking Spaces</div></div>
-    </div>`;
-}
 
-function renderAssumptions(assumptions, hasUnits) {
-    return `<div class="assumptions-panel"><h4>Key Assumptions (editable)</h4><div class="assumptions-grid">
-        <div class="assumption-field"><label>FAR</label><input type="number" class="assumption-input" id="a-far" step="0.1" min="0.1" max="20" value="${assumptions.far}" oninput="recalcAnalysis()"></div>
-        <div class="assumption-field"><label>${hasUnits ? 'Units' : 'Net Leasable SF'}</label><input type="number" class="assumption-input" id="a-unitsOrNSF" step="1" min="1" value="${assumptions.unitsOrNSF}" oninput="recalcAnalysis()"></div>
-        <div class="assumption-field"><label>Parking Spaces</label><input type="number" class="assumption-input" id="a-parkingSpaces" step="1" min="0" value="${assumptions.parkingSpaces}" oninput="recalcAnalysis()"></div>
-        <div class="assumption-field"><label>Build Cost $/SF</label><input type="number" class="assumption-input" id="a-buildCostPSF" step="5" min="10" value="${assumptions.buildCostPSF}" oninput="recalcAnalysis()"></div>
-        <div class="assumption-field"><label>Land Value $/SF</label><input type="number" class="assumption-input" id="a-landValuePSF" step="5" min="1" value="${assumptions.landValuePSF}" oninput="recalcAnalysis()"></div>
-        <div class="assumption-field"><label>Revenue $/SF</label><input type="number" class="assumption-input" id="a-revenuePSF" step="1" min="1" value="${assumptions.revenuePSF}" oninput="recalcAnalysis()"></div>
-        <div class="assumption-field"><label>OpEx %</label><input type="number" class="assumption-input" id="a-opexPct" step="1" min="0" max="100" value="${assumptions.opexPct}" oninput="recalcAnalysis()"></div>
-        <div class="assumption-field"><label>Cap Rate %</label><input type="number" class="assumption-input" id="a-capRatePct" step="0.1" min="0.1" max="20" value="${assumptions.capRatePct}" oninput="recalcAnalysis()"></div>
-        <div class="assumption-field"><label>Parking $/Space</label><input type="number" class="assumption-input" id="a-parkingCostPerSpace" step="1000" min="0" value="${assumptions.parkingCostPerSpace}" oninput="recalcAnalysis()"></div>
-        <div class="assumption-field"><label>Site Work $/SF <span style="font-size:0.6rem;color:#a0aec0;">(of lot)</span></label><input type="number" class="assumption-input" id="a-siteWorkPSF" step="1" min="0" max="100" value="${assumptions.siteWorkPSF || Math.round(assumptions.siteWorkTotal / (assumptions.parcelSize || 10000))}" oninput="recalcAnalysis()" placeholder="auto"><span style="font-size:0.6rem;color:#a0aec0;">blank = auto-calc</span></div>
-    </div></div>`;
-}
 
 function renderSiteWorkBreakdownInline(computed, inp) {
     var sw = computed.siteWorkBreakdown;
@@ -7485,7 +5347,7 @@ async function runStandaloneSearch() {
     const radiusFt = Math.max(...selectedRadii); const useTypes = Array.from(document.querySelectorAll('.finderUseType2:checked')).map(c => c.value);
     const minLot = parseInt(document.getElementById('finderMinLot2').value)||0; const maxLot = parseInt(document.getElementById('finderMaxLot2').value)||999999;
     const yearAfter = parseInt(document.getElementById('finderYearAfter2').value)||0; const yearBefore = parseInt(document.getElementById('finderYearBefore2').value)||0;
-    const selectedZones = []; if (selectedRadii.includes(200)) selectedZones.push('adjacent'); if (selectedRadii.includes(1320)) selectedZones.push('inner'); if (selectedRadii.includes(2640)) selectedZones.push('outer');
+    const selectedZones = []; if (selectedRadii.includes(200)||selectedRadii.includes(1320)||selectedRadii.includes(2640)) selectedZones.push('adjacent'); if (selectedRadii.includes(1320)||selectedRadii.includes(2640)) selectedZones.push('inner'); if (selectedRadii.includes(2640)) selectedZones.push('outer');
     const resType = (document.getElementById('finderResType2') || {}).value || 'all';
     const filters = { useTypes, resType, minLot, maxLot, maxRatio: null, yearBefore, yearAfter, selectedZones }; finderSelectedSet.clear();
     const progressEl = document.getElementById('finderProgress2'); const fillEl = document.getElementById('finderProgressFill2'); const textEl = document.getElementById('finderProgressText2'); const btn = document.getElementById('finderSearchBtn2');
@@ -7863,13 +5725,13 @@ function generateListingOnePager(result, inp, address) {
         ${sb79HTML}
         ${legHTML}
         <div class="onepager-branding">
-            <div class="agent-name">Prepared by CLS CRE &mdash; Land to Yield</div>
+            <div class="agent-name">Prepared by Land to Yield</div>
             <div style="font-size:0.75rem;color:#94a3b8;">landtoyield.com</div>
         </div>
         <div class="onepager-disclaimer">
             This report is for informational purposes only and does not constitute an appraisal, legal opinion, or guarantee of development feasibility.
             All estimates are based on publicly available data, zoning assumptions, and market averages. Actual values, costs, and entitlement outcomes may vary.
-            Consult licensed professionals before making investment decisions. &copy; ${new Date().getFullYear()} CLS CRE.
+            Consult licensed professionals before making investment decisions. &copy; ${new Date().getFullYear()} Land to Yield.
         </div>
     </div>`;
 }
