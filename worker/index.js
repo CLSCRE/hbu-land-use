@@ -259,14 +259,14 @@ export default {
     let result = null;
 
     try {
-      // Priority 1: ATTOM (professional-grade AVM)
-      if (provider !== 'rentcast' && env.ATTOM_API_KEY) {
-        result = await fetchAttomAVM(address, env.ATTOM_API_KEY);
+      // Priority 1: RentCast (primary — fast and cost-effective)
+      if (provider !== 'attom' && env.RENTCAST_API_KEY) {
+        result = await fetchRentCastAVM(address, env.RENTCAST_API_KEY);
       }
 
-      // Priority 2: RentCast (fallback)
-      if (!result && provider !== 'attom' && env.RENTCAST_API_KEY) {
-        result = await fetchRentCastAVM(address, env.RENTCAST_API_KEY);
+      // Priority 2: ATTOM (fallback — richer data with confidence scores)
+      if (!result && provider !== 'rentcast' && env.ATTOM_API_KEY) {
+        result = await fetchAttomAVM(address, env.ATTOM_API_KEY);
       }
 
       if (!result) {
