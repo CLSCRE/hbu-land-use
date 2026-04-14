@@ -7263,7 +7263,12 @@ async function geocodePipelineAddress() {
     try {
         input.disabled = true;
         const result = await geocodeAddress(addr);
-        setPipelineSearchCenter(result.lat, result.lon, addr);
+        setPipelineSearchCenter(result.lat, result.lon, result.cleanAddress || addr);
+        // For zip code searches, zoom to fit the zip boundary instead of street-level
+        if (result.isZipCode && result.boundingbox && pipelineMapInstance) {
+            const bb = result.boundingbox;
+            pipelineMapInstance.fitBounds([[parseFloat(bb[0]), parseFloat(bb[2])], [parseFloat(bb[1]), parseFloat(bb[3])]]);
+        }
     } catch (e) {
         alert('Geocoding failed: ' + e.message);
     } finally {

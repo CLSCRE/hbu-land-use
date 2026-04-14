@@ -1111,6 +1111,36 @@ async function fetchParcelInfo(lat, lon, addressInfo) {
 async function geocodeAddress(address) {
     // Append county/state hint only if no city/state info is already present
     let query = address;
+    const isZipCode = /^\d{5}$/.test(query.trim());
+
+    // For bare zip codes, use structured Nominatim query for better accuracy
+    if (isZipCode) {
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query.trim() + ', California, USA')}&format=json&addressdetails=1&limit=1&countrycodes=us`;
+        const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        if (!resp.ok) throw new Error('Geocoding service unavailable');
+        const data = await resp.json();
+        if (!data || data.length === 0) throw new Error('Zip code not found. Try a different zip code.');
+        const m = data[0];
+        const a = m.address || {};
+        // Use bounding box center for more accurate zip code centroid
+        let lat = parseFloat(m.lat), lon = parseFloat(m.lon);
+        if (m.boundingbox && m.boundingbox.length === 4) {
+            lat = (parseFloat(m.boundingbox[0]) + parseFloat(m.boundingbox[1])) / 2;
+            lon = (parseFloat(m.boundingbox[2]) + parseFloat(m.boundingbox[3])) / 2;
+        }
+        const city = a.city || a.town || a.municipality || a.village || '';
+        return {
+            lat, lon,
+            matched: m.display_name,
+            cleanAddress: [city, 'CA', query.trim()].filter(Boolean).join(', '),
+            address: a,
+            osmClass: m.class || '',
+            osmType: m.type || '',
+            isZipCode: true,
+            boundingbox: m.boundingbox || null,
+        };
+    }
+
     // Check if address already contains a recognizable LA County city or state abbreviation
     const hasCity = /,\s*\w/.test(query) || /\b(CA|California)\b/i.test(query) ||
         /\b(Los Angeles|Glendale|Burbank|Pasadena|Long Beach|Santa Monica|Beverly Hills|Culver City|Inglewood|Torrance|Pomona|West Hollywood|Alhambra|Arcadia|Azusa|Baldwin Park|Bell|Bellflower|Cerritos|Claremont|Compton|Covina|Downey|Duarte|El Monte|El Segundo|Gardena|Glendora|Hawthorne|Hermosa Beach|Huntington Park|La Mirada|La Verne|Lakewood|Lancaster|Lawndale|Lomita|Lynwood|Malibu|Manhattan Beach|Maywood|Monrovia|Montebello|Monterey Park|Norwalk|Palmdale|Palos Verdes|Paramount|Pico Rivera|Rancho Palos Verdes|Redondo Beach|Rosemead|San Dimas|San Fernando|San Gabriel|San Marino|Santa Clarita|Sierra Madre|Signal Hill|South El Monte|South Gate|South Pasadena|Temple City|Walnut|West Covina|Whittier)\b/i.test(query);
