@@ -3285,7 +3285,7 @@ window.HBU_PORTAL_CONFIG = {
 
 <!-- Core shared modules -->
 <script src="core-data.js?v=4.3"></script>
-<script src="core-geo.js?v=4.3"></script>
+<script src="core-geo.js?v=4.5"></script>
 <script src="core-hbu.js?v=4.3"></script>
 <script src="core-finance.js?v=4.3"></script>
 
@@ -6220,8 +6220,7 @@ async function queryParcelsNearStation(lat, lon, radiusFt, onProgress) {
     const outFields = 'APN,SitusFullAddress,UseType,UseDescription,UseCode,Roll_LandValue,Roll_ImpValue,YearBuilt1,SQFTmain1,Units1,CENTER_LAT,CENTER_LON,Shape.STArea()';
     const allFeatures = [];
     let offset = 0;
-    const pageSize = 1000;
-    let total = null;
+    const pageSize = 2000;
 
     while (true) {
         const params = new URLSearchParams({
@@ -6233,14 +6232,11 @@ async function queryParcelsNearStation(lat, lon, radiusFt, onProgress) {
             units: 'esriSRUnit_Foot',
             outFields: outFields,
             returnGeometry: false,
-            returnCountOnly: false,
+            orderByFields: 'OBJECTID',
             resultOffset: offset,
             resultRecordCount: pageSize,
             f: 'json',
         });
-        if (total === null) {
-            params.set('returnCountOnly', 'false');
-        }
 
         const resp = await fetch(`${baseUrl}?${params}`);
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -6252,12 +6248,12 @@ async function queryParcelsNearStation(lat, lon, radiusFt, onProgress) {
         allFeatures.push(...features);
 
         if (onProgress) {
-            onProgress(allFeatures.length, total || allFeatures.length + (features.length === pageSize ? pageSize : 0));
+            onProgress(allFeatures.length, allFeatures.length + (data.exceededTransferLimit ? pageSize : 0));
         }
 
-        if (features.length < pageSize) break;
-        offset += pageSize;
-        if (offset > 5000) break; // Safety cap
+        if (!data.exceededTransferLimit && features.length < pageSize) break;
+        offset += features.length;
+        if (offset >= 20000) break; // Safety cap for extreme density
     }
     return allFeatures;
 }

@@ -1113,26 +1113,37 @@ async function geocodeAddress(address) {
     let query = address;
     const isZipCode = /^\d{5}$/.test(query.trim());
 
-    // For bare zip codes, use structured Nominatim query for better accuracy
+    // For bare zip codes, use Nominatim structured postal code search for accuracy
     if (isZipCode) {
-        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query.trim() + ', California, USA')}&format=json&addressdetails=1&limit=1&countrycodes=us`;
+        const zip = query.trim();
+        // Use structured search with postalcode param — much more reliable than free-form q=
+        const url = `https://nominatim.openstreetmap.org/search?postalcode=${zip}&country=us&state=California&format=json&addressdetails=1&limit=3`;
         const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
         if (!resp.ok) throw new Error('Geocoding service unavailable');
         const data = await resp.json();
-        if (!data || data.length === 0) throw new Error('Zip code not found. Try a different zip code.');
-        const m = data[0];
-        const a = m.address || {};
-        // Use bounding box center for more accurate zip code centroid
-        let lat = parseFloat(m.lat), lon = parseFloat(m.lon);
-        if (m.boundingbox && m.boundingbox.length === 4) {
-            lat = (parseFloat(m.boundingbox[0]) + parseFloat(m.boundingbox[1])) / 2;
-            lon = (parseFloat(m.boundingbox[2]) + parseFloat(m.boundingbox[3])) / 2;
+        if (!data || data.length === 0) {
+            // Fallback: try free-form query if structured search fails
+            const fallbackUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(zip + ', California, USA')}&format=json&addressdetails=1&limit=1&countrycodes=us`;
+            const fallbackResp = await fetch(fallbackUrl, { headers: { 'Accept': 'application/json' } });
+            const fallbackData = fallbackResp.ok ? await fallbackResp.json() : [];
+            if (!fallbackData || fallbackData.length === 0) throw new Error('Zip code not found. Try a different zip code.');
+            data.push(...fallbackData);
         }
+        // Prefer the zip polygon relation (polygon label point is the true centroid).
+        // Fall back to any postcode-typed result, then the first result.
+        let m = data.find(r => r.osm_type === 'relation' && (r.class === 'boundary' || r.type === 'postal_code' || r.type === 'postcode'))
+             || data.find(r => r.type === 'postcode' || r.type === 'postal_code')
+             || data[0];
+        const a = m.address || {};
+        // Use Nominatim's lat/lon directly — for relations this is the polygon label point
+        // (pole of inaccessibility), far more accurate than the arithmetic center of a bbox
+        // around an irregular zip polygon.
+        const lat = parseFloat(m.lat), lon = parseFloat(m.lon);
         const city = a.city || a.town || a.municipality || a.village || '';
         return {
             lat, lon,
             matched: m.display_name,
-            cleanAddress: [city, 'CA', query.trim()].filter(Boolean).join(', '),
+            cleanAddress: [city, 'CA', zip].filter(Boolean).join(', '),
             address: a,
             osmClass: m.class || '',
             osmType: m.type || '',
