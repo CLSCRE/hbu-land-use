@@ -10,11 +10,11 @@
  * 1. npx wrangler init lty-avm-proxy
  * 2. Copy this file to src/index.js
  * 3. wrangler secret put ATTOM_API_KEY    (paste your ATTOM key)
- * 4. wrangler secret put RENTCAST_API_KEY (paste your RentCast key, optional)
+ * 4. wrangler secret put RENTCAST_API_KEY (paste your RentCast key)
  * 5. wrangler deploy
  *
  * Routes:
- *   GET /?address=...              — ATTOM AVM (primary), RentCast fallback
+ *   GET /?address=...                     — ATTOM AVM (primary), RentCast fallback
  *   GET /?address=...&provider=attom    — force ATTOM only
  *   GET /?address=...&provider=rentcast — force RentCast only
  *   POST /track                    — Log search event (address, portal, timestamp)
@@ -245,8 +245,9 @@ export default {
       return Response.json({ error: 'Missing address parameter' }, { status: 400, headers: cors });
     }
 
-    // Check cache first
-    const cacheKey = `avm:${address.toLowerCase().trim()}`;
+    // Check cache first. Key includes provider-priority version so swapping
+    // providers invalidates the cache cleanly.
+    const cacheKey = `avm2:${address.toLowerCase().trim()}`;
     if (env.AVM_CACHE) {
       const cached = await env.AVM_CACHE.get(cacheKey, 'json');
       if (cached) {
@@ -259,14 +260,14 @@ export default {
     let result = null;
 
     try {
-      // Priority 1: RentCast (primary — fast and cost-effective)
-      if (provider !== 'attom' && env.RENTCAST_API_KEY) {
-        result = await fetchRentCastAVM(address, env.RENTCAST_API_KEY);
+      // Priority 1: ATTOM (primary — professional-grade AVM with confidence scores)
+      if (provider !== 'rentcast' && env.ATTOM_API_KEY) {
+        result = await fetchAttomAVM(address, env.ATTOM_API_KEY);
       }
 
-      // Priority 2: ATTOM (fallback — richer data with confidence scores)
-      if (!result && provider !== 'rentcast' && env.ATTOM_API_KEY) {
-        result = await fetchAttomAVM(address, env.ATTOM_API_KEY);
+      // Priority 2: RentCast (fallback — used if ATTOM returns no result)
+      if (!result && provider !== 'attom' && env.RENTCAST_API_KEY) {
+        result = await fetchRentCastAVM(address, env.RENTCAST_API_KEY);
       }
 
       if (!result) {

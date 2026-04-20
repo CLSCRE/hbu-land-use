@@ -1766,7 +1766,7 @@ if (sessionStorage.getItem('hbu_auth') === 'ok') {
                     <div class="field" id="field-marketValue">
                         <label>Est. Market Value <span class="autofill-badge" id="mvSourceBadge">AVM</span> <span id="assessedValueLabel" style="color:#718096;font-size:0.82em;"></span></label>
                         <input type="text" inputmode="numeric" id="marketValue" value="0" style="font-weight:600;">
-                        <div style="font-size:0.75em;color:#718096;margin-top:2px;">Neighborhood median $/SF estimate · Verify on <a href="#" id="zillowValLink" target="_blank" style="color:var(--primary-light);">Zillow</a> or <a href="#" id="redfinValLink" target="_blank" style="color:var(--primary-light);">Redfin</a></div>
+                        <div style="font-size:0.75em;color:#718096;margin-top:2px;"><span id="mvSourceFooter">Fetching market value…</span> · Verify on <a href="#" id="zillowValLink" target="_blank" style="color:var(--primary-light);">Zillow</a> or <a href="#" id="redfinValLink" target="_blank" style="color:var(--primary-light);">Redfin</a></div>
                     </div>
                     <div class="field" id="field-ownProperty" style="display:flex;align-items:center;gap:8px;margin:-4px 0 4px 0;">
                         <input type="checkbox" id="ownProperty" style="width:auto;margin:0;">
@@ -2445,7 +2445,7 @@ window.HBU_PORTAL_CONFIG = {
 <!-- Core shared modules -->
 <script src="core-data.js?v=4.3"></script>
 <script src="core-geo.js?v=4.5"></script>
-<script src="core-hbu.js?v=4.3"></script>
+<script src="core-hbu.js?v=4.5"></script>
 <script src="core-finance.js?v=4.3"></script>
 
 <script>
@@ -3133,25 +3133,26 @@ async function lookupAddress() {
             const mv = await getMarketValue(_addrForLinks, _structSF, _lotSF, _structSF > 0 ? 'Residential' : 'Vacant', _nhood, _parcelAttrs);
             if (_mvInput) _mvInput.value = Math.round(mv.value).toLocaleString();
             var _badge = document.getElementById('mvSourceBadge');
+            var _footer = document.getElementById('mvSourceFooter');
             if (mv.source === 'avm') {
-                var badgeLabel = mv.avmSource === 'attom' ? 'ATTOM AVM' : 'AVM';
+                var badgeLabel = mv.avmSource === 'attom' ? 'ATTOM AVM' : mv.avmSource === 'rentcast' ? 'RentCast AVM' : 'AVM';
                 if (mv.confidence) badgeLabel += ' (' + mv.confidence + ')';
                 if (_badge) { _badge.textContent = badgeLabel; _badge.style.background = '#059669'; }
-                var rangeInfo = '';
-                if (mv.priceLow && mv.priceHigh) {
-                    rangeInfo = '$' + Math.round(mv.priceLow).toLocaleString() + ' – $' + Math.round(mv.priceHigh).toLocaleString();
-                }
+                var saleInfo = '';
                 if (mv.lastSalePrice && mv.lastSaleDate) {
                     var saleYear = String(mv.lastSaleDate).substring(0, 4);
-                    rangeInfo += (rangeInfo ? ' · ' : '') + 'Last sale: $' + Math.round(mv.lastSalePrice).toLocaleString() + ' (' + saleYear + ')';
+                    saleInfo = 'Last sale: $' + Math.round(mv.lastSalePrice).toLocaleString() + ' (' + saleYear + ')';
                 }
-                if (_avLabel) _avLabel.textContent = rangeInfo;
+                if (_avLabel) _avLabel.textContent = saleInfo;
+                if (_footer) _footer.textContent = mv.avmSource === 'attom' ? 'ATTOM AVM — professional-grade valuation' : 'RentCast AVM estimate';
             } else if (mv.source === 'assessor') {
                 if (_badge) { _badge.textContent = 'Assessor'; _badge.style.background = '#6366f1'; }
                 if (_avLabel) _avLabel.textContent = 'Prop 13 adjusted — verify with comps';
+                if (_footer) _footer.textContent = 'County assessor roll (Prop 13 adjusted)';
             } else {
                 if (_badge) { _badge.textContent = 'Est.'; _badge.style.background = ''; }
                 if (_avLabel) _avLabel.textContent = 'Neighborhood estimate — verify with comps';
+                if (_footer) _footer.textContent = 'Neighborhood median $/SF estimate';
             }
             if (mv.source === 'avm') window._lastAVM = mv;
         } catch {}
