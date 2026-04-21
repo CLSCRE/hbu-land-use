@@ -41,6 +41,26 @@ function corsHeaders(origin) {
 }
 
 // ── ATTOM AVM ──────────────────────────────────────────────────
+// Strip unit suffixes so ATTOM (which indexes at parcel level, not per unit)
+// matches condos and multi-unit residences. Examples:
+//   "7951 Blackburn Ave F"        → "7951 Blackburn Ave"
+//   "7951 Blackburn Ave #F"       → "7951 Blackburn Ave"
+//   "7951 Blackburn Ave Apt F"    → "7951 Blackburn Ave"
+//   "7951 Blackburn Ave Unit 2B"  → "7951 Blackburn Ave"
+// Conservative: only strips explicit unit keywords, # markers, or a bare
+// trailing token when it follows a recognized street-type abbreviation.
+function stripUnitSuffix(address1) {
+  if (!address1) return address1;
+  let s = address1.trim();
+  // 1. Explicit unit keywords (any case, any unit token)
+  s = s.replace(/\s+(?:apt|apartment|unit|suite|ste|#)\s*[\w\-]+\s*$/i, '');
+  // 2. Bare trailing token following a street-type abbreviation.
+  //    Only matches single letters or short alphanumerics (F, 2B, PH3) so we
+  //    don't chop legitimate street-name words.
+  s = s.replace(/\b(ave|avenue|blvd|boulevard|st|street|dr|drive|rd|road|way|pl|place|ct|court|ln|lane|pkwy|parkway|ter|terrace|cir|circle|hwy|highway)\.?\s+([A-Z]|[0-9]{1,4}[A-Z]?|PH[0-9]{0,2})\s*$/i, '$1');
+  return s.trim();
+}
+
 async function fetchAttomAVM(address, apiKey) {
   // ATTOM requires address split into address1 (street) and address2 (city state zip)
   // Parse "123 Main St, Los Angeles, CA 90012" → address1="123 Main St" address2="Los Angeles, CA 90012"
@@ -57,7 +77,10 @@ async function fetchAttomAVM(address, apiKey) {
     address2 = 'CA';
   }
 
-  const url = `https://api.gateway.attomdata.com/propertyapi/v1.0.0/attomavm/detail?address1=${encodeURIComponent(address1)}&address2=${encodeURIComponent(address2)}`;
+  // Strip unit suffix for ATTOM (parcel-level matcher).
+  const address1Normalized = stripUnitSuffix(address1);
+
+  const url = `https://api.gateway.attomdata.com/propertyapi/v1.0.0/attomavm/detail?address1=${encodeURIComponent(address1Normalized)}&address2=${encodeURIComponent(address2)}`;
   const resp = await fetch(url, {
     headers: {
       'Accept': 'application/json',
@@ -245,9 +268,9 @@ export default {
       return Response.json({ error: 'Missing address parameter' }, { status: 400, headers: cors });
     }
 
-    // Check cache first. Key includes provider-priority version so swapping
-    // providers invalidates the cache cleanly.
-    const cacheKey = `avm2:${address.toLowerCase().trim()}`;
+    // Check cache first. Key includes version so provider-priority swaps and
+    // address-normalization changes invalidate the cache cleanly.
+    const cacheKey = `avm3:${address.toLowerCase().trim()}`;
     if (env.AVM_CACHE) {
       const cached = await env.AVM_CACHE.get(cacheKey, 'json');
       if (cached) {

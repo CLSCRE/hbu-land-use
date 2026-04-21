@@ -163,7 +163,7 @@ function incomeApproachValue(structureSqFt, lotSizeSqFt, useType, neighborhood, 
 
 // ── AVM Proxy (ATTOM primary, RentCast fallback) ────────────────
 const AVM_PROXY_URL = 'https://lty-avm-proxy.clscre.workers.dev';
-function _avmCacheKey(address) { return 'lty_avm3_' + address.toLowerCase().trim().replace(/\s+/g, ' '); }
+function _avmCacheKey(address) { return 'lty_avm4_' + address.toLowerCase().trim().replace(/\s+/g, ' '); }
 function _avmCacheGet(address) {
     try {
         const raw = localStorage.getItem(_avmCacheKey(address));
