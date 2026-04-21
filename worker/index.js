@@ -61,33 +61,12 @@ function stripUnitSuffix(address1) {
   return s.trim();
 }
 
-async function fetchAttomAVM(address, apiKey) {
-  // ATTOM requires address split into address1 (street) and address2 (city state zip)
-  // Parse "123 Main St, Los Angeles, CA 90012" → address1="123 Main St" address2="Los Angeles, CA 90012"
-  const parts = address.split(',').map(s => s.trim());
-  let address1, address2;
-  if (parts.length >= 3) {
-    address1 = parts[0];
-    address2 = parts.slice(1).join(', ');
-  } else if (parts.length === 2) {
-    address1 = parts[0];
-    address2 = parts[1];
-  } else {
-    address1 = address;
-    address2 = 'CA';
-  }
-
-  // Strip unit suffix for ATTOM (parcel-level matcher).
-  const address1Normalized = stripUnitSuffix(address1);
-
-  const url = `https://api.gateway.attomdata.com/propertyapi/v1.0.0/attomavm/detail?address1=${encodeURIComponent(address1Normalized)}&address2=${encodeURIComponent(address2)}`;
+// Raw ATTOM AVM call — one HTTP roundtrip, no retries.
+async function _attomAvmByAddress(address1, address2, apiKey, originalAddressForDisplay) {
+  const url = `https://api.gateway.attomdata.com/propertyapi/v1.0.0/attomavm/detail?address1=${encodeURIComponent(address1)}&address2=${encodeURIComponent(address2)}`;
   const resp = await fetch(url, {
-    headers: {
-      'Accept': 'application/json',
-      'APIKey': apiKey,
-    },
+    headers: { 'Accept': 'application/json', 'APIKey': apiKey },
   });
-
   if (!resp.ok) return null;
   const data = await resp.json();
   if (!data.property || data.property.length === 0) return null;
@@ -104,8 +83,12 @@ async function fetchAttomAVM(address, apiKey) {
   const rooms = bldg.rooms || {};
   const lot = prop.lot || {};
 
+  // Require a non-zero AVM price — ATTOM sometimes returns a property record
+  // with null/zero AVM for parcels that exist but have no valuation.
+  if (!amt.value) return null;
+
   return {
-    price: amt.value || null,
+    price: amt.value,
     priceLow: amt.low || null,
     priceHigh: amt.high || null,
     confidence: amt.scr || null,          // ATTOM confidence score (0-100)
@@ -116,7 +99,7 @@ async function fetchAttomAVM(address, apiKey) {
     bedrooms: rooms.beds || null,
     bathrooms: rooms.bathstotal || null,
     yearBuilt: (prop.summary || {}).yearbuilt || null,
-    lotSize: lot.lotsize2 || (lot.lotsize1 ? Math.round(lot.lotsize1 * 43560) : null),  // Convert acres to SF
+    lotSize: lot.lotsize2 || (lot.lotsize1 ? Math.round(lot.lotsize1 * 43560) : null),
     lotAcres: lot.lotsize1 || null,
     propertyType: (prop.summary || {}).propertyType || null,
     lastSaleDate: saleAmt.salerecdate || sale.salesearchdate || null,
@@ -124,10 +107,75 @@ async function fetchAttomAVM(address, apiKey) {
     assessedTotal: assessed.assdttlvalue || null,
     attomId: (prop.identifier || {}).attomId || null,
     apn: (prop.identifier || {}).apn || null,
-    address: (prop.address || {}).oneLine || address,
+    address: (prop.address || {}).oneLine || originalAddressForDisplay,
     source: 'attom',
     timestamp: Date.now(),
   };
+}
+
+// Validate that a fallback ATTOM match is actually the same parcel.
+// Requires postal code to match AND street-name substring to match.
+// Prevents accidentally returning a neighbor's AVM when we retry with
+// a different house number.
+function _matchesSameParcel(result, expectedZip, expectedStreetLower) {
+  if (!result || !result.address) return false;
+  const addr = String(result.address).toLowerCase();
+  if (expectedZip && !addr.includes(expectedZip)) return false;
+  if (expectedStreetLower && expectedStreetLower.length >= 3) {
+    // Take first 3-10 chars of the distinguishing street name token
+    const key = expectedStreetLower.substring(0, Math.min(10, expectedStreetLower.length));
+    if (!addr.includes(key)) return false;
+  }
+  return true;
+}
+
+async function fetchAttomAVM(address, apiKey) {
+  // Parse "123 Main St, Los Angeles, CA 90012" → address1, address2.
+  const parts = address.split(',').map(s => s.trim());
+  let address1, address2;
+  if (parts.length >= 3) {
+    address1 = parts[0];
+    address2 = parts.slice(1).join(', ');
+  } else if (parts.length === 2) {
+    address1 = parts[0];
+    address2 = parts[1];
+  } else {
+    address1 = address;
+    address2 = 'CA';
+  }
+
+  const address1Normalized = stripUnitSuffix(address1);
+
+  // Primary: typed/normalized address
+  let result = await _attomAvmByAddress(address1Normalized, address2, apiKey, address);
+  if (result) return result;
+
+  // Fallback: retry with house number ±2 / ±4. USPS assigns addresses per
+  // unit (7949/7951/7953) but the county/ATTOM key to the parcel's canonical
+  // address, usually the lowest number in the group. Try -2, +2, -4, +4 and
+  // accept the first match validated by postal code + street name.
+  const houseNumMatch = address1Normalized.match(/^(\d+)(\s.+)$/);
+  if (!houseNumMatch) return null;
+  const typedNum = parseInt(houseNumMatch[1], 10);
+  const rest = houseNumMatch[2];
+  const zipMatch = (address2 || '').match(/\b(\d{5})(?:-\d{4})?\b/);
+  const expectedZip = zipMatch ? zipMatch[1] : null;
+  // Extract street name (drop trailing street-type for substring match)
+  const streetName = rest.replace(/\s+(ave|avenue|blvd|boulevard|st|street|dr|drive|rd|road|way|pl|place|ct|court|ln|lane|pkwy|parkway|ter|terrace|cir|circle|hwy|highway)\.?\s*$/i, '').trim().toLowerCase();
+
+  for (const delta of [-2, 2, -4, 4]) {
+    const candidateNum = typedNum + delta;
+    if (candidateNum <= 0) continue;
+    const candidateAddress1 = candidateNum + rest;
+    const candidate = await _attomAvmByAddress(candidateAddress1, address2, apiKey, address);
+    if (candidate && _matchesSameParcel(candidate, expectedZip, streetName)) {
+      // Tag so the UI can show a note like "matched parcel at 7949"
+      candidate.addressFallback = true;
+      candidate.typedAddress = address;
+      return candidate;
+    }
+  }
+  return null;
 }
 
 // ── RentCast AVM ───────────────────────────────────────────────
@@ -270,7 +318,7 @@ export default {
 
     // Check cache first. Key includes version so provider-priority swaps and
     // address-normalization changes invalidate the cache cleanly.
-    const cacheKey = `avm3:${address.toLowerCase().trim()}`;
+    const cacheKey = `avm4:${address.toLowerCase().trim()}`;
     if (env.AVM_CACHE) {
       const cached = await env.AVM_CACHE.get(cacheKey, 'json');
       if (cached) {

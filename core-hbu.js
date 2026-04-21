@@ -163,7 +163,7 @@ function incomeApproachValue(structureSqFt, lotSizeSqFt, useType, neighborhood, 
 
 // ── AVM Proxy (ATTOM primary, RentCast fallback) ────────────────
 const AVM_PROXY_URL = 'https://lty-avm-proxy.clscre.workers.dev';
-function _avmCacheKey(address) { return 'lty_avm4_' + address.toLowerCase().trim().replace(/\s+/g, ' '); }
+function _avmCacheKey(address) { return 'lty_avm5_' + address.toLowerCase().trim().replace(/\s+/g, ' '); }
 function _avmCacheGet(address) {
     try {
         const raw = localStorage.getItem(_avmCacheKey(address));
@@ -207,6 +207,12 @@ async function getMarketValue(address, structureSqFt, lotSizeSqFt, useType, neig
         if (avm.lastSaleDate) result.lastSaleDate = avm.lastSaleDate;
         if (avm.assessedTotal) result.assessedTotal = avm.assessedTotal;
         if (avm.source) result.avmSource = avm.source;  // 'attom' or 'rentcast'
+        // Fallback-match metadata: when ATTOM matched a ±2 house number on the
+        // same parcel (common for duplexes where USPS numbers each unit but
+        // ATTOM keys to the parcel's canonical address), pass the resolved
+        // address through so the UI can show it.
+        if (avm.addressFallback) result.addressFallback = true;
+        if (avm.address) result.resolvedAddress = avm.address;
         return result;
     }
 

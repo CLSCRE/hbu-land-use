@@ -3286,7 +3286,7 @@ window.HBU_PORTAL_CONFIG = {
 <!-- Core shared modules -->
 <script src="core-data.js?v=4.3"></script>
 <script src="core-geo.js?v=4.5"></script>
-<script src="core-hbu.js?v=4.6"></script>
+<script src="core-hbu.js?v=4.7"></script>
 <script src="core-finance.js?v=4.3"></script>
 
 <script>
@@ -3727,7 +3727,11 @@ async function _lookupAddressBody(address, coords, btn) {
                     saleInfo = 'Last sale: $' + Math.round(mv.lastSalePrice).toLocaleString() + ' (' + saleYear + ')';
                 }
                 if (_avLabel) _avLabel.textContent = saleInfo;
-                if (_footer) _footer.textContent = mv.avmSource === 'attom' ? 'ATTOM AVM — professional-grade valuation' : 'RentCast AVM estimate';
+                var footerText = mv.avmSource === 'attom' ? 'ATTOM AVM — professional-grade valuation' : 'RentCast AVM estimate';
+                if (mv.addressFallback && mv.resolvedAddress) {
+                    footerText += ' · matched parcel at ' + mv.resolvedAddress;
+                }
+                if (_footer) _footer.textContent = footerText;
             } else if (mv.source === 'assessor') {
                 if (_badge) { _badge.textContent = 'Assessor'; _badge.style.background = '#6366f1'; }
                 if (_avLabel) _avLabel.textContent = 'Prop 13 adjusted — verify with comps';
