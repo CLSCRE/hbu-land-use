@@ -129,6 +129,43 @@ if (typeof estimateFrontage === 'undefined') {
     }
 }
 
+// --- Lookup UI Helpers (shared by app.html + lender.html) ---
+if (typeof setStatus === 'undefined') {
+    function setStatus(html) {
+        document.getElementById('lookupStatus').innerHTML = html;
+    }
+}
+if (typeof addStatus === 'undefined') {
+    function addStatus(html) {
+        document.getElementById('lookupStatus').innerHTML += html;
+    }
+}
+if (typeof markAutofill === 'undefined') {
+    function markAutofill(fieldId) {
+        var el = document.getElementById('field-' + fieldId);
+        if (el) el.classList.add('autofilled');
+    }
+}
+if (typeof clearAutofill === 'undefined') {
+    function clearAutofill() {
+        document.querySelectorAll('.field.autofilled').forEach(function(el) { el.classList.remove('autofilled'); });
+        var notice = document.getElementById('autofillNotice');
+        if (notice) notice.classList.remove('visible');
+    }
+}
+if (typeof applyConstraintDetection === 'undefined') {
+    function applyConstraintDetection(constraints) {
+        var anySet = false;
+        ['constFlood', 'constHillside', 'constHistoric', 'constFault', 'constCoastal'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el && constraints[id]) { el.checked = true; anySet = true; }
+            else if (el) { el.checked = false; }
+        });
+        if (anySet) markAutofill('siteConstraints');
+        return anySet;
+    }
+}
+
 // --- Formatting Helpers ---
 if (typeof formatCompactDollars === 'undefined') {
     function formatCompactDollars(v) {

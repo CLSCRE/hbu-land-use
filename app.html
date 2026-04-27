@@ -882,7 +882,7 @@
     For educational and preliminary analysis purposes only.
 </footer>
 
-<script src="shared.js?v=4.3"></script>
+<script src="shared.js?v=4.7"></script>
 
 <!-- Portal config (must be before core files) -->
 <script>
@@ -1097,82 +1097,6 @@ async function generateCodeHash(code) {
 //  ADDRESS LOOKUP ENGINE
 // ============================================================
 
-
-// Detect nearest neighborhood from coordinates + Nominatim address details
-
-// Apply constraint heuristic results to checkboxes
-function applyConstraintDetection(constraints) {
-    var anySet = false;
-    ['constFlood', 'constHillside', 'constHistoric', 'constFault', 'constCoastal'].forEach(function(id) {
-        var el = document.getElementById(id);
-        if (el && constraints[id]) { el.checked = true; anySet = true; }
-        else if (el) { el.checked = false; }
-    });
-    if (anySet) markAutofill('siteConstraints');
-    return anySet;
-}
-
-
-// Compute polygon area from rings (in sq ft if Web Mercator, approximate otherwise)
-function computePolygonArea(rings, sr) {
-    // Shoelace formula — gives area in the spatial reference units
-    let totalArea = 0;
-    for (const ring of rings) {
-        let a = 0;
-        for (let i = 0; i < ring.length - 1; i++) {
-            a += ring[i][0] * ring[i + 1][1] - ring[i + 1][0] * ring[i][1];
-        }
-        totalArea += Math.abs(a) / 2;
-    }
-    // If Web Mercator (meters), convert to sq ft
-    if (sr && (sr.wkid === 102100 || sr.wkid === 3857)) {
-        // At LA latitude (~34°), 1 Web Mercator meter ≈ 0.829 real meters
-        const latRad = 34.05 * Math.PI / 180;
-        const scaleFactor = Math.cos(latRad);
-        const realSqMeters = totalArea * scaleFactor * scaleFactor;
-        return Math.round(realSqMeters * 10.7639); // sq meters to sq ft
-    }
-    // If State Plane feet
-    if (sr && (sr.wkid === 2229 || sr.wkid === 102645)) {
-        return Math.round(totalArea);
-    }
-    // If WGS84 (degrees), convert to sq ft using LA latitude
-    if (sr && sr.wkid === 4326) {
-        var ftPerDegLat = 364000, ftPerDegLon = 288200;
-        return Math.round(totalArea * ftPerDegLat * ftPerDegLon);
-    }
-    // Fallback: assume sq ft
-    return Math.round(totalArea);
-}
-
-// Estimate frontage from parcel area (rough: assume ~2:1 lot ratio)
-function estimateFrontage(areaSqFt) {
-    if (!areaSqFt || areaSqFt <= 0) return 80;
-    // Assume lot depth ≈ 2× frontage → area = frontage × (2 × frontage) = 2f²
-    const f = Math.sqrt(areaSqFt / 2);
-    return Math.round(Math.max(20, Math.min(500, f)));
-}
-
-// Lookup status helpers
-function setStatus(html) {
-    document.getElementById('lookupStatus').innerHTML = html;
-}
-
-function addStatus(html) {
-    document.getElementById('lookupStatus').innerHTML += html;
-}
-
-// Mark a field as autofilled
-function markAutofill(fieldId) {
-    const el = document.getElementById('field-' + fieldId);
-    if (el) el.classList.add('autofilled');
-}
-
-// Clear all autofill markers
-function clearAutofill() {
-    document.querySelectorAll('.field.autofilled').forEach(el => el.classList.remove('autofilled'));
-    document.getElementById('autofillNotice').classList.remove('visible');
-}
 
 // === MAIN LOOKUP ORCHESTRATOR ===
 

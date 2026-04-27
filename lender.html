@@ -817,7 +817,7 @@
     For educational and preliminary analysis purposes only.
 </footer>
 
-<script src="shared.js?v=4.3"></script>
+<script src="shared.js?v=4.7"></script>
 
 <!-- Portal config (must be before core files) -->
 <script>
@@ -1020,270 +1020,6 @@ async function generateCodeHash(code) {
 //  ADDRESS LOOKUP ENGINE
 // ============================================================
 
-// Neighborhood centroids (lat, lon)
-
-// Detect nearest neighborhood from coordinates + Nominatim address details
-function applyConstraintDetection(constraints) {
-    var anySet = false;
-    ['constFlood','constHillside','constHistoric','constFault','constCoastal'].forEach(function(id) {
-        var el = document.getElementById(id);
-        if (el && constraints[id]) { el.checked = true; anySet = true; }
-        else if (el) { el.checked = false; }
-    });
-    if (anySet) markAutofill('siteConstraints');
-    return anySet;
-}
-async function fetchConstraintsFromGIS(lat, lon) {
-    var results = { constFlood: null, constHillside: null, constHistoric: null, constFault: null, constCoastal: null };
-    var queries = [];
-    queries.push(fetch('https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/28/query?geometry=' + lon + ',' + lat + '&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=FLD_ZONE&returnGeometry=false&f=json').then(function(r){return r.json();}).then(function(data){if(data.features&&data.features.length>0){var zone=data.features[0].attributes.FLD_ZONE||'';results.constFlood=/^[AV]/.test(zone);}}).catch(function(){}));
-    queries.push(fetch('https://zimas.lacity.org/arcgis/rest/services/zma/specific_plan/MapServer/1117/query?geometry=' + lon + ',' + lat + '&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=APTS_NAME&returnGeometry=false&f=json').then(function(r){return r.json();}).then(function(data){if(data.features&&data.features.length>0){var name=(data.features[0].attributes.APTS_NAME||'').toLowerCase();results.constHillside=name.indexOf('hillside')>=0||name.indexOf('baseline')>=0;}}).catch(function(){}));
-    queries.push(fetch('https://zimas.lacity.org/arcgis/rest/services/zma/hpoz/MapServer/1116/query?geometry=' + lon + ',' + lat + '&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=OBJECTID&returnGeometry=false&f=json').then(function(r){return r.json();}).then(function(data){if(data.features&&data.features.length>0){results.constHistoric=true;}}).catch(function(){}));
-    queries.push(fetch('https://zimas.lacity.org/arcgis/rest/services/zma/fault_zone/MapServer/1107/query?geometry=' + lon + ',' + lat + '&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=OBJECTID&returnGeometry=false&f=json').then(function(r){return r.json();}).then(function(data){if(data.features&&data.features.length>0){results.constFault=true;}}).catch(function(){}));
-    queries.push(fetch('https://zimas.lacity.org/arcgis/rest/services/zma/coastal/MapServer/1105/query?geometry=' + lon + ',' + lat + '&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=OBJECTID&returnGeometry=false&f=json').then(function(r){return r.json();}).then(function(data){if(data.features&&data.features.length>0){results.constCoastal=true;}}).catch(function(){}));
-    await Promise.all(queries);
-    return results;
-}
-async function refineConstraintsFromGIS(lat, lon) {
-    try {
-        var gis = await fetchConstraintsFromGIS(lat, lon);
-        var updated = false;
-        ['constFlood','constHillside','constHistoric','constFault','constCoastal'].forEach(function(id) {
-            if (gis[id] !== null) { var el = document.getElementById(id); if (el && el.checked !== gis[id]) { el.checked = gis[id]; updated = true; } }
-        });
-        if (updated) {
-            markAutofill('siteConstraints');
-            var detected = [];
-            ['constFlood','constHillside','constHistoric','constFault','constCoastal'].forEach(function(id) {
-                var el = document.getElementById(id);
-                if (el && el.checked) { var labels = { constFlood: 'Flood Zone', constHillside: 'Hillside', constHistoric: 'Historic (HPOZ)', constFault: 'Fault Zone', constCoastal: 'Coastal Zone' }; detected.push(labels[id]); }
-            });
-            if (detected.length > 0) { addStatus('<br><span class="status-item warn">GIS verified constraints: ' + detected.join(', ') + '</span>'); }
-            else { addStatus('<br><span class="status-item ok">GIS confirmed: no site constraints detected</span>'); }
-        }
-    } catch (e) { console.warn('GIS constraint refinement failed:', e); }
-}
-
-// Detect jurisdiction from coordinates + Nominatim address details
-
-// === API CALLS ===
-
-// Geocode via OpenStreetMap Nominatim (CORS-friendly)
-async function geocodeAddress(address) {
-    // Append county/state hint only if no city/state info is already present
-    let query = address;
-    const isZipCode = /^\d{5}$/.test(query.trim());
-
-    // For bare zip codes, use structured postalcode search and prefer the zip polygon relation
-    if (isZipCode) {
-        const zip = query.trim();
-        const url = `https://nominatim.openstreetmap.org/search?postalcode=${zip}&country=us&state=California&format=json&addressdetails=1&limit=3`;
-        const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
-        if (!resp.ok) throw new Error('Geocoding service unavailable');
-        let data = await resp.json();
-        if (!data || data.length === 0) {
-            const fallbackUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(zip + ', California, USA')}&format=json&addressdetails=1&limit=1&countrycodes=us`;
-            const fallbackResp = await fetch(fallbackUrl, { headers: { 'Accept': 'application/json' } });
-            data = fallbackResp.ok ? await fallbackResp.json() : [];
-            if (!data || data.length === 0) throw new Error('Zip code not found. Try a different zip code.');
-        }
-        // Prefer the zip polygon relation (its lat/lon is the polygon label point — true centroid)
-        const m = data.find(r => r.osm_type === 'relation' && (r.class === 'boundary' || r.type === 'postal_code' || r.type === 'postcode'))
-               || data.find(r => r.type === 'postcode' || r.type === 'postal_code')
-               || data[0];
-        const a = m.address || {};
-        const lat = parseFloat(m.lat), lon = parseFloat(m.lon);
-        const city = a.city || a.town || a.municipality || a.village || '';
-        return {
-            lat, lon,
-            matched: m.display_name,
-            cleanAddress: [city, 'CA', zip].filter(Boolean).join(', '),
-            address: a, osmClass: m.class || '', osmType: m.type || '',
-            isZipCode: true, boundingbox: m.boundingbox || null,
-        };
-    }
-
-    const hasCity = /,\s*\w/.test(query) || /\b(CA|California)\b/i.test(query) ||
-        /\b(Los Angeles|Glendale|Burbank|Pasadena|Long Beach|Santa Monica|Beverly Hills|Culver City|Inglewood|Torrance|Pomona|West Hollywood|Alhambra|Arcadia|Azusa|Baldwin Park|Bell|Bellflower|Cerritos|Claremont|Compton|Covina|Downey|Duarte|El Monte|El Segundo|Gardena|Glendora|Hawthorne|Hermosa Beach|Huntington Park|La Mirada|La Verne|Lakewood|Lancaster|Lawndale|Lomita|Lynwood|Malibu|Manhattan Beach|Maywood|Monrovia|Montebello|Monterey Park|Norwalk|Palmdale|Palos Verdes|Paramount|Pico Rivera|Rancho Palos Verdes|Redondo Beach|Rosemead|San Dimas|San Fernando|San Gabriel|San Marino|Santa Clarita|Sierra Madre|Signal Hill|South El Monte|South Gate|South Pasadena|Temple City|Walnut|West Covina|Whittier)\b/i.test(query);
-    if (!hasCity) {
-        query += ', Los Angeles County, CA';
-    } else if (!/\b(CA|California)\b/i.test(query)) {
-        query += ', CA';
-    }
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=1&countrycodes=us`;
-    const resp = await fetch(url, {
-        headers: { 'Accept': 'application/json' }
-    });
-    if (!resp.ok) throw new Error('Geocoding service unavailable');
-    const data = await resp.json();
-    if (!data || data.length === 0) throw new Error('Address not found. Try including city and zip code.');
-    const m = data[0];
-    const a = m.address || {};
-    const streetParts = [a.house_number, a.road].filter(Boolean).join(' ');
-    const city = a.city || a.town || a.municipality || a.village || '';
-    const state = a.state ? a.state.replace(/^California$/, 'CA') : '';
-    const cleanAddr = [streetParts, city, [state, a.postcode].filter(Boolean).join(' ')].filter(Boolean).join(', ');
-    return {
-        lat: parseFloat(m.lat),
-        lon: parseFloat(m.lon),
-        matched: m.display_name,
-        cleanAddress: cleanAddr || m.display_name,
-        address: a,
-        osmClass: m.class || '',
-        osmType: m.type || '',
-    };
-}
-
-// ── Multi-city zoning GIS endpoints ─────────────────────────────
-
-// Query zoning — routes to city-specific GIS or ZIMAS for LA City
-async function fetchZoning(lat, lon, cityName) {
-    const city = (cityName || '').toLowerCase().trim();
-    const cityGIS = CITY_ZONING_GIS[city];
-    if (cityGIS) {
-        try {
-            const fields = [cityGIS.field];
-            if (cityGIS.descField) fields.push(cityGIS.descField);
-            const url = `${cityGIS.url}?where=1%3D1&geometry=${lon},${lat}` +
-                `&geometryType=esriGeometryPoint&inSR=4326` +
-                `&spatialRel=esriSpatialRelIntersects&outFields=${fields.join(',')}&returnGeometry=false` +
-                `&distance=30&units=esriSRUnit_Meter&f=json`;
-            const resp = await fetch(url, { signal: AbortSignal.timeout(10000) });
-            if (!resp.ok) throw new Error(city + ' GIS unavailable');
-            const data = await resp.json();
-            if (data.features && data.features.length > 0) {
-                const attrs = data.features[0].attributes;
-                const raw = attrs[cityGIS.field] || Object.values(attrs).find(v => typeof v === 'string' && v.length > 0) || '';
-                const desc = cityGIS.descField ? (attrs[cityGIS.descField] || '') : '';
-                return { raw: raw, mapped: mapZoningCode(raw), city: city, description: desc };
-            }
-            return null;
-        } catch (e) {
-            console.warn(city + ' zoning query failed:', e);
-            return { error: 'cors' };
-        }
-    }
-    // Default: ZIMAS (City of Los Angeles)
-    try {
-        const url = `https://zimas.lacity.org/arcgis/rest/services/zma/zoning/MapServer/1102/query?` +
-            `geometry=${lon},${lat}&geometryType=esriGeometryPoint&inSR=4326` +
-            `&spatialRel=esriSpatialRelIntersects&outFields=ZONE_CMPLT&returnGeometry=false&f=json`;
-        const resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
-        if (!resp.ok) throw new Error('ZIMAS unavailable');
-        const data = await resp.json();
-        if (data.features && data.features.length > 0) {
-            const raw = data.features[0].attributes.ZONE_CMPLT || data.features[0].attributes.zone_cmplt;
-            return { raw, mapped: mapZoningCode(raw) };
-        }
-        return await fetchUnincorporatedZoning(lat, lon);
-    } catch (e) {
-        console.warn('ZIMAS zoning query failed (may be CORS):', e);
-        try { return await fetchUnincorporatedZoning(lat, lon); } catch { return { error: 'cors' }; }
-    }
-}
-
-async function fetchUnincorporatedZoning(lat, lon) {
-    try {
-        const url = `https://arcgis.gis.lacounty.gov/arcgis/rest/services/DRP/ZNET_Public/MapServer/4/query?` +
-            `where=1%3D1&geometry=${lon},${lat}&geometryType=esriGeometryPoint&inSR=4326` +
-            `&spatialRel=esriSpatialRelIntersects&outFields=ZONE,Z_DESC,Z_CATEGORY,PLNG_AREA&returnGeometry=false&f=json`;
-        const resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
-        if (!resp.ok) return null;
-        const data = await resp.json();
-        if (data.features && data.features.length > 0) {
-            const attrs = data.features[0].attributes;
-            return { raw: attrs.ZONE || '', mapped: mapZoningCode(attrs.ZONE || ''), city: 'unincorporated', description: attrs.Z_DESC || '' };
-        }
-        return null;
-    } catch { return null; }
-}
-
-// Query LA County parcel layer for lot size
-async function fetchParcelInfo(lat, lon) {
-    try {
-        const url = `https://public.gis.lacounty.gov/public/rest/services/LACounty_Cache/LACounty_Parcel/MapServer/0/query?` +
-            `geometry=${lon},${lat}&geometryType=esriGeometryPoint&inSR=4326` +
-            `&spatialRel=esriSpatialRelIntersects&outFields=*&returnGeometry=true&f=json`;
-        const resp = await fetch(url, { signal: AbortSignal.timeout(10000) });
-        if (!resp.ok) throw new Error('Parcel service unavailable');
-        const data = await resp.json();
-        if (data.features && data.features.length > 0) {
-            const attrs = data.features[0].attributes;
-            // Try different field names for area
-            let area = attrs['Shape.STArea()'] || attrs['Shape__Area'] || attrs['ShapeSTArea'] || attrs['SHAPE.STArea()'] || null;
-            // If geometry is returned, try to compute from rings
-            if (!area && data.features[0].geometry && data.features[0].geometry.rings) {
-                area = computePolygonArea(data.features[0].geometry.rings, data.spatialReference);
-            }
-            // Store geometry for satellite overlay
-            const _geom = data.features[0].geometry;
-            const _sr = data.spatialReference || (_geom ? _geom.spatialReference : null);
-            const _geometry = _geom && _geom.rings ? { rings: _geom.rings, spatialReference: _sr } : null;
-            return { area, attrs, _geometry };
-        }
-        return null;
-    } catch (e) {
-        console.warn('Parcel query failed (may be CORS):', e);
-        return { error: e.name === 'TimeoutError' ? 'timeout' : 'cors' };
-    }
-}
-
-// Compute polygon area from rings (in sq ft if Web Mercator, approximate otherwise)
-function computePolygonArea(rings, sr) {
-    // Shoelace formula — gives area in the spatial reference units
-    let totalArea = 0;
-    for (const ring of rings) {
-        let a = 0;
-        for (let i = 0; i < ring.length - 1; i++) {
-            a += ring[i][0] * ring[i + 1][1] - ring[i + 1][0] * ring[i][1];
-        }
-        totalArea += Math.abs(a) / 2;
-    }
-    // If Web Mercator (meters), convert to sq ft
-    if (sr && (sr.wkid === 102100 || sr.wkid === 3857)) {
-        // At LA latitude (~34°), 1 Web Mercator meter ≈ 0.829 real meters
-        const latRad = 34.05 * Math.PI / 180;
-        const scaleFactor = Math.cos(latRad);
-        const realSqMeters = totalArea * scaleFactor * scaleFactor;
-        return Math.round(realSqMeters * 10.7639); // sq meters to sq ft
-    }
-    // If State Plane feet
-    if (sr && (sr.wkid === 2229 || sr.wkid === 102645)) {
-        return Math.round(totalArea);
-    }
-    // Fallback: assume sq ft
-    return Math.round(totalArea);
-}
-
-// Estimate frontage from parcel area (rough: assume ~2:1 lot ratio)
-function estimateFrontage(areaSqFt) {
-    if (!areaSqFt || areaSqFt <= 0) return 80;
-    // Assume lot depth ≈ 2× frontage → area = frontage × (2 × frontage) = 2f²
-    const f = Math.sqrt(areaSqFt / 2);
-    return Math.round(Math.max(20, Math.min(500, f)));
-}
-
-// Lookup status helpers
-function setStatus(html) {
-    document.getElementById('lookupStatus').innerHTML = html;
-}
-
-function addStatus(html) {
-    document.getElementById('lookupStatus').innerHTML += html;
-}
-
-// Mark a field as autofilled
-function markAutofill(fieldId) {
-    const el = document.getElementById('field-' + fieldId);
-    if (el) el.classList.add('autofilled');
-}
-
-// Clear all autofill markers
-function clearAutofill() {
-    document.querySelectorAll('.field.autofilled').forEach(el => el.classList.remove('autofilled'));
-    document.getElementById('autofillNotice').classList.remove('visible');
-}
-
 // === MAIN LOOKUP ORCHESTRATOR ===
 
 async function lookupAddress() {
@@ -1314,6 +1050,9 @@ async function lookupAddress() {
     window.lastGeocode = { lat: coords.lat, lon: coords.lon };
 
     let filledCount = 0;
+
+    // Detect neighborhood early so zoning fallback estimation can use it
+    const hood = detectNeighborhood(coords.lat, coords.lon, coords.address);
 
     // Run zoning + parcel queries in parallel
     const _geocodedCity = (coords.address && (coords.address.city || coords.address.town || coords.address.municipality || coords.address.village)) || '';
@@ -1457,8 +1196,7 @@ async function lookupAddress() {
         statusParts.push(`<span class="status-item warn">Parcel size: could not retrieve — enter manually</span>`);
     }
 
-    // Detect neighborhood (using Nominatim address details when available)
-    const hood = detectNeighborhood(coords.lat, coords.lon, coords.address);
+    // Populate neighborhood (detected early for zoning fallback)
     document.getElementById('neighborhood').value = hood;
     markAutofill('neighborhood');
     filledCount++;
