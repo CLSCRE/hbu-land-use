@@ -1766,7 +1766,7 @@ if (sessionStorage.getItem('hbu_auth') === 'ok') {
                     <div class="field" id="field-marketValue">
                         <label>Est. Market Value <span class="autofill-badge" id="mvSourceBadge">AVM</span> <span id="assessedValueLabel" style="color:#718096;font-size:0.82em;"></span></label>
                         <input type="text" inputmode="numeric" id="marketValue" value="0" style="font-weight:600;">
-                        <div style="font-size:0.75em;color:#718096;margin-top:2px;"><span id="mvSourceFooter">Fetching market value…</span> · Verify on <a href="#" id="zillowValLink" target="_blank" style="color:var(--primary-light);">Zillow</a> or <a href="#" id="redfinValLink" target="_blank" style="color:var(--primary-light);">Redfin</a></div>
+                        <div style="font-size:0.75em;color:#718096;margin-top:2px;"><span id="mvSourceFooter">Fetching market value…</span> · Verify on <a href="#" id="zillowValLink" target="_blank" style="color:var(--primary-light);">Zillow</a> or <a href="#" id="redfinValLink" target="_blank" style="color:var(--primary-light);">Redfin</a> · <a href="#" id="googleMapsValLink" target="_blank" style="color:var(--primary-light);font-weight:700;" title="Open aerial view in Google Maps">G</a></div>
                     </div>
                     <div class="field" id="field-ownProperty" style="display:flex;align-items:center;gap:8px;margin:-4px 0 4px 0;">
                         <input type="checkbox" id="ownProperty" style="width:auto;margin:0;">
@@ -2150,6 +2150,8 @@ if (sessionStorage.getItem('hbu_auth') === 'ok') {
                 <button type="button" class="saved-btn" onclick="batchLetters()" style="background:#059669;color:#fff;" title="Generate prospecting letters for all saved">Letters</button>
                 <button type="button" class="saved-btn" onclick="combineContiguousParcels()" style="background:#805ad5;color:#fff;" id="combineBtn" title="Select 2-4 contiguous parcels to combine">Combine</button>
                 <button type="button" class="saved-btn saved-btn-export" onclick="exportSavedCSV()">Export CSV</button>
+                <button type="button" class="saved-btn saved-btn-export" onclick="document.getElementById('importCsvInput').click()" title="Re-import a previously exported CSV">Import CSV</button>
+                <input type="file" id="importCsvInput" accept=".csv" style="display:none" onchange="handleImportCSV(this)">
                 <button type="button" class="saved-btn" onclick="saveNamedList()" style="background:#d97706;color:#fff;" title="Save this list with a name for later recall">Save List</button>
                 <button type="button" class="saved-btn" onclick="loadNamedList()" style="background:#7c3aed;color:#fff;" title="Load a previously saved list">Load List</button>
                 <button type="button" class="saved-btn saved-btn-clear" onclick="clearSavedList()">Clear</button>
@@ -3164,8 +3166,10 @@ async function lookupAddress() {
     var _encAddr = encodeURIComponent(_addrForLinks);
     var _zLink = document.getElementById('zillowValLink');
     var _rLink = document.getElementById('redfinValLink');
+    var _gLink = document.getElementById('googleMapsValLink');
     if (_zLink) _zLink.href = 'https://www.google.com/search?q=site%3Azillow.com+' + _encAddr;
     if (_rLink) _rLink.href = 'https://www.google.com/search?q=site%3Aredfin.com+' + _encAddr;
+    if (_gLink && coords && coords.lat) _gLink.href = 'https://www.google.com/maps?q=' + coords.lat + ',' + coords.lon + '&t=k';
 
     // Apply parcel size
     if (parcelResult && (parcelResult.error === 'cors' || parcelResult.error === 'timeout')) {
@@ -5370,7 +5374,10 @@ function initFinderMap() {
     L.control.layers({'Street': finderStreet, 'Satellite': finderSatellite}, {'Lot Lines': finderParcelLyr, 'Historic Districts (HPOZ)': finderHistoricLayer}, {position: 'topright'}).addTo(finderMapInstance);
     const seenCoords = new Set();
     METRO_STATIONS.forEach((s, idx) => { const key = `${s.lat.toFixed(4)},${s.lon.toFixed(4)},${s.line}`; if (seenCoords.has(key)) return; seenCoords.add(key); const color = LINE_COLORS[s.line]||'#718096'; const icon = L.divIcon({ html: `<div style="background:${color};width:10px;height:10px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>`, iconSize: [10,10], iconAnchor: [5,5], className: '' }); const marker = L.marker([s.lat, s.lon], { icon }).bindPopup(`<strong>${s.name}</strong><br>${LINE_LABELS[s.line]||s.line}`).on('click', () => { selectFinderStation2(idx); drawFinderStationRadii(s); }); marker.addTo(finderMapInstance); });
-    attachZoneClickHandler(finderMapInstance); renderFinderMapLegend(); populateFinderStations2();
+    // attachZoneClickHandler intentionally NOT attached to finderMapInstance —
+    // zone popups on the finder/scanner map interrupt parcel-dot clicks.
+    // Zone click info remains active on sb79Map where it belongs.
+    renderFinderMapLegend(); populateFinderStations2();
     finderMapInitialized = true; setTimeout(() => { if (finderMapInstance) finderMapInstance.invalidateSize(); }, 200); injectPipelineOverlayButton();
 }
 function drawFinderStationRadii(station) {
@@ -5439,10 +5446,180 @@ function renderSavedList() {
     const saved = getSavedList(); const panel = document.getElementById('savedListPanel'); const body = document.getElementById('savedListBody'); const countEl = document.getElementById('savedListCount'); if (!panel || !body) return;
     if (saved.length === 0) { panel.style.display = 'none'; return; }
     panel.style.display = 'block'; countEl.textContent = saved.length + ' propert' + (saved.length === 1 ? 'y' : 'ies');
-    body.innerHTML = saved.map((r, i) => { const zEnc = encodeURIComponent(r.address||''); const apnClean = (r.apn||'').replace(/[^0-9]/g,''); const oppColor = (r.oppRatio||0) >= 2.0 ? '#059669' : (r.oppRatio||0) >= 1.5 ? '#d97706' : '#6b7280'; return `<tr><td><input type="checkbox" class="saved-select" data-idx="${i}"></td><td>${r.address}</td><td>${r.apn}</td><td>${r.bestUse||'-'}</td><td style="color:${oppColor};font-weight:700;">${r.oppRatio ? r.oppRatio.toFixed(1)+'x' : '-'}</td><td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString()+' sf' : '-'}</td><td><span class="prop-links"><a href="https://www.google.com/search?q=site%3Azillow.com+${zEnc}" target="_blank">Z</a> | <a href="https://www.google.com/search?q=site%3Aredfin.com+${zEnc}" target="_blank">R</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank">LA</a></span></td><td><button type="button" class="saved-btn-remove" onclick="removeSavedItem(${i})">Remove</button></td></tr>`; }).join('');
+    body.innerHTML = saved.map((r, i) => { const zEnc = encodeURIComponent(r.address||''); const apnClean = (r.apn||'').replace(/[^0-9]/g,''); const oppColor = (r.oppRatio||0) >= 2.0 ? '#059669' : (r.oppRatio||0) >= 1.5 ? '#d97706' : '#6b7280'; const gLink = (r.lat && r.lon) ? `https://www.google.com/maps?q=${r.lat},${r.lon}&t=k` : '#'; return `<tr><td><input type="checkbox" class="saved-select" data-idx="${i}"></td><td>${r.address}</td><td>${r.apn}</td><td>${r.bestUse||'-'}</td><td style="color:${oppColor};font-weight:700;">${r.oppRatio ? r.oppRatio.toFixed(1)+'x' : '-'}</td><td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString()+' sf' : '-'}</td><td><span class="prop-links"><a href="https://www.google.com/search?q=site%3Azillow.com+${zEnc}" target="_blank">Z</a> | <a href="https://www.google.com/search?q=site%3Aredfin.com+${zEnc}" target="_blank">R</a> | <a href="https://portal.assessor.lacounty.gov/parceldetail/${apnClean}" target="_blank">LA</a> | <a href="${gLink}" target="_blank" title="Aerial view in Google Maps" style="font-weight:700;">G</a></span></td><td><button type="button" class="saved-btn-remove" onclick="removeSavedItem(${i})">Remove</button></td></tr>`; }).join('');
 }
 function removeSavedItem(idx) { const saved = getSavedList(); saved.splice(idx, 1); setSavedList(saved); renderSavedList(); }
 function clearSavedList() { if (!confirm('Remove all saved properties?')) return; setSavedList([]); renderSavedList(); }
+
+// ============================================================
+//  CSV IMPORT — re-import a previously exported saved list CSV
+// ============================================================
+function handleImportCSV(input) {
+    const file = input.files[0];
+    if (!file) return;
+    input.value = ''; // reset so same file can be re-selected
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const text = e.target.result.replace(/^﻿/, ''); // strip BOM
+        const lines = text.split(/\r?\n/).filter(l => l.trim());
+        if (lines.length < 2) { alert('CSV appears empty.'); return; }
+
+        // Parse header row — tolerant to column order changes
+        const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim().toLowerCase());
+        const col = (name) => headers.indexOf(name);
+        const addrIdx = col('address');
+        const apnIdx  = col('apn');
+        const lotIdx  = col('lot size') !== -1 ? col('lot size') : col('lot size (sf)');
+        const buIdx   = col('best use');
+        const orIdx   = col('opp ratio');
+        const rlvIdx  = col('residual land value') !== -1 ? col('residual land value') : col('dev land bid');
+        const emvIdx  = col('est market value') !== -1 ? col('est market value') : col('est. market value');
+        const premIdx = col('premium ($)') !== -1 ? col('premium ($)') : col('premium');
+        const unitsIdx = col('units');
+        const storIdx  = col('stories');
+        const utIdx   = col('use type');
+        const yrIdx   = col('year built');
+        const lvIdx   = col('land value') !== -1 ? col('land value') : col('land val');
+        const ivIdx   = col('imp value') !== -1 ? col('imp value') : col('imp val');
+        const zoneIdx = col('zone');
+        const latIdx  = col('lat');
+        const lonIdx  = col('lon');
+
+        if (addrIdx === -1 || latIdx === -1 || lonIdx === -1) {
+            alert('This CSV doesn\'t look like a LandtoYield saved-list export.\nMissing required columns: Address, Lat, Lon.');
+            return;
+        }
+
+        // Parse CSV fields (handles quoted fields with commas inside)
+        function parseRow(line) {
+            const fields = [];
+            let cur = '', inQ = false;
+            for (let i = 0; i < line.length; i++) {
+                const ch = line[i];
+                if (ch === '"') { inQ = !inQ; }
+                else if (ch === ',' && !inQ) { fields.push(cur.trim()); cur = ''; }
+                else { cur += ch; }
+            }
+            fields.push(cur.trim());
+            return fields;
+        }
+
+        const imported = [];
+        for (let i = 1; i < lines.length; i++) {
+            const f = parseRow(lines[i]);
+            if (f.length < 3) continue;
+            const lat = parseFloat(f[latIdx]);
+            const lon = parseFloat(f[lonIdx]);
+            if (!lat || !lon) continue;
+            imported.push({
+                address:              f[addrIdx] || '',
+                apn:                  apnIdx !== -1 ? f[apnIdx] : '',
+                lotSizeSqFt:          lotIdx !== -1 ? (parseInt(f[lotIdx].replace(/,/g,'')) || 0) : 0,
+                bestUse:              buIdx  !== -1 ? f[buIdx]  : '',
+                oppRatio:             orIdx  !== -1 ? (parseFloat(f[orIdx])  || 0) : 0,
+                residualLandValue:    rlvIdx !== -1 ? (parseFloat(f[rlvIdx].replace(/,/g,'')) || 0) : 0,
+                estimatedMarketValue: emvIdx !== -1 ? (parseFloat(f[emvIdx].replace(/,/g,'')) || 0) : 0,
+                premium:              premIdx !== -1 ? (parseFloat(f[premIdx].replace(/,/g,'')) || 0) : 0,
+                units:                unitsIdx !== -1 ? (parseInt(f[unitsIdx]) || 0) : 0,
+                stories:              storIdx !== -1 ? (parseInt(f[storIdx]) || 0) : 0,
+                useType:              utIdx  !== -1 ? f[utIdx]  : '',
+                yearBuilt:            yrIdx  !== -1 ? (parseInt(f[yrIdx])   || 0) : 0,
+                landVal:              lvIdx  !== -1 ? (parseFloat(f[lvIdx].replace(/,/g,''))  || 0) : 0,
+                impVal:               ivIdx  !== -1 ? (parseFloat(f[ivIdx].replace(/,/g,''))  || 0) : 0,
+                zone:                 zoneIdx !== -1 ? f[zoneIdx] : 'inner',
+                lat, lon,
+                tier: 1,
+                _imported: true
+            });
+        }
+
+        if (imported.length === 0) { alert('No valid properties found in CSV.'); return; }
+
+        const current = getSavedList();
+        let finalList;
+        if (current.length > 0) {
+            const choice = confirm(
+                `Replace current list (${current.length} properties) with imported data?\n\n` +
+                `Click OK to replace, Cancel to append.`
+            );
+            finalList = choice ? imported : [...current, ...imported];
+        } else {
+            finalList = imported;
+        }
+
+        setSavedList(finalList);
+        renderSavedList();
+
+        // Scroll to saved list panel
+        const panel = document.getElementById('savedListPanel');
+        if (panel) panel.scrollIntoView({ behavior: 'smooth' });
+
+        // Plot on map and show summary
+        plotImportedParcels(imported);
+        showImportSummary(imported);
+    };
+    reader.readAsText(file);
+}
+
+function plotImportedParcels(items) {
+    if (!finderMapInitialized || !finderMapInstance) return;
+    // Switch to Finder tab
+    switchTab('Finder');
+    setTimeout(() => {
+        if (finderParcelLayer2) finderMapInstance.removeLayer(finderParcelLayer2);
+        finderParcelLayer2 = L.layerGroup().addTo(finderMapInstance);
+        const bounds = [];
+        items.forEach((r, i) => {
+            if (!r.lat || !r.lon) return;
+            const oppRatio = r.oppRatio || 0;
+            let color = '#dc2626';
+            if (oppRatio >= 1.5) color = '#059669';
+            else if (oppRatio >= 1.0) color = '#ca8a04';
+            const marker = L.circleMarker([r.lat, r.lon], {
+                radius: 6, fillColor: color, color: '#fff', weight: 1.5, opacity: 0.9, fillOpacity: 0.85
+            });
+            const emv = r.estimatedMarketValue ? '$' + Math.round(r.estimatedMarketValue).toLocaleString() : '—';
+            const bid = r.residualLandValue ? '$' + Math.round(r.residualLandValue).toLocaleString() : '—';
+            marker.bindTooltip(
+                `<strong>${r.address}</strong><br>Mkt Value: ${emv} | Dev Bid: ${bid}<br>Opp. Ratio: ${oppRatio ? oppRatio.toFixed(1)+'x' : '—'} | ${r.bestUse||'—'}`,
+                { direction: 'top', offset: [0, -8] }
+            );
+            marker.addTo(finderParcelLayer2);
+            bounds.push([r.lat, r.lon]);
+        });
+        if (bounds.length > 0) {
+            try { finderMapInstance.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 }); } catch(e) {}
+        }
+    }, 300);
+}
+
+function showImportSummary(items) {
+    const count = items.length;
+    const avgMV  = items.reduce((s,r) => s + (r.estimatedMarketValue||0), 0) / count;
+    const avgBid = items.reduce((s,r) => s + (r.residualLandValue||0), 0) / count;
+    const avgOR  = items.reduce((s,r) => s + (r.oppRatio||0), 0) / count;
+    const fmt = v => v >= 1e6 ? '$' + (v/1e6).toFixed(1)+'M' : v >= 1e3 ? '$' + Math.round(v/1e3)+'K' : '$'+Math.round(v).toLocaleString();
+
+    const banner = document.createElement('div');
+    banner.style.cssText = 'background:linear-gradient(135deg,#1a365d,#2b6cb0);color:white;padding:0.85rem 1.25rem;border-radius:10px;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-size:0.875rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+    banner.innerHTML = `
+        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+            <span style="font-size:1.1rem;">📥</span>
+            <strong style="font-size:0.95rem;">${count} properties imported</strong>
+            <span style="opacity:0.8;">·</span>
+            <span>Avg Mkt Value: <strong>${fmt(avgMV)}</strong></span>
+            <span style="opacity:0.8;">·</span>
+            <span>Avg Dev Bid: <strong>${fmt(avgBid)}</strong></span>
+            <span style="opacity:0.8;">·</span>
+            <span>Avg Opp Ratio: <strong>${avgOR.toFixed(1)}x</strong></span>
+        </div>
+        <button onclick="this.parentElement.remove()" style="background:rgba(255,255,255,0.2);border:none;color:white;padding:0.25rem 0.6rem;border-radius:5px;cursor:pointer;font-size:0.8rem;white-space:nowrap;">✕ Dismiss</button>
+    `;
+    const panel = document.getElementById('savedListPanel');
+    if (panel) panel.insertBefore(banner, panel.querySelector('.finder-table-wrapper') || panel.firstChild.nextSibling.nextSibling);
+    setTimeout(() => { if (banner.parentElement) banner.remove(); }, 10000);
+}
+
 function toggleSavedSelectAll() { var allCB = document.getElementById('savedSelectAll'); document.querySelectorAll('.saved-select').forEach(cb => { cb.checked = allCB.checked; }); }
 function combineContiguousParcels() {
     var checks = document.querySelectorAll('.saved-select:checked'); if (checks.length < 2 || checks.length > 4) { alert('Select 2-4 parcels.'); return; }
@@ -5550,7 +5727,10 @@ function loadNamedList() {
         const date = l.savedAt ? new Date(l.savedAt).toLocaleDateString() : '';
         return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0.8rem;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:0.5rem;cursor:pointer;transition:background 0.15s;" onmouseenter="this.style.background='#f1f5f9'" onmouseleave="this.style.background='white'" onclick="doLoadNamedList('${n.replace(/'/g,"\\'")}');this.closest('[data-modal]').remove();">
             <div><strong>${n}</strong><br><span style="font-size:0.8rem;color:#718096;">${l.count} properties &mdash; saved ${date}</span></div>
-            <button onclick="event.stopPropagation();deleteNamedList('${n.replace(/'/g,"\\'")}');this.closest('[data-modal]').remove();loadNamedList();" style="padding:0.3rem 0.7rem;background:#ef4444;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.75rem;">Delete</button>
+            <div style="display:flex;gap:0.4rem;" onclick="event.stopPropagation()">
+                <button onclick="renameNamedList('${n.replace(/'/g,"\\'")}');" style="padding:0.3rem 0.7rem;background:#3182ce;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.75rem;">Rename</button>
+                <button onclick="deleteNamedList('${n.replace(/'/g,"\\'")}');this.closest('[data-modal]').remove();loadNamedList();" style="padding:0.3rem 0.7rem;background:#ef4444;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.75rem;">Delete</button>
+            </div>
         </div>`;
     }).join('');
 
@@ -5580,6 +5760,22 @@ function deleteNamedList(name) {
     const lists = getSavedNamedLists();
     delete lists[name];
     localStorage.setItem('sb79_named_lists', JSON.stringify(lists));
+}
+
+function renameNamedList(oldName) {
+    const newName = prompt('Rename list to:', oldName);
+    if (!newName || newName.trim() === oldName) return;
+    const trimmed = newName.trim();
+    const lists = getSavedNamedLists();
+    if (!lists[oldName]) return;
+    if (lists[trimmed] && !confirm('"' + trimmed + '" already exists. Replace it?')) return;
+    lists[trimmed] = lists[oldName];
+    delete lists[oldName];
+    localStorage.setItem('sb79_named_lists', JSON.stringify(lists));
+    // Refresh modal
+    const existing = document.querySelector('[data-modal]');
+    if (existing) existing.remove();
+    loadNamedList();
 }
 
 // Load saved list on page init
@@ -6776,6 +6972,7 @@ function renderScannerResults() {
                 <span class="prop-links">
                     <a href="https://www.truepeoplesearch.com/resultaddress?streetaddress=${encodeURIComponent(r.address.replace(/,.*/, '').trim())}&citystatezip=${encodeURIComponent(r.address.replace(/^[^,]*,\s*/, '').trim())}" target="_blank" title="Reverse address lookup — find property owner">Owner</a> |
                     <a href="https://www.google.com/search?q=site%3Azillow.com+${encodeURIComponent(r.address)}" target="_blank" title="View on Zillow">Z</a> |
+                    <a href="https://www.google.com/maps?q=${r.lat},${r.lon}&t=k" target="_blank" title="Aerial view in Google Maps" style="font-weight:700;">G</a> |
                     <a href="javascript:void(0)" onclick="openOnePagerFromScan(${i})" title="Generate One-Pager">1-Pg</a> |
                     <a href="javascript:void(0)" onclick="openLetterModal(${i})" title="Generate Letter">Letter</a>
                 </span>
@@ -6786,7 +6983,7 @@ function renderScannerResults() {
     html += '</tbody></table></div>';
     html += `<div style="display:flex;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;">
         <button type="button" class="finder-btn-export" onclick="exportCallList()">Export Call List (${scannerResults.length})</button>
-        <button type="button" class="finder-btn-export" onclick="exportFinderCSV2()">Export Basic CSV</button>
+        <button type="button" class="finder-btn-export" onclick="exportScannerCSV()">Export CSV</button>
     </div>`;
     area.innerHTML = html;
     updateSelectionBar();
@@ -6822,8 +7019,8 @@ function addScannerParcelsToMap() {
         else if (r.oppRatio >= 1.0) color = '#ca8a04';
         else color = '#dc2626';
         const marker = L.circleMarker([r.lat, r.lon], { radius: 5, fillColor: color, color: '#fff', weight: 1, opacity: 0.9, fillOpacity: 0.8 });
-        marker.bindPopup(`<strong>${r.address}</strong><br>Opp. Ratio: ${r.oppRatio.toFixed(1)}x<br>Dev Bid: $${Math.round(r.residualLandValue).toLocaleString()}<br>Best Use: ${r.bestUse}`);
-        marker.on('click', () => { const row = document.getElementById('finderRow2_' + i); if (row) { row.classList.add('highlighted'); showMapToast('Site selected — ' + (r.address || r.apn)); } });
+        marker.bindTooltip(`<strong>${r.address}</strong><br>Opp. Ratio: ${r.oppRatio.toFixed(1)}x | Mkt: $${Math.round(r.estimatedMarketValue||0).toLocaleString()}<br>Dev Bid: $${Math.round(r.residualLandValue||0).toLocaleString()} | ${r.bestUse}`, { direction: 'top', offset: [0, -8] });
+        marker.on('click', () => { const row = document.getElementById('finderRow2_' + i); if (row) { document.querySelectorAll('#finderTable2 tr.highlighted').forEach(tr => tr.classList.remove('highlighted')); row.classList.add('highlighted'); row.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); showMapToast('Site selected — ' + (r.address || r.apn)); } });
         marker.addTo(finderParcelLayer2);
     });
 }
@@ -6956,6 +7153,40 @@ function printAllOnePagers(pages) {
         <body>${allHtml}
         <script>setTimeout(()=>{window.print();},500);<\/script></body></html>`);
     w.document.close();
+}
+
+// ============================================================
+//  EXPORT SCANNER RESULTS CSV (includes Market Value)
+// ============================================================
+function exportScannerCSV() {
+    const results = finderSelectedSet.size > 0
+        ? Array.from(finderSelectedSet).map(i => scannerResults[i]).filter(Boolean)
+        : scannerResults;
+    if (results.length === 0) { alert('No scanner results to export.'); return; }
+    const headers = ['Address','APN','Lot Size (SF)','Use Type','Year Built',
+        'Est. Market Value','Dev Land Bid','Opp. Ratio','Premium ($)',
+        'Best Use','HBU Score','Zone','SB 79 Tier','Lat','Lon'];
+    const rows = results.map(r => {
+        const premium = Math.round((r.residualLandValue||0) - (r.estimatedMarketValue||0));
+        return [
+            `"${(r.address||'').replace(/"/g,'""')}"`,
+            r.apn, r.lotSizeSqFt, r.useType, r.yearBuilt||'',
+            Math.round(r.estimatedMarketValue||0),
+            Math.round(r.residualLandValue||0),
+            r.oppRatio ? r.oppRatio.toFixed(2) : '',
+            premium,
+            `"${(r.bestUse||'').replace(/"/g,'""')}"`,
+            r.hbuScore||'', r.zone||'', r.tier||'', r.lat, r.lon
+        ].join(',');
+    });
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sb79-scanner-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
 }
 
 // ============================================================
