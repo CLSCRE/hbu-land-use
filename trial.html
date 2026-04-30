@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free Trial — Land to Yield</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #060f1e;
+      --surface:     #0d1f3c;
+      --surface-2:   #112444;
+      --border:      #1e3a5f;
+      --primary:     #22c55e;
+      --primary-dim: #16a34a;
+      --accent:      #3b82f6;
+      --text:        #e2e8f0;
+      --text-muted:  #94a3b8;
+      --error:       #f87171;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+      background-image:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(34,197,94,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 100%, rgba(59,130,246,0.06) 0%, transparent 50%);
+    }
+
+    /* ── Logo ── */
+    .logo-wrap { text-align: center; margin-bottom: 2rem; }
+
+    .logo-icon {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      border-radius: 14px;
+      display: inline-flex; align-items: center; justify-content: center;
+      margin-bottom: 0.9rem;
+      box-shadow: 0 0 24px rgba(34,197,94,0.35);
+    }
+    .logo-icon svg { width: 28px; height: 28px; }
+
+    .logo-name {
+      font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em;
+      color: var(--text); display: block;
+    }
+    .logo-tagline {
+      font-size: 0.8rem; color: var(--text-muted);
+      margin-top: 0.2rem; letter-spacing: 0.05em; text-transform: uppercase;
+    }
+
+    /* ── Trial value props ── */
+    .value-pills {
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+      justify-content: center; margin-bottom: 2rem;
+    }
+    .pill {
+      background: rgba(34,197,94,0.08);
+      border: 1px solid rgba(34,197,94,0.2);
+      border-radius: 999px;
+      padding: 0.3rem 0.85rem;
+      font-size: 0.78rem;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* ── Card ── */
+    .card {
+      width: 100%; max-width: 440px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+    }
+
+    h2 { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .subtitle {
+      font-size: 0.85rem; color: var(--text-muted);
+      margin-bottom: 1.75rem; line-height: 1.5;
+    }
+
+    label {
+      display: block; font-size: 0.78rem; font-weight: 600;
+      color: var(--text-muted); letter-spacing: 0.04em;
+      text-transform: uppercase; margin-bottom: 0.4rem;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+      margin-bottom: 1.1rem;
+      -webkit-appearance: none;
+    }
+    select option { background: #0d1f3c; }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(34,197,94,0.12);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 0.85rem;
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      color: #fff;
+      border: none; border-radius: 8px;
+      font-size: 0.98rem; font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      letter-spacing: 0.01em;
+      margin-top: 0.25rem;
+    }
+    .btn:hover:not(:disabled) { opacity: 0.92; }
+    .btn:active:not(:disabled) { transform: scale(0.99); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn .spinner {
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff;
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+      vertical-align: middle; margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #errorMsg {
+      display: none;
+      background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3);
+      color: var(--error); border-radius: 8px;
+      padding: 0.65rem 0.9rem; font-size: 0.85rem; margin-top: 1rem; line-height: 1.4;
+    }
+
+    /* ── Success state ── */
+    #successPanel { display: none; }
+
+    .success-icon {
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.25rem;
+      box-shadow: 0 0 24px rgba(34,197,94,0.4);
+      font-size: 1.5rem;
+    }
+
+    .token-box {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      margin: 1.25rem 0;
+    }
+    .token-label {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem;
+    }
+    .token-value {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.88rem; color: var(--primary); word-break: break-all;
+      line-height: 1.5;
+    }
+    .copy-btn {
+      margin-top: 0.75rem; width: 100%;
+      padding: 0.55rem;
+      background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25);
+      border-radius: 6px; color: var(--primary);
+      font-size: 0.8rem; font-weight: 700; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .copy-btn:hover { background: rgba(34,197,94,0.18); }
+    .copy-btn.copied { color: #fff; background: var(--primary-dim); border-color: var(--primary-dim); }
+
+    .expiry-note {
+      font-size: 0.8rem; color: var(--text-muted);
+      text-align: center; margin-bottom: 1.25rem; line-height: 1.5;
+    }
+
+    .login-btn {
+      display: block; width: 100%;
+      padding: 0.8rem;
+      background: var(--accent);
+      color: #fff; text-decoration: none;
+      border-radius: 8px; font-size: 0.95rem; font-weight: 700;
+      text-align: center;
+      transition: opacity 0.15s;
+    }
+    .login-btn:hover { opacity: 0.9; }
+
+    .divider {
+      border: none; border-top: 1px solid var(--border); margin: 1.75rem 0 1.25rem;
+    }
+    .footer-links {
+      font-size: 0.8rem; color: var(--text-muted); text-align: center; line-height: 1.8;
+    }
+    .footer-links a { color: var(--accent); text-decoration: none; }
+    .footer-links a:hover { text-decoration: underline; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-size: 0.7rem; color: var(--text-muted);
+      margin-top: 2rem; letter-spacing: 0.03em;
+    }
+    .badge::before {
+      content: ''; display: inline-block; width: 6px; height: 6px;
+      border-radius: 50%; background: var(--primary); box-shadow: 0 0 6px var(--primary);
+    }
+  </style>
+</head>
+<body>
+
+<div class="logo-wrap">
+  <div class="logo-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 22V12"/>
+      <path d="M12 12C12 7 7 4 3 5c0 5 3 9 9 7z"/>
+      <path d="M12 12C12 7 17 4 21 5c0 5-3 9-9 7z"/>
+    </svg>
+  </div>
+  <span class="logo-name">Land to Yield</span>
+  <div class="logo-tagline">Highest &amp; Best Use · LA County</div>
+</div>
+
+<div class="value-pills">
+  <span class="pill">SB-79 Eligibility</span>
+  <span class="pill">Unit Count Modeling</span>
+  <span class="pill">Pro Forma Analysis</span>
+  <span class="pill">All 94 Metro Stations</span>
+</div>
+
+<div class="card">
+  <!-- ── Signup Form ── -->
+  <div id="signupPanel">
+    <h2>Start your 30-day free trial</h2>
+    <p class="subtitle">
+      Full access to the Developer, Agent, and Lender portals.
+      No credit card required.
+    </p>
+
+    <form id="trialForm" onsubmit="handleSignup(event)">
+      <label for="nameInput">Full Name</label>
+      <input type="text" id="nameInput" placeholder="Jane Smith" required autocomplete="name">
+
+      <label for="emailInput">Work Email</label>
+      <input type="email" id="emailInput" placeholder="jane@company.com" required autocomplete="email">
+
+      <label for="roleSelect">I primarily work as a…</label>
+      <select id="roleSelect">
+        <option value="">Select your role</option>
+        <option value="developer">Developer / Builder</option>
+        <option value="agent">Agent / Broker</option>
+        <option value="lender">Lender / Capital</option>
+        <option value="city">City Planner</option>
+        <option value="analyst">Analyst / Underwriter</option>
+        <option value="other">Other</option>
+      </select>
+
+      <button type="submit" class="btn" id="submitBtn">
+        Get Free Access
+      </button>
+      <div id="errorMsg"></div>
+    </form>
+  </div>
+
+  <!-- ── Success Panel ── -->
+  <div id="successPanel">
+    <div class="success-icon">✓</div>
+    <h2 style="text-align:center;margin-bottom:0.4rem">You're in, <span id="firstName"></span>!</h2>
+    <p class="subtitle" style="text-align:center">
+      Copy your access token below and use it to sign in.
+      Keep it somewhere safe — this is your key to the portal.
+    </p>
+
+    <div class="token-box">
+      <div class="token-label">Your Access Token</div>
+      <div class="token-value" id="tokenDisplay"></div>
+      <button class="copy-btn" id="copyBtn" onclick="copyToken()">
+        Copy Token
+      </button>
+    </div>
+
+    <p class="expiry-note">
+      Your trial expires on <strong id="expiryDisplay"></strong>.
+      After that, visit <a href="https://landtoyield.com/#pricing" target="_blank" style="color:var(--accent)">landtoyield.com</a> to subscribe.
+    </p>
+
+    <a href="/login.html" class="login-btn">Sign In with Your Token →</a>
+  </div>
+
+  <hr class="divider">
+  <div class="footer-links">
+    Already have an account?
+    <a href="/login.html">Sign in</a>
+    &nbsp;·&nbsp;
+    Questions? <a href="mailto:trevor@clscre.com">Contact us</a>
+  </div>
+</div>
+
+<div class="badge">30-Day Free Trial · Land to Yield v4.7</div>
+
+<script>
+  var generatedToken = '';
+
+  async function handleSignup(e) {
+    e.preventDefault();
+    var name  = document.getElementById('nameInput').value.trim();
+    var email = document.getElementById('emailInput').value.trim();
+    var role  = document.getElementById('roleSelect').value;
+    var btn   = document.getElementById('submitBtn');
+    var err   = document.getElementById('errorMsg');
+
+    err.style.display = 'none';
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Setting up your trial…';
+
+    try {
+      var res = await fetch('/api/trial/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, role })
+      });
+
+      var data = await res.json().catch(function() { return {}; });
+
+      if (res.ok && data.token) {
+        generatedToken = data.token;
+        showSuccess(data);
+      } else {
+        showError(data.error || 'Something went wrong. Please try again or email trevor@clscre.com.');
+        btn.disabled = false;
+        btn.innerHTML = 'Get Free Access';
+      }
+    } catch(ex) {
+      showError('Network error — please check your connection and try again.');
+      btn.disabled = false;
+      btn.innerHTML = 'Get Free Access';
+    }
+  }
+
+  function showSuccess(data) {
+    document.getElementById('signupPanel').style.display = 'none';
+    var panel = document.getElementById('successPanel');
+    panel.style.display = 'block';
+
+    // First name only
+    var firstName = (data.name || '').split(' ')[0];
+    document.getElementById('firstName').textContent = firstName;
+    document.getElementById('tokenDisplay').textContent = data.token;
+
+    // Format expiry nicely
+    if (data.expiresOn) {
+      var d = new Date(data.expiresOn + 'T00:00:00');
+      var opts = { year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('expiryDisplay').textContent = d.toLocaleDateString('en-US', opts);
+    }
+  }
+
+  function showError(msg) {
+    var err = document.getElementById('errorMsg');
+    err.textContent = msg;
+    err.style.display = 'block';
+  }
+
+  function copyToken() {
+    if (!generatedToken) return;
+    navigator.clipboard.writeText(generatedToken).then(function() {
+      var btn = document.getElementById('copyBtn');
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('copied');
+      setTimeout(function() {
+        btn.textContent = 'Copy Token';
+        btn.classList.remove('copied');
+      }, 2000);
+    }).catch(function() {
+      // Fallback for older browsers
+      var el = document.createElement('textarea');
+      el.value = generatedToken;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      document.getElementById('copyBtn').textContent = '✓ Copied!';
+    });
+  }
+</script>
+</body>
+</html>
