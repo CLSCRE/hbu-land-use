@@ -1,5 +1,5 @@
 // Vercel Edge Middleware — runs before cache on every matched request.
-// Protects app.html, lender.html, and agent.html behind token-based auth.
+// Protects app.html, lender.html, agent.html, and city.html behind token-based auth.
 //
 // Flow:
 //   1. Request arrives for a protected page
@@ -12,7 +12,7 @@
 //   If LTY_TOKENS is empty, access is allowed (dev mode).
 
 export const config = {
-  matcher: ['/app.html', '/lender.html', '/agent.html'],
+  matcher: ['/app.html', '/lender.html', '/agent.html', '/city.html'],
 };
 
 export default function middleware(request) {
