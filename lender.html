@@ -78,53 +78,50 @@
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Sentry Error Monitoring ─ activate by pasting your DSN below.
+         1. Create a free project at https://sentry.io → New Project → Browser JavaScript
+         2. Copy the DSN from Settings → Client Keys
+         3. Paste it into the SENTRY_DSN string below and redeploy. -->
+    <script>
+    (function() {
+        var SENTRY_DSN = ''; // e.g. 'https://abc123@o456.ingest.sentry.io/789'
+        if (!SENTRY_DSN) return;
+        var s = document.createElement('script');
+        s.src = 'https://browser.sentry-cdn.com/8.52.0/bundle.tracing.min.js';
+        s.crossOrigin = 'anonymous';
+        s.onload = function() {
+            Sentry.init({
+                dsn: SENTRY_DSN,
+                environment: location.hostname === 'landtoyield.com' ? 'production'
+                           : location.hostname.includes('staging') ? 'staging' : 'development',
+                tracesSampleRate: 0.1,
+                release: 'lty@4.7',
+            });
+        };
+        document.head.appendChild(s);
+    })();
+    </script>
 </head>
 <body>
 
-<div id="authOverlay">
-    <div class="auth-box">
-        <h2>Land to Yield</h2>
-        <p>Lender &amp; Capital Portal</p>
-        <p style="font-size:0.88rem;color:#4a5568;margin-bottom:1rem;">Enter Your Password</p>
-        <input type="password" id="authPassword" placeholder="Access Code" onkeydown="if(event.key==='Enter')checkAuth();">
-        <button type="button" class="auth-btn" onclick="checkAuth()">Enter</button>
-        <div class="auth-error" id="authError"></div>
-        <div style="margin-top:0.75rem;font-size:0.75rem;color:#a0aec0;">Enter the access code from your subscription email</div>
-        <div style="margin-top:0.75rem;"><a href="index.html#pricing" style="color:#667eea;font-size:0.8rem;text-decoration:none;">Don't have a code? Subscribe here &rarr;</a></div>
-        <div style="margin-top:0.75rem;"><button type="button" class="demo-btn" onclick="activateDemo()">Try Demo &rarr;</button></div>
-        <div style="margin-top:1.5rem;font-size:0.7rem;color:#a0aec0;">v4.3</div>
-    </div>
-</div>
+<!-- Auth: handled server-side by Vercel Edge Middleware + HttpOnly cookie. -->
+<div id="authOverlay" style="display:none;"></div>
 <script>
-(function() {
-    var AUTH_HASH = '6ca13d52ca70c883e0f0bb101e425a89e8624de51db2d2392593af6a84118090';
-    function _sha256(msg) {
-        return crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg)).then(function(buf) {
-            return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2,'0'); }).join('');
-        });
-    }
-    if (sessionStorage.getItem('hbu_auth') === 'ok') {
-        var ov = document.getElementById('authOverlay');
-        if (ov) ov.remove();
-    }
-    window.checkAuth = window.checkAuth || function() {
-        var inp = document.getElementById('authPassword');
-        var err = document.getElementById('authError');
-        var code = (inp ? inp.value : '').trim();
-        if (!code) { if (err) err.textContent = 'Please enter an access code.'; return; }
-        _sha256(code).then(function(hash) {
-            if (hash === AUTH_HASH) {
-                sessionStorage.setItem('hbu_auth', 'ok');
-                var overlay = document.getElementById('authOverlay');
-                if (overlay) { overlay.classList.add('fade-out'); setTimeout(function() { overlay.remove(); }, 500); }
-            } else {
-                if (err) err.textContent = 'Invalid access code.';
-                if (inp) { inp.value = ''; inp.focus(); }
-            }
-        });
-    };
-})();
+// Middleware already validated the session. Set legacy flag for backward compat.
+sessionStorage.setItem('hbu_auth', 'ok');
+window.checkAuth    = window.checkAuth    || function() {};
+window.activateDemo = window.activateDemo || function() {};
 </script>
+<!-- Fixed sign-out link -->
+<a href="/api/auth/logout" id="signOutBtn"
+   style="position:fixed;top:12px;right:16px;z-index:99999;
+          background:rgba(10,22,40,0.88);color:#94a3b8;
+          font-size:0.7rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;
+          padding:4px 10px;border-radius:6px;text-decoration:none;
+          border:1px solid #1e3a5f;backdrop-filter:blur(6px);"
+   onmouseover="this.style.color='#e2e8f0'"
+   onmouseout="this.style.color='#94a3b8'"
+   title="Sign out of Land to Yield">Sign Out</a>
 
 <div id="demoBanner" class="demo-banner" style="display:none;">DEMO MODE &#8212; Sample data for illustration only</div>
 
