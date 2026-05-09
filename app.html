@@ -120,6 +120,16 @@
   border-color: var(--primary);
 }
 /* === Sensitivity Matrix === */
+/* === Massing map popup === */
+.massing-popup .leaflet-popup-content-wrapper {
+    border-radius: 6px;
+    padding: 0;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+.massing-popup .leaflet-popup-content { margin: 8px 12px; }
+.massing-popup .leaflet-popup-tip-container { display: none; }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -2705,9 +2715,9 @@ function renderMassingSatelliteMap(useId, inp, computed, containerId) {
     var fpRect = buildRotatedRect(fpCenter, fpDepth / 2, fpWidth / 2);
 
     // Clip building rectangle to actual parcel boundary so it never extends
-    // outside an irregular or angled parcel (e.g. Pasadena trapezoids).
-    // Uses Turf.js intersect — falls back silently to unclipped rectangle if
-    // clipping fails or Turf is not loaded.
+    // outside an irregular or angled parcel. Uses Turf.js intersect with
+    // turf.rewind() to fix winding-order issues before intersection.
+    // Falls back silently to the unclipped rectangle if anything fails.
     var drawCoords = fpRect;
     if (parcelLatLngs && parcelLatLngs[0] && parcelLatLngs[0].length >= 3 && window.turf) {
         try {
@@ -2716,13 +2726,16 @@ function renderMassingSatelliteMap(useId, inp, computed, containerId) {
             if (pRing[0][0] !== pRing[pRing.length - 1][0] || pRing[0][1] !== pRing[pRing.length - 1][1]) pRing.push(pRing[0]);
             var rectRing = fpRect.map(function(ll) { return [ll[1], ll[0]]; });
             rectRing.push(rectRing[0]);
-            var clipped = turf.intersect(turf.polygon([pRing]), turf.polygon([rectRing]));
+            // rewind() corrects winding order so intersect works regardless of
+            // how the county GIS exported the polygon ring direction
+            var parcelPoly = turf.rewind(turf.polygon([pRing]), { mutate: false });
+            var rectPoly   = turf.rewind(turf.polygon([rectRing]), { mutate: false });
+            var clipped = turf.intersect(parcelPoly, rectPoly);
             if (clipped && clipped.geometry) {
-                // intersect may return Polygon or MultiPolygon — use largest ring
                 var coords = clipped.geometry.type === 'MultiPolygon'
                     ? clipped.geometry.coordinates.reduce(function(a, b) { return a[0].length >= b[0].length ? a : b; })
                     : clipped.geometry.coordinates;
-                drawCoords = coords[0].map(function(c) { return [c[1], c[0]]; }); // back to [lat, lng]
+                drawCoords = coords[0].map(function(c) { return [c[1], c[0]]; });
             }
         } catch (e) { /* clipping failed — use rectangle */ }
     }
@@ -2740,27 +2753,20 @@ function renderMassingSatelliteMap(useId, inp, computed, containerId) {
         fillColor: color, fillOpacity: 0.45,
     }).addTo(map);
 
-    fpPoly.bindTooltip(
-        '<strong>' + bldgLabel + '</strong><br>' +
-        'Footprint: ' + Math.round(footprintSF).toLocaleString() + ' SF<br>' +
-        'Stories: ' + stories + ' (' + Math.round(bldgHeight) + ' ft)<br>' +
-        'GSF: ' + (computed.gsf || 0).toLocaleString() + ' SF<br>' +
-        (setF > 0 || setS > 0 ? 'Setbacks: ' + setF + '\' front / ' + setS + '\' side' : ''),
-        { permanent: false, direction: 'top', className: 'massing-tooltip' }
-    );
-
-    // Label position: centroid of drawCoords, offset upward
-    var labelLat = drawCoords.reduce(function(s, c) { return s + c[0]; }, 0) / drawCoords.length + 0.00002;
-    var labelLng = drawCoords.reduce(function(s, c) { return s + c[1]; }, 0) / drawCoords.length;
-    var labelHtml = '<div style="background:rgba(255,255,255,0.9);padding:4px 8px;border-radius:4px;font-size:0.72rem;line-height:1.4;box-shadow:0 1px 4px rgba(0,0,0,0.2);">' +
-        '<strong style="color:' + color + ';">' + bldgLabel + ' — ' + Math.round(footprintSF).toLocaleString() + ' SF</strong><br>' +
-        stories + ' stories / ' + Math.round(bldgHeight) + ' ft' +
-        ((setF > 0 ? '<br>Front setback: ' + setF + '\'' : '') + (setS > 0 ? '<br>Side setback: ' + setS + '\'' : '')) +
-        '</div>';
-    L.marker([labelLat, labelLng], {
-        icon: L.divIcon({ html: labelHtml, className: '', iconSize: [180, 60], iconAnchor: [90, 60] }),
-        interactive: false
-    }).addTo(map);
+    // Popup with close button — replaces the permanent blocking label.
+    // Click building to reopen; auto-opens on first render.
+    var popupContent =
+        '<strong style="color:' + color + ';">' + bldgLabel + '</strong><br>' +
+        Math.round(footprintSF).toLocaleString() + ' SF &nbsp;·&nbsp; ' + stories + ' stories / ' + Math.round(bldgHeight) + ' ft<br>' +
+        'GSF: ' + (computed.gsf || 0).toLocaleString() + ' SF' +
+        (setF > 0 ? '<br>Front setback: ' + setF + '\'' : '') +
+        (setS > 0 ? '&nbsp;&nbsp;Side: ' + setS + '\'' : '');
+    fpPoly.bindPopup(popupContent, {
+        maxWidth: 210,
+        closeButton: true,
+        offset: [0, -4],
+        className: 'massing-popup'
+    }).openPopup();
 
     if (parcelLatLngs) {
         map.fitBounds(L.polygon(parcelLatLngs).getBounds().pad(0.2));
