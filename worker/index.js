@@ -2,9 +2,13 @@
  * Land to Yield — Property AVM Proxy Worker
  * Deploy to Cloudflare Workers (free tier)
  *
- * Supports two AVM providers:
- *   1. ATTOM Data (primary) — professional-grade AVM with confidence scores
- *   2. RentCast (fallback)  — used if ATTOM returns no result
+ * Data strategy:
+ *   1. ATTOM AVM (primary)           — full valuation + confidence scores
+ *                                       (requires AVM product on subscription)
+ *   2. RentCast + ATTOM detail (interim) — RentCast value merged with ATTOM
+ *                                       property metadata (APN, lot, beds, baths,
+ *                                       year built, sqft). Active until AVM sub added.
+ *   3. RentCast only (last resort)   — used if ATTOM detail also fails
  *
  * Setup:
  * 1. npx wrangler init lty-avm-proxy
@@ -14,12 +18,12 @@
  * 5. wrangler deploy
  *
  * Routes:
- *   GET /?address=...                     — ATTOM AVM (primary), RentCast fallback
- *   GET /?address=...&provider=attom    — force ATTOM only
- *   GET /?address=...&provider=rentcast — force RentCast only
- *   POST /track                    — Log search event (address, portal, timestamp)
- *   GET /stats?key=<admin_key>     — View usage stats (requires ADMIN_KEY secret)
- *   GET /stats/recent?key=<admin_key> — View recent searches
+ *   GET /?address=...                     — auto (ATTOM AVM → enriched RentCast → RentCast)
+ *   GET /?address=...&provider=attom      — force ATTOM AVM only
+ *   GET /?address=...&provider=rentcast   — force RentCast only (no ATTOM enrichment)
+ *   POST /track                           — Log search event
+ *   GET /stats?key=<admin_key>            — Usage stats
+ *   GET /stats/recent?key=<admin_key>     — Recent searches
  */
 
 const ALLOWED_ORIGINS = [
@@ -40,28 +44,44 @@ function corsHeaders(origin) {
   };
 }
 
-// ── ATTOM AVM ──────────────────────────────────────────────────
+// ── Shared address utilities ────────────────────────────────────
+
 // Strip unit suffixes so ATTOM (which indexes at parcel level, not per unit)
 // matches condos and multi-unit residences. Examples:
 //   "7951 Blackburn Ave F"        → "7951 Blackburn Ave"
 //   "7951 Blackburn Ave #F"       → "7951 Blackburn Ave"
 //   "7951 Blackburn Ave Apt F"    → "7951 Blackburn Ave"
 //   "7951 Blackburn Ave Unit 2B"  → "7951 Blackburn Ave"
-// Conservative: only strips explicit unit keywords, # markers, or a bare
-// trailing token when it follows a recognized street-type abbreviation.
 function stripUnitSuffix(address1) {
   if (!address1) return address1;
   let s = address1.trim();
-  // 1. Explicit unit keywords (any case, any unit token)
   s = s.replace(/\s+(?:apt|apartment|unit|suite|ste|#)\s*[\w\-]+\s*$/i, '');
-  // 2. Bare trailing token following a street-type abbreviation.
-  //    Only matches single letters or short alphanumerics (F, 2B, PH3) so we
-  //    don't chop legitimate street-name words.
   s = s.replace(/\b(ave|avenue|blvd|boulevard|st|street|dr|drive|rd|road|way|pl|place|ct|court|ln|lane|pkwy|parkway|ter|terrace|cir|circle|hwy|highway)\.?\s+([A-Z]|[0-9]{1,4}[A-Z]?|PH[0-9]{0,2})\s*$/i, '$1');
   return s.trim();
 }
 
-// Raw ATTOM AVM call — one HTTP roundtrip, no retries.
+// Parse "123 Main St, Los Angeles, CA 90012" → { address1, address2 }
+function parseAddress(address) {
+  const parts = address.split(',').map(s => s.trim());
+  if (parts.length >= 3) return { address1: parts[0], address2: parts.slice(1).join(', ') };
+  if (parts.length === 2) return { address1: parts[0], address2: parts[1] };
+  return { address1: address, address2: 'CA' };
+}
+
+// Validate that a fallback ATTOM match is actually the same parcel.
+function _matchesSameParcel(result, expectedZip, expectedStreetLower) {
+  if (!result || !result.address) return false;
+  const addr = String(result.address).toLowerCase();
+  if (expectedZip && !addr.includes(expectedZip)) return false;
+  if (expectedStreetLower && expectedStreetLower.length >= 3) {
+    const key = expectedStreetLower.substring(0, Math.min(10, expectedStreetLower.length));
+    if (!addr.includes(key)) return false;
+  }
+  return true;
+}
+
+// ── ATTOM AVM ──────────────────────────────────────────────────
+
 async function _attomAvmByAddress(address1, address2, apiKey, originalAddressForDisplay) {
   const url = `https://api.gateway.attomdata.com/propertyapi/v1.0.0/attomavm/detail?address1=${encodeURIComponent(address1)}&address2=${encodeURIComponent(address2)}`;
   const resp = await fetch(url, {
@@ -83,16 +103,14 @@ async function _attomAvmByAddress(address1, address2, apiKey, originalAddressFor
   const rooms = bldg.rooms || {};
   const lot = prop.lot || {};
 
-  // Require a non-zero AVM price — ATTOM sometimes returns a property record
-  // with null/zero AVM for parcels that exist but have no valuation.
   if (!amt.value) return null;
 
   return {
     price: amt.value,
     priceLow: amt.low || null,
     priceHigh: amt.high || null,
-    confidence: amt.scr || null,          // ATTOM confidence score (0-100)
-    fsd: amt.fsd || null,                 // Forecast standard deviation
+    confidence: amt.scr || null,
+    fsd: amt.fsd || null,
     avmDate: avm.eventDate || null,
     priceSqFt: (amt.value && bldgSize.universalsize) ? Math.round(amt.value / bldgSize.universalsize) : null,
     sqFt: bldgSize.universalsize || bldgSize.livingsize || null,
@@ -113,63 +131,27 @@ async function _attomAvmByAddress(address1, address2, apiKey, originalAddressFor
   };
 }
 
-// Validate that a fallback ATTOM match is actually the same parcel.
-// Requires postal code to match AND street-name substring to match.
-// Prevents accidentally returning a neighbor's AVM when we retry with
-// a different house number.
-function _matchesSameParcel(result, expectedZip, expectedStreetLower) {
-  if (!result || !result.address) return false;
-  const addr = String(result.address).toLowerCase();
-  if (expectedZip && !addr.includes(expectedZip)) return false;
-  if (expectedStreetLower && expectedStreetLower.length >= 3) {
-    // Take first 3-10 chars of the distinguishing street name token
-    const key = expectedStreetLower.substring(0, Math.min(10, expectedStreetLower.length));
-    if (!addr.includes(key)) return false;
-  }
-  return true;
-}
-
 async function fetchAttomAVM(address, apiKey) {
-  // Parse "123 Main St, Los Angeles, CA 90012" → address1, address2.
-  const parts = address.split(',').map(s => s.trim());
-  let address1, address2;
-  if (parts.length >= 3) {
-    address1 = parts[0];
-    address2 = parts.slice(1).join(', ');
-  } else if (parts.length === 2) {
-    address1 = parts[0];
-    address2 = parts[1];
-  } else {
-    address1 = address;
-    address2 = 'CA';
-  }
-
+  const { address1, address2 } = parseAddress(address);
   const address1Normalized = stripUnitSuffix(address1);
 
-  // Primary: typed/normalized address
   let result = await _attomAvmByAddress(address1Normalized, address2, apiKey, address);
   if (result) return result;
 
-  // Fallback: retry with house number ±2 / ±4. USPS assigns addresses per
-  // unit (7949/7951/7953) but the county/ATTOM key to the parcel's canonical
-  // address, usually the lowest number in the group. Try -2, +2, -4, +4 and
-  // accept the first match validated by postal code + street name.
+  // Fallback: retry with house number ±2 / ±4 (USPS vs county parcel numbering)
   const houseNumMatch = address1Normalized.match(/^(\d+)(\s.+)$/);
   if (!houseNumMatch) return null;
   const typedNum = parseInt(houseNumMatch[1], 10);
   const rest = houseNumMatch[2];
   const zipMatch = (address2 || '').match(/\b(\d{5})(?:-\d{4})?\b/);
   const expectedZip = zipMatch ? zipMatch[1] : null;
-  // Extract street name (drop trailing street-type for substring match)
   const streetName = rest.replace(/\s+(ave|avenue|blvd|boulevard|st|street|dr|drive|rd|road|way|pl|place|ct|court|ln|lane|pkwy|parkway|ter|terrace|cir|circle|hwy|highway)\.?\s*$/i, '').trim().toLowerCase();
 
   for (const delta of [-2, 2, -4, 4]) {
     const candidateNum = typedNum + delta;
     if (candidateNum <= 0) continue;
-    const candidateAddress1 = candidateNum + rest;
-    const candidate = await _attomAvmByAddress(candidateAddress1, address2, apiKey, address);
+    const candidate = await _attomAvmByAddress(candidateNum + rest, address2, apiKey, address);
     if (candidate && _matchesSameParcel(candidate, expectedZip, streetName)) {
-      // Tag so the UI can show a note like "matched parcel at 7949"
       candidate.addressFallback = true;
       candidate.typedAddress = address;
       return candidate;
@@ -178,37 +160,126 @@ async function fetchAttomAVM(address, apiKey) {
   return null;
 }
 
+// ── ATTOM Property Detail (metadata enrichment) ────────────────
+// Calls property/detail to get APN, lot size, beds, baths, year built, sqft,
+// and assessed value. Does NOT return a market value — used to enrich RentCast.
+
+async function _attomDetailByAddress(address1, address2, apiKey) {
+  const url = `https://api.gateway.attomdata.com/propertyapi/v1.0.0/property/detail?address1=${encodeURIComponent(address1)}&address2=${encodeURIComponent(address2)}`;
+  const resp = await fetch(url, {
+    headers: { 'Accept': 'application/json', 'APIKey': apiKey },
+  });
+  if (!resp.ok) return null;
+  const data = await resp.json();
+  if (!data.property || data.property.length === 0) return null;
+
+  const prop = data.property[0];
+  const bldg = prop.building || {};
+  const bldgSize = bldg.size || {};
+  const rooms = bldg.rooms || {};
+  const lot = prop.lot || {};
+  const assessment = prop.assessment || {};
+  const assessed = assessment.assessed || {};
+  const sale = prop.sale || {};
+  const saleAmt = sale.amount || {};
+
+  return {
+    sqFt: bldgSize.universalsize || bldgSize.livingsize || bldgSize.bldgsize || null,
+    bedrooms: rooms.beds || null,
+    bathrooms: rooms.bathstotal || null,
+    yearBuilt: (prop.summary || {}).yearbuilt || null,
+    lotSize: lot.lotsize2 || (lot.lotsize1 ? Math.round(lot.lotsize1 * 43560) : null),
+    lotAcres: lot.lotsize1 || null,
+    propertyType: (prop.summary || {}).propertyType || (prop.summary || {}).proptype || null,
+    assessedTotal: assessed.assdttlvalue || null,
+    lastSaleDate: saleAmt.salerecdate || sale.salesearchdate || null,
+    lastSalePrice: saleAmt.saleamt || null,
+    attomId: (prop.identifier || {}).attomId || null,
+    apn: (prop.identifier || {}).apn || null,
+    address: (prop.address || {}).oneLine || null,
+  };
+}
+
+async function fetchAttomDetail(address, apiKey) {
+  const { address1, address2 } = parseAddress(address);
+  const address1Normalized = stripUnitSuffix(address1);
+
+  const result = await _attomDetailByAddress(address1Normalized, address2, apiKey);
+  if (result) return result;
+
+  // Same ±2/±4 house-number fallback as the AVM fetch
+  const houseNumMatch = address1Normalized.match(/^(\d+)(\s.+)$/);
+  if (!houseNumMatch) return null;
+  const typedNum = parseInt(houseNumMatch[1], 10);
+  const rest = houseNumMatch[2];
+  const zipMatch = (address2 || '').match(/\b(\d{5})(?:-\d{4})?\b/);
+  const expectedZip = zipMatch ? zipMatch[1] : null;
+  const streetName = rest.replace(/\s+(ave|avenue|blvd|boulevard|st|street|dr|drive|rd|road|way|pl|place|ct|court|ln|lane|pkwy|parkway|ter|terrace|cir|circle|hwy|highway)\.?\s*$/i, '').trim().toLowerCase();
+
+  for (const delta of [-2, 2, -4, 4]) {
+    const candidateNum = typedNum + delta;
+    if (candidateNum <= 0) continue;
+    const candidate = await _attomDetailByAddress(candidateNum + rest, address2, apiKey);
+    if (candidate && _matchesSameParcel(candidate, expectedZip, streetName)) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
+// Merge ATTOM property detail into a RentCast result.
+// ATTOM wins on every field it has a value for — it's more authoritative
+// for physical property attributes (lot, beds, sqft, APN) than RentCast.
+function mergeAttomDetail(rentcast, detail) {
+  if (!detail) return rentcast;
+  return {
+    ...rentcast,
+    sqFt:          detail.sqFt          || rentcast.sqFt,
+    bedrooms:      detail.bedrooms      || rentcast.bedrooms,
+    bathrooms:     detail.bathrooms     || rentcast.bathrooms,
+    yearBuilt:     detail.yearBuilt     || rentcast.yearBuilt,
+    lotSize:       detail.lotSize       || rentcast.lotSize,
+    lotAcres:      detail.lotAcres      || null,
+    propertyType:  detail.propertyType  || rentcast.propertyType,
+    assessedTotal: detail.assessedTotal || null,
+    lastSaleDate:  detail.lastSaleDate  || rentcast.lastSaleDate,
+    lastSalePrice: detail.lastSalePrice || rentcast.lastSalePrice,
+    attomId:       detail.attomId       || null,
+    apn:           detail.apn           || null,
+    address:       detail.address       || rentcast.address,
+    // Value always stays from RentCast; flag enrichment source
+    source:        'rentcast',
+    attomEnriched: true,
+  };
+}
+
 // ── RentCast AVM ───────────────────────────────────────────────
 async function fetchRentCastAVM(address, apiKey) {
   const url = `https://api.rentcast.io/v1/avm/value?address=${encodeURIComponent(address)}`;
   const resp = await fetch(url, {
-    headers: {
-      'Accept': 'application/json',
-      'X-Api-Key': apiKey,
-    },
+    headers: { 'Accept': 'application/json', 'X-Api-Key': apiKey },
   });
-
   if (!resp.ok) return null;
   const data = await resp.json();
   if (!data.price) return null;
 
   return {
-    price: data.price || null,
-    priceLow: data.priceRangeLow || null,
-    priceHigh: data.priceRangeHigh || null,
-    confidence: null,
-    priceSqFt: data.pricePerSquareFoot || null,
-    sqFt: data.squareFootage || null,
-    bedrooms: data.bedrooms || null,
-    bathrooms: data.bathrooms || null,
-    yearBuilt: data.yearBuilt || null,
-    lotSize: data.lotSize || null,
-    propertyType: data.propertyType || null,
-    lastSaleDate: data.lastSaleDate || null,
+    price:         data.price || null,
+    priceLow:      data.priceRangeLow || null,
+    priceHigh:     data.priceRangeHigh || null,
+    confidence:    null,
+    priceSqFt:     data.pricePerSquareFoot || null,
+    sqFt:          data.squareFootage || null,
+    bedrooms:      data.bedrooms || null,
+    bathrooms:     data.bathrooms || null,
+    yearBuilt:     data.yearBuilt || null,
+    lotSize:       data.lotSize || null,
+    propertyType:  data.propertyType || null,
+    lastSaleDate:  data.lastSaleDate || null,
     lastSalePrice: data.lastSalePrice || null,
-    address: data.formattedAddress || address,
-    source: 'rentcast',
-    timestamp: Date.now(),
+    address:       data.formattedAddress || address,
+    source:        'rentcast',
+    timestamp:     Date.now(),
   };
 }
 
@@ -231,29 +302,25 @@ export default {
         const body = await request.json();
         const event = {
           address: body.address || '',
-          portal: body.portal || 'unknown',    // 'developer', 'agent', 'lender'
-          city: body.city || '',
-          zoning: body.zoning || '',
+          portal:  body.portal  || 'unknown',
+          city:    body.city    || '',
+          zoning:  body.zoning  || '',
           timestamp: Date.now(),
           date: new Date().toISOString().slice(0, 10),
           ua: request.headers.get('User-Agent') || '',
         };
         if (env.AVM_CACHE) {
-          // Store individual event (kept for 180 days)
           const eventKey = `evt:${event.date}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
           ctx.waitUntil(env.AVM_CACHE.put(eventKey, JSON.stringify(event), { expirationTtl: 15552000 }));
 
-          // Increment daily counter
           const dayKey = `day:${event.date}`;
           const dayCount = parseInt(await env.AVM_CACHE.get(dayKey) || '0') + 1;
           ctx.waitUntil(env.AVM_CACHE.put(dayKey, String(dayCount), { expirationTtl: 15552000 }));
 
-          // Increment portal counter
           const portalKey = `portal:${event.portal}:${event.date}`;
           const portalCount = parseInt(await env.AVM_CACHE.get(portalKey) || '0') + 1;
           ctx.waitUntil(env.AVM_CACHE.put(portalKey, String(portalCount), { expirationTtl: 15552000 }));
 
-          // Track unique addresses searched
           const addrKey = `addr:${event.address.toLowerCase().trim()}`;
           ctx.waitUntil(env.AVM_CACHE.put(addrKey, JSON.stringify({ last: event.timestamp, count: 1, portal: event.portal }), { expirationTtl: 15552000 }));
         }
@@ -271,7 +338,6 @@ export default {
       }
 
       if (path === '/stats/recent' && env.AVM_CACHE) {
-        // List recent events
         const list = await env.AVM_CACHE.list({ prefix: 'evt:', limit: 50 });
         const events = [];
         for (const key of list.keys) {
@@ -282,7 +348,6 @@ export default {
         return Response.json({ count: events.length, events }, { headers: { ...cors, 'Content-Type': 'application/json' } });
       }
 
-      // Daily stats for last 30 days
       const stats = { daily: {}, portals: {} };
       const today = new Date();
       for (let i = 0; i < 30; i++) {
@@ -310,15 +375,14 @@ export default {
     }
 
     const address = url.searchParams.get('address');
-    const provider = url.searchParams.get('provider') || 'auto';  // auto, attom, rentcast
+    const provider = url.searchParams.get('provider') || 'auto';
 
     if (!address) {
       return Response.json({ error: 'Missing address parameter' }, { status: 400, headers: cors });
     }
 
-    // Check cache first. Key includes version so provider-priority swaps and
-    // address-normalization changes invalidate the cache cleanly.
-    const cacheKey = `avm4:${address.toLowerCase().trim()}`;
+    // Cache key bumped to avm5 to invalidate old un-enriched RentCast-only results
+    const cacheKey = `avm5:${address.toLowerCase().trim()}`;
     if (env.AVM_CACHE) {
       const cached = await env.AVM_CACHE.get(cacheKey, 'json');
       if (cached) {
@@ -331,14 +395,24 @@ export default {
     let result = null;
 
     try {
-      // Priority 1: ATTOM (primary — professional-grade AVM with confidence scores)
+      // Priority 1: ATTOM AVM — full valuation + confidence scores
+      // (Active once AVM product added to subscription)
       if (provider !== 'rentcast' && env.ATTOM_API_KEY) {
         result = await fetchAttomAVM(address, env.ATTOM_API_KEY);
       }
 
-      // Priority 2: RentCast (fallback — used if ATTOM returns no result)
-      if (!result && provider !== 'attom' && env.RENTCAST_API_KEY) {
-        result = await fetchRentCastAVM(address, env.RENTCAST_API_KEY);
+      // Priority 2: RentCast value + ATTOM property detail (parallel fetch)
+      // RentCast provides the market value; ATTOM provides the richer property
+      // metadata (APN, lot size, beds, baths, year built, assessed value).
+      if (!result && provider !== 'attom') {
+        const [rentcastResult, attomDetail] = await Promise.all([
+          env.RENTCAST_API_KEY ? fetchRentCastAVM(address, env.RENTCAST_API_KEY) : null,
+          env.ATTOM_API_KEY    ? fetchAttomDetail(address, env.ATTOM_API_KEY)    : null,
+        ]);
+
+        if (rentcastResult) {
+          result = mergeAttomDetail(rentcastResult, attomDetail);
+        }
       }
 
       if (!result) {
