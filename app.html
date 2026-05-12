@@ -2063,6 +2063,14 @@ function generateCardMetricsHTML(useId, inp, effects, result) {
                     <div class="metric-value">${totalMo} mo</div>
                 </div>
                 <div class="metric-item">
+                    <div class="metric-icon-label">🏠 Units</div>
+                    <div class="metric-value">${budget.units && budget.units > 0 ? budget.units + ' units' : '&mdash;'}</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-icon-label">📐 Gross SF</div>
+                    <div class="metric-value">${budget.gsf ? budget.gsf.toLocaleString() + ' SF' : '&mdash;'}</div>
+                </div>
+                <div class="metric-item">
                     <div class="metric-icon-label">📈 Dev Margin</div>
                     <div class="metric-value ${marginClass}">${(budget.devMargin * 100).toFixed(0)}%</div>
                 </div>
