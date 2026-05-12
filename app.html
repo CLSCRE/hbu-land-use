@@ -2681,23 +2681,36 @@ function renderMassingSatelliteMap(useId, inp, computed, containerId) {
         }
         if (longestLen > 0) parcelAngle = Math.atan2(longestDx, longestDy);
 
-        var parcelW = longestLen;
         var cosA = Math.cos(parcelAngle), sinA = Math.sin(parcelAngle);
+        // Project all vertices onto both axes to get full parcel extents
         var minProj = Infinity, maxProj = -Infinity;
+        var minAlongProj = Infinity, maxAlongProj = -Infinity;
         for (var pi2 = 0; pi2 < ring.length; pi2++) {
             var px = (ring[pi2][1] - cLng) * ftPerDegLon;
             var py = (ring[pi2][0] - cLat) * ftPerDegLat;
             var perpProj = -px * cosA + py * sinA;
+            var alongProj = px * sinA + py * cosA;
             if (perpProj < minProj) minProj = perpProj;
             if (perpProj > maxProj) maxProj = perpProj;
+            if (alongProj < minAlongProj) minAlongProj = alongProj;
+            if (alongProj > maxAlongProj) maxAlongProj = alongProj;
         }
         var parcelPerpExtent = maxProj - minProj;
+        // Full parcel extent along its axis — not just the longest single edge
+        var parcelW = maxAlongProj - minAlongProj;
 
         var availableDepth = parcelW - setF - setF;
         var availableWidth = parcelPerpExtent - setS - setS;
         if (fpDepth > availableDepth && availableDepth > 0) fpDepth = availableDepth;
         if (fpWidth > availableWidth && availableWidth > 0) fpWidth = availableWidth;
-        fpCenter = [cLat, cLng];
+        // Center at the geometric midpoint of the rotated bounding box (not the vertex centroid)
+        // so the building is always equidistant from opposite parcel edges
+        var midAlongFt = (minAlongProj + maxAlongProj) / 2;
+        var midPerpFt  = (minProj + maxProj) / 2;
+        fpCenter = [
+            cLat + (midAlongFt * cosA - midPerpFt * sinA) / ftPerDegLat,
+            cLng + (midAlongFt * sinA + midPerpFt * cosA) / ftPerDegLon
+        ];
     } else {
         fpCenter = [geo.lat, geo.lon];
     }
@@ -2753,11 +2766,10 @@ function renderMassingSatelliteMap(useId, inp, computed, containerId) {
         fillColor: color, fillOpacity: 0.45,
     }).addTo(map);
 
-    // Popup with close button — replaces the permanent blocking label.
-    // Click building to reopen; auto-opens on first render.
+    // Bind popup for click-to-inspect — does NOT auto-open (info strip below map instead)
     var popupContent =
         '<strong style="color:' + color + ';">' + bldgLabel + '</strong><br>' +
-        Math.round(footprintSF).toLocaleString() + ' SF &nbsp;·&nbsp; ' + stories + ' stories / ' + Math.round(bldgHeight) + ' ft<br>' +
+        Math.round(footprintSF).toLocaleString() + ' SF &nbsp;&middot;&nbsp; ' + stories + ' stories / ' + Math.round(bldgHeight) + ' ft<br>' +
         'GSF: ' + (computed.gsf || 0).toLocaleString() + ' SF' +
         (setF > 0 ? '<br>Front setback: ' + setF + '\'' : '') +
         (setS > 0 ? '&nbsp;&nbsp;Side: ' + setS + '\'' : '');
@@ -2766,7 +2778,21 @@ function renderMassingSatelliteMap(useId, inp, computed, containerId) {
         closeButton: true,
         offset: [0, -4],
         className: 'massing-popup'
-    }).openPopup();
+    });
+    // Write building summary to the info strip below the map container
+    var _infoEl = document.getElementById(containerId.replace('Container', 'Info'));
+    if (_infoEl) {
+        _infoEl.innerHTML =
+            '<div style="display:flex;gap:1.25rem;align-items:center;flex-wrap:wrap;' +
+            'padding:7px 12px;background:#ebf4ff;border:1px solid #bee3f8;border-top:0;' +
+            'border-radius:0 0 8px 8px;font-size:0.78rem;color:#2c5282;">' +
+            '<strong style="color:' + color + ';">' + bldgLabel + ' &mdash; ' + (computed.gsf || 0).toLocaleString() + ' SF GSF</strong>' +
+            '<span>' + stories + ' stories&nbsp;/&nbsp;' + Math.round(bldgHeight) + ' ft</span>' +
+            (setF > 0 ? '<span>Front setback: ' + setF + '\'</span>' : '') +
+            (setS > 0 ? '<span>Side setback: ' + setS + '\'</span>' : '') +
+            '<em style="color:#718096;margin-left:auto;">Click building to inspect</em>' +
+            '</div>';
+    }
 
     if (parcelLatLngs) {
         map.fitBounds(L.polygon(parcelLatLngs).getBounds().pad(0.2));
@@ -3042,7 +3068,7 @@ function openAnalysis(resultIndex) {
     html += `<div class="analysis-section">${renderAssumptions(assumptions, hasUnits)}</div>`;
 
     // --- Conceptual Renderings (re-rendered) ---
-    html += `<div class="analysis-section"><h3>Conceptual Massing Study</h3><div class="rendering-container" id="sect-svg">${renderSVGs(r.id, inp, computed)}</div><div id="massingMapContainer" style="height:380px;margin-top:1rem;border-radius:8px;overflow:hidden;border:1px solid var(--border);"></div>`;
+    html += `<div class="analysis-section"><h3>Conceptual Massing Study</h3><div class="rendering-container" id="sect-svg">${renderSVGs(r.id, inp, computed)}</div><div id="massingMapContainer" style="height:380px;margin-top:1rem;border-radius:8px 8px 0 0;overflow:hidden;border:1px solid var(--border);border-bottom:0;"></div><div id="massingMapInfo"></div>`;
     // Street View + controls below satellite map
     var _geo = window.lastGeocode;
     if (_geo && _geo.lat) {
@@ -12087,7 +12113,7 @@ function renderEnhancedSitePlanTab(st) {
     // Satellite Massing Overlay
     html += '<div style="margin-top:1.5rem;">';
     html += '<h4 style="color:var(--primary);margin-bottom:0.75rem;">Satellite Massing Overlay</h4>';
-    html += '<div id="deepMassingMapContainer" style="height:360px;border-radius:8px;overflow:hidden;border:1px solid var(--border);"></div>';
+    html += '<div id="deepMassingMapContainer" style="height:360px;border-radius:8px 8px 0 0;overflow:hidden;border:1px solid var(--border);border-bottom:0;"></div><div id="deepMassingMapInfo"></div>';
     html += '</div>';
 
     html += '</div>'; // end right panel
