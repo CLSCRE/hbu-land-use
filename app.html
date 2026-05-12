@@ -2725,32 +2725,62 @@ function renderMassingSatelliteMap(useId, inp, computed, containerId) {
         return [rc(-halfAlongFt, -halfPerpFt), rc(-halfAlongFt, +halfPerpFt), rc(+halfAlongFt, +halfPerpFt), rc(+halfAlongFt, -halfPerpFt)];
     }
 
-    var fpRect = buildRotatedRect(fpCenter, fpDepth / 2, fpWidth / 2);
+    // === Multi-bar building layout ===
+    // Strategy: each bar spans the full available width (perpendicular to parcel axis).
+    // If one bar's required depth fits, use 1 bar.
+    // If not, split the footprint into 2 bars stacked along the depth axis with a
+    // fire-lane / courtyard gap between them — mirrors how real urban buildings are massed.
+    var availD = availableDepth > 0 ? availableDepth : 1;
+    var availW = availableWidth  > 0 ? availableWidth  : 1;
+    var gap = Math.min(20, availD * 0.10);  // fire lane / courtyard gap (ft) between bars
 
-    // Clip building rectangle to actual parcel boundary so it never extends
-    // outside an irregular or angled parcel. Uses Turf.js intersect with
-    // turf.rewind() to fix winding-order issues before intersection.
-    // Falls back silently to the unclipped rectangle if anything fails.
-    var drawCoords = fpRect;
-    if (parcelLatLngs && parcelLatLngs[0] && parcelLatLngs[0].length >= 3 && window.turf) {
+    var bars = []; // [{offsetAlong, halfAlong, halfPerp}]
+    var singleBarDepth = footprintSF / availW;
+
+    if (singleBarDepth <= availD) {
+        // One bar — spans full available width, only as deep as needed
+        bars.push({ offsetAlong: 0, halfAlong: singleBarDepth / 2, halfPerp: availW / 2 });
+    } else {
+        // Two bars stacked front-to-back with a gap
+        var barD = (availD - gap) / 2;
+        if (barD > 5) {
+            var barW = Math.min(availW, (footprintSF / 2) / Math.max(barD, 1));
+            var off  = barD / 2 + gap / 2;
+            bars.push({ offsetAlong: -off, halfAlong: barD / 2, halfPerp: barW / 2 });
+            bars.push({ offsetAlong: +off, halfAlong: barD / 2, halfPerp: barW / 2 });
+        } else {
+            // Lot too shallow for 2 bars — fall back to one bar capped at available area
+            bars.push({ offsetAlong: 0, halfAlong: availD / 2, halfPerp: availW / 2 });
+        }
+    }
+
+    // Shift a center point along the rotated parcel axes
+    function offsetCenter(ctr, deltaAlongFt, deltaPerpFt) {
+        return [
+            ctr[0] + (deltaAlongFt * cosA2 - deltaPerpFt * sinA2) / ftPerDegLat,
+            ctr[1] + (deltaAlongFt * sinA2 + deltaPerpFt * cosA2) / ftPerDegLon
+        ];
+    }
+
+    // Clip a [lat,lng] ring to the parcel boundary via Turf; returns clipped coords or original
+    function clipToParcel(rawLatLngs) {
+        if (!parcelLatLngs || !parcelLatLngs[0] || !window.turf) return rawLatLngs;
         try {
-            // Turf expects [lng, lat] (GeoJSON order)
             var pRing = parcelLatLngs[0].map(function(ll) { return [ll[1], ll[0]]; });
-            if (pRing[0][0] !== pRing[pRing.length - 1][0] || pRing[0][1] !== pRing[pRing.length - 1][1]) pRing.push(pRing[0]);
-            var rectRing = fpRect.map(function(ll) { return [ll[1], ll[0]]; });
-            rectRing.push(rectRing[0]);
-            // rewind() corrects winding order so intersect works regardless of
-            // how the county GIS exported the polygon ring direction
-            var parcelPoly = turf.rewind(turf.polygon([pRing]), { mutate: false });
-            var rectPoly   = turf.rewind(turf.polygon([rectRing]), { mutate: false });
-            var clipped = turf.intersect(parcelPoly, rectPoly);
+            if (pRing[0][0] !== pRing[pRing.length-1][0] || pRing[0][1] !== pRing[pRing.length-1][1]) pRing.push(pRing[0]);
+            var rRing = rawLatLngs.map(function(ll) { return [ll[1], ll[0]]; });
+            rRing.push(rRing[0]);
+            var parcelFeat = turf.rewind(turf.polygon([pRing]), { mutate: false });
+            var rectFeat   = turf.rewind(turf.polygon([rRing]), { mutate: false });
+            var clipped = turf.intersect(parcelFeat, rectFeat);
             if (clipped && clipped.geometry) {
                 var coords = clipped.geometry.type === 'MultiPolygon'
-                    ? clipped.geometry.coordinates.reduce(function(a, b) { return a[0].length >= b[0].length ? a : b; })
+                    ? clipped.geometry.coordinates.reduce(function(a,b){ return a[0].length >= b[0].length ? a : b; })
                     : clipped.geometry.coordinates;
-                drawCoords = coords[0].map(function(c) { return [c[1], c[0]]; });
+                return coords[0].map(function(c){ return [c[1], c[0]]; });
             }
-        } catch (e) { /* clipping failed — use rectangle */ }
+        } catch(e) { /* fall through to original */ }
+        return rawLatLngs;
     }
 
     if (parcelLatLngs && (setF > 0 || setS > 0)) {
@@ -2760,25 +2790,26 @@ function renderMassingSatelliteMap(useId, inp, computed, containerId) {
         }).addTo(map);
     }
 
-    var bldgLabel = 'Proposed Building';
-    var fpPoly = L.polygon(drawCoords, {
-        color: color, weight: 2, opacity: 0.9,
-        fillColor: color, fillOpacity: 0.45,
-    }).addTo(map);
-
-    // Bind popup for click-to-inspect — does NOT auto-open (info strip below map instead)
+    var bldgLabel = bars.length > 1 ? 'Proposed Buildings (' + bars.length + ' bars)' : 'Proposed Building';
     var popupContent =
         '<strong style="color:' + color + ';">' + bldgLabel + '</strong><br>' +
         Math.round(footprintSF).toLocaleString() + ' SF &nbsp;&middot;&nbsp; ' + stories + ' stories / ' + Math.round(bldgHeight) + ' ft<br>' +
         'GSF: ' + (computed.gsf || 0).toLocaleString() + ' SF' +
+        (bars.length > 1 ? '<br>' + bars.length + ' bars, ' + Math.round(gap) + '\' gap' : '') +
         (setF > 0 ? '<br>Front setback: ' + setF + '\'' : '') +
         (setS > 0 ? '&nbsp;&nbsp;Side: ' + setS + '\'' : '');
-    fpPoly.bindPopup(popupContent, {
-        maxWidth: 210,
-        closeButton: true,
-        offset: [0, -4],
-        className: 'massing-popup'
+
+    bars.forEach(function(bar) {
+        var barCenter  = offsetCenter(fpCenter, bar.offsetAlong, 0);
+        var rawRect    = buildRotatedRect(barCenter, bar.halfAlong, bar.halfPerp);
+        var drawCoords = clipToParcel(rawRect);
+        L.polygon(drawCoords, {
+            color: color, weight: 2, opacity: 0.9,
+            fillColor: color, fillOpacity: 0.45,
+        }).addTo(map)
+          .bindPopup(popupContent, { maxWidth: 220, closeButton: true, className: 'massing-popup' });
     });
+
     // Write building summary to the info strip below the map container
     var _infoEl = document.getElementById(containerId.replace('Container', 'Info'));
     if (_infoEl) {
@@ -2788,8 +2819,9 @@ function renderMassingSatelliteMap(useId, inp, computed, containerId) {
             'border-radius:0 0 8px 8px;font-size:0.78rem;color:#2c5282;">' +
             '<strong style="color:' + color + ';">' + bldgLabel + ' &mdash; ' + (computed.gsf || 0).toLocaleString() + ' SF GSF</strong>' +
             '<span>' + stories + ' stories&nbsp;/&nbsp;' + Math.round(bldgHeight) + ' ft</span>' +
-            (setF > 0 ? '<span>Front setback: ' + setF + '\'</span>' : '') +
-            (setS > 0 ? '<span>Side setback: ' + setS + '\'</span>' : '') +
+            (bars.length > 1 ? '<span>' + bars.length + ' bars &middot; ' + Math.round(gap) + '\' gap</span>' : '') +
+            (setF > 0 ? '<span>Front: ' + setF + '\'</span>' : '') +
+            (setS > 0 ? '<span>Side: ' + setS + '\'</span>' : '') +
             '<em style="color:#718096;margin-left:auto;">Click building to inspect</em>' +
             '</div>';
     }
