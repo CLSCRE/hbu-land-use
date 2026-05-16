@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legislative Edge — The Developer's Monthly Newsletter | Land to Yield</title>
+    <meta name="description" content="California's hottest incentive legislation, decoded for developers. Free monthly newsletter with bill breakdowns, real deal examples, and construction financing intel.">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Legislative Edge — Developer Newsletter by Land to Yield">
+    <meta property="og:description" content="California's hottest incentive legislation, decoded for developers. Free. Monthly. Actionable.">
+    <meta property="og:url" content="https://landtoyield.com/newsletter.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Land to Yield">
+
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+
+    <!-- Analytics -->
+    <script defer data-domain="landtoyield.com" src="https://plausible.io/js/script.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #3b82f6;
+            --accent: #f59e0b;
+            --accent-light: #fbbf24;
+            --bg: #ffffff;
+            --bg-alt: #f5f5f7;
+            --white: #ffffff;
+            --text: #1d1d1f;
+            --text-dark: #000000;
+            --text-light: #86868b;
+            --border: #d2d2d7;
+            --radius: 16px;
+            --shadow: 0 2px 12px rgba(0,0,0,0.06);
+            --shadow-lg: 0 8px 40px rgba(0,0,0,0.10);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: 18px; scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--text);
+            background: var(--bg);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── NAV ── */
+        .nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(255,255,255,0.80);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            padding: 0 2rem;
+        }
+        .nav-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; align-items: center; justify-content: space-between;
+            height: 72px;
+        }
+        .nav-brand {
+            display: flex; align-items: center; gap: .75rem;
+        }
+        .nav-brand-text {
+            font-weight: 900; font-size: 1.7rem; color: var(--text-dark);
+            letter-spacing: -0.05em; line-height: 1;
+            text-decoration: none;
+            background: linear-gradient(135deg, #1d4ed8 0%, #0f172a 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .nav-brand-text span {
+            -webkit-text-fill-color: var(--accent); color: var(--accent);
+        }
+        .nav-links { display: flex; align-items: center; gap: 2rem; list-style: none; }
+        .nav-links a {
+            text-decoration: none; color: var(--text); font-size: .82rem; font-weight: 500;
+            transition: color .2s;
+        }
+        .nav-links a:hover { color: var(--primary); }
+        .nav-links a.active { color: var(--primary); font-weight: 600; }
+        .btn {
+            display: inline-block; padding: .55rem 1.3rem; border-radius: 980px;
+            font-weight: 600; font-size: .85rem; text-decoration: none;
+            transition: all .2s; cursor: pointer; border: none;
+        }
+        .btn-primary {
+            background: var(--white); color: var(--primary-dark);
+            border: 1.5px solid var(--primary-dark);
+        }
+        .btn-primary:hover { background: var(--primary-dark); color: var(--white); }
+        .btn-outline {
+            background: transparent; color: var(--primary);
+            border: 1.5px solid var(--primary);
+        }
+        .btn-outline:hover { background: var(--primary); color: var(--white); }
+        .btn-lg { padding: .75rem 2rem; font-size: .95rem; }
+        .btn-solid {
+            background: var(--primary); color: var(--white);
+            border: 1.5px solid var(--primary);
+        }
+        .btn-solid:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+        .hamburger {
+            display: none; background: none; border: none; cursor: pointer;
+            flex-direction: column; gap: 4px; padding: 4px;
+        }
+        .hamburger span {
+            display: block; width: 18px; height: 1.5px; background: var(--text-dark);
+            transition: all .3s;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            padding: 140px 2rem 80px;
+            background: linear-gradient(160deg, #eef4ff 0%, #f8faff 50%, #fff7ed 100%);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
+            width: 900px; height: 900px;
+            background: radial-gradient(ellipse, rgba(37,99,235,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero-inner {
+            max-width: 760px; margin: 0 auto; position: relative; z-index: 1;
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: .5rem;
+            background: rgba(37,99,235,0.08);
+            border: 1px solid rgba(37,99,235,0.18);
+            color: var(--primary-dark);
+            padding: .3rem 1rem; border-radius: 980px;
+            font-size: .75rem; font-weight: 600; letter-spacing: 0.05em;
+            text-transform: uppercase; margin-bottom: 1.5rem;
+        }
+        .hero h1 {
+            font-size: clamp(2.2rem, 5vw, 3.6rem);
+            font-weight: 900; letter-spacing: -0.04em; line-height: 1.08;
+            color: var(--text-dark); margin-bottom: 1.25rem;
+        }
+        .hero h1 .accent { color: var(--primary); }
+        .hero .tagline {
+            font-size: 1.1rem; color: var(--text-light);
+            max-width: 580px; margin: 0 auto 2.5rem;
+            font-weight: 400; line-height: 1.65;
+        }
+        .hero .tagline strong { color: var(--text); font-weight: 600; }
+
+        /* Subscribe form */
+        .subscribe-form {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem 2.5rem;
+            box-shadow: var(--shadow-lg);
+            max-width: 520px;
+            margin: 0 auto;
+        }
+        .subscribe-form h3 {
+            font-size: .88rem; font-weight: 700; letter-spacing: 0.05em;
+            text-transform: uppercase; color: var(--text-light);
+            margin-bottom: 1.2rem;
+        }
+        .form-row {
+            display: flex; flex-direction: column; gap: .75rem; margin-bottom: 1rem;
+        }
+        .form-input {
+            width: 100%; padding: .7rem 1rem;
+            border: 1.5px solid var(--border); border-radius: 10px;
+            font-family: inherit; font-size: .9rem; color: var(--text);
+            background: var(--bg); transition: border-color .2s;
+            outline: none;
+        }
+        .form-input:focus { border-color: var(--primary); }
+        .form-input::placeholder { color: var(--text-light); }
+        .btn-subscribe {
+            width: 100%; padding: .8rem 1.5rem;
+            background: var(--primary); color: var(--white);
+            border: none; border-radius: 10px;
+            font-family: inherit; font-size: .95rem; font-weight: 700;
+            cursor: pointer; transition: background .2s;
+        }
+        .btn-subscribe:hover { background: var(--primary-dark); }
+        .form-privacy {
+            font-size: .72rem; color: var(--text-light); margin-top: .75rem; text-align: center;
+        }
+        .subscribe-success {
+            display: none; text-align: center; padding: 1rem;
+        }
+        .subscribe-success .check {
+            font-size: 2.5rem; margin-bottom: .5rem;
+        }
+        .subscribe-success p {
+            font-weight: 600; color: var(--primary-dark); font-size: 1rem;
+        }
+        .subscribe-success small {
+            color: var(--text-light); font-size: .82rem;
+        }
+
+        /* ── SECTION COMMON ── */
+        .section-inner {
+            max-width: 1100px; margin: 0 auto; padding: 0 2rem;
+        }
+        .section-header {
+            text-align: center; margin-bottom: 3.5rem;
+        }
+        .section-label {
+            display: inline-block;
+            font-size: .7rem; font-weight: 700; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--primary);
+            background: rgba(37,99,235,0.07);
+            padding: .3rem .9rem; border-radius: 980px;
+            margin-bottom: 1rem;
+        }
+        .section-header h2 {
+            font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+            font-weight: 800; letter-spacing: -0.03em; line-height: 1.2;
+            color: var(--text-dark);
+        }
+        .section-header p {
+            color: var(--text-light); font-size: .95rem; margin-top: .75rem;
+            max-width: 560px; margin-left: auto; margin-right: auto;
+        }
+
+        /* ── LATEST ISSUE ── */
+        .latest-issue {
+            padding: 80px 2rem;
+            background: var(--white);
+        }
+        .issue-card-featured {
+            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 60%, #3b82f6 100%);
+            border-radius: 24px;
+            padding: 2.5rem 3rem;
+            color: var(--white);
+            display: flex; align-items: flex-start; gap: 2rem;
+            max-width: 860px; margin: 0 auto;
+            box-shadow: 0 12px 48px rgba(37,99,235,0.25);
+            position: relative; overflow: hidden;
+        }
+        .issue-card-featured::before {
+            content: '';
+            position: absolute; top: -60px; right: -60px;
+            width: 280px; height: 280px;
+            background: radial-gradient(ellipse, rgba(255,255,255,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .issue-number-badge {
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.15);
+            border: 1.5px solid rgba(255,255,255,0.25);
+            border-radius: 14px;
+            padding: .75rem 1.2rem;
+            text-align: center;
+        }
+        .issue-number-badge .issue-num {
+            font-size: 1.8rem; font-weight: 900; line-height: 1;
+            letter-spacing: -0.04em;
+        }
+        .issue-number-badge .issue-label {
+            font-size: .65rem; font-weight: 600; letter-spacing: 0.08em;
+            text-transform: uppercase; opacity: 0.75;
+        }
+        .issue-card-body { flex: 1; position: relative; z-index: 1; }
+        .issue-date-tag {
+            font-size: .72rem; font-weight: 600; letter-spacing: 0.08em;
+            text-transform: uppercase; opacity: 0.75; margin-bottom: .6rem;
+        }
+        .issue-card-featured h3 {
+            font-size: 1.55rem; font-weight: 800; letter-spacing: -0.03em;
+            line-height: 1.2; margin-bottom: .75rem;
+        }
+        .issue-card-featured p {
+            font-size: .9rem; opacity: 0.88; line-height: 1.65;
+            margin-bottom: 1.5rem; max-width: 520px;
+        }
+        .issue-read-link {
+            display: inline-flex; align-items: center; gap: .4rem;
+            background: var(--white); color: var(--primary-dark);
+            font-weight: 700; font-size: .88rem; padding: .6rem 1.4rem;
+            border-radius: 980px; text-decoration: none;
+            transition: all .2s; box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+        .issue-read-link:hover {
+            background: var(--bg-alt); transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        /* ── WHAT YOU'LL GET ── */
+        .features-section {
+            padding: 80px 2rem;
+            background: var(--bg-alt);
+        }
+        .features-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+        }
+        .feature-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            transition: box-shadow .2s, transform .2s;
+        }
+        .feature-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-3px);
+        }
+        .feature-icon {
+            width: 52px; height: 52px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; margin-bottom: 1.25rem;
+        }
+        .feature-icon.blue { background: rgba(37,99,235,0.1); }
+        .feature-icon.amber { background: rgba(245,158,11,0.1); }
+        .feature-icon.green { background: rgba(34,197,94,0.1); }
+        .feature-card h3 {
+            font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em;
+            color: var(--text-dark); margin-bottom: .5rem;
+        }
+        .feature-card p {
+            font-size: .88rem; color: var(--text-light); line-height: 1.65;
+        }
+        .feature-card .feature-bullets {
+            list-style: none; margin-top: 1rem; display: flex; flex-direction: column; gap: .4rem;
+        }
+        .feature-bullets li {
+            font-size: .83rem; color: var(--text); display: flex; align-items: flex-start; gap: .5rem;
+        }
+        .feature-bullets li::before {
+            content: '✓'; color: var(--primary); font-weight: 700; flex-shrink: 0; margin-top: .05rem;
+        }
+
+        /* ── PAST ISSUES ── */
+        .past-issues {
+            padding: 80px 2rem;
+            background: var(--white);
+        }
+        .past-issues-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .issue-card-sm {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: box-shadow .2s, transform .2s;
+        }
+        .issue-card-sm:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+        .issue-card-sm .issue-meta {
+            display: flex; align-items: center; gap: .6rem; margin-bottom: .75rem;
+        }
+        .issue-num-sm {
+            background: var(--primary); color: var(--white);
+            font-size: .7rem; font-weight: 700; padding: .2rem .6rem;
+            border-radius: 980px; letter-spacing: 0.04em;
+        }
+        .issue-date-sm {
+            font-size: .72rem; color: var(--text-light); font-weight: 500;
+        }
+        .issue-card-sm h4 {
+            font-size: .95rem; font-weight: 700; letter-spacing: -0.02em;
+            color: var(--text-dark); margin-bottom: .4rem; line-height: 1.3;
+        }
+        .issue-card-sm p {
+            font-size: .82rem; color: var(--text-light); line-height: 1.55; margin-bottom: 1rem;
+        }
+        .issue-link-sm {
+            font-size: .82rem; font-weight: 600; color: var(--primary);
+            text-decoration: none; display: inline-flex; align-items: center; gap: .3rem;
+        }
+        .issue-link-sm:hover { color: var(--primary-dark); }
+        .issue-card-sm.placeholder {
+            background: var(--bg-alt);
+            border-style: dashed;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; text-align: center;
+            min-height: 180px;
+        }
+        .issue-card-sm.placeholder .placeholder-icon {
+            font-size: 1.8rem; margin-bottom: .5rem; opacity: 0.35;
+        }
+        .issue-card-sm.placeholder p {
+            font-size: .82rem; color: var(--text-light); margin: 0;
+        }
+        .past-issues-note {
+            text-align: center; color: var(--text-light);
+            font-size: .88rem; font-style: italic;
+        }
+
+        /* ── CTA BAND ── */
+        .cta-band {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            padding: 80px 2rem;
+            text-align: center;
+        }
+        .cta-band-inner {
+            max-width: 680px; margin: 0 auto;
+        }
+        .cta-band .section-label { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.75); }
+        .cta-band h2 {
+            font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+            font-weight: 800; letter-spacing: -0.03em; line-height: 1.25;
+            color: var(--white); margin-bottom: 1.2rem;
+        }
+        .cta-band p {
+            color: rgba(255,255,255,0.6); font-size: .95rem;
+            line-height: 1.65; margin-bottom: 2rem;
+        }
+        .cta-band .btn-cta-main {
+            display: inline-flex; align-items: center; gap: .5rem;
+            background: var(--primary); color: var(--white);
+            padding: .85rem 2.2rem; border-radius: 980px;
+            font-weight: 700; font-size: 1rem; text-decoration: none;
+            transition: all .2s; box-shadow: 0 4px 24px rgba(37,99,235,0.35);
+        }
+        .cta-band .btn-cta-main:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 32px rgba(37,99,235,0.45);
+        }
+
+        /* ── FOOTER ── */
+        .footer {
+            background: var(--bg-alt);
+            color: var(--text-light);
+            padding: 3rem 2rem; text-align: center;
+            border-top: 1px solid var(--border);
+        }
+        .footer-inner { max-width: 1100px; margin: 0 auto; }
+        .footer-brand {
+            font-size: 1.3rem; font-weight: 700; color: var(--text-dark);
+            letter-spacing: -0.02em; margin-bottom: 0.2rem;
+        }
+        .footer-links { display: flex; gap: 1.75rem; justify-content: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .footer-links a { color: var(--text-light); text-decoration: none; font-size: .82rem; transition: color .2s; }
+        .footer-links a:hover { color: var(--primary); }
+        .footer p { font-size: .78rem; color: #aeaeb2; }
+        .footer a { color: var(--primary); text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 900px) {
+            .features-grid { grid-template-columns: 1fr; }
+            .past-issues-grid { grid-template-columns: 1fr; }
+            .issue-card-featured {
+                flex-direction: column; gap: 1.25rem;
+                padding: 1.75rem;
+            }
+        }
+        @media (max-width: 640px) {
+            .hero { padding: 110px 1.25rem 60px; }
+            .subscribe-form { padding: 1.5rem; }
+            .issue-card-featured h3 { font-size: 1.25rem; }
+            .nav-links {
+                display: none; flex-direction: column; position: absolute;
+                top: 72px; left: 0; right: 0; background: var(--white);
+                padding: 1rem 2rem; gap: 1rem; box-shadow: var(--shadow-lg);
+            }
+            .nav-links.open { display: flex; }
+            .nav-links a { min-height: 44px; display: flex; align-items: center; }
+            .hamburger { display: flex; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; }
+            .nav-brand-text { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav class="nav">
+    <div class="nav-inner">
+        <div class="nav-brand">
+            <a href="index.html" class="nav-brand-text">Land <span>to</span> Yield</a>
+        </div>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="index.html#features">Features</a></li>
+            <li><a href="index.html#pricing">Pricing</a></li>
+            <li><a href="index.html#faq">FAQ</a></li>
+            <li><a href="newsletter.html" class="active">Newsletter</a></li>
+            <li><a href="index.html#role-portals" class="btn btn-primary">Choose Portal</a></li>
+        </ul>
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+    <div class="hero-inner">
+        <div class="hero-badge">📋 Monthly Newsletter</div>
+        <h1>Legislative <span class="accent">Edge</span></h1>
+        <p class="tagline">
+            The developer's insider guide to California's hottest incentive legislation.
+            <strong>Free. Monthly. Actionable.</strong>
+        </p>
+
+        <div class="subscribe-form">
+            <h3>Join 500+ LA Developers</h3>
+            <form id="subscribeForm" action="https://formsubmit.co/trevor@clscre.com" method="POST">
+                <!-- FormSubmit config -->
+                <input type="hidden" name="_subject" value="New Legislative Edge Subscriber">
+                <input type="hidden" name="_captcha" value="false">
+                <input type="hidden" name="_next" value="https://landtoyield.com/newsletter.html">
+                <input type="text" name="_honey" style="display:none">
+
+                <div class="form-row">
+                    <input
+                        type="text"
+                        name="name"
+                        class="form-input"
+                        placeholder="Your first name"
+                        required
+                        autocomplete="given-name"
+                    >
+                    <input
+                        type="email"
+                        name="email"
+                        class="form-input"
+                        placeholder="Your email address"
+                        required
+                        autocomplete="email"
+                    >
+                </div>
+                <button type="submit" class="btn-subscribe">Subscribe Free →</button>
+            </form>
+            <div class="subscribe-success" id="subscribeSuccess">
+                <div class="check">✅</div>
+                <p>You're on the list!</p>
+                <small>Next issue lands in your inbox May 2026.</small>
+            </div>
+            <p class="form-privacy">No spam. Unsubscribe anytime. We respect your inbox.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ── LATEST ISSUE ── -->
+<section class="latest-issue" id="latest">
+    <div class="section-inner">
+        <div class="section-header">
+            <div class="section-label">Latest Issue</div>
+            <h2>Hot off the press.</h2>
+            <p>Dive into our inaugural issue — packed with everything developers need to move fast on SB 1123.</p>
+        </div>
+
+        <div class="issue-card-featured">
+            <div class="issue-number-badge">
+                <div class="issue-num">#1</div>
+                <div class="issue-label">Issue</div>
+            </div>
+            <div class="issue-card-body">
+                <div class="issue-date-tag">📅 May 2026</div>
+                <h3>SB 1123 — Small Multifamily By Right</h3>
+                <p>
+                    California's SB 1123 quietly unlocks by-right approval for small multifamily on
+                    millions of single-family lots statewide. We break down exactly which parcels qualify,
+                    what you can build, and how to structure the construction loan — with a real Boyle Heights
+                    example modeled from dirt to stabilization.
+                </p>
+                <a href="/newsletter/issue-001.html" class="issue-read-link">
+                    Read Issue #1 →
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── WHAT YOU'LL GET ── -->
+<section class="features-section" id="whats-inside">
+    <div class="section-inner">
+        <div class="section-header">
+            <div class="section-label">What You'll Get</div>
+            <h2>Every issue, three things that move the needle.</h2>
+            <p>No filler. No fluff. Just the intel you need to find deals and close financing faster.</p>
+        </div>
+
+        <div class="features-grid">
+            <!-- Bill Spotlight -->
+            <div class="feature-card">
+                <div class="feature-icon blue">📜</div>
+                <h3>Bill Spotlight</h3>
+                <p>
+                    Plain-English breakdown of the single hottest active bill in California.
+                    We translate legalese into developer decisions.
+                </p>
+                <ul class="feature-bullets">
+                    <li>Which parcels are eligible</li>
+                    <li>Density and height unlocks</li>
+                    <li>Approval timeline expectations</li>
+                    <li>City vs. county applicability</li>
+                    <li>Common pitfalls to avoid</li>
+                </ul>
+            </div>
+
+            <!-- Real Deal Example -->
+            <div class="feature-card">
+                <div class="feature-icon amber">🏗️</div>
+                <h3>Real Deal Example</h3>
+                <p>
+                    Actual LA neighborhood, real parcel, real numbers. We model the deal end-to-end
+                    so you can see the return before you ever call an architect.
+                </p>
+                <ul class="feature-bullets">
+                    <li>Specific APN + neighborhood</li>
+                    <li>Acquisition price assumptions</li>
+                    <li>Full pro forma: revenue, costs, NOI</li>
+                    <li>IRR and equity multiple targets</li>
+                    <li>Exit cap rate sensitivity</li>
+                </ul>
+            </div>
+
+            <!-- Financing Intel -->
+            <div class="feature-card">
+                <div class="feature-icon green">💰</div>
+                <h3>Financing Intel</h3>
+                <p>
+                    Construction loan structures tailored to the featured deal type. Know exactly
+                    what lenders want to see before you walk into the room.
+                </p>
+                <ul class="feature-bullets">
+                    <li>LTC and LTV benchmarks</li>
+                    <li>Current construction rate environment</li>
+                    <li>Lender appetite by deal type</li>
+                    <li>Preferred equity vs. mezz considerations</li>
+                    <li>CLS CRE deal structuring tips</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── PAST ISSUES ── -->
+<section class="past-issues" id="archive">
+    <div class="section-inner">
+        <div class="section-header">
+            <div class="section-label">Archive</div>
+            <h2>Past Issues</h2>
+            <p>More issues coming monthly. Subscribe now to never miss one.</p>
+        </div>
+
+        <div class="past-issues-grid">
+            <!-- Issue #1 -->
+            <div class="issue-card-sm">
+                <div class="issue-meta">
+                    <span class="issue-num-sm">Issue #1</span>
+                    <span class="issue-date-sm">May 2026</span>
+                </div>
+                <h4>SB 1123 — Small Multifamily By Right</h4>
+                <p>By-right approval for small multifamily on single-family lots. Boyle Heights deal modeled with construction financing breakdown.</p>
+                <a href="/newsletter/issue-001.html" class="issue-link-sm">Read Issue →</a>
+            </div>
+
+            <!-- Placeholder #2 -->
+            <div class="issue-card-sm placeholder">
+                <div class="placeholder-icon">📭</div>
+                <p><strong>June 2026 issue</strong><br>Coming soon — subscribe to get it first.</p>
+            </div>
+
+            <!-- Placeholder #3 -->
+            <div class="issue-card-sm placeholder">
+                <div class="placeholder-icon">📭</div>
+                <p><strong>July 2026 issue</strong><br>Coming soon — subscribe to get it first.</p>
+            </div>
+        </div>
+
+        <p class="past-issues-note">🗓️ More issues coming monthly — we publish the first week of every month.</p>
+    </div>
+</section>
+
+<!-- ── CTA BAND ── -->
+<section class="cta-band">
+    <div class="cta-band-inner">
+        <div class="section-label">Construction Financing</div>
+        <h2>Have a deal that could use one of these incentives? Let's talk construction financing.</h2>
+        <p>
+            CLS CRE specializes in structuring construction loans for LA developers navigating
+            California's latest legislation. From SB 79 transit-oriented projects to small multifamily
+            by-right deals — we know the capital stack and we know the market.
+        </p>
+        <a href="mailto:trevor@clscre.com" class="btn-cta-main">
+            📩 Email Trevor at CLS CRE
+        </a>
+    </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer class="footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Land to Yield</div>
+        <div class="footer-links">
+            <a href="app.html">Developer Portal</a>
+            <a href="agent.html">Agent Portal</a>
+            <a href="lender.html">Lender Portal</a>
+            <a href="newsletter.html">Newsletter</a>
+            <a href="privacy.html">Privacy</a>
+            <a href="terms.html">Terms</a>
+            <a href="mailto:contact@landtoyield.com">Contact</a>
+        </div>
+        <p>&copy; 2026 Land to Yield. All rights reserved.</p>
+    </div>
+</footer>
+
+<script>
+    // Hamburger menu toggle
+    document.getElementById('hamburger').addEventListener('click', function() {
+        document.getElementById('navLinks').classList.toggle('open');
+    });
+
+    // Close mobile menu on link click
+    document.querySelectorAll('.nav-links a').forEach(function(link) {
+        link.addEventListener('click', function() {
+            document.getElementById('navLinks').classList.remove('open');
+        });
+    });
+</script>
+
+</body>
+</html>

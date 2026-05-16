@@ -1,0 +1,152 @@
+{
+  "lastFullReview": "2026-03-11",
+  "reviewCycleDays": 30,
+  "nextReviewDue": "2026-04-10",
+  "sources": [
+    {
+      "name": "CA ADU Laws - AB 68",
+      "url": "https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=201920200AB68",
+      "type": "legislation",
+      "lastChecked": "2026-03-11",
+      "status": "active",
+      "effectiveDate": "2020-01-01",
+      "notes": "By-right ADU construction on residential lots. Streamlined ministerial approval. Limits local parking requirements."
+    },
+    {
+      "name": "CA ADU Laws - SB 13",
+      "url": "https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=201920200SB13",
+      "type": "legislation",
+      "lastChecked": "2026-03-11",
+      "status": "active",
+      "effectiveDate": "2020-01-01",
+      "notes": "Caps ADU impact fees for units under 750 SF. Reduces owner-occupancy enforcement until 2025. Allows delay of utility connection fees."
+    },
+    {
+      "name": "CA ADU Laws - AB 881",
+      "url": "https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=201920200AB881",
+      "type": "legislation",
+      "lastChecked": "2026-03-11",
+      "status": "active",
+      "effectiveDate": "2020-01-01",
+      "notes": "Eliminates local requirements for lot-size minimums, replacement parking for garage conversions, and non-objective design standards."
+    },
+    {
+      "name": "CA ADU Laws - AB 2221",
+      "url": "https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=201920200AB2221",
+      "type": "legislation",
+      "lastChecked": "2026-03-11",
+      "status": "active",
+      "effectiveDate": "2021-01-01",
+      "notes": "Clarifies that ADUs cannot be required to have fire sprinklers if primary residence does not have them. Limits setback requirements."
+    },
+    {
+      "name": "CA ADU Laws - SB 897",
+      "url": "https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220SB897",
+      "type": "legislation",
+      "lastChecked": "2026-03-11",
+      "status": "active",
+      "effectiveDate": "2023-01-01",
+      "notes": "Increases max ADU height to 18 ft (detached) or 25 ft (attached/within half-mile of transit). Allows 2-story ADUs. Allows ADUs on multifamily lots."
+    },
+    {
+      "name": "CA ADU Laws - AB 916",
+      "url": "https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220AB916",
+      "type": "legislation",
+      "lastChecked": "2026-03-11",
+      "status": "active",
+      "effectiveDate": "2023-01-01",
+      "notes": "Allows JADUs to include internal connections with primary residence. Clarifies JADU efficiency kitchen requirements."
+    },
+    {
+      "name": "CA ADU Laws - AB 1033",
+      "url": "https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202320240AB1033",
+      "type": "legislation",
+      "lastChecked": "2026-03-11",
+      "status": "active",
+      "effectiveDate": "2024-01-01",
+      "notes": "Allows local jurisdictions to permit separate sale of ADUs as condominiums (ADU condo conversion). Opt-in by local government."
+    },
+    {
+      "name": "CA ADU Laws - SB 477",
+      "url": "https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202320240SB477",
+      "type": "legislation",
+      "lastChecked": "2026-03-11",
+      "status": "active",
+      "effectiveDate": "2025-01-01",
+      "notes": "Requires pre-approved ADU plans statewide. Jurisdictions must create programs for standard ADU designs with ministerial approval."
+    },
+    {
+      "name": "CA ADU Laws - AB 976",
+      "url": "https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202320240AB976",
+      "type": "legislation",
+      "lastChecked": "2026-03-11",
+      "status": "active",
+      "effectiveDate": "2025-01-01",
+      "notes": "Permanently removes owner-occupancy requirement for ADUs (was temporarily suspended by SB 13 through 2025)."
+    },
+    {
+      "name": "LADBS Standard Plan Program",
+      "url": "https://www.ladbs.org/services/core-services/plan-check-permit/standard-plan-program",
+      "type": "jurisdiction-program",
+      "lastChecked": "2026-03-11",
+      "status": "active",
+      "notes": "90+ pre-approved ADU designs for LA City. Expedited plan check (1-2 days). Covers studio, 1-bed, 2-bed units. Both attached and detached designs."
+    },
+    {
+      "name": "LADBS ADU Guidelines",
+      "url": "https://www.ladbs.org/adu",
+      "type": "jurisdiction-rules",
+      "lastChecked": "2026-03-11",
+      "status": "active",
+      "notes": "LA City ADU permit requirements, fees, setbacks, and process. Includes garage conversion guidelines."
+    },
+    {
+      "name": "LA County Pre-Approved ADU Plans",
+      "url": "https://planning.lacounty.gov/adu",
+      "type": "jurisdiction-program",
+      "lastChecked": "2026-03-11",
+      "status": "active",
+      "notes": "3 pre-approved ADU plans for unincorporated LA County. Streamlined permitting for qualifying lots."
+    },
+    {
+      "name": "LA County ADU Ordinance",
+      "url": "https://planning.lacounty.gov/adu",
+      "type": "jurisdiction-rules",
+      "lastChecked": "2026-03-11",
+      "status": "active",
+      "notes": "Unincorporated LA County ADU rules including max size (1,200 SF), setbacks (4 ft rear/side), height limits, and parking requirements."
+    },
+    {
+      "name": "CA HCD ADU Handbook",
+      "url": "https://www.hcd.ca.gov/policy-and-research/accessory-dwelling-units",
+      "type": "state-guidance",
+      "lastChecked": "2026-03-11",
+      "status": "active",
+      "notes": "Official CA Housing and Community Development ADU handbook. Comprehensive guide to state ADU law, local compliance, and technical assistance."
+    },
+    {
+      "name": "CA HCD ADU Technical Assistance Memos",
+      "url": "https://www.hcd.ca.gov/policy-and-research/accessory-dwelling-units",
+      "type": "state-guidance",
+      "lastChecked": "2026-03-11",
+      "status": "active",
+      "notes": "HCD memos to local jurisdictions on ADU ordinance compliance. Includes enforcement actions against non-compliant cities."
+    },
+    {
+      "name": "CA Government Code Section 65852.2",
+      "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=65852.2.&lawCode=GOV",
+      "type": "statute",
+      "lastChecked": "2026-03-11",
+      "status": "active",
+      "notes": "Primary ADU statute in CA Government Code. Codifies all ADU legislation requirements. Reference for local ordinance compliance."
+    },
+    {
+      "name": "CA Government Code Section 65852.22 (JADU)",
+      "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=65852.22.&lawCode=GOV",
+      "type": "statute",
+      "lastChecked": "2026-03-11",
+      "status": "active",
+      "notes": "Junior ADU (JADU) statute. Max 500 SF, must be within existing primary residence footprint, requires owner occupancy in one unit."
+    }
+  ]
+}
