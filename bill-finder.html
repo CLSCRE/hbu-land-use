@@ -740,7 +740,8 @@ function checkEligibility(prop, bill) {
     const summary = prop.summary || {};
     const building = prop.building || {};
 
-    const lotSqft = parseFloat(lot.lotsize2) || 0;
+    // snapshot returns lotSize1 (acres); detail returns lotsize2 (sqft) — handle both
+    const lotSqft = parseFloat(lot.lotsize2) || Math.round((parseFloat(lot.lotSize1) || 0) * 43560);
     const propType = (summary.proptype || '').toUpperCase();
     const propClass = (summary.propclass || summary.propsubtype || '').toUpperCase();
 
@@ -804,7 +805,8 @@ function checkEligibility(prop, bill) {
 // ═══════════════════════════════════════════════════════════════
 function calcScore(prop, assessment, avm, bill) {
     const lot = prop.lot || {};
-    const lotSqft = parseFloat(lot.lotsize2) || 0;
+    // snapshot returns lotSize1 (acres); detail returns lotsize2 (sqft) — handle both
+    const lotSqft = parseFloat(lot.lotsize2) || Math.round((parseFloat(lot.lotSize1) || 0) * 43560);
     const asmt = (assessment && assessment.property && assessment.property[0] && assessment.property[0].assessment) || {};
     const avmData = (avm && avm.property && avm.property[0] && avm.property[0].avm) || {};
 
@@ -1050,7 +1052,8 @@ function renderResults(results, bill, zip) {
         const color = scoreColor(score);
         const addr = r.prop.address || {};
         const lot = r.prop.lot || {};
-        const lotSqft = parseFloat(lot.lotsize2) || 0;
+        // snapshot returns lotSize1 (acres); detail returns lotsize2 (sqft) — handle both
+    const lotSqft = parseFloat(lot.lotsize2) || Math.round((parseFloat(lot.lotSize1) || 0) * 43560);
         const propType = r.prop.summary?.proptype || '?';
 
         return `<div class="parcel-card" id="card-${idx}" onclick="selectParcel(${idx})">
@@ -1114,7 +1117,8 @@ function selectParcel(idx) {
     const score = r.scoreData.total;
     const color = scoreColor(score);
 
-    const lotSqft = parseFloat(lot.lotsize2) || 0;
+    // snapshot returns lotSize1 (acres); detail returns lotsize2 (sqft) — handle both
+    const lotSqft = parseFloat(lot.lotsize2) || Math.round((parseFloat(lot.lotSize1) || 0) * 43560);
     const landVal = parseFloat(asmt.assessed?.assdlandvalue) || 0;
     const impVal = parseFloat(asmt.assessed?.assdimprvalue) || 0;
     const totalAsmt = parseFloat(asmt.assessed?.assdttlvalue) || 0;
@@ -1286,7 +1290,8 @@ function exportCSV() {
         const summary = r.prop.summary || {};
         const asmt = (r.assessment?.property?.[0]?.assessment?.assessed) || {};
         const avmData = (r.avm?.property?.[0]?.avm?.amount) || {};
-        const lotSqft = parseFloat(lot.lotsize2) || 0;
+        // snapshot returns lotSize1 (acres); detail returns lotsize2 (sqft) — handle both
+    const lotSqft = parseFloat(lot.lotsize2) || Math.round((parseFloat(lot.lotSize1) || 0) * 43560);
         const landVal = parseFloat(asmt.assdlandvalue) || 0;
         const impVal = parseFloat(asmt.assdimprvalue) || 0;
         const avmVal = parseFloat(avmData.value) || 0;
