@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill-to-Property Finder — Land to Yield</title>
+    <meta name="description" content="Find every qualifying parcel in any California ZIP code for SB 79, SB 1123, AB 2011 and more. Scored, ranked, and ready for development outreach.">
+    <meta property="og:title" content="Bill-to-Property Finder — Land to Yield">
+    <meta property="og:image" content="https://landtoyield.com/og-image.png">
+    <meta property="og:url" content="https://landtoyield.com/bill-finder.html">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <script defer data-domain="landtoyield.com" src="https://plausible.io/js/script.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" href="core-styles.css?v=4.7">
+    <style>
+        :root {
+            --primary: #1a365d;
+            --primary-light: #2b6cb0;
+            --accent: #e8a838;
+            --bg: #f7fafc;
+            --card: #ffffff;
+            --text: #2d3748;
+            --text-light: #718096;
+            --border: #e2e8f0;
+            --success: #38a169;
+        }
+
+        /* ── Layout ── */
+        .finder-layout {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            grid-template-rows: auto 1fr;
+            gap: 0;
+            height: calc(100vh - 120px);
+            min-height: 600px;
+        }
+
+        /* ── Left Panel ── */
+        .left-panel {
+            grid-row: 1 / 3;
+            background: var(--card);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+        }
+        .panel-header h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.2rem; }
+        .panel-header p { font-size: 0.78rem; opacity: 0.85; }
+
+        .search-area {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background: #fafbfc;
+        }
+
+        .field-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.4rem;
+            display: block;
+        }
+
+        .bill-select {
+            width: 100%;
+            padding: 0.65rem 0.85rem;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-family: inherit;
+            background: white;
+            color: var(--text);
+            margin-bottom: 0.9rem;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .bill-select:focus { outline: none; border-color: var(--primary-light); }
+
+        .bill-badge {
+            display: inline-block;
+            padding: 0.15rem 0.55rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 0.4rem;
+        }
+        .badge-active { background: #c6f6d5; color: #276749; }
+        .badge-signed { background: #bee3f8; color: #1a365d; }
+        .badge-pending { background: #fefcbf; color: #744210; }
+
+        .bill-desc {
+            font-size: 0.78rem;
+            color: var(--text-light);
+            background: #f0f4f8;
+            padding: 0.65rem 0.85rem;
+            border-radius: 8px;
+            margin-bottom: 0.9rem;
+            line-height: 1.5;
+        }
+        .bill-desc strong { color: var(--text); }
+
+        .zip-row {
+            display: flex;
+            gap: 0.6rem;
+            align-items: flex-end;
+        }
+        .zip-input {
+            flex: 1;
+            padding: 0.65rem 0.85rem;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        .zip-input:focus { outline: none; border-color: var(--primary-light); }
+
+        .btn-scan {
+            padding: 0.65rem 1.1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .btn-scan:hover { background: var(--primary-light); }
+        .btn-scan:disabled { background: #a0aec0; cursor: not-allowed; }
+
+        /* ── Results List ── */
+        .results-header {
+            padding: 0.85rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            flex-shrink: 0;
+        }
+        .results-count {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-light);
+        }
+        .results-count span { color: var(--primary); font-size: 1rem; }
+
+        .btn-export {
+            padding: 0.35rem 0.85rem;
+            background: #ebf8ff;
+            color: var(--primary-light);
+            border: 1px solid #90cdf4;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-export:hover { background: #bee3f8; }
+
+        .results-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem 0;
+        }
+
+        .parcel-card {
+            padding: 0.85rem 1.5rem;
+            border-bottom: 1px solid #f0f4f8;
+            cursor: pointer;
+            transition: background 0.15s;
+            position: relative;
+        }
+        .parcel-card:hover { background: #f7fafc; }
+        .parcel-card.active {
+            background: #ebf8ff;
+            border-left: 3px solid var(--primary-light);
+        }
+
+        .parcel-rank {
+            position: absolute;
+            top: 0.85rem;
+            right: 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: var(--primary);
+            opacity: 0.15;
+        }
+
+        .parcel-address {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.2rem;
+            padding-right: 2rem;
+        }
+
+        .parcel-meta {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-bottom: 0.4rem;
+        }
+
+        .score-bar-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .score-bar-bg {
+            flex: 1;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .score-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.4s ease;
+        }
+        .score-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            min-width: 2.5rem;
+            text-align: right;
+        }
+
+        /* Score color tiers */
+        .score-high { background: #38a169; color: #276749; }
+        .score-mid  { background: #d69e2e; color: #744210; }
+        .score-low  { background: #e53e3e; color: #9b2c2c; }
+
+        /* ── Map ── */
+        .map-area {
+            grid-column: 2;
+            grid-row: 1;
+            position: relative;
+            height: 55%;
+            min-height: 300px;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .map-legend {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.65rem 0.85rem;
+            font-size: 0.72rem;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-bottom: 0.25rem;
+            color: var(--text);
+            font-weight: 600;
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ── Detail Panel ── */
+        .detail-panel {
+            grid-column: 2;
+            grid-row: 2;
+            background: white;
+            border-top: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .detail-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-light);
+            text-align: center;
+            gap: 0.5rem;
+        }
+        .detail-empty .icon { font-size: 2.5rem; opacity: 0.3; }
+        .detail-empty p { font-size: 0.85rem; }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .detail-stat {
+            background: #f7fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem;
+        }
+        .detail-stat .stat-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.25rem;
+        }
+        .detail-stat .stat-value {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        .detail-stat .stat-sub {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            margin-top: 0.15rem;
+        }
+
+        .detail-section {
+            margin-bottom: 1rem;
+        }
+        .detail-section h4 {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.3rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .eligibility-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.82rem;
+            margin-bottom: 0.3rem;
+            color: var(--text);
+        }
+        .elig-icon { font-size: 0.9rem; }
+        .elig-pass { color: var(--success); }
+        .elig-warn { color: #d69e2e; }
+        .elig-fail { color: #e53e3e; }
+
+        .cta-banner {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 0.75rem;
+        }
+        .cta-banner p { font-size: 0.85rem; line-height: 1.4; }
+        .cta-banner strong { font-size: 0.95rem; }
+        .btn-cta {
+            padding: 0.6rem 1.2rem;
+            background: var(--accent);
+            color: var(--primary);
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            cursor: pointer;
+            white-space: nowrap;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .btn-cta:hover { background: #f6c453; }
+
+        /* ── Progress ── */
+        .progress-wrap {
+            padding: 1.5rem;
+            display: none;
+        }
+        .progress-wrap.visible { display: block; }
+        .progress-label {
+            font-size: 0.82rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+        .progress-track {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-light);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        /* ── Empty / Error states ── */
+        .state-message {
+            padding: 2rem 1.5rem;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.85rem;
+        }
+        .state-message .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .finder-layout {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto auto;
+                height: auto;
+            }
+            .left-panel { grid-row: auto; max-height: 70vh; }
+            .map-area { grid-column: 1; grid-row: auto; height: 350px; }
+            .detail-panel { grid-column: 1; grid-row: auto; }
+            .detail-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* ── Auth overlay (reuse from shared.js) ── */
+        #authOverlay {
+            position: fixed; inset: 0;
+            background: rgba(26,54,93,0.95);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+        #authOverlay.fade-out { opacity: 0; pointer-events: none; }
+        .auth-box {
+            background: white; border-radius: 16px;
+            padding: 2.5rem 2rem; max-width: 380px; width: 90%;
+            text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        .auth-box h2 { color: var(--primary); margin-bottom: 0.5rem; font-size: 1.4rem; }
+        .auth-box p { color: var(--text-light); font-size: 0.88rem; margin-bottom: 1.5rem; }
+        .auth-input {
+            width: 100%; padding: 0.75rem 1rem; border: 1.5px solid var(--border);
+            border-radius: 8px; font-size: 1rem; margin-bottom: 0.75rem;
+            text-align: center; letter-spacing: 0.1em; font-family: monospace;
+        }
+        .auth-input:focus { outline: none; border-color: var(--primary-light); }
+        .auth-btn {
+            width: 100%; padding: 0.75rem; background: var(--primary);
+            color: white; border: none; border-radius: 8px; font-size: 1rem;
+            font-weight: 700; cursor: pointer; transition: background 0.2s;
+        }
+        .auth-btn:hover { background: var(--primary-light); }
+        .auth-error { color: #e53e3e; font-size: 0.82rem; margin-top: 0.4rem; min-height: 1.2em; }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            background: #1a365d;
+            color: white;
+            padding: 0.4rem 0.7rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            pointer-events: none;
+            z-index: 2000;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+
+<!-- Auth Overlay -->
+<div id="authOverlay">
+    <div class="auth-box">
+        <div style="font-size:2.5rem;margin-bottom:0.75rem;">🏗️</div>
+        <h2>Bill Finder Access</h2>
+        <p>Enter your Land to Yield access code to scan qualifying parcels.</p>
+        <input type="password" id="authPassword" class="auth-input" placeholder="Access Code" onkeydown="if(event.key==='Enter') checkAuth()">
+        <button class="auth-btn" onclick="checkAuth()">Unlock</button>
+        <div id="authError" class="auth-error"></div>
+        <p style="margin-top:1rem;font-size:0.75rem;color:#a0aec0;">
+            Need access? <a href="mailto:trevor@clscre.com" style="color:var(--primary-light);">Contact CLS</a>
+        </p>
+    </div>
+</div>
+
+<header>
+    <h1>📋 Bill-to-Property Finder</h1>
+    <p>Scan any California ZIP for parcels qualifying under new development legislation</p>
+    <nav style="margin-top:0.75rem;font-size:0.82rem;">
+        <a href="index.html" style="color:rgba(255,255,255,0.75);text-decoration:none;margin-right:1.25rem;">Home</a>
+        <a href="app.html" style="color:rgba(255,255,255,0.75);text-decoration:none;margin-right:1.25rem;">HBU Calculator</a>
+        <a href="newsletter.html" style="color:rgba(255,255,255,0.75);text-decoration:none;">Legislative Edge</a>
+    </nav>
+</header>
+
+<div class="container" style="max-width:100%;padding:0;">
+<div class="finder-layout">
+
+    <!-- ── LEFT PANEL ── -->
+    <div class="left-panel">
+        <div class="panel-header">
+            <h2>🔍 Parcel Scanner</h2>
+            <p>Select a bill, enter a ZIP, scan all qualifying sites</p>
+        </div>
+
+        <div class="search-area">
+            <label class="field-label">Select Legislation</label>
+            <select id="billSelect" class="bill-select" onchange="updateBillDesc()">
+                <option value="sb79">SB 79 — Transit-Oriented Development <span>Active</span></option>
+                <option value="sb1123">SB 1123 — Small Multifamily By-Right</option>
+                <option value="ab2011">AB 2011 — Affordable Housing on Commercial Corridors</option>
+                <option value="ab1033">AB 1033 — ADU Separate Sale</option>
+                <option value="sb9">SB 9 — Single-Family Lot Split</option>
+            </select>
+
+            <div id="billDesc" class="bill-desc"></div>
+
+            <label class="field-label">California ZIP Code</label>
+            <div class="zip-row">
+                <input type="text" id="zipInput" class="zip-input" placeholder="e.g. 91405" maxlength="5" pattern="[0-9]{5}">
+                <button id="scanBtn" class="btn-scan" onclick="runScan()">🔍 Scan</button>
+            </div>
+        </div>
+
+        <div id="progressWrap" class="progress-wrap">
+            <div class="progress-label" id="progressLabel">Scanning parcels…</div>
+            <div class="progress-track">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+        </div>
+
+        <div class="results-header" id="resultsHeader" style="display:none;">
+            <div class="results-count">
+                <span id="resultCount">0</span> qualifying parcels
+            </div>
+            <button class="btn-export" onclick="exportCSV()">⬇ CSV</button>
+        </div>
+
+        <div id="resultsList" class="results-list">
+            <div class="state-message">
+                <div class="icon">🗺️</div>
+                <p>Select a bill and enter a ZIP code to scan qualifying parcels.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── MAP ── -->
+    <div class="map-area">
+        <div id="map"></div>
+        <div class="map-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#38a169;"></div> Score 70–100 (High)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#d69e2e;"></div> Score 40–69 (Mid)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#e53e3e;"></div> Score &lt;40 (Low)</div>
+        </div>
+    </div>
+
+    <!-- ── DETAIL PANEL ── -->
+    <div class="detail-panel" id="detailPanel">
+        <div class="detail-empty">
+            <div class="icon">📍</div>
+            <p>Click any parcel in the list or on the map to view full underwriting details.</p>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="shared.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  CONFIGURATION
+// ═══════════════════════════════════════════════════════════════
+const ATTOM_KEY = '4400bc5382696e25a5bf569dce5a5ea3';
+const ATTOM_BASE = 'https://api.gateway.attomdata.com/propertyapi/v1.0.0';
+
+// ═══════════════════════════════════════════════════════════════
+//  BILL DEFINITIONS
+// ═══════════════════════════════════════════════════════════════
+const BILLS = {
+    sb79: {
+        name: 'SB 79',
+        title: 'Transit-Oriented Development',
+        status: 'active',
+        desc: '<strong>SB 79</strong> allows multifamily by-right within <strong>½ mile of major transit stops</strong>. Targets underutilized commercial and low-density residential parcels near rail/bus rapid transit.',
+        eligibility: {
+            minLotSqft: 5000,
+            maxUnits: null,
+            propTypes: ['SFR', 'CONDO', 'MOBILE', 'VACANT', 'COMMERCIAL', 'RETAIL', 'OFFICE'],
+            excludeTypes: ['MULTI', 'APARTMENT', 'INDUSTRIAL', 'PARK'],
+            maxImprovementRatio: 0.75,
+            requiresTransit: true,
+            transitRadiusMiles: 0.5,
+        },
+        scoring: { lotWeight: 25, avmWeight: 20, landRatioWeight: 30, locationWeight: 25 },
+        color: '#2b6cb0'
+    },
+    sb1123: {
+        name: 'SB 1123',
+        title: 'Small Multifamily By-Right',
+        status: 'signed',
+        desc: '<strong>SB 1123</strong> permits ministerial approval for <strong>2–10 unit multifamily</strong> on SFR-zoned lots ≥4,000 sqft in urbanized areas. Eliminates discretionary review for qualifying small multifamily.',
+        eligibility: {
+            minLotSqft: 4000,
+            maxLotSqft: 20000,
+            propTypes: ['SFR', 'VACANT'],
+            excludeTypes: [],
+            maxImprovementRatio: 0.85,
+            requiresTransit: false,
+        },
+        scoring: { lotWeight: 30, avmWeight: 25, landRatioWeight: 35, locationWeight: 10 },
+        color: '#276749'
+    },
+    ab2011: {
+        name: 'AB 2011',
+        title: 'Affordable Housing on Commercial',
+        status: 'active',
+        desc: '<strong>AB 2011</strong> allows residential development by-right on <strong>commercially-zoned parcels</strong> along major arterials. Requires affordable component (≥15–30% AMI units).',
+        eligibility: {
+            minLotSqft: 6000,
+            propTypes: ['COMMERCIAL', 'RETAIL', 'OFFICE', 'VACANT'],
+            excludeTypes: ['SFR', 'MULTI', 'INDUSTRIAL'],
+            maxImprovementRatio: 0.70,
+            requiresTransit: false,
+        },
+        scoring: { lotWeight: 20, avmWeight: 30, landRatioWeight: 30, locationWeight: 20 },
+        color: '#6b46c1'
+    },
+    ab1033: {
+        name: 'AB 1033',
+        title: 'ADU Separate Sale',
+        status: 'active',
+        desc: '<strong>AB 1033</strong> allows <strong>ADUs to be sold separately</strong> from the primary residence as condominiums. Best targets: SFR lots with existing ADU potential (≥4,000 sqft).',
+        eligibility: {
+            minLotSqft: 4000,
+            propTypes: ['SFR'],
+            excludeTypes: [],
+            maxImprovementRatio: 0.90,
+            requiresTransit: false,
+        },
+        scoring: { lotWeight: 35, avmWeight: 30, landRatioWeight: 25, locationWeight: 10 },
+        color: '#c05621'
+    },
+    sb9: {
+        name: 'SB 9',
+        title: 'Single-Family Lot Split',
+        status: 'active',
+        desc: '<strong>SB 9</strong> allows ministerial <strong>lot splits and duplexes</strong> on SFR-zoned parcels statewide. Best targets: large SFR lots (≥6,000 sqft) with low improvement-to-land ratios.',
+        eligibility: {
+            minLotSqft: 6000,
+            propTypes: ['SFR'],
+            excludeTypes: [],
+            maxImprovementRatio: 0.80,
+            requiresTransit: false,
+        },
+        scoring: { lotWeight: 40, avmWeight: 20, landRatioWeight: 30, locationWeight: 10 },
+        color: '#c53030'
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  MAP INIT
+// ═══════════════════════════════════════════════════════════════
+let map, markersLayer;
+
+function initMap() {
+    map = L.map('map', { zoomControl: true }).setView([34.05, -118.25], 11);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap contributors © CARTO',
+        subdomains: 'abcd', maxZoom: 19
+    }).addTo(map);
+    markersLayer = L.layerGroup().addTo(map);
+}
+
+initMap();
+
+// ═══════════════════════════════════════════════════════════════
+//  BILL DESCRIPTION UPDATE
+// ═══════════════════════════════════════════════════════════════
+function updateBillDesc() {
+    const val = document.getElementById('billSelect').value;
+    const bill = BILLS[val];
+    if (!bill) return;
+    const statusMap = { active: 'Active Law', signed: 'Signed', pending: 'Pending' };
+    const badgeClass = { active: 'badge-active', signed: 'badge-signed', pending: 'badge-pending' };
+    document.getElementById('billDesc').innerHTML =
+        `<span class="bill-badge ${badgeClass[bill.status]}">${statusMap[bill.status]}</span> ${bill.desc}`;
+}
+updateBillDesc();
+
+// ═══════════════════════════════════════════════════════════════
+//  ATTOM API HELPERS
+// ═══════════════════════════════════════════════════════════════
+async function attomFetch(endpoint, params) {
+    const url = `${ATTOM_BASE}${endpoint}?${new URLSearchParams(params)}`;
+    const res = await fetch(url, { headers: { 'apikey': ATTOM_KEY, 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error(`ATTOM ${res.status}`);
+    return res.json();
+}
+
+async function fetchSnapshotPage(zip, page) {
+    return attomFetch('/property/snapshot', { postalcode: zip, pagesize: 100, page });
+}
+
+async function fetchPropertyDetail(address1, address2) {
+    return attomFetch('/property/detailwithschools', { address1, address2 });
+}
+
+async function fetchAVM(address1, address2) {
+    return attomFetch('/attomavm/detail', { address1, address2 });
+}
+
+async function fetchAssessment(address1, address2) {
+    return attomFetch('/assessment/detail', { address1, address2 });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ELIGIBILITY ENGINE
+// ═══════════════════════════════════════════════════════════════
+function checkEligibility(prop, bill) {
+    const lot = prop.lot || {};
+    const summary = prop.summary || {};
+    const building = prop.building || {};
+
+    const lotSqft = parseFloat(lot.lotsize2) || 0;
+    const propType = (summary.proptype || '').toUpperCase();
+    const propClass = (summary.propclass || summary.propsubtype || '').toUpperCase();
+
+    const checks = [];
+
+    // Lot size minimum
+    if (bill.eligibility.minLotSqft) {
+        const pass = lotSqft >= bill.eligibility.minLotSqft;
+        checks.push({
+            label: `Lot size ≥ ${bill.eligibility.minLotSqft.toLocaleString()} sqft`,
+            pass,
+            value: lotSqft > 0 ? `${lotSqft.toLocaleString()} sqft` : 'Unknown',
+            weight: 'required'
+        });
+        if (!pass && lotSqft > 0) return { eligible: false, checks };
+    }
+
+    // Lot size maximum
+    if (bill.eligibility.maxLotSqft) {
+        const pass = lotSqft <= bill.eligibility.maxLotSqft || lotSqft === 0;
+        checks.push({
+            label: `Lot size ≤ ${bill.eligibility.maxLotSqft.toLocaleString()} sqft`,
+            pass,
+            value: lotSqft > 0 ? `${lotSqft.toLocaleString()} sqft` : 'Unknown',
+            weight: 'required'
+        });
+    }
+
+    // Property type
+    if (bill.eligibility.propTypes && bill.eligibility.propTypes.length > 0) {
+        const typeMatch = bill.eligibility.propTypes.some(t =>
+            propType.includes(t) || propClass.includes(t)
+        );
+        checks.push({
+            label: `Property type (${bill.eligibility.propTypes.join(', ')})`,
+            pass: typeMatch,
+            value: propType || 'Unknown',
+            weight: 'required'
+        });
+        if (!typeMatch) return { eligible: false, checks };
+    }
+
+    // Exclude types
+    if (bill.eligibility.excludeTypes && bill.eligibility.excludeTypes.length > 0) {
+        const excluded = bill.eligibility.excludeTypes.some(t =>
+            propType.includes(t) || propClass.includes(t)
+        );
+        if (excluded) {
+            checks.push({ label: 'Property type not excluded', pass: false, value: propType, weight: 'required' });
+            return { eligible: false, checks };
+        }
+    }
+
+    checks.push({ label: 'Location in urbanized CA area', pass: true, value: 'Assumed (ATTOM CA data)', weight: 'info' });
+
+    return { eligible: true, checks };
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  DEVELOPMENT SCORE (0–100)
+// ═══════════════════════════════════════════════════════════════
+function calcScore(prop, assessment, avm, bill) {
+    const lot = prop.lot || {};
+    const lotSqft = parseFloat(lot.lotsize2) || 0;
+    const asmt = (assessment && assessment.property && assessment.property[0] && assessment.property[0].assessment) || {};
+    const avmData = (avm && avm.property && avm.property[0] && avm.property[0].avm) || {};
+
+    let score = 0;
+    const breakdown = [];
+
+    // 1. LOT SIZE SCORE (bigger = more buildable units = better, up to sweet spot)
+    let lotScore = 0;
+    const minLot = bill.eligibility.minLotSqft || 4000;
+    if (lotSqft >= minLot) {
+        lotScore = Math.min(100, Math.round(((lotSqft - minLot) / (15000 - minLot)) * 80 + 20));
+        lotScore = Math.max(10, Math.min(100, lotScore));
+    }
+    const lotW = bill.scoring.lotWeight / 100;
+    score += lotScore * lotW;
+    breakdown.push({ label: 'Lot Size', score: lotScore, weight: `${bill.scoring.lotWeight}%` });
+
+    // 2. LAND-TO-IMPROVEMENT RATIO (high ratio = teardown candidate = better)
+    let landRatioScore = 50;
+    const landVal = parseFloat((asmt.assessed || {}).assdlandvalue) || 0;
+    const impVal = parseFloat((asmt.assessed || {}).assdimprvalue) || 0;
+    if (landVal > 0 && impVal >= 0) {
+        const ratio = impVal > 0 ? landVal / impVal : 10;
+        // ratio > 2 = land worth 2x structure = prime teardown
+        landRatioScore = Math.min(100, Math.round((ratio / 3) * 100));
+        landRatioScore = Math.max(0, Math.min(100, landRatioScore));
+    }
+    const lrW = bill.scoring.landRatioWeight / 100;
+    score += landRatioScore * lrW;
+    breakdown.push({ label: 'Teardown Signal', score: landRatioScore, weight: `${bill.scoring.landRatioWeight}%` });
+
+    // 3. AVM / VALUE SCORE (moderate value = affordable acquisition = opportunity)
+    let avmScore = 50;
+    const avmVal = parseFloat((avmData.amount || {}).value) || 0;
+    if (avmVal > 0) {
+        // Sweet spot: $400K–$900K (accessible but valuable)
+        if (avmVal < 300000) avmScore = 40;
+        else if (avmVal < 500000) avmScore = 85;
+        else if (avmVal < 800000) avmScore = 75;
+        else if (avmVal < 1200000) avmScore = 60;
+        else avmScore = 35;
+    }
+    const avmW = bill.scoring.avmWeight / 100;
+    score += avmScore * avmW;
+    breakdown.push({ label: 'Acquisition Value', score: avmScore, weight: `${bill.scoring.avmWeight}%` });
+
+    // 4. LOCATION SCORE (placeholder — lat/lon based, future transit proximity)
+    const locScore = 60; // base — can be enhanced with transit API
+    const locW = bill.scoring.locationWeight / 100;
+    score += locScore * locW;
+    breakdown.push({ label: 'Location', score: locScore, weight: `${bill.scoring.locationWeight}%` });
+
+    return { total: Math.round(score), breakdown };
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  MARKER COLOR
+// ═══════════════════════════════════════════════════════════════
+function scoreColor(score) {
+    if (score >= 70) return '#38a169';
+    if (score >= 40) return '#d69e2e';
+    return '#e53e3e';
+}
+
+function makeMarker(lat, lng, score, parcel) {
+    const color = scoreColor(score);
+    const icon = L.divIcon({
+        className: '',
+        html: `<div style="
+            width:14px;height:14px;border-radius:50%;
+            background:${color};border:2px solid white;
+            box-shadow:0 1px 4px rgba(0,0,0,0.3);
+            cursor:pointer;
+        "></div>`,
+        iconSize: [14, 14],
+        iconAnchor: [7, 7]
+    });
+    return L.marker([lat, lng], { icon });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  MAIN SCAN
+// ═══════════════════════════════════════════════════════════════
+let scanResults = [];
+let selectedParcel = null;
+
+async function runScan() {
+    const zip = document.getElementById('zipInput').value.trim();
+    const billKey = document.getElementById('billSelect').value;
+    const bill = BILLS[billKey];
+
+    if (!/^\d{5}$/.test(zip)) {
+        alert('Please enter a valid 5-digit California ZIP code.');
+        return;
+    }
+
+    // UI reset
+    const scanBtn = document.getElementById('scanBtn');
+    scanBtn.disabled = true;
+    scanBtn.textContent = '⏳ Scanning…';
+    document.getElementById('resultsHeader').style.display = 'none';
+    document.getElementById('resultsList').innerHTML = '';
+    document.getElementById('detailPanel').innerHTML = '<div class="detail-empty"><div class="icon">⏳</div><p>Scanning parcels…</p></div>';
+    markersLayer.clearLayers();
+    scanResults = [];
+
+    // Show progress
+    const progressWrap = document.getElementById('progressWrap');
+    const progressFill = document.getElementById('progressFill');
+    const progressLabel = document.getElementById('progressLabel');
+    progressWrap.classList.add('visible');
+    progressFill.style.width = '0%';
+
+    try {
+        // Step 1: Get total count
+        progressLabel.textContent = `Fetching parcels in ZIP ${zip}…`;
+        const firstPage = await fetchSnapshotPage(zip, 1);
+        const total = parseInt((firstPage.status || {}).total) || 0;
+        const totalPages = Math.ceil(total / 100);
+        const allProps = [...(firstPage.property || [])];
+
+        progressLabel.textContent = `Loading ${total.toLocaleString()} parcels (page 1 of ${totalPages})…`;
+        progressFill.style.width = `${Math.round(1/totalPages*50)}%`;
+
+        // Step 2: Fetch remaining pages (up to 20 pages = 2000 parcels max to control API usage)
+        const maxPages = Math.min(totalPages, 20);
+        for (let p = 2; p <= maxPages; p++) {
+            const pageData = await fetchSnapshotPage(zip, p);
+            allProps.push(...(pageData.property || []));
+            progressFill.style.width = `${Math.round(p/maxPages*50)}%`;
+            progressLabel.textContent = `Loading parcels… ${allProps.length.toLocaleString()} of ~${total.toLocaleString()}`;
+            await new Promise(r => setTimeout(r, 50)); // small delay to avoid rate limits
+        }
+
+        // Step 3: Filter eligible parcels
+        progressLabel.textContent = `Checking ${allProps.length.toLocaleString()} parcels for eligibility…`;
+        const eligible = [];
+        for (const prop of allProps) {
+            const { eligible: isEligible, checks } = checkEligibility(prop, bill);
+            if (isEligible) {
+                const loc = prop.location || {};
+                const lat = parseFloat(loc.latitude);
+                const lng = parseFloat(loc.longitude);
+                if (lat && lng) {
+                    eligible.push({ prop, checks, lat, lng });
+                }
+            }
+        }
+
+        progressFill.style.width = '60%';
+        progressLabel.textContent = `${eligible.length} eligible parcels — fetching valuations for top candidates…`;
+
+        if (eligible.length === 0) {
+            progressWrap.classList.remove('visible');
+            document.getElementById('resultsList').innerHTML = `
+                <div class="state-message">
+                    <div class="icon">🔍</div>
+                    <p>No qualifying parcels found in ZIP ${zip} for ${bill.name}.<br>
+                    Try a nearby ZIP or a different bill.</p>
+                </div>`;
+            scanBtn.disabled = false;
+            scanBtn.textContent = '🔍 Scan';
+            return;
+        }
+
+        // Step 4: Get assessment data for top 50 (to compute land ratios + scores)
+        const topCandidates = eligible.slice(0, 50);
+        const enriched = [];
+
+        for (let i = 0; i < topCandidates.length; i++) {
+            const { prop, checks, lat, lng } = topCandidates[i];
+            progressFill.style.width = `${60 + Math.round(i/topCandidates.length*35)}%`;
+            progressLabel.textContent = `Enriching parcel ${i+1} of ${topCandidates.length}…`;
+
+            const addr = prop.address || {};
+            const address1 = addr.line1 || '';
+            const address2 = `${addr.locality || ''} ${addr.countrySubd || 'CA'} ${addr.postal1 || zip}`;
+
+            let assessment = null, avm = null;
+            try {
+                [assessment, avm] = await Promise.all([
+                    fetchAssessment(address1, address2),
+                    fetchAVM(address1, address2)
+                ]);
+            } catch (e) { /* continue without enrichment */ }
+
+            const scoreData = calcScore(prop, assessment, avm, bill);
+            enriched.push({ prop, checks, lat, lng, assessment, avm, scoreData });
+            await new Promise(r => setTimeout(r, 80));
+        }
+
+        // Add remaining eligible parcels with base score
+        for (let i = 50; i < eligible.length; i++) {
+            const { prop, checks, lat, lng } = eligible[i];
+            const scoreData = calcScore(prop, null, null, bill);
+            enriched.push({ prop, checks, lat, lng, assessment: null, avm: null, scoreData });
+        }
+
+        // Step 5: Sort by score descending
+        enriched.sort((a, b) => b.scoreData.total - a.scoreData.total);
+        scanResults = enriched;
+
+        progressFill.style.width = '100%';
+        progressLabel.textContent = `Done! ${enriched.length} qualifying parcels ranked.`;
+        await new Promise(r => setTimeout(r, 400));
+        progressWrap.classList.remove('visible');
+
+        // Step 6: Render results
+        renderResults(enriched, bill, zip);
+
+    } catch (err) {
+        console.error(err);
+        progressWrap.classList.remove('visible');
+        document.getElementById('resultsList').innerHTML = `
+            <div class="state-message">
+                <div class="icon">⚠️</div>
+                <p>Error scanning ZIP ${zip}. Please try again.<br>
+                <small style="color:#e53e3e;">${err.message}</small></p>
+            </div>`;
+    }
+
+    scanBtn.disabled = false;
+    scanBtn.textContent = '🔍 Scan';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RENDER RESULTS
+// ═══════════════════════════════════════════════════════════════
+function renderResults(results, bill, zip) {
+    // Update count
+    document.getElementById('resultCount').textContent = results.length;
+    document.getElementById('resultsHeader').style.display = 'flex';
+
+    // Render list
+    const list = document.getElementById('resultsList');
+    if (results.length === 0) {
+        list.innerHTML = `<div class="state-message"><div class="icon">🔍</div><p>No qualifying parcels found.</p></div>`;
+        return;
+    }
+
+    list.innerHTML = results.slice(0, 100).map((r, idx) => {
+        const score = r.scoreData.total;
+        const color = scoreColor(score);
+        const addr = r.prop.address || {};
+        const lot = r.prop.lot || {};
+        const lotSqft = parseFloat(lot.lotsize2) || 0;
+        const propType = r.prop.summary?.proptype || '?';
+
+        return `<div class="parcel-card" id="card-${idx}" onclick="selectParcel(${idx})">
+            <div class="parcel-rank">#${idx+1}</div>
+            <div class="parcel-address">${addr.line1 || 'Unknown Address'}</div>
+            <div class="parcel-meta">${addr.locality || ''} · ${propType} · ${lotSqft > 0 ? lotSqft.toLocaleString() + ' sqft' : '? sqft'}</div>
+            <div class="score-bar-wrap">
+                <div class="score-bar-bg">
+                    <div class="score-bar-fill" style="width:${score}%;background:${color};"></div>
+                </div>
+                <div class="score-label" style="color:${color};">${score}</div>
+            </div>
+        </div>`;
+    }).join('');
+
+    // Drop map markers
+    markersLayer.clearLayers();
+    const bounds = [];
+
+    results.forEach((r, idx) => {
+        const marker = makeMarker(r.lat, r.lng, r.scoreData.total, r);
+        marker.on('click', () => selectParcel(idx));
+        marker.bindTooltip(`#${idx+1} · Score ${r.scoreData.total}`, { direction: 'top', offset: [0, -8] });
+        marker.addTo(markersLayer);
+        bounds.push([r.lat, r.lng]);
+    });
+
+    if (bounds.length > 0) {
+        map.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
+    }
+
+    // Auto-select first
+    if (results.length > 0) selectParcel(0);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SELECT PARCEL — show detail
+// ═══════════════════════════════════════════════════════════════
+function selectParcel(idx) {
+    // Highlight card
+    document.querySelectorAll('.parcel-card').forEach(c => c.classList.remove('active'));
+    const card = document.getElementById(`card-${idx}`);
+    if (card) {
+        card.classList.add('active');
+        card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+
+    const r = scanResults[idx];
+    if (!r) return;
+    selectedParcel = r;
+
+    const prop = r.prop;
+    const addr = prop.address || {};
+    const lot = prop.lot || {};
+    const summary = prop.summary || {};
+    const bldg = prop.building || {};
+    const size = bldg.size || {};
+    const loc = prop.location || {};
+    const asmt = (r.assessment?.property?.[0]?.assessment) || {};
+    const avmData = (r.avm?.property?.[0]?.avm?.amount) || {};
+    const score = r.scoreData.total;
+    const color = scoreColor(score);
+
+    const lotSqft = parseFloat(lot.lotsize2) || 0;
+    const landVal = parseFloat(asmt.assessed?.assdlandvalue) || 0;
+    const impVal = parseFloat(asmt.assessed?.assdimprvalue) || 0;
+    const totalAsmt = parseFloat(asmt.assessed?.assdttlvalue) || 0;
+    const avmVal = parseFloat(avmData.value) || 0;
+    const avmConf = avmData.scr || '?';
+    const taxAmt = parseFloat(asmt.tax?.taxamt) || 0;
+    const sqft = parseFloat(size.universalsize) || 0;
+    const yearBuilt = bldg.summary?.yearbuilt || '?';
+
+    const landRatio = impVal > 0 ? (landVal / impVal).toFixed(2) : '—';
+    const billKey = document.getElementById('billSelect').value;
+    const bill = BILLS[billKey];
+
+    // Estimated buildable units (rough)
+    let buildableUnits = '?';
+    if (lotSqft > 0) {
+        if (billKey === 'sb1123') buildableUnits = Math.min(10, Math.max(2, Math.floor(lotSqft / 1200)));
+        else if (billKey === 'sb9') buildableUnits = 4;
+        else if (billKey === 'ab1033') buildableUnits = 2;
+        else buildableUnits = Math.floor(lotSqft / 1000);
+    }
+
+    // Land per buildable unit
+    const landPerUnit = (avmVal > 0 && buildableUnits !== '?')
+        ? `$${Math.round(avmVal / buildableUnits).toLocaleString()}`
+        : '—';
+
+    const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((addr.line1 || '') + ' ' + (addr.locality || '') + ' CA')}`;
+    const zillowLink = `https://www.zillow.com/homes/${encodeURIComponent((addr.line1 || '') + '-' + (addr.locality || '') + '-CA')}_rb/`;
+
+    // Pan map to parcel
+    if (r.lat && r.lng) map.panTo([r.lat, r.lng], { animate: true });
+
+    document.getElementById('detailPanel').innerHTML = `
+        <div>
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;">
+                <div>
+                    <h3 style="font-size:1.1rem;font-weight:800;color:var(--primary);margin-bottom:0.2rem;">
+                        ${addr.line1 || 'Unknown Address'}
+                    </h3>
+                    <div style="font-size:0.82rem;color:var(--text-light);">
+                        ${addr.locality || ''}, CA ${addr.postal1 || ''} &nbsp;·&nbsp;
+                        APN: ${prop.identifier?.apn || '?'}
+                    </div>
+                </div>
+                <div style="text-align:right;flex-shrink:0;">
+                    <div style="font-size:2rem;font-weight:900;color:${color};line-height:1;">${score}</div>
+                    <div style="font-size:0.7rem;font-weight:700;color:${color};text-transform:uppercase;">Dev Score</div>
+                </div>
+            </div>
+
+            <div class="detail-grid">
+                <div class="detail-stat">
+                    <div class="stat-label">AVM Value</div>
+                    <div class="stat-value">${avmVal > 0 ? '$' + Math.round(avmVal/1000) + 'K' : '—'}</div>
+                    <div class="stat-sub">Conf: ${avmConf}/100</div>
+                </div>
+                <div class="detail-stat">
+                    <div class="stat-label">Lot Size</div>
+                    <div class="stat-value">${lotSqft > 0 ? lotSqft.toLocaleString() : '?'}</div>
+                    <div class="stat-sub">sqft</div>
+                </div>
+                <div class="detail-stat">
+                    <div class="stat-label">Land Value</div>
+                    <div class="stat-value">${landVal > 0 ? '$' + Math.round(landVal/1000) + 'K' : '—'}</div>
+                    <div class="stat-sub">Assessed</div>
+                </div>
+                <div class="detail-stat">
+                    <div class="stat-label">Land/Imprv</div>
+                    <div class="stat-value">${landRatio}x</div>
+                    <div class="stat-sub">Teardown signal</div>
+                </div>
+                <div class="detail-stat">
+                    <div class="stat-label">Est. Units</div>
+                    <div class="stat-value">${buildableUnits}</div>
+                    <div class="stat-sub">under ${bill.name}</div>
+                </div>
+                <div class="detail-stat">
+                    <div class="stat-label">Land/Unit</div>
+                    <div class="stat-value" style="font-size:0.85rem;">${landPerUnit}</div>
+                    <div class="stat-sub">AVM ÷ units</div>
+                </div>
+                <div class="detail-stat">
+                    <div class="stat-label">Bldg Sqft</div>
+                    <div class="stat-value">${sqft > 0 ? sqft.toLocaleString() : '?'}</div>
+                    <div class="stat-sub">Year: ${yearBuilt}</div>
+                </div>
+                <div class="detail-stat">
+                    <div class="stat-label">Prop Type</div>
+                    <div class="stat-value" style="font-size:0.82rem;">${summary.proptype || '?'}</div>
+                    <div class="stat-sub">${summary.propsubtype || ''}</div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h4>📋 ${bill.name} Eligibility Checks</h4>
+                ${r.checks.map(c => `
+                    <div class="eligibility-row">
+                        <span class="elig-icon ${c.pass ? 'elig-pass' : (c.weight === 'info' ? 'elig-warn' : 'elig-fail')}">
+                            ${c.pass ? '✅' : (c.weight === 'info' ? 'ℹ️' : '❌')}
+                        </span>
+                        <span>${c.label}</span>
+                        ${c.value ? `<span style="color:var(--text-light);font-size:0.75rem;">(${c.value})</span>` : ''}
+                    </div>`).join('')}
+            </div>
+
+            <div class="detail-section">
+                <h4>📊 Score Breakdown</h4>
+                ${r.scoreData.breakdown.map(b => {
+                    const bc = scoreColor(b.score);
+                    return `<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem;font-size:0.8rem;">
+                        <span style="min-width:130px;color:var(--text);">${b.label}</span>
+                        <div style="flex:1;height:5px;background:#e2e8f0;border-radius:2px;overflow:hidden;">
+                            <div style="width:${b.score}%;height:100%;background:${bc};border-radius:2px;"></div>
+                        </div>
+                        <span style="color:${bc};font-weight:800;min-width:2rem;text-align:right;">${b.score}</span>
+                        <span style="color:var(--text-light);min-width:2rem;">${b.weight}</span>
+                    </div>`;
+                }).join('')}
+            </div>
+
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem;">
+                <a href="${googleMapsLink}" target="_blank" rel="noopener"
+                   style="padding:0.4rem 0.85rem;background:#f0f4f8;border:1px solid var(--border);border-radius:6px;font-size:0.78rem;font-weight:600;color:var(--primary);text-decoration:none;">
+                    🗺 Google Maps
+                </a>
+                <a href="${zillowLink}" target="_blank" rel="noopener"
+                   style="padding:0.4rem 0.85rem;background:#f0f4f8;border:1px solid var(--border);border-radius:6px;font-size:0.78rem;font-weight:600;color:var(--primary);text-decoration:none;">
+                    🏠 Zillow
+                </a>
+                <button onclick="openHBU('${encodeURIComponent((addr.line1||''))}', '${encodeURIComponent((addr.locality||'')+' CA '+(addr.postal1||''))}')"
+                   style="padding:0.4rem 0.85rem;background:#f0f4f8;border:1px solid var(--border);border-radius:6px;font-size:0.78rem;font-weight:600;color:var(--primary);cursor:pointer;">
+                    📐 Full HBU Analysis
+                </button>
+            </div>
+
+            <div class="cta-banner">
+                <div>
+                    <strong>🏦 Ready to finance this deal?</strong>
+                    <p>CLS CRE specializes in construction and bridge loans for by-right multifamily in California.</p>
+                </div>
+                <a href="https://clscre.com/contact" target="_blank" class="btn-cta">Get Financing →</a>
+            </div>
+        </div>
+    `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  OPEN HBU ANALYSIS
+// ═══════════════════════════════════════════════════════════════
+function openHBU(address1, address2) {
+    const url = `app.html?address=${address1}&city=${address2}`;
+    window.open(url, '_blank');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CSV EXPORT
+// ═══════════════════════════════════════════════════════════════
+function exportCSV() {
+    if (!scanResults.length) return;
+    const billKey = document.getElementById('billSelect').value;
+    const bill = BILLS[billKey];
+    const zip = document.getElementById('zipInput').value;
+
+    const headers = ['Rank','Address','City','ZIP','APN','PropType','LotSqft','AVMValue','LandValue','ImprValue','LandToImprRatio','EstUnits','LandPerUnit','DevScore','Lat','Lng'];
+    const rows = scanResults.slice(0, 200).map((r, i) => {
+        const addr = r.prop.address || {};
+        const lot = r.prop.lot || {};
+        const summary = r.prop.summary || {};
+        const asmt = (r.assessment?.property?.[0]?.assessment?.assessed) || {};
+        const avmData = (r.avm?.property?.[0]?.avm?.amount) || {};
+        const lotSqft = parseFloat(lot.lotsize2) || 0;
+        const landVal = parseFloat(asmt.assdlandvalue) || 0;
+        const impVal = parseFloat(asmt.assdimprvalue) || 0;
+        const avmVal = parseFloat(avmData.value) || 0;
+        const landRatio = impVal > 0 ? (landVal / impVal).toFixed(2) : '';
+        let units = '';
+        if (lotSqft > 0) {
+            if (billKey === 'sb1123') units = Math.min(10, Math.max(2, Math.floor(lotSqft / 1200)));
+            else if (billKey === 'sb9') units = 4;
+            else if (billKey === 'ab1033') units = 2;
+            else units = Math.floor(lotSqft / 1000);
+        }
+        const landPerUnit = (avmVal > 0 && units) ? Math.round(avmVal / units) : '';
+        return [
+            i+1,
+            `"${addr.line1 || ''}"`,
+            `"${addr.locality || ''}"`,
+            addr.postal1 || zip,
+            `"${r.prop.identifier?.apn || ''}"`,
+            summary.proptype || '',
+            lotSqft || '',
+            avmVal || '',
+            landVal || '',
+            impVal || '',
+            landRatio,
+            units,
+            landPerUnit,
+            r.scoreData.total,
+            r.lat,
+            r.lng
+        ].join(',');
+    });
+
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${bill.name.replace(' ','-')}_${zip}_parcels.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ZIP INPUT — enter key
+// ═══════════════════════════════════════════════════════════════
+document.getElementById('zipInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') runScan();
+});
+</script>
+</body>
+</html>
