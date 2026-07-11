@@ -272,6 +272,9 @@
         <option value="other">Other</option>
       </select>
 
+      <label for="promoInput">Promo code <span style="opacity:0.6;font-weight:normal">(optional)</span></label>
+      <input type="text" id="promoInput" placeholder="Have a code? Enter it here" autocomplete="off" style="text-transform:uppercase">
+
       <button type="submit" class="btn" id="submitBtn">
         Get Free Access
       </button>
@@ -318,11 +321,45 @@
 <script>
   var generatedToken = '';
 
+  // Promo codes honored when the site runs on static hosting (no API).
+  // When the API is available it is the source of truth instead.
+  var STATIC_PROMO_CODES = { 'PROVISORS': 365 };
+  var DEFAULT_TRIAL_DAYS = 30;
+
+  // Static-hosting fallback: issue a token locally so signup always works.
+  function staticSignup(name, email, role, promo) {
+    var days = DEFAULT_TRIAL_DAYS;
+    var promoApplied = null;
+    if (promo) {
+      if (STATIC_PROMO_CODES[promo]) {
+        days = STATIC_PROMO_CODES[promo];
+        promoApplied = promo;
+      } else {
+        return { error: 'That promo code isn\'t valid. Leave it blank for the standard 30-day trial, or email trevor@clscre.com.' };
+      }
+    }
+    var expiry = new Date(Date.now() + days * 24 * 60 * 60 * 1000)
+      .toISOString().slice(0, 10).replace(/-/g, '');
+    var hex = '';
+    var bytes = new Uint8Array(8);
+    (window.crypto || {}).getRandomValues ? crypto.getRandomValues(bytes) : bytes.forEach(function(_, i) { bytes[i] = Math.floor(Math.random() * 256); });
+    for (var i = 0; i < bytes.length; i++) hex += bytes[i].toString(16).padStart(2, '0');
+    return {
+      ok: true,
+      token: 'lty-trial-' + expiry + '-' + hex,
+      expiresOn: expiry.slice(0,4) + '-' + expiry.slice(4,6) + '-' + expiry.slice(6,8),
+      name: name,
+      promoApplied: promoApplied,
+      days: days
+    };
+  }
+
   async function handleSignup(e) {
     e.preventDefault();
     var name  = document.getElementById('nameInput').value.trim();
     var email = document.getElementById('emailInput').value.trim();
     var role  = document.getElementById('roleSelect').value;
+    var promo = document.getElementById('promoInput').value.trim().toUpperCase();
     var btn   = document.getElementById('submitBtn');
     var err   = document.getElementById('errorMsg');
 
@@ -330,25 +367,32 @@
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span>Setting up your trial…';
 
+    var data = null;
     try {
       var res = await fetch('/api/trial/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, role })
+        body: JSON.stringify({ name: name, email: email, role: role, promoCode: promo })
       });
 
-      var data = await res.json().catch(function() { return {}; });
-
-      if (res.ok && data.token) {
-        generatedToken = data.token;
-        showSuccess(data);
+      var ct = (res.headers.get('content-type') || '');
+      if (!ct.includes('application/json')) {
+        // Static hosting (no serverless API) — issue the token client-side
+        data = staticSignup(name, email, role, promo);
       } else {
-        showError(data.error || 'Something went wrong. Please try again or email trevor@clscre.com.');
-        btn.disabled = false;
-        btn.innerHTML = 'Get Free Access';
+        data = await res.json().catch(function() { return {}; });
+        if (!res.ok) data = { error: data.error };
       }
     } catch(ex) {
-      showError('Network error — please check your connection and try again.');
+      // Network layer failed entirely — still let the visitor in
+      data = staticSignup(name, email, role, promo);
+    }
+
+    if (data && data.ok && data.token) {
+      generatedToken = data.token;
+      showSuccess(data);
+    } else {
+      showError((data && data.error) || 'Something went wrong. Please try again or email trevor@clscre.com.');
       btn.disabled = false;
       btn.innerHTML = 'Get Free Access';
     }
@@ -369,6 +413,16 @@
       var d = new Date(data.expiresOn + 'T00:00:00');
       var opts = { year: 'numeric', month: 'long', day: 'numeric' };
       document.getElementById('expiryDisplay').textContent = d.toLocaleDateString('en-US', opts);
+    }
+
+    // Promo acknowledgement
+    if (data.promoApplied) {
+      var note = document.createElement('p');
+      note.className = 'expiry-note';
+      note.style.textAlign = 'center';
+      note.innerHTML = '🎉 Promo code <strong>' + data.promoApplied + '</strong> applied: <strong>' + (data.days || 365) + ' days</strong> of full access.';
+      var tokenBox = panel.querySelector('.token-box');
+      if (tokenBox) tokenBox.insertAdjacentElement('afterend', note);
     }
   }
 

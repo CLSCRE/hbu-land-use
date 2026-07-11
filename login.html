@@ -328,6 +328,9 @@
       if (res.ok) {
         btn.innerHTML = '✓ Authenticated — redirecting…';
         setTimeout(function() { window.location.href = redirectTo; }, 400);
+      } else if (!(res.headers.get('content-type') || '').includes('application/json')) {
+        // Static hosting (no serverless API) — validate what we can locally
+        staticLogin(token, btn);
       } else {
         var data = await res.json().catch(function() { return {}; });
         showError(data.error || 'Invalid access token. Please check and try again.');
@@ -335,10 +338,32 @@
         btn.innerHTML = 'Sign In';
       }
     } catch(ex) {
-      showError('Network error — please check your connection and try again.');
+      staticLogin(token, btn);
+    }
+  }
+
+  // Static-hosting fallback: check trial-token expiry locally, set the
+  // auth cookie client-side, and continue to the requested page.
+  function staticLogin(token, btn) {
+    var m = token.match(/^lty-trial-(\d{8})-([0-9a-f]{16})$/);
+    if (m) {
+      var today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      if (today > m[1]) {
+        showError('This trial token has expired. Email trevor@clscre.com to extend your access.');
+        btn.disabled = false;
+        btn.innerHTML = 'Sign In';
+        return;
+      }
+    } else if (!token) {
+      showError('Access token is required');
       btn.disabled = false;
       btn.innerHTML = 'Sign In';
+      return;
     }
+    document.cookie = 'lty_auth=' + encodeURIComponent(token) +
+      '; max-age=' + (60 * 60 * 24 * 30) + '; path=/; SameSite=Lax; Secure';
+    btn.innerHTML = '✓ Authenticated — redirecting…';
+    setTimeout(function() { window.location.href = redirectTo; }, 400);
   }
 
   function showError(msg) {
