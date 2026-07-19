@@ -1,0 +1,614 @@
+                                           Item Nos. 6, 7
+
+              Department of City Planning
+
+              City Hall, 200 N. Spring Street, Room 525, Los Angeles, CA 90012
+
+May 13, 2026
+
+TO:           City Planning Commission
+
+FROM:         Erika Cui, City Planner
+              Thea Trindle, City Planner
+  
+
+TECHNICAL MODIFICATIONS TO STAFF RECOMMENDATION REPORT AND ADDITIONAL
+INFORMATION FOR CASE NOS. CPC-2026-1798-MSC and CPC-2026-1797-CA
+
+TECHNICAL MODIFICATIONS TO EXHIBIT 3
+The following technical corrections are to be incorporated into Exhibit 3 (SB 79 Map Inventory)
+of the staff recommendation report to be considered at the City Planning Commission meeting
+of May 14, 2026 related to Items No. 6 and 7 on the meeting agenda:
+
+         INSTRUCTION: Replace Maps 3C, 3F, 3I, 3L, 3M, and 3L of Exhibit 3 with updated
+         maps, as reflected in Attachment A. Revised Maps include an additional map layer that
+         visualizes sites that are statutorily exempt from Senate Bill 79 (SB 79). This map layer
+         was inadvertently omitted in the initial transmittal, with the maps listed above incorrectly
+         classifying statutorily exempt sites as "Not Eligible for Temporary Exemption without
+         Further Action". Map 3M has also been updated to combine the two map layers
+         visualizing sites `Eligible for Phased Implementation with No City Action' and sites
+         `Eligible for Phased Implementation Upon Adoption of Low-Rise Ordinance' into a single
+         layer named `Eligible for Phased Implementation Upon Adoption of Low-Rise Ordinance'
+         to improve clarity.
+
+TECHNICAL MODIFICATIONS TO EXHIBIT 2A
+The following technical corrections are to be incorporated into Exhibit 2A (Proposed Low-Rise
+Ordinance) of the staff recommendation report:
+
+         INSTRUCTION: Revise Los Angeles Municipal Code Section 12.22 A.38 (g)(3)(i)(a) on
+         page 11 in Exhibit 2A for alignment with SB 79 requirements for properties adjacent to a
+         TOD Stop as follows:
+ITEM NOS. 6, 7
+CPC-2026-1798-MSC, CPC-2026-1797-CA
+Page 2
+
+         a. Exception. Notwithstanding Table 12.22 A.38.(g)(3)(i) above, a site in the Low-Rise
+         Incentive Area is eligible for up to half the amount of units and floor area otherwise
+         permitted in California Government Code Section 65912.157(a). Furthermore, projects
+         located within 200 feet of a Tier 1 or Tier 2 TOD Stop that cannot accommodate half the
+         amount of units and floor area otherwise permitted in California Government Code
+         Section 65912.157(a) shall be eligible for an additional story in height beyond the
+         heights specified in Table 12.22 A.38.(g)(3)(i) above.
+
+ADDITIONAL INFORMATION IN RESPONSE TO PUBLIC COMMENT FOR CASE NO.
+CPC-2026-1797-CA
+
+The Department of City Planning has prepared additional information for the City Planning
+Commission's (CPC) consideration to incorporate information related to public comment
+received after the release of the draft ordinances, as well as provide additional analysis
+regarding the Low-Rise Incentive Area program incentives and performance standards
+recommended in the Low-Rise Ordinance.
+
+Summary of Public Comment on Low-Rise Incentive Area Incentive Relief and Performance
+Standards
+
+Since the release of the ordinances associated with the City of Los Angeles' local
+implementation approach, the Department has received and reviewed numerous comments
+submitted in response to the incentives and performance standards contained in the Low-Rise
+(formerly Corridor Transition) Incentive Area program (referred to as "Low-Rise"). In particular,
+some commenters have encouraged the CPC to consider amending the Low-Rise Ordinance to
+enforce a 15 foot rear yard setback in the Low-Rise program citing concerns related to safety,
+impacts to Los Angeles' urban canopy, and adverse effects to existing private open space.
+Commenters also called for restoration of the rear yard common open space option to
+encourage flexibility in the configuration of Low-Rise program projects and improve overall
+project feasibility. Finally, commenters recommended consideration of a front yard
+encroachment allowance for balconies to support the design and construction of private open
+space in a manner consistent with the goal to cultivate active and pedestrian-oriented streets.
+
+Additional Options for Consideration
+
+City Planning has developed several considerations for the CPC to evaluate based on the
+feedback received. These proposed options offer setback, open space, and development
+standard allowances to address the concerns described above. These options have been
+analyzed for consistency with SB's 79 statutory requirements and are consistent with building
+volume allowances required for local implementation.
+ITEM NOS. 6, 7
+CPC-2026-1798-MSC, CPC-2026-1797-CA
+Page 3
+
+Yard Setbacks
+Within the Low Rise (formerly Corridor Transition) program, incentives and performance
+standards have been calibrated to create low-rise missing middle outcomes found in the historic
+architecture of Los Angeles (courtyard apartments, bungalow courts, townhomes, etc).
+Setbacks, parking standards, and open space requirements have all been designed to integrate
+contextual density and produce modulated low-scale developments. The Low-Rise Ordinance
+proposes 15-foot front yard or prevailing, which ever is less, and maintains the existing
+programs setback standards of a 4-foot side yard for three or more story structures, a 3-foot
+side yard for two or less story structures, and a 4-foot rear setback provided structures maintain
+a height of less than 26-feet within 15-feet of the rear lot line.
+
+In response to public comment, the Department analyzed the feasibility of maintaining
+compliance with SB 79, while requiring 15 foot front yards, 5 foot side yards, and 15 foot rear
+yards within the Low Rise program. This analysis found that on a 5,000 or 7,500 square-foot lot,
+with the additional development standards included in the ordinance, these yard requirements
+would not allow for the development of half of the SB 79-allowed building volume within 200 feet
+of a Tier 1 Transit Oriented Development (TOD) Stop, a ¼ mile of a Tier 1 TOD Stop, 200 feet of
+a Tier 2 TOD Stop, and ½ mile of a Tier 2 TOD Stop (as required by Government Code Section
+65912.161(b)(1)(A) for phased implementation) and, therefore, would not meet SB 79's
+requirements.
+
+The introduction of a 15-foot rear yard setback with the proposed 15-foot front yard setback
+would require additional height relief in order to offset the resulting limited developable area.
+Both the increase in setbacks and height would result in a taller, more narrow development
+typology, which may not comport with the low-scale goal the program was designed to address.
+Furthermore with regard to comments voicing concerns related to access and fire standards, all
+projects are reviewed for compliance with applicable building code requirements during the
+permitting process. This process includes review by the Department of Building and Safety and
+the Los Angeles Fire Department to ensure compliance with any access or setback requirement
+in the applicable State Minimum Fire Safety Regulations and/or Fire Code which may result in
+higher building separation or hardening requirements dependent on the project location and
+conditions.
+
+Staff further analyzed alternative options for an increased rear setback and found that an 8 foot
+rear yard setback without a required building stepback would comply with SB 79 minimums. As
+such, to permit rear-yard flexibility to support enhanced tree canopy and open space, while
+maintaining existing front yard requirements, the Commission could explore requiring an 8-foot
+rear setback without a transitional height standard.
+
+Open Space
+To promote street-oriented open space and building modulation on the primary facade, the
+Department previously eliminated options for rear yard open space. However, in response to
+public feedback requesting private outdoor areas, rear yard open space allowances may be
+ITEM NOS. 6, 7
+CPC-2026-1798-MSC, CPC-2026-1797-CA
+Page 4
+
+reintroduced in conjunction with front yard permissions. Restoring the rear yard open space
+incentive could encourage the creation of rear-facing open areas by providing specific open
+space credits within the rear yard setback.
+
+Balcony Encroachments
+To support greener corridors for residents and pedestrians alike, the Department maintains its
+recommendation in the Low-Rise Ordinance to enforce a front yard setback that equates to 15
+feet or the average of a site's adjacent lots, whichever is less. In response to comments, CPC
+could consider allowing a balcony front yard encroachment of up to five feet to promote
+community-oriented outdoor space and design versatility.
+
+Sincerely,
+
+JENNA MONTERROSA
+Principal City Planner, Citywide Policy Division
+
+Attachment A: Updates to Exhibit 3 SB 79 Map Inventory of the Staff Recommendation
+Report for CPC-2026-1798-MSC and CPC-2026-1797-CA
+
+This attachment contains updated maps as instructed in the Technical Modification to Exhibit 3
+above. The updated maps are provided in the following pages and listed below in order:
+
+Map 3C: TOD Zones and Sites Eligible for Temporary Exemption without Low-Rise Ordinance
+Map 3F: Low Resource Sites Eligible for Temporary Exemption due to Existing Zoned Capacity
+(GCS 65912.161(b)(1)(B)(iii))
+Map 3I: Sites Eligible for Temporary Exemption due to Existing Zoned Capacity (GCS
+65912.161(b)(1)(A))
+Map 3K: Summary of Sites Eligible for Temporary Exemption without Low-Rise Ordinance
+Map 3L: Low Resource Sites and Primarily Low Resource TOD Zones Eligible for Temporary
+Exemption
+Map 3M: Sites Eligible for Phased Implementation with Low-Rise Ordinance
+TOD Zones and Sites Eligible for Temporary Exemption
+without Low Rise Ordinance
+
+DRAFTSanta Clarita
+                                                                 Los Angeles
+                                                                  Reservoir
+
+        Simi Valley
+
+                                                                                         Hansen Lake
+
+                     Chatsworth                                                                                                                                   La Cañada
+                      Reservoir                                                                                                                                   Flintridge
+
+                                   Los Angeles River                                                                                           Glendale
+
+                                                                                                                      Burbank
+
+Agoura                                                                                                                                                                                                       Eaton Canyon
+ Hills                                                                                                                                                                                                         Reservoir
+
+                                                                                                                                                                                           Pasadena
+
+        Calabasas                                      Encino
+                                                      Reservoir
+
+                                                                                                                      Hollywood                                                              South
+                                                                                                                      Reservoir                                                            Pasadena
+
+                                                                              Stone Canyon                                                     Silver Lake                                         Alhambra
+                                                                                Reservoir                                                      Reservoir
+
+                                                                                                    Beverly
+                                                                                                      Hills
+
+        Malibu                                                                                                                                              Los Angeles River              Monterey Park
+
+                                                                 Santa Monica                                                                                                                             Montebello
+                                                                                                                                                                                           Commerce
+                                                                                         Culver                                                             Vernon
+                                                                                          City
+
+                                                                                                                                                            Huntington            Bell
+                                                                                                                                                                Park                   Bell Gardens
+
+                                                                                                                      Inglewood
+
+                                                                                                                                                                               South Gate
+
+                                   Pacific Ocean                                         El Segundo              Hawthorne
+
+      Temporary Exemption per GCS 65912.161(b)(1)                                                                                                                                                            Norwalk
+
+                 Eligible for Temporary Exemption                                                                                Gardena                    Compton
+                 Statutorily Exempt from SB 79
+                 Not Eligible for Temporary Exemption without Further Action                                 Redondo
+                 City Boundary                                                                                Beach
+
+         Disclaimer: This map visualizes where sites and/or transit-oriented                                          Torrance                 Carson
+         development zones (TOD zones) are eligible for temporary exemption from
+         Senate Bill 79, pursuant to Government Code Section 65912.161(b)(1) until                                                                                                         Long Beach
+         one year following the adoption of the seventh revision of the housing
+         element. Sites that do not permit residential, mixed, or commercial uses are                                            Machado Lake
+         considered statutorily exempt and Not Eligible for SB 79. This map is in draft
+         format and is subject to change pending updates to eligible transit-oriented                                                                                                      Colorado
+         development stops. The Director of Planning is authorized to issue a final                                                                                                        Lagoon
+         map of sites eligible for this temporary exemption from SB 79.
+                                                                                         Rancho Palos                 Rolling                                                                                Seal Beach
+Source(s): Los Angeles Department of City Planning                                           Verdes                    Hills
+
+                                                                                                                                          0                                    5                             10
+
+                                                                                                                                                                               Miles                                  N
+
+                                                                                         Date Exported 8/5/2026                  Path S:\GIS\Projects\CitywidePolicy\Housing Policy\SB 79\SB79_Maps_April2026\SB79_Maps_April2026_JB.aprx
+Low Resource Sites Eligible for Temporary Exemption due to
+Existing Zoned Capacity (GCS 65912.161(b)(1)(B)(iii))
+
+DRAFTSanta Clarita
+                                                                 Los Angeles
+                                                                  Reservoir
+
+        Simi Valley
+
+                                                                                         Hansen Lake
+
+                     Chatsworth                                                                                                                                   La Cañada
+                      Reservoir                                                                                                                                   Flintridge
+
+                                   Los Angeles River                                                                                           Glendale
+
+                                                                                                                      Burbank
+
+Agoura                                                                                                                                                                                                       Eaton Canyon
+ Hills                                                                                                                                                                                                         Reservoir
+
+                                                                                                                                                                                           Pasadena
+
+        Calabasas                                      Encino
+                                                      Reservoir
+
+                                                                                                                      Hollywood                                                              South
+                                                                                                                      Reservoir                                                            Pasadena
+
+                                                                              Stone Canyon                                                     Silver Lake                                         Alhambra
+                                                                                Reservoir                                                      Reservoir
+
+                                                                                                    Beverly
+                                                                                                      Hills
+
+        Malibu                                                                                                                                              Los Angeles River              Monterey Park
+
+                                                                 Santa Monica                                                                                                                             Montebello
+                                                                                                                                                                                           Commerce
+                                                                                         Culver                                                             Vernon
+                                                                                          City
+
+                                                                                                                                                            Huntington            Bell
+                                                                                                                                                                Park                   Bell Gardens
+
+                                                                                                                      Inglewood
+
+                                                                                                                                                                               South Gate
+
+                                   Pacific Ocean                                         El Segundo              Hawthorne
+
+       Temporary Exemption per GCS 65912.161(b)(1)(B)(iii)                                                                                                                                                   Norwalk
+
+                      Eligible for Temporary Exemption                                                                           Gardena                    Compton
+                      Statutorily Exempt from SB 79
+                      Not Eligible for Temporary Exemption under this Criterion                              Redondo
+                      City Boundary                                                                           Beach
+
+         Disclaimer: This map visualizes where sites and/or transit-oriented                                          Torrance                 Carson
+         development zones (TOD zones) are eligible for temporary exemption from
+         Senate Bill 79, pursuant to Goverment Code Section 65912.161(b)(1) until                                                                                                          Long Beach
+         one year following the adoption of the seventh revision of the housing
+         element. Sites that do not permit residential, mixed, or commercial uses are                                            Machado Lake
+         considered statutorily exempt and Not Eligible for SB 79. This map is in draft
+         format and is subject to change pending updates to eligible transit-orientied                                                                                                     Colorado
+         development stops. The Director of Planning is authorized to issue a final                                                                                                        Lagoon
+         map of sites eligible for this temporary exemption from SB 79.
+                                                                                         Rancho Palos                 Rolling                                                                                Seal Beach
+Source(s): Los Angeles Department of City Planning                                           Verdes                    Hills
+
+                                                                                                                                          0                                    5                             10
+
+                                                                                                                                                                               Miles                                  N
+
+                                                                                         Date Exported 8/5/2026                  Path S:\GIS\Projects\CitywidePolicy\Housing Policy\SB 79\SB79_Maps_April2026\SB79_Maps_April2026_JB.aprx
+Sites Eligible for Temporary Exemption due to Existing Zoned
+Capacity (GCS 65912.161(b)(1)(A))
+
+DRAFTSanta Clarita
+                                                                 Los Angeles
+                                                                  Reservoir
+
+        Simi Valley
+
+                                                                                         Hansen Lake
+
+                     Chatsworth                                                                                                                                   La Cañada
+                      Reservoir                                                                                                                                   Flintridge
+
+                                   Los Angeles River                                                                                           Glendale
+
+                                                                                                                      Burbank
+
+Agoura                                                                                                                                                                                                       Eaton Canyon
+ Hills                                                                                                                                                                                                         Reservoir
+
+                                                                                                                                                                                           Pasadena
+
+        Calabasas                                      Encino
+                                                      Reservoir
+
+                                                                                                                      Hollywood                                                              South
+                                                                                                                      Reservoir                                                            Pasadena
+
+                                                                              Stone Canyon                                                     Silver Lake                                         Alhambra
+                                                                                Reservoir                                                      Reservoir
+
+                                                                                                    Beverly
+                                                                                                      Hills
+
+        Malibu                                                                                                                                              Los Angeles River              Monterey Park
+
+                                                                 Santa Monica                                                                                                                             Montebello
+                                                                                                                                                                                           Commerce
+                                                                                         Culver                                                             Vernon
+                                                                                          City
+
+                                                                                                                                                            Huntington            Bell
+                                                                                                                                                                Park                   Bell Gardens
+
+                                                                                                                      Inglewood
+
+                                                                                                                                                                               South Gate
+
+                                   Pacific Ocean                                         El Segundo              Hawthorne
+
+      Temporary Exemption per GCS 65912.161(b)(1)(A)                                                                                                                                                         Norwalk
+
+                      Eligible for Temporary Exemption                                                                           Gardena                    Compton
+                      Statutorily Exempt from SB 79
+                      Not Eligible for Temporary Exemption without Further Action                            Redondo
+                      City Boundary                                                                           Beach
+
+         Disclaimer: This map visualizes where sites and/or transit-oriented                                          Torrance                 Carson
+         development zones (TOD zones) are eligible for temporary exemption from
+         Senate Bill 79, pursuant to Goverment Code Section 65912.161(b)(1) until                                                                                                          Long Beach
+         one year following the adoption of the seventh revision of the housing
+         element. Sites that do not permit residential, mixed, or commercial uses are                                            Machado Lake
+         considered statutorily exempt and Not Eligible for SB 79. This map is in draft
+         format and is subject to change pending updates to eligible transit-orientied                                                                                                     Colorado
+         development stops. The Director of Planning is authorized to issue a final                                                                                                        Lagoon
+         map of sites eligible for this temporary exemption from SB 79.
+                                                                                         Rancho Palos                 Rolling                                                                                Seal Beach
+Source(s): Los Angeles Department of City Planning                                           Verdes                    Hills
+
+                                                                                                                                          0                                    5                             10
+
+                                                                                                                                                                               Miles                                  N
+
+                                                                                         Date Exported 8/5/2026                  Path S:\GIS\Projects\CitywidePolicy\Housing Policy\SB 79\SB79_Maps_April2026\SB79_Maps_April2026_JB.aprx
+Summary of Sites Eligible for Temporary Exemption
+without Low Rise Ordinance
+
+DRAFTSanta Clarita
+                                                                 Los Angeles
+                                                                  Reservoir
+
+        Simi Valley
+
+                                                                                         Hansen Lake
+
+                     Chatsworth                                                                                                                                   La Cañada
+                      Reservoir                                                                                                                                   Flintridge
+
+                                   Los Angeles River                                                                                           Glendale
+
+                                                                                                                      Burbank
+
+Agoura                                                                                                                                                                                                       Eaton Canyon
+ Hills                                                                                                                                                                                                         Reservoir
+
+                                                                                                                                                                                           Pasadena
+
+        Calabasas                                      Encino
+                                                      Reservoir
+
+                                                                                                                      Hollywood                                                              South
+                                                                                                                      Reservoir                                                            Pasadena
+
+                                                                              Stone Canyon                                                     Silver Lake                                         Alhambra
+                                                                                Reservoir                                                      Reservoir
+
+                                                                                                    Beverly
+                                                                                                      Hills
+
+        Malibu                                                                                                                                              Los Angeles River              Monterey Park
+
+                                                                 Santa Monica                                                                                                                             Montebello
+                                                                                                                                                                                           Commerce
+                                                                                         Culver                                                             Vernon
+                                                                                          City
+
+                                                                                                                                                            Huntington            Bell
+                                                                                                                                                                Park                   Bell Gardens
+
+                                                                                                                      Inglewood
+
+                                                                                                                                                                               South Gate
+
+                                   Pacific Ocean                                         El Segundo              Hawthorne
+
+       Temporary Exemption per GCS 65912.161(b)(1)                                                                                                                                                           Norwalk
+
+                Eligible for Temporary Exemption                                                                                 Gardena                    Compton
+                Statutorily Exempt from SB 79
+                Not Eligible for Temporary Exemption at Site Level                                           Redondo
+                City Boundary                                                                                 Beach
+
+         Disclaimer: This map visualizes where sites and/or transit-oriented                                          Torrance                 Carson
+         development zones (TOD zones) are eligible for temporary exemption from
+         Senate Bill 79, pursuant to Government Code Section 65912.161(b)(1) until                                                                                                         Long Beach
+         one year following the adoption of the seventh revision of the housing
+         element. Sites that do not permit residential, mixed, or commercial uses are                                            Machado Lake
+         considered statutorily exempt and Not Eligible for SB 79. This map is in draft
+         format and is subject to change pending updates to eligible transit-oriented                                                                                                      Colorado
+         development stops. The Director of Planning is authorized to issue a final                                                                                                        Lagoon
+         map of sites eligible for this temporary exemption from SB 79.
+                                                                                         Rancho Palos                 Rolling                                                                                Seal Beach
+Source(s): Los Angeles Department of City Planning                                           Verdes                    Hills
+
+                                                                                                                                          0                                    5                             10
+
+                                                                                                                                                                               Miles                                  N
+
+                                                                                         Date Exported 8/5/2026                  Path S:\GIS\Projects\CitywidePolicy\Housing Policy\SB 79\SB79_Maps_April2026\SB79_Maps_April2026_JB.aprx
+Low Resource Sites and Primarily Low Resource TOD Zones
+Eligible for Temporary Exemption
+
+DRAFTSanta Clarita
+                                                                 Los Angeles
+                                                                  Reservoir
+
+        Simi Valley
+
+                                                                                         Hansen Lake
+
+                     Chatsworth                                                                                                                                   La Cañada
+                      Reservoir                                                                                                                                   Flintridge
+
+                                   Los Angeles River                                                                                           Glendale
+
+                                                                                                                      Burbank
+
+Agoura                                                                                                                                                                                                       Eaton Canyon
+ Hills                                                                                                                                                                                                         Reservoir
+
+                                                                                                                                                                                           Pasadena
+
+        Calabasas                                      Encino
+                                                      Reservoir
+
+                                                                                                                      Hollywood                                                              South
+                                                                                                                      Reservoir                                                            Pasadena
+
+                                                                              Stone Canyon                                                     Silver Lake                                         Alhambra
+                                                                                Reservoir                                                      Reservoir
+
+                                                                                                    Beverly
+                                                                                                      Hills
+
+        Malibu                                                                                                                                              Los Angeles River              Monterey Park
+
+                                                                 Santa Monica                                                                                                                             Montebello
+                                                                                                                                                                                           Commerce
+                                                                                         Culver                                                             Vernon
+                                                                                          City
+
+                                                                                                                                                            Huntington            Bell
+                                                                                                                                                                Park                   Bell Gardens
+
+                                                                                                                      Inglewood
+
+                                                                                                                                                                               South Gate
+
+                                   Pacific Ocean                                         El Segundo              Hawthorne
+
+       Temporary Exemption per GCS 65912.161(b)(1)(B)(ii)                                                                                                                                                    Norwalk
+       and 65912.161(b)(1)(B)(iii)
+                                                                                                                                 Gardena                    Compton
+                 Eligible for Temporary Exemption
+                 Statutorily Exempt from SB 79                                                               Redondo
+                 Not Eligible for Temporary Exemption under this Criterion                                    Beach
+                 City Boundary
+                                                                                                                      Torrance                 Carson
+         Disclaimer: This map visualizes where sites and/or transit-oriented
+         development zones (TOD zones) are eligible for temporary exemption from                                                                                                           Long Beach
+         Senate Bill 79, pursuant to Government Code Section 65912.161(b)(1) until
+         one year following the adoption of the seventh revision of the housing                                                  Machado Lake
+         element. Sites that do not permit residential, mixed, or commercial uses are
+         considered statutorily exempt and Not Eligible for SB 79. This map is in draft                                                                                                    Colorado
+         format and is subject to change pending updates to eligible transit-oriented                                                                                                      Lagoon
+         development stops. The Director of Planning is authorized to issue a final
+         map of sites eligible for this temporary exemption from SB 79.                  Rancho Palos                 Rolling                                                                                Seal Beach
+                                                                                             Verdes                    Hills
+Source(s): Los Angeles Department of City Planning
+                                                                                                                                          0                                    5                             10
+
+                                                                                                                                                                               Miles                                  N
+
+                                                                                         Date Exported 8/5/2026                  Path S:\GIS\Projects\CitywidePolicy\Housing Policy\SB 79\SB79_Maps_April2026\SB79_Maps_April2026_JB.aprx
+Sites Eligible for Phased Implementation with Low-Rise Ordinance
+
+DRAFTSanta Clarita                                                             Los
+                                                                            Angeles
+                                                                            Reservoir
+
+        Simi Valley
+
+                                                                                                    Hansen Lake
+
+                                Chatsworth                                                                                                                            La Cañada
+                                 Reservoir                                                                                                                            Flintridge
+
+                                              Los Angeles River                                                                                    Glendale
+
+                                                                                                                            Burbank
+
+Agoura                                                                                                                                                                                                            Eaton
+ Hills                                                                                                                                                                                                            Canyon
+                                                                                                                                                                                                                 Reservoir
+
+                                                                                                                                                                                               Pasadena
+
+                     Calabasas                                    Encino
+                                                                 Reservoir
+
+                                                                                           Stone                            Hollywood                                                            South
+                                                                                          Canyon                            Reservoir                                                          Pasadena
+                                                                                         Reservoir
+                                                                                                                                                                                                       Alhambra
+                                                                                                                                                     Silver
+                                                                                                                                                Lake Reservoir
+
+                                                                                                    Beverly
+                                                                                                     Hills
+
+        Malibu                                                                                                                                                  Los Angeles River              Monterey Park
+
+                                                                            Santa Monica            Culver                                                                                                    Montebello
+                                                                                                     City                                                                                      Commerce
+                                                                                                                                                                Vernon
+
+                                                                                                                                                                Huntington            Bell
+                                                                                                                                                                    Park                    Bell Gardens
+
+                                                                                                                            Inglewood
+
+                                                                                                                                                                                   South Gate
+
+                                   Pacific Ocean                                                    El Segundo              Hawthorne
+
+      Temporary Exemption per GCS 65912.161(b)(1)                                                                                                                                                                Norwalk
+
+                Eligible for Phased                                                                                                    Gardena                  Compton
+                Implementation upon Adoption
+                of Low-Rise Ordinance                                                                        Redondo
+                Statutorily Exempt from SB 79                                                                 Beach
+                City Boundary
+                                                                                                                            Torrance               Carson
+         Disclaimer: This map visualizes where sites and/or transit-oriented
+         development zones (TOD zones) are eligible for temporary exemption from                                                       Machado                                                  Long Beach
+         Senate Bill 79, pursuant to Government Code Section 65912.161(b)(1) until                                                       Lake
+         one year following the adoption of the seventh revision of the housing                                                                                                                Colorado
+         element. Sites that do not permit residential, mixed, or commercial uses are               Rancho Palos            Rolling                                                            Lagoon
+         considered statutorily exempt and Not Eligible for SB 79. This map is in draft                 Verdes               Hills
+         format and is subject to change pending updates to eligible transit-oriented                                                                                                                          Seal Beach
+         development stops. The Director of Planning is authorized to issue a final
+         map of sites eligible for this temporary exemption from SB 79.                                                                         0                                  5                             10
+
+Source(s): Los Angeles Department of City Planning                                                                                                                                 Miles                                  N
+
+                                                                                                    Date Exported 5/8/2026             Path S:\GIS\Projects\CitywidePolicy\Housing Policy\SB 79\SB79_Maps_April2026\SB79_Maps_April2026_JB.aprx
+

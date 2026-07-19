@@ -1,0 +1,2341 @@
+    DEPARTMENT OF           City of Los Angeles                      EXECUTIVE OFFICES
+       CITY PLANNING                                           200 N. SPRING STREET, ROOM 525
+                                          CALIFORNIA            LOS ANGELES, CA 90012-4801
+     COMMISSION OFFICE
+         (213) 978-1300                   KAREN BASS                     (213) 978-1271
+
+CITY PLANNING COMMISSION                                MAYOR     VINCENT P. BERTONI, AICP
+
+      MONIQUE LAWSHE                                                              DIRECTOR
+
+                 PRESIDENT                                            KEVIN J. KELLER, AICP
+
+        CAROLINE CHOE                                                       EXECUTIVE OFFICER
+          VICE-PRESIDENT
+                                                                     SHANA M.M. BONSTIN
+       PRISCILLA CHAVEZ
+         MARTINA DIAZ                                                        DEPUTY DIRECTOR
+       SARAH JOHNSON
+         PHYLLIS KLEIN                                               HAYDEE URITA-LOPEZ
+
+      BRIAN ROSENSTEIN                                                       DEPUTY DIRECTOR
+        JACOB SAITMAN
+                                                                     ARTHI L. VARMA, AICP
+     ELIZABETH ZAMORA
+                                                                             DEPUTY DIRECTOR
+
+                                                                     LISA M. WEBBER, AICP
+
+                                                                             DEPUTY DIRECTOR
+
+                                                                        CRAIG R. WEBER
+
+                                                                             DEPUTY DIRECTOR
+
+February 18, 2026
+
+Los Angeles City Council
+c/o Office of the City Clerk
+City Hall, Room 395
+Los Angeles, California 90012
+
+Attention: Planning and Land Use Management Committee (PLUM)
+
+Dear Honorable Members,
+
+REPORT AND RECOMMENDATIONS RELATIVE TO THE IMPACTS AND LOCAL
+IMPLEMENTATION OF SENATE BILL (SB) 79 (CF 25-1083)
+
+  I. RECOMMENDATIONS
+
+    1. Instruct the Department of City Planning, in alignment with Approach C, to initiate a code
+         amendment for either Option 1, 2, or 3 as described herein, to upzone single family and
+         low-density zoned parcels that are located in Opportunity Stations and in higher and
+         moderate opportunity sites ineligible for delay within Transit Oriented Development zones
+         and areas citywide to facilitate local implementation of SB 79; as well as
+
+    2. Instruct the Department of City Planning, to delay effectuation of SB 79 citywide, as
+         explicitly allowed by SB 79, through the initiation of a delayed effectuation ordinance for
+         all eligible criteria including lower opportunity areas, Very High Fire Hazard Severity
+         Zones, sites and stations meeting capacity requirements, local historic resources, Sea
+         Level Rise Areas, Industrial Employment Hubs, and sites more than one-mile walking
+         distance from a station.
+CF 25-1083
+PLUM Committee
+Page 2
+
+  II. INTRODUCTION
+
+Senate Bill (SB) 79, the Abundant and Affordable Homes Near Transit Act, was introduced by
+Senator Scott Wiener and signed by Governor Gavin Newsom on October 10, 2025. The bill will
+become effective on July 1, 2026. On November 4, 2025, the City Council adopted a motion
+(Council File 25-1083), instructing various departments to prepare reports related to the SB 79
+(Government Code Sections (GCS) 65912.155-162), including a request for several reports from
+the Los Angeles City Planning (from here on referred to as "the Department"). On November 17,
+2025, the Planning and Land Use Management (PLUM) Committee discussed the Department's
+first report, dated November 13, 2025, on key SB 79 provisions and options for local
+implementation. The subsequent PLUM Committee Report included several recommendations
+and was adopted by the City Council on December 2, 2025. This report responds to instruction
+#3 of the City Council's December 2, 2025 action:
+
+                Instruct the DCP, based on the modeling analysis that will be completed and
+                consistent with the instructions outlined in Recommendation No. 3f of the said
+                PLUM Committee report, attached to the Council file, to report back on where and
+                how the City may further delay effectuation of SB 79 through the potential adoption
+                of upzoning ordinances alongside a delayed effectuation ordinance for certain
+                areas, consistent with Approach C described in the DCP report dated November 13,
+                2025.
+
+Furthermore, this report responds directly to the PLUM Committee's discussion and direction to
+focus any rezoning proposals in higher opportunity areas (including areas eligible for delayed
+effectuation), particularly in areas with high quality transit, including historic districts, while
+exempting lower opportunity areas (additional detail on the PLUM Committee's discussion can be
+found in Section V of this report). A future report will respond to Item 4 in the PLUM Committee
+Report dated November 17, 2025, requesting recommendations associated with the development
+of a local TOD Alternative Plan or "Alt Plan").
+
+ III. EXECUTIVE SUMMARY
+
+This report provides recommendations for the implementation of SB 79 that are informed by staff
+analysis on the composition of SB 79 eligible station areas (defined as Transit Oriented
+Development zones in the bill and hereon referred to as "TOD zones"); and preliminary modeling
+executed by the City's consultant comparing SB 79 potential housing capacity to the City's present
+capacity. These initial results of the model will continue to be refined and interpreted based on
+staff analysis and agency guidance. The report presents an analysis of local impacts at a station
+and citywide level, explores eligibility for delayed effectuation, and recommends several Upzoning
+Options for the City Council's consideration. Overall, the report elevates the bill's significant local
+impacts and provides analysis to inform discussion on a local implementation pathway.
+CF 25-1083
+PLUM Committee
+Page 3
+
+Should the City choose to pursue a Delayed Effectuation Ordinance, which would temporarily
+"delay" effectuation of the bill (until approx. 2030), only certain types of sites are eligible to be
+"paused", including those that meet development minimums, are located in Very High Fire Hazard
+Severity Zones (VHFHSZ), host local historic resources, or are classified as lower opportunity
+neighborhoods in the Opportunity Area Maps created by CTCAC/HCD (GCS 65912.161(b)).
+Within the delay period, Local Alternative Plans would need to be developed, analyzed as part of
+the upcoming 7th cycle Housing Element, and adopted for the 141 potential stations located within
+the city's boundaries. Areas not eligible for a temporary delay could become subject to the bill in
+July or be rezoned to meet developent minimums. The Upzoning Options described herein would
+enable the City to postpone implementation of SB 79 citywide and ensure residential growth is
+consistent with priorities of the 2021-2029 Housing Element with variability on the scale of
+intensity permitted.
+
+The Upzoning Options presented by Planning were developed in response to the City Council's
+December 2, 2025 instructions to the Department to report back with recommendations on an
+upzoning code amendment in order to expand delayed effectuation of SB 79 to cover the entire
+City, rather than only pausing the bill in currently eligible areas of the City. (More information on
+delayed effectuation and approaches to local implementation may be found in Section V of this
+report). Furthermore, the analysis and concepts articulated herein were further informed by PLUM
+Committee deliberations that directed any city initiated upzoning to occur in higher opportunity
+and transit rich areas, including sites that may host historic resources; to exempt lower opportunity
+areas;1 and avoid concentrating added capacity in areas outside the city center where sites may
+be ineligible for delayed effectuation.
+
+The City Council also directed the Department to work with a consultant to model housing capacity
+created by SB 79 and compare it to existing capacity available under present zoning rules and
+housing incentive programs. Overall, the model found that the City's current zoning around TOD
+zones permits the construction of almost three times as many units as that available under SB
+79. However, this zoning capacity is concentrated around only a portion of the TOD zones, with
+a focus on Downtown Los Angeles, Koreatown, Warner Center and North Hollywood, as well as
+in areas with more multi-family zoning like South Los Angeles and East Hollywood. Approximately
+a third of TOD zones permit more than half of the density and floor area available under SB 79
+and would be eligible for delayed effectuation with its current zoning. Two-thirds of the City's TOD
+zones, however, will fall short of SB 79 benchmarks.
+
+In the short term, were the city to pursue a delayed effectuation ordinance, all lower opportunity
+sites would be eligible for delay. Based on the analysis, 88% of the City's sites are currently
+eligible for delayed effectuation. Areas ineligible for delay include ten Orange line stations in the
+South and Northwest Valley, two Exposition Line Stations in West LA, three NoHo to Pasadena
+
+1 Throughout this report, lower and moderate opportunity areas will be used to refer to lower or moderate resource
+neighborhoods per the 2026 CTCAC/HCD Opportunity Area Maps. High opportunity area will be used to refer to high
+and highest resource neighborhoods per the 2026 CTCAC/HCD Opportunity Area Maps.
+CF 25-1083
+PLUM Committee
+Page 4
+
+BRT Stations, ten other stations in the South Valley, Westchester, and Mid City areas of the City.
+It is important to note that, in response to PLUM discussion and direction at the November 13,
+2025 meeting as well as Council direction, the options presented herein do propose potential
+upzoning on a portion of those sites that are currently eligible for delayed effectuation (as
+described further below). However, each option may be modified to expand or reduce its
+applicability, and potential upzoning may be further reduced to limit upzoning to the 12% of sites
+that are currently ineligible for delay.
+
+In response to City Council direction, the Department has prepared three, targeted Upzoning
+Options to delay effectuation citywide until approximately 2030 so that the scale of housing
+development opportunity created under SB 79 will occur in areas identified for growth and still
+enable increases to restricted affordable housing through the city's value capture tools. A key
+component of the Upzoning Options involves rezoning single family zones as well as some low-
+density zones including duplex (R2), restricted density (RD) zones, and zones with densities less
+than half of SB 79. Commercial and multifamily zones near SB 79 eligible transit stops already
+offer density and floor area consistent with provisions SB 79. Given Los Angeles' development
+pattern, over half of eligible SB 79 TOD zones are predominantly low-density, therefore upzoning
+is needed to achieve a citywide delay in effectuation.
+
+Table 1 below provides a brief summary of three options for an upzoning ordinance of single
+family and low-density properties in SB 79 TOD zones that would allow the City to temporarily
+delay effectuation of the bill (until approximately 2030). It is important to note that these three
+Upzoning Options would be achieved by updating the recently adopted Citywide Housing
+Incentive Program (CHIP) ordinance2 to include eligibility for single family properties and other
+low-density residential properties in the Corridor Transition (CT) and Transit Oriented Incentive
+Area (TOIA) incentive programs. In all three options rezoning would occur in areas deemed
+"Opportunity Stations" or TOD zones composed of mostly higher and moderate opportunity area
+census tracts, (which may include some lower opportunity census tracts). It is also important to
+note that all three options include upzoning of some parcels in the Very High Fire Hazard Severity
+Zones (VHFHSZ) non-hillside areas and offer limited incentives in historic areas. Additional details
+on the objectives and implications of each Upzoning Option can be found in Section VIII of this
+report.
+
+2 Ordinance Number 188,477 and 188,478
+CF 25-1083
+PLUM Committee
+Page 5
+
+Table 1. Summary of Upzoning Options to be Eligible for a Citywide Delayed Effectuation
+
+                Option 1:                Option 2:3              Option 3:4
+
+                CT Expansion in SB       TOIA Expansion in SB    TOIA Expansion in
+                79 half-mile radius      79 half-mile radius of  SB 79 half-mile
+                                         Operational Rail        radius
+
+Description     CT incentives for        TOIA incentives for     TOIA incentives for
+                                         single-family and low-  single-family and low-
+                single-family and low-   density sites in        density sites in all
+                                         Opportunity Stations    Opportunity Stations
+                density sites in         near Operational Rail
+                Opportunity Stations4                            + Option 1
+                and in select5 High and  + Option 1
+
+                Moderate Opportunity
+
+                Census Tracts
+
+Density         4-16 units               Limited by FAR6         Limited by FAR6
+FAR7                                                             Up to 4.5:1
+Height7         Incremental up to 2.9:1 Up to 4.5:1              7 stories max
+
+                2-3 stories              7 stories max
+
+3 All areas qualifying for TOIA could also opt to use CT incentives in this option.
+4 See Section VIII, "Upzoning Options" `Geographic Applicability" for a more in depth explanation of the
+
+Opportunity Station concept.
+5 Only high and moderate opportunity census tracts in majority low opportunity station areas ineligible for
+
+delay would be eligible.
+6 Density allowances in Options 2 and 3 would supersede any limitations for low-density zones.
+7 Projects may be eligible for additional FAR and height in exchange for provision of multi-bedroom units.
+
+CT program projects may access up to an additional 0.5:1 FAR and 11 feet in height. TOIA program
+
+projects may access up to 1.0:1 FAR and up to an additional 22 feet in height.
+CF 25-1083
+PLUM Committee
+Page 6
+
+Upzoning Options 1, 2, or 3 may be modified by the City Council to increase or "grow" zoning
+capacity or "reduce" zoning capacity (see Table 2 below for a summary of ways the Upzoning
+Options could be modified). These additional options for modification or "levers" would further
+adjust which areas of the City are upzoned, and by how much. Based on analysis from the
+consultant, the addition of any of these modifications will still allow the entire City to be eligible for
+delayed effectuation under SB 79. Additional discussion on modification of these options can be
+found in Section VIII of this report. Important to note, the last lever in Table 2 would provide the
+minimum upzoning needed to qualify the city for delayed effectuation.
+
+Table 2. Topic Areas for Modification to Upzoning
+
+Applicable Grow or       Topic Area                 Modification Description
+
+Option    Reduce
+
+All       Grow           Lower Opportunity Areas ­ Expand eligibility to single family and
+
+                                                    low-density zones in lower opportunity
+
+                                                    areas
+
+All       Reduce         Lower and Moderate         ­ Remove low and/or moderate
+
+                         Opportunity Areas          opportunity areas eligible for delayed
+
+                                                    effectuation
+
+                         Very High Fire Hazard      ­ Remove incentives in all VHFHSZs
+                         Severity Zones                (including non-hillside areas)
+
+                         Historic Resources         ­ Remove incentives on sites with historic
+                                                       resources
+Option 3  Reduce         Bus Only Lane Eligibility
+Option 1                                            ­ Exclude stops created by bus only lanes
+          Reduce         Only Amend Zoning for         that are not BRTs
+          (Most Limited  Sites Ineligible for
+          Upzoning       Delayed Effectuation       ­ For the most limited rezoning, Option 1
+          Option)                                      could be further reduced to only apply to
+                                                       sites that are ineligible for delayed
+                                                       effectuation.
+CF 25-1083
+PLUM Committee
+Page 7
+
+These Upzoning Options, as well as potential modifications, would be paired with an SB 79
+Delayed Effectuation Ordinance (described in more detail in Section VIII of the report) which
+would postpone implementation of SB 79 to areas eligible for modified implementation under the
+bill (GCS 65912.161(b)), depending on City Council's direction, including sites in:
+
+     Very High Fire Hazard Severity Zones
+     One-foot Sea Level Rise Areas
+     Lower Opportunity Areas
+     Local Historic Resources
+     Areas or TOD zones with high development potential (including areas rezoned through
+
+         an option summarized in Table 1)
+
+Based on the analysis presented in this report, the Department recommends pursuing an
+implementation approach summarized above given its alignment with the bill's intent to increase
+land available for housing development. Furthermore, it affords the city additional time to
+implement SB 79 citywide and carry out thoughtful public outreach to deliberately consider density
+increases in sensitive areas.
+
+IV. SB 79 BACKGROUND
+
+SB 79 establishes new development standards within specified distances of "transit-oriented
+development (TOD) stops" (as defined in SB 79) on land zoned for residential, mixed, or
+commercial uses. In particular, the bill extends guaranteed height, Floor Area Ratio (FAR), and
+density standards to encourage five to nine story buildings within a half mile of both existing and
+planned transit stations. If implemented in its entirety, the bill enforces affordability requirements
+for development with more than 10 units; compliance with labor standards for buildings greater
+than 85 feet; and limitations on industrial land, hotel uses, and lots with three or more units subject
+to the Rent Stabilization Ordinance (RSO) occupied in the last seven years. For a comprehensive
+overview of SB 79 and an analysis of the bill requirements, please refer to the City Planning report
+submitted to Council File (CF) 25-10838 dated November 13, 2025.
+
+Since the November report, additional research on the bill and guidance from agencies including
+HCD and the Southern California Association of Governments (SCAG) have resulted in several
+new interpretations of SB 79's key provisions, described below. Note that guidance from HCD
+and SCAG informing this report is still in development and will likely evolve as additional resources
+and information become available. As SCAG is the responsible agency for SB 79 map production,
+final TOD zone location will be dependent on their map release and may vary from the stations
+identified in this report. For a detailed description of mapping modifications see Appendix A.
+
+SB 79 will foundationally shift residential development patterns and construction trends in Los
+Angeles for years to come. With just over 140 TOD zones­the largest number of eligible transit
+
+8 https://cityclerk.lacity.org/lacityclerkconnect/index.cfm?fa=ccfi.viewrecord&cfnumber=25-1083
+CF 25-1083
+PLUM Committee
+Page 8
+
+development areas in the state­the bill touches almost every community and increases capacity
+throughout the City. The implementation of this transformational bill necessitates thoughtful
+consideration to ensure its application aligns to the maximum extent possible with Los Angeles'
+land use and equity goals and accounts for the City's distinct socio-economic and environmental
+conditions.
+
+The 2021-2029 Housing Element identified priorities for housing stability and housing growth,
+aiming to shift development away from lower opportunity areas to higher opportunity areas
+consistent with an affirmatively furthering fair housing (AFFH) framework. Of the City's TOD
+zones, approximately 57% are made up of majority lower opportunity areas (per the 2026
+California Tax Credit Allocation Committee [CTCAC] and California Department of Housing and
+Community Development [HCD] Opportunity Area Maps) meaning SB 79 disproportionately
+affects areas the state has identified as having higher rates of segregation and poverty that offer
+lower long term health, economic, and educational outcomes for children.
+
+The bill also affects neighborhoods characterized by low-density development patterns and some
+of the City's most environmentally vulnerable areas, with 16% of all TOD zones intersecting
+VHFHSZs, including three station areas located wholly within a VHFHSZ. Of all the City's SB 79
+TOD zones, 60% are comprised of majority low-density sites (zoned RD and more restrictive),
+indicating that many TOD zones are currently zoned for much lower densities than SB 79 would
+allow and that existing zoned capacity for higher density is concentrated in fewer station areas.
+The Department recognizes the urgency to realize SB 79's vision to address the City and State's
+housing affordability crisis, while also acknowledging the need for consideration of local priorities
+as outlined in the Housing Element.
+CF 25-1083
+PLUM Committee
+Page 9
+
+Map 1. Draft Citywide Potential Eligibility with Revised Number of TOD Stops
+CF 25-1083
+PLUM Committee
+Page 10
+
+ V. APPROACHES TO LOCAL IMPLEMENTATION
+
+As described in the November report, SB 79 empowers cities to tailor the timing and applicability
+of the bill's provisions. In particular, the Department previously identified four pathways or
+"approaches" the city could employ to implement the bill, including:
+
+     Approach A: State SB 79 Implementation
+     Approach B: Delayed Effectuation for Eligible Areas
+     Approach C: Delayed Effectuation + New Upzoning Ordinance to Increase Capacity and
+
+         Expand Eligibility to Delay
+     Approach D: Local TOD Alternative Plan
+
+These approaches can be used independently or in combination and offer flexibility for
+implementation. Cities can opt to implement the state version of the bill (Approach A), applying
+the scope of SB 79's development standards in their entirety, including allowances to treat newly
+permitted building volumes as base conditions for the purposes of utilizing State Density Bonus
+Law (GCS 65915-65918). The bill also affords cities the option to modify temporarily or "delay"
+effectuation (Approach B) of the bill only on certain types of sites including those that meet
+development minimums, are located in VHFHSZs host local historic resources, or are classified
+as lower opportunity neighborhoods in the Opportunity Area Maps created by CTCAC/HCD (GCS
+65912.161(b)). Specifically, cities may postpone implementation of the bill on sites with half of the
+density and floor area SB 79 offers; on TOD zones primarily composed of CTCAC lower
+opportunity neighborhoods that provide at least 40% of the capacity otherwise granted through
+SB 79. TOD zones may also be excluded if at least 33% of sites within a zone permit half the
+density and floor area ratio as granted through SB 79, and the entire station area provides at least
+75% of the capacity granted through the bill. Lastly, a temporary delay in effectuation may apply
+to all lower opportunity areas if a city can demonstrate it has at least half of the capacity created
+by SB 79. In all scenarios, sites located within an industrial employment hub9 as well as sites
+located beyond a one-mile walking distance from a station entrance can be permanently
+exempted from the bill's rules entirely through the adoption of an ordinance. A summary of these
+parameters may be found below in Image 1; in addition, a detailed description of the rules
+associated with implementation of Approach B is included in the November 2025 report. Analysis
+of the areas eligible for delayed effectuation is described below in Section VII of this report.
+
+9 Paragraph (2) of subdivision (e) of GCS 65912.160 defines an industrial employment hub as a
+contiguous area of at least 250 acres dedicated to industrial uses and designated as such in the local
+jurisdiction's general plan as of January 1, 2025.
+CF 25-1083
+PLUM Committee
+Page 11
+
+Image 1. Summary of Rules to Delay Effectuation Consistent with GCS 65912.161(b)
+
+At their meeting on November 17, 2025, the PLUM Committee directed the Department to refrain
+from implementing SB 79 in its entirety (Approach A) and from pursuing a standalone delayed
+effectuation ordinance in areas currently eligible for delay (Approach B), and to instead provide
+recommendations for delaying effectuation citywide through an accompanying upzoning program
+(Approach C). The PLUM Committee verbalized priorities for upzoning higher opportunity areas
+near high quality transit, even in areas eligible for delayed effectuation, applying incentives to
+sites with historic resources, exempting lower opportunity areas, and protecting sites vulnerable
+to extreme fire risks.
+Given this direction, the Department has prepared three approaches or options for the City
+Council's consideration to increase capacity on single family and low-density zoned parcels
+located within ½ mile of an SB 79 station. Should the City Council wish to delay effectuation of
+SB 79 citywide, the Department recommends that the City Council select upzoning option 1, 2, or
+3, directing the Department to initiate a code amendment, as well as instruct the Department to
+initiate a citywide Delayed Effectuation Ordinance. This SB 79 implementation strategy, described
+in further detail later in this report, allows the city more time to consider approaches for increased
+density in sensitive areas, including lower opportunity neighborhoods and geographies vulnerable
+to environmental risks, as part of a future Alt Plan per State of California GCS 65912.161(a)
+(Approach D), while still creating immediate opportunities for housing construction near high
+quality transit. Given the imminent effective date of the bill, direction on the City's approach to the
+implementation of the bill's provisions is critical to allow adequate time for the Department to
+CF 25-1083
+PLUM Committee
+Page 12
+
+prepare materials for legislative review should the City Council desire a tailored local
+implementation option.
+
+VI. ANALYSIS: TOD ZONE COMPOSITION AND TRENDS
+
+As directed by the City Council, the Department has conducted analysis using Geographic
+Information System (GIS) tools on the composition of the City's anticipated 141 TOD zones
+citywide, as well as the impact of SB 79 on sites with RSO units, industrial zoned sites, and sites
+located in various types of environmentally sensitive areas; and information for each TOD zone
+related to VHFHSZs, areas impacted by sea level rise, lower opportunity areas, and locally and
+federally designated historic resources.
+
+Key Citywide Trends
+
+The following TOD zone analysis reveals the scale of SB 79's impact citywide, particularly in low-
+density zones, lower opportunity neighborhoods, and areas within local VHFHSZs. Of all the City's
+sites eligible for SB 79, 48% are currently eligible for existing local housing incentive programs
+including the Mixed Income Incentive Program (MIIP), and 68% of eligible sites are zoned RD
+and more restrictive, meaning the underlying zoning10 generally permits less than five units on an
+average lot (see Appendix B, Table 5). Overall, 15% of sites within SB 79 TOD zones are ineligible
+for the bill because they contain three or more RSO units (see Appendix B, Table 5). A summary
+of key TOD zone characteristics by Area Planning Commission (APC) is summarized in Appendix
+B, Table 6 and Table 7.
+
+Environmental Considerations
+
+Los Angeles hosts unique environmental conditions due to its coastal setting and location in close
+proximity to areas vulnerable to wildfire. Based on the revised map, TOD zones do not include
+parcels located within the Coastal Zone, areas vulnerable to one-foot of sea level rise, Tsunami
+Zone, or are in or near tsunami evacuation routes. As mentioned earlier in this report, a total of
+23 TOD zones or 16% of TOD zones overall include parcels classified as VHFHSZ (a list of these
+TOD zones is included for review in Appendix B, Table 9). Of these TOD zones, 14 have a majority
+of parcels located in the VHFHSZ. Examples of these TOD zones are along the A Line in Highland
+Park and Mount Washington and along the North Hollywood to Pasadena BRT in Eagle Rock,
+where some parcels may be located in hillside areas with limited ingress and egress.
+
+Historic Considerations
+
+The City's TOD zones include sites with local, state, or federal designated individual historic
+resources and historic districts. Properties in HPOZs affected by SB 79 represent 5% of all SB 79
+eligible sites and 36% of sites included in HPOZs citywide. Approximately 25 of the City's TOD
+
+10 Without inclusion of bonus units enabled in an incentive program.
+CF 25-1083
+PLUM Committee
+Page 13
+
+zones, or 18%, overlap with 19 of the City's HPOZs, largely in Northeast LA, South LA, and
+Greater Wilshire. Of these HPOZs, 11 are located within majority moderate and higher opportunity
+TOD zones. Appendix B, Table 10 provides a list of HPOZs with sites located in TOD zones, and
+the proportion of parcels impacted in each. The table also includes the percentage of TOD zone
+area that overlaps with each HPOZ11. The Highland Park - Garvanza, Miracle Mile, and Adams-
+Normandie HPOZs are the most impacted districts in terms of parcel count. Sites containing
+locally designated Historic-Cultural Monuments (HCMs) are also eligible for SB 79, with 578
+HCMs located within TOD zones. Approximately 176 federally designated historic resources (both
+individual resources or National Register Historic Districts (NRHD)) are located within TOD zones,
+and approximately 925 state designated historic resources (both individual resources and
+districts) are located within TOD zones.
+
+RSO Considerations
+
+RSO units are found in TOD zones across the City but were found to be generally more prevalent
+in lower opportunity neighborhoods. Majority lower opportunity TOD zones have the highest
+proportion of sites with one to two RSO units, ranging from 16-36% of the TOD zone with the
+highest rates are generally located in South LA, Southeast LA, and Boyle Heights. Additional
+information about TOD zones with the highest percentage of sites with one to two RSO units
+including majority CTCAC designation and APC area can be found in Appendix B, Table 5 and 6.
+TOD zones with the highest number of sites with three or more RSO units, from 26-50% of the
+TOD zone, are generally located in lower opportunity areas such as Koreatown and East
+Hollywood.
+
+Industrial Considerations
+
+Industrial uses exist in various neighborhoods citywide that intersect with eligible TOD zones.
+Specifically, just over 10% of TOD zones contain at least 20% industrial zones (see Appendix B,
+Table 11 for a complete list) in areas including Downtown Los Angeles, South Los Angeles, Van
+Nuys, Chatsworth, and Pacoima. The Department is continuing to conduct analysis on whether
+these various concentrations of industrial zones qualify as industrial employment hubs12 per the
+provisions of GCS 65912(e)(2), which would allow for a permanent exemption from SB 79.
+
+11 Per GCS 65912.161(a)(2)(C), in an Alt Plan, sites with historic resources may be exempt from eligibility
+so long as those sites do not exceed more than 10% of the area of the TOD zone.
+12 Paragraph (2) of subdivision (e) of GCS 65912.160 defines an industrial employment hub as a
+contiguous area of at least 250 acres dedicated to industrial uses and designated as such in the local
+jurisdiction's general plan as of January 1, 2025.
+CF 25-1083
+PLUM Committee
+Page 14
+
+VII. ANALYSIS: CAPACITY ANALYSIS
+
+In late 2025, the Department contracted Psomas13 to prepare a capacity model to evaluate
+delayed effectuation eligibility and future local alt plan compliance. Initial model results were
+received in February 2026. As such, this delayed effectuation modeling is preliminary and will
+continue to be refined as staff evaluates data quality and as guidance from SCAG and the state
+becomes available. The delayed effectuation model compares current City housing capacity to
+that of SB 79 and evaluates at a site and station level compliance with eight delayed effectuation
+criteria provided in the bill. To calculate existing local capacity, the model uses the density and
+FAR associated with a site's underlying zone or, where applicable, the site's eligibility for existing
+housing incentive programs including the MIIP and the Los Angeles Housing Incentive Program.
+Local density in multi-family zones is often higher than in SB 79, partly because local housing
+programs offer densities limited by floor area, which often exceed the density allowances in SB
+79. Discounts to floor area were applied to account for residential floor area in calculating local
+capacity and ineligible sites were removed from SB 79 capacity modeling altogether. Globally
+138,270 lots were found eligible for SB 79 and 26,320 lots were found to be ineligible for SB 79
+because they contain RSO sites with three or more units, or land which does not permit residential
+units including industrial land, open space, right of ways, and public facilities.
+
+Overall, the model found that Los Angeles currently permits the construction of more than 2.8
+times the number of units and slightly more overall floor area than what SB 79 offers. However,
+while the City's current overall capacity exceeds that offered through SB 79, at the site level, the
+model results show that capacity is concentrated on fewer sites than SB 79, with only 34% of
+eligible sites permitting more than half of what the bill allows (as shown in Map 2, below). This is
+reflective of the areas the City has historically prioritized for growth, including areas like Downtown
+LA, Koreatown, Warner Center, and North Hollywood; major corridors, and in areas with high
+concentration of multi-family zoning like South LA and East Hollywood (as shown in Map 2,
+below). This finding means that if the city is to pursue a Local Alt Plan, by 2030 upzoning may be
+required on up to 66% of eligible sites including single family and lower-density sites.
+
+In the short term, as shown in Map 3 below, the City would be eligible to temporarily delay
+effectuation until approximately 2030 for up to 88% of eligible sites citywide. This is possible
+because, in addition to 34% of eligible sites having at least half of SB 79's zoning capacity, the
+city exceeds SB 79's requirements to allow delayed effectuation in lower opportunity sites and in
+stations that primarily comprise lower opportunity census tracts, which represent approximately
+45% of eligible sites (as shown in Map 8 in Appendix D). Site level eligibility for delay is further
+described in Appendix C Table 15.
+
+13 Contract Number C-144842
+CF 25-1083
+PLUM Committee
+Page 15
+
+Map 2. Sites Eligible for Delayed Effectuation due to Existing Zoned Capacity
+CF 25-1083
+PLUM Committee
+Page 16
+
+Map 3. Station and Site Level Eligibility for Delayed Effectuation Citywide
+CF 25-1083
+PLUM Committee
+Page 17
+Example Stations
+The Metro 234 - Ventura Boulevard TOD zone is an example of where existing zoning
+concentrates density within fewer sites in the station area. Based on existing zoning, the TOD
+zone has the potential to build approximately 93,023 units, whereas SB 79 would allow the
+development of approximately 28,474 units. Though the Metro 234 - Ventura Boulevard TOD
+zone allows for more than 3 times the capacity of SB 79, only 15.44% of individual sites meet at
+least half the capacity of what would be permitted under SB 79 as shown in the Map 4 below:
+Map 4. Sites Eligible for Delayed Effectuation at Metro 234 - Ventura Boulevard TOD zone
+
+This means the stop does not meet Delayed Effectuation 2, which requires that 33% of sites within
+a TOD zone have 50% of the density and FAR offered by SB 79, a criterion designed to ensure
+capacity is not concentrated on a few high density parcels within the TOD zone. As a result, the
+Metro 234 - Ventura Boulevard TOD zone is not eligible for delayed effectuation at a station level,
+and at an individual site level, approximately 55% of parcels within the TOD zone would be subject
+to SB 79. Additionally, 466 parcels (32%) are in the VHFHSZ. Though these parcels can all be
+temporarily exempted from SB 79, the TOD zone as a whole would still be disproportionately
+CF 25-1083
+PLUM Committee
+Page 18
+
+affected by SB 79 as shown in Appendix D, Map 16 combining all delayed effectuation criteria.
+Capacity in the Metro 234 - Ventura Boulevard TOD zone is illustrative of broader historical land
+use patterns in Los Angeles, where density is concentrated in higher density commercial and
+higher density multi-family zones close to commercial corridors. See Appendix C, Table 14 for
+station level attribute breakdown of this TOD zone.
+
+When looking at capacity by station level delayed effectuation criteria, a nuanced picture emerges
+of where capacity is not available, with areas throughout the Valley and select TOD zones in West
+and Central LA unable to meet capacity minimums. Appendix D, Map 9 shows that 83 stations
+(58%) are eligible for delayed effectuation based on their existing capacity. This concurs with
+concerns raised at the November 17, 2025 PLUM meeting about a direct delayed effectuation
+approach increasing capacity in areas of the City that were not recently prioritized for growth in
+the Citywide Housing Incentive Program. Appendix D, Map 8 shows TOD zones that are
+composed primarily of lower opportunity areas and can delay effectuation because they contain
+at least 40% of capacity offered in SB 79. Appendix D, Map 10 shows that almost all majority
+lower opportunity stations are eligible for delay based on their underlying zoning, reflecting that
+lower opportunity areas contain more housing capacity categorically.
+
+Additionally, there are TOD zones that would face the prospect of high variability upzoning if a
+delayed effectuation ordinance without upzoning is pursued. For example the G Line ­ Woodman
+Station, shown below, illustrates that while the lower opportunity area census tracts in the
+Northwestern corner of the TOD zone would be eligible for delayed effectuation due to Delayed
+Effectuation Criterion 1 (citywide exemption for lower opportunity areas), the rest of the station
+area would become eligible for higher incentives because it does not meet station level delayed
+effectuation. Ultimately, only 28% of the station area is eligible for delay, meaning 72% of the
+station will become subject to SB 79 in July if no local action is taken upzone.
+CF 25-1083
+PLUM Committee
+Page 19
+
+Map 5. CTCAC and Delayed Effectuation Breakdown of the G Line ­ Woodman Station
+
+The Woodman G Line Station contains high, moderate, and lower opportunity tracts. Incentives
+applied by tract could lead to uneven development outcomes. As shown above on the image to
+the right, sites eligible for delayed effectuation (blue) generally align with low resource
+opportunity tracts (green).
+In addition to low opportunity and capacity related delayed effectuation criteria, SB 79 extends
+exemptions and delayed effectuation provisions to local historic sites (6% of parcels citywide),
+sites in VHFHSZs (9% of parcels citywide), sites more than one mile walking distance from a
+station entrance, and industrial employment hubs. See Appendix C, Table 12 for a full citywide
+breakdown of sites meeting those site characteristics. As mentioned above, staff are currently
+working to identify industrial employment hub eligibility and as such industrial employment hubs
+are not yet included in delayed effectuation analysis.
+Overall, if the City pursued Approach B to delay effectuation only on sites and TOD zones that
+already meet SB 79's delayed effectuation thresholds, 116 whole stations and 88% of sites would
+qualify. SB 79 would therefore become available in 25 station areas and on 13,069 sites with
+lower density underlying zoning in TOD zones including the Tampa, Woodman, Valley College,
+Sepulveda, Reseda, Pierce College, and Balboa G line Stations, the Westwood and Sepulveda
+Expo line stations, the Glendale Metrolink station, the proposed La Brea K-Line extension, and
+the Westchester K Line station. This is illustrated in Appendix D, Map 16 and a full list of stations
+ineligible for delay is included in Appendix C, List 1.
+CF 25-1083
+PLUM Committee
+Page 20
+
+By taking a proactive approach that focuses growth in station areas that are primarily higher and
+moderate opportunity (see Upzoning Options 1-3 below in Section VIII), and applying incentives
+more evenly across those majority moderate/higher opportunity stations depending on quality of
+transit service rather than underlying zoning, the City will align its growth with quality infrastructure
+that can service greater residential intensity and remain consistent with public input and local
+objectives that informed the 2021-2029 Housing Element.
+
+VIII. NEAR TERM IMPLEMENTATION: DELAYED EFFECTUATION ORDINANCE
+         AND REZONING
+
+Implementation of SB 79 presents an opportunity to increase land available for mixed income,
+multi-family development where it's needed most. Based on modeling and analysis, City Council
+direction, citywide housing priorities identified in the 2021-2029 Housing Element, and state goals
+to AFFH, the Department has prepared a two part strategy for the local implementation of SB 79
+before July 1 including: 1) the initiation of an upzoning program to introduce a phased approach
+to SB 79 and facilitate a citywide delay in effectuation; and 2) the initiation of a Delayed
+Effectuation Ordinance consistent with GCS 65912.161(b). This approach could allow more time
+for the City to consider how to add capacity in sensitive areas, while also providing immediate
+rezoning in high and moderate opportunity transit rich areas consistent with the 2021-2029
+Housing Element.
+
+Citywide Upzoning Code Amendment Ordinance
+
+The City may initiate an upzoning program in SB 79 TOD zones through a citywide code
+amendment that expands eligibility and development incentives for sites near transit and further
+delays effectuation across the city. The Department encourages City Council to instruct that any
+rezoning or upzoning occur as part of an amendment to the City's Mixed Income Incentive
+Program (MIIP) (LAMC Chapter 1 12.22 A.38) to ensure additional capacity created is done so in
+alignment with the goals and programs of the 2021-2029 Housing Element. The Department is
+currently developing targeted amendments to MIIP funded by the HCD Regional Early Action Plan
+(REAP) Grant, which could be expanded to include code amendments for Upzoning Options. The
+code amendment could contain targeted increases to density, height, and floor area for low-
+density zones, including single family, R2, RD, and zones that are not eligible for or have limited
+access to the City's existing incentive programs and do not presently meet the capacity-based
+delayed effectuation criteria described in the bill. By increasing development potential through a
+targeted upzoning, capacity increases would ensure site level eligibility for a citywide deferral of
+the bill. Due to the expansion of VHFHSZs by the State in 2025, the Department recommends
+restricting incentive access in areas that are both VHFHSZ and Hillside Area (consistent with the
+approach of the Affordable Housing Streamlining Ordinance [Ordinance Nos. 188,788 and
+188,789]) while allowing incentive access in non-hillside VHFHSZ areas. This would maintain
+MIIP eligibility in areas like Ventura Boulevard, Colorado Boulevard, and Glendale Boulevard
+which would otherwise be impacted by the fire map expansion.
+CF 25-1083
+PLUM Committee
+Page 21
+
+Higher density residential and commercial sites already included in the City's MIIP program
+almost always meet the delayed effectuation criteria of SB 79 and in many cases exceed SB 79's
+capacity. However, 60% of SB 79 TOD zones are majority composed of lower density zones.
+Based on the PLUM Committee discussion, the Department has prepared three options
+(summarized in Table 3 below) for a citywide code amendment that would permit single family,
+lower density, and sites ineligible for delay within applicable TOD zones access to MIIP's Corridor
+Transition (CT) Incentive Area and Transit Oriented Incentive Area (TOIA) development
+incentives. These proposed amendments ensure that all sites meet SB 79 delayed effectuation
+thresholds, and that capacity is distributed fairly and consistently with the goals of the 2021-2029
+Housing Element, the rezoning program description in Program 121, and the recommended
+options in Exhibit D of the City Planning Commission (CPC) Staff Report for Council File 21-1230-
+S5. The Upzoning Options maintain strong value capture to ensure maximum on-site affordability
+and focus growth in high and moderate opportunity areas with access to high quality transit.
+
+The CT and TOIA programs, adopted as part of the Citywide Housing Incentive Program (CHIP)
+Ordinance and the Housing Element Rezoning Program in 2025, establish development
+incentives on multi-family and commercially zoned parcels near transit. Today, the CT program
+applies on sites zoned R2 and RD within 750 feet of designated "Opportunity Corridors"14 and
+encourages low rise middle scheme development typologies such as bungalow courts, row
+houses, and town homes, with incremental FAR provided per unit up to either 10 or 16 units. The
+TOIA program applies on multi-family zoned sites within a half mile of Major Transit Stops as
+defined in LAMC 12.03 and supports construction of five to seven story multi-family, podium style
+developments. Both programs allow for additional floor area and height in exchange for the
+provision of multi-bedroom units. Projects utilizing the TOIA program may seek additional
+incentives and waivers for relief from standards that might impede the larger building envelopes
+facilitated by the incentive program, while projects utilizing the CT program may not. Both
+programs are subject to eligibility requirements including setting aside percentages of overall units
+as affordable; disallowing projects in VHFHSZs, sea level rise areas, and industrial areas; and
+prohibiting the demolition of historic resources. Lastly, incentives associated with both programs
+are not applicable in the Downtown Los Angeles, Boyle Heights, or Harbor Community Plans.
+Rezoning through an expansion of MIIP incentive tools will prioritize value capture, ensure that
+incentives do not apply in areas with environmental hazards such as VHFHSZs or heavy industrial
+areas, and maintain safeguards for sites with historic resources while still encouraging transit
+oriented development.
+
+14 Corridors served by frequent bus or high quality transit service; or within a half mile of a Metro Rail
+Station in a higher opportunity area.
+CF 25-1083
+PLUM Committee
+Page 22
+
+Upzoning Options
+
+Geographic and Zoning Applicability
+
+Upzoning Options 1, 2, and 3 described later in this section are proposed to apply to specific
+geographic areas near transit and specific zones. All three Upzoning Options described below
+utilize the same geographic areas for expansion of development incentives, which include SB 79
+TOD zones that are primarily (more than 50%) composed of higher and moderate opportunity
+areas, herein referred to as "Opportunity Stations." These areas may include lower or moderate
+opportunity census tracts when lower or moderate opportunity areas represent the minority of
+available land in a station area. For example, the North Hollywood B Line station contains census
+tracts of all CTCAC areas but comprises a majority of moderate and higher opportunity areas,
+see Map 6 below. Furthermore, the Upzoning Options focus any upzoning on single family and
+low-density zones due to their limited existing density allowances in comparison to SB 79
+standards. With this in mind, to comply with the rules for delayed effectuation contained in GCS
+65912.161(b) for site level delayed effectuation, including having at least 50% of the capacity and
+FAR created by SB 79, a rezoning of single family sites remains the focus of the options
+presented.
+CF 25-1083
+PLUM Committee
+Page 23
+Map 6. North Hollywood B Line Station with CTCAC Area Designations
+
+             The North Hollywood B Line Station (pink
+             radius) contains highest, high, moderate, and lower opportunity tracts. Incentives
+             applied by tract could lead to uneven development outcomes.
+Considering the station in its entirety can provide opportunity for consistency in the built
+environment when census tracts divide corridors and neighborhoods. However, it is important to
+note that if the City Council wishes to exempt lower opportunity areas from potential upzoning (as
+SB 79 affords delayed effectuation provisions to these areas), they may modify any option to
+eliminate lower opportunity sites. Citywide analysis shows that 55 stations out of 141 (39% of all
+SB 79 TOD zones) can be classified as Opportunity Stations, see Appendix C, List One. In
+addition to Opportunity Station eligibility, higher and moderate opportunity census tracts that are
+located outside of Opportunity Stations and are ineligible for delay, are also proposed for CT
+eligibility in the options to ensure delayed effectuation minimums are met. Maps provided below
+for Options 1-3 (see Map 7 below and Appendix E, Maps 17-19) include all potential tracts that
+may apply to and are overly inclusive of tracts. The Department expects to be able to remove a
+substantial share of tracts outside of opportunity stations including tracts in South Los Angeles,
+once available revised maps will be posted online15.
+The Department recommends that the City Council select one of the three Upzoning Options
+described herein to ensure citywide delayed effectuation eligibility. These options are designed
+to qualify the City for a temporary delay of SB 79 while still adding housing capacity in ways that
+
+15 https://storymaps.arcgis.com/stories/480791d9b665485ea798986dcad61e86
+CF 25-1083
+PLUM Committee
+Page 24
+
+are consistent with local goals and the 2021-2029 Housing Element. Each option builds upon the
+next, with Option 1 offering the most limited approach of the three, while Options 2 and 3 offer a
+broader rezoning approach that may minimize the need to subsequently upzone as part of a future
+Alt Plan. Options vary based on the quality of transit (existing vs proposed) and the scale of
+incentives (CT or TOIA) available. Options were designed to incorporate feedback from the PLUM
+Committee discussion, public comment, and advocacy organizations, in addition to these options
+the Table 4 below offers optionality for greater and reduced rezoning, including an option for the
+bare minimum upzoning needed to ensure delayed effectuation. As described above, all three
+options include eligibility within HPOZs with reduced incentives and offer incentives in the non-
+hillside portions of the VHFHSZs. See Maps 17-19 in Appendix E for a visual demonstration of
+where these incentives would be extended to single family and low-density zones.
+
+         Option 1 Corridor Transition (CT) Expansion: This option extends CT incentives to
+         single family and lower residential parcels that are either in one of the 55 Opportunity
+         Station half-mile buffers served by both existing and planned transit routes or are located
+         in select higher or moderate opportunity census tracts ineligible for delay. The most
+         impacted areas of the City would include Central, West LA, South Valley, and East LA
+         Area Planning Commission (APC) areas. Since there are more low-density zones,
+         particularly single family zones, within TOD zones in the South Valley, those areas face
+         greater potential development changes despite the increase in development incentives
+         occurring across TOD zones citywide. This option offers the lightest rezoning approach of
+         the three Options and would ensure citywide delayed effectuation eligibility. However,
+         following the delayed effectuation period, many of these areas would likely need to be
+         further rezoned by 2030 to comply with local Alt Plan requirements of SB 79. Note that
+         this option will necessitate substantive restructuring of the CT program given it expands
+         incentive applicability to whole half mile buffers around eligible transit stations in contrast
+         to the current program's applicability near Opportunity Corridors.
+
+         Option 2 Transit Oriented Incentive Area (TOIA) Expansion near Operational Rail +
+         Option 1: This option is inclusive of Option 1 but also extends full16 TOIA incentives to
+         single family and lower density parcels in Opportunity Stations along existing or operating
+         rail lines. It would not include TOIA eligibility for BRT or planned routes. This criteria would
+         qualify 2517 TOD zones that are primarily located in the Central and West APC areas for
+         TOIA incentives. In this scheme, low-density zones surrounding all 55 Opportunity
+         Stations would remain eligible for CT incentives. This option focuses higher intensity
+         incentives in the central urban core of the City, while facilitating missing middle scale
+         development in the South Valley, Northeast LA, and along corridors like Sepulveda on the
+         Westside.
+
+16 Current Restricted Density limitations would not apply, and sites would be eligible for unlimited density.
+17 This count is inclusive of the purple line extension area, as it is expected to be operational in the near
+future.
+CF 25-1083
+PLUM Committee
+Page 25
+
+         Option 3 TOIA Expansion near all Transit + Option 1: This option is also inclusive of
+         Option 1 and provides the broadest extension of TOIA incentives to single family and lower
+         density parcels in Opportunity Stations across all SB 79 TOD zones including those served
+         by both planned and existing transit lines. Within this option all 55 Opportunity Station
+         buffers receive full TOIA incentives in addition to CT Incentives. This option offers the
+         most generous application of incentives to prioritize development in Opportunity Stations
+         in alignment with SB 79, the recommended options in Exhibit D of the CPC Staff Report
+         for Council File 21-1230-S5, and Program 121 of the Housing Element.
+CF 25-1083
+PLUM Committee
+Page 26
+
+Map 7. Upzoning Options
+CF 25-1083
+PLUM Committee
+Page 27
+
+Table 3. Summary Options for Expansion of the Mixed Income Incentive Program to
+Lower Density Zones (R2, RD and Single Family)
+
+                Option 1:                Option 2:18              Option 3:23
+                CT Expansion             TOIA Expansion near
+                                         Operational Rail         TOIA Expansion near
+Transit Status  All SB 79 Stops                                   all Transit
+Applicability   (planned and existing        + Option 1
+                stops)                                                + Option 1
+                                         Existing Rail
+                                                                  All SB 79 Stops
+                                                                  (planned and existing
+                                                                  stops)
+
+Opportunity     55 Opportunity Stations  2320 Opportunity         55 Opportunity
+Station         +                        Stations receive TOIA    Stations receive
+Applicability   Select19 Higher and      Incentives &             TOIA incentives &
+                Moderate Opportunity
+Density                                  32 Opportunity Stations  Select27 Higher and
+FAR22           Tracts receive CT        +                        Moderate
+Height26        incentives               Select27 Higher and      Opportunity Tracts
+                                         Moderate Opportunity     receive CT incentives
+                                         Tracts
+                                         receive CT incentives    Limited by FAR25
+
+                4-16 units               Limited by FAR21         Up to a 4.5:1
+                                                                  7 stories max
+                Incremental up to 2.9:1 Up to a 4.5:1
+
+                2-3 stories              7 stories max
+
+Consistent with the MIIP framework, all three options require affordable units set aside in order to
+receive development incentives. Furthermore, the program's eligibility criteria includes protections
+for sites in VHFHSZs and Hillside Areas by excluding these sites from eligibility; and for sites with
+historic resources through limitations on building volume incentives for sites with Designated
+Historic Resources, in addition to restricting demolition (additional discussion on the implications
+for sites in VHFHSZs and with historic resources may be found below on page 33 and 34). None
+
+18 All areas qualifying for TOIA could also opt to use CT incentives in this option.
+19 Only High and Moderate Opportunity census tracts in majority low opportunity station areas ineligible
+for delay would be eligible.
+20 This count is inclusive of the D line extension area, as it is expected to be operational in the near
+future.
+21 Density allowances in Options 2 and 3 would supersede any limitations for low-density zones.
+22 Projects may be eligible for additional FAR and height in exchange for provision of multi-bedroom units.
+CT program projects may access up to an additional 0.5:1 FAR and 11 feet in height. TOIA program
+projects may access up to 1.0:1 FAR and up to an additional 22 feet in height.
+CF 25-1083
+PLUM Committee
+Page 28
+
+of the recommendations would create new capacity in areas vulnerable to one foot of sea level
+rise or on sites in the Coastal Zone. Across all options (Appendix E, Maps 17-19), the eligible
+TOD zones are concentrated in the Central, West, and South Valley APC areas; while East Los
+Angeles and North Valley APCs would each have several TOD zones affected. The South Los
+Angeles APC would receive limited incentives for missing middle housing in a few moderate and
+higher opportunity tract areas; there would be no expansion of incentives in the Harbor APC.
+
+If any of these options are desired, City Council can instruct the Department to initiate a code
+amendment for one of these options as is. Alternatively, these options may be further customized
+to achieve desired goals, as described in Table 4. Refinement options are informed by feedback
+received over the past year and allow flexibility to grow or reduce recommendations based on
+transit types, CTCAC category designation, historic resources, and VHFHSZ eligibility.
+Modifications beyond those described below would require evaluation to determine if Citywide
+delayed effectuation would be impacted, refinement options would not revise current eligibility for
+the MIIP program.
+CF 25-1083
+PLUM Committee
+Page 29
+
+Table 4. Topic Areas for Modification to Upzoning
+
+Applicable Grow or  Topic Area                     Modification Description
+
+Option    Reduce
+
+All       Grow      Lower Opportunity Areas ­ Expand eligibility to single family zones
+                                                            in lower opportunity areas
+
+All       Reduce    Lower and Moderate             ­ Remove low and/or moderate
+                    Opportunity Areas                  opportunity areas eligible for delayed
+                                                       effectuation
+
+                    Very High Fire Hazard ­ Do not expand incentives in all
+
+                    Severity Zones                 VHFHSZs (including non-hillside areas)
+
+                    Historic Resources             ­ Do not expand incentives on sites with
+                                                       historic resources
+
+Option 3  Reduce    Bus Only Lane Eligibility      Exclude stops created by bus only lanes
+Option 1                                           that are not BRTs
+          Reduce
+          (Most     Only amend zoning for          ­ For the most limited rezoning, Option 1
+          Limited   Areas Ineligible for               could be further reduced to only apply to
+          Upzoning  Delayed Effectuation               sites and areas ineligible for delayed
+          Option)                                      effectuation
+
+Discussion on each topic area provided in Table 4 where modifications may be desired is
+provided in detail below:
+
+         Lower Opportunity Areas: Consistent with Program 121 of the 2021-2029 Housing
+         Element, the options described focus capacity for new housing units in higher opportunity
+         areas; however, the Upzoning Options include upzones to lower opportunity area tracts
+         only when located within an Opportunity Station where more than 50% of a station is
+         composed of higher and moderate opportunity areas. The rezoning approach for each
+         option to focus on majority moderate and higher opportunity areas aligns with the aim to
+         pause implementation of SB 79 in all lower opportunity areas consistent with rules of GCS
+         65912.161(b). City Council could opt to expand incentives into TOD zones in lower
+         opportunity neighborhoods; however this could potentially hinder the City's ability to meet
+         its state-level AFFH mandate. Furthermore, it could exacerbate redevelopment pressures
+         in areas of the City that have produced more affordable housing over the last decade as
+         a result of historic land use patterns.
+CF 25-1083
+PLUM Committee
+Page 30
+
+         Lower and Moderate Opportunity Areas: Another area for potential modification might
+         be reducing incentive applicability in lower and moderate opportunity areas. Moderate
+         opportunity areas often align with what are perceived as "gentrifying" areas of the City, as
+         shown in the more recent CTCAC/HCD Opportunity Area Map designation called
+         "Neighborhood Change."23 Redevelopment in areas experiencing "neighborhood change"
+         can increase housing availability and expand housing mobility. However, advocates have
+         requested more modest upzoning in moderate and lower opportunity areas that are
+         ineligible for delayed effectuation to provide time for tenant outreach and program
+         development. Expanding incentive applicability utilizing the Opportunity Station tool could
+         potentially increase redevelopment pressures in moderate and lower opportunity areas of
+         the City as incentives would still apply in these tracts if in an Opportunity Station; although
+         safeguards in place through the Resident Protections Ordinance (RPO) would still apply.
+         Under the City's new RPO, a new project must provide one to one replacement, relocation
+         compensation, and right to return. As the City has continued to expand protections for
+         tenants, the proposed Upzoning Options only include low and moderate opportunity areas
+         when the majority of census tracts (more than 50% percent) within the TOD zone are
+         composed of higher and moderate opportunity areas and areas ineligible for delay. This
+         ensures consistent land use and design outcomes throughout a half mile buffer as
+         opposed to census tracts with boundaries that bisect neighborhoods and corridors, such
+         as station areas like the North Hollywood B Line station (discussed above) where a lower
+         opportunity tract traverses the northern portion of the half mile buffer. However, if the City
+         Council wants to prioritize development in higher opportunity areas to protect against
+         displacement for the City's most vulnerable populations, the Council could remove
+         moderate and low opportunity census tracts eligible for delay from the Opportunity Station
+         area and limit incentive to census tracts ineligible for delay.
+
+         Bus Only Lanes: Rezoning Option 3 applies TOIA incentives most broadly to all SB 79
+         transit types, including bus only lanes. These higher tier incentives could be removed
+         along bus only lane stops if Council perceives this as a less quality transit service than the
+         other types included in the bill. While bus only lanes offer frequent service, they might not
+         eliminate the need for car transportation like proximity to a rail or BRT stop can.
+
+         Very High Fire Hazard Severity Zones ­ Existing City policy inclusive of the CHIP
+         Ordinance prioritizes residential growth in areas safe from fire and other environmental
+         risks. The tragic Palisades Fire of early 2025 demonstrated that the homes of Angelenos
+         are vulnerable to catastrophic fire destruction. Although the present Upzoning Options
+
+23 The Neighborhood Change Map identifies tracts that have undergone recent racial and/or economic
+changes, and where increasing rental costs in low and moderate-income communities of color may
+produce more change The methodology identifies tracts that have experienced both substantial
+racial/ethnic demographic change (growth in the non-Hispanic white share of the population) and
+economic demographic change (growth in the share of high-income households), as well as markers of
+disproportionate housing need (rising median rents):
+https://www.hcd.ca.gov/sites/default/files/docs/planning-and-community/neighborhood-change-memo.pdf
+CF 25-1083
+PLUM Committee
+Page 31
+
+         would contain an eligibility carve out for parcels in areas where VHFHSZs and Hillside
+         Areas overlap (consistent with eligibility limitations contained in the recently adopted
+         Affordable Housing Streamlining Ordinance), the City Council may further modify this
+         criterion so that all single family sites in the VHFHSZ are ineligible for rezoning. This would
+         result in all Very High Fire Hazard Severity Zones, including areas in non-hillside areas,
+         being ineligibility. However, it is important to understand that the state VHFHSZ maps
+         represent fire "hazard" areas rather than fire "risk," the latter of which is inclusive of
+         mitigation measures. For that reason, the state VHFHSZ has expanded into paved and
+         urbanized areas that are not as likely to burn as Hillside Areas but are experiencing higher
+         temperatures and wind patterns increasing the likelihood of a fire hazard.24 These areas
+         have better access and connectivity and include geographies like Ventura Boulevard,
+         Highland Park, and Atwater Village. The present Upzoning Options propose an eligibility
+         criteria of where VHFHSZ and Hillside Areas overlap for three reasons: 1) Hillside Areas
+         present unique evacuation concerns; 2) redevelopment in urbanized areas that have
+         adequate ingress/egress improve the structural resilience of buildings; and 3) this criterion
+         is aligned with other existing City policy such as the recently codified Affordable Housing
+         Streamlining Ordinance.
+
+         Historic Resources: As presented, all options would apply incentives to sites with historic
+         resources consistent with the eligibility criteria in today's MIIP regardless of exceptions
+         and delayed effectuation rules that may apply25. This means sites with historic resources
+         could qualify for the MIIP's incentives but would be prohibited from demolishing any
+         historic resource and would have a base incentive allowance of only one additional story
+         of floor area and height. A total of 11 HPOZs intersect with the proposed Opportunity
+         Station areas. This recommendation is consistent with the PLUM Committee's discussion
+         and public feedback recommending that the Department explore upzoning scenarios that
+         could still extend modest bonuses to sites with historic resources. The City Council could
+         opt to modify the options to exclude sites with historic resources from expanded MIIP
+         eligibility, and instead include all historic areas without any zoning changes in a citywide
+         delayed effectuation ordinance under the provisions of SB 79.
+
+         Limited Upzoning: Under Option 1, the City Council could take a more modest approach
+         to upzoning by only including upzoning on sites located within TOD zones that are
+         ineligible for delay. This would apply the CT program incentives to just over 13,000 single
+         family and low-density sites in approximately 19 TOD zones predominantly in the South
+         Valley and West LA. More information on the TOD zones and sites ineligible for delay can
+         be found in Section VII of this report.
+
+24Fore more information on Cal Fire's methodology for High Fire Severity Zones visit:
+https://osfm.fire.ca.gov/what-we-do/community-wildfire-preparedness-and-mitigation/fire-hazard-severity-
+zones
+25 Per GCS 65912.161(b)(1)(F), delayed effectuation may apply to sites with historic resources on a local
+register designated as of Jan. 1, 2025. Delayed effectuation may not apply to sites with historic resources
+on a state or national register.
+CF 25-1083
+PLUM Committee
+Page 32
+
+Rezoning Considerations
+
+An action to upzone consistent with the options described above would significantly expand
+available sites for housing around 55 Opportunity Stations. Sites within those stations, which
+today generally permit less than five units, would be eligible to build multi-family housing ranging
+in density from 10 units to unlimited, with heights ranging from two to seven stories depending on
+transit adjacency. Increasing available land for housing may relieve redevelopment pressures on
+existing RSO housing stock in lower opportunity areas.
+
+Overall, the Upzoning Options focus growth in higher and moderate opportunity areas, leaving
+60% of the City's TOD zones located primarily in Southeast Los Angeles, South Los Angeles,
+Boyle Heights, and the Northeast Valley unaffected by the bill in the short term. This affords more
+time to conduct thoughtful community engagement in areas of the City that experience greater
+housing pressures. Though rezoning wouldn't be focused on these neighborhoods in the short
+term, it's important to note that capacity exists in these areas as a result of the City's historic
+zoning and present housing incentive programs. In fact, an assessment of eligible SB 79 sites
+reveals that just over half of sites eligible in lower opportunity zones are already eligible for the
+MIIP, while only 42% of eligible parcels in higher opportunity areas are due to a higher prevalence
+of single family zoning that is not eligible for the MIIP (see Appendix B, Table 5). The 2021-2029
+Housing Element includes analysis showing that between 2009-2018, only 14% of covenanted
+affordable units were produced in higher opportunity areas, meaning lower opportunity areas have
+historically produced more affordable housing. The Housing Element sought to address this by
+steering growth and mixed income development into higher opportunity areas, consistent with the
+Upzoning Options presented for delaying effectuation of SB 79.
+
+While this report focuses on the impact of rezoning on the built environment of the City, adding
+capacity citywide would likely also have positive fiscal impacts through increases in property tax
+revenue and real estate transactions, especially if growth is focused in higher opportunity areas
+and market tiers.26 Additionally, new development may help fund infrastructure improvements
+using project fees and conditions, in accordance with the City's broader value capture framework.
+A forthcoming report from the Chief Legislative Analyst's office will speak more to these impacts.
+
+26 Streets for All conducted an analysis on how direct implementation of SB 79 could impact the fiscal
+projection for the City of Los Angeles here: https://data.streetsforall.org/blog/sb79_zoning_budget.
+CF 25-1083
+PLUM Committee
+Page 33
+
+Delayed Effectuation Ordinance
+
+In addition to upzoning, the Department recommends immediate initiation of an ordinance to delay
+effectuation citywide consistent with SB 79's rules for delayed implementation based on available
+capacity and site characteristics. In particular, this ordinance would secure a pause in
+implementation of SB 79 by affirming compliance with the criteria described in GCS
+65912.161(b)27 including sites allowing at least half of SB 79's development potential on individual
+sites and maintaining over 50% of SB 79's overall capacity citywide (as shown in Appendix C). A
+delayed effectuation ordinance, consistent with the provisions of the bill, would also affirm
+exemptions for sites located in industrial employment hubs.28 The Department is working on
+identifying hubs in areas such as Downtown Los Angeles, Van Nuys, Canoga Park, South Central
+Los Angeles, and Chatsworth. Furthermore, this ordinance would exempt any sites further than
+one-mile walking distance from an identified TOD stop. When coupled with a rezoning option
+discussed in the preceding section, this Delayed Effectuation Ordinance could accomplish a
+citywide pause in implementation. Alternatively, should City Council abstain from selecting a
+rezoning approach, the Delayed Effectuation Ordinance would not prevent SB 79 from going into
+effect in areas including at ten G Line Stations in the South and Northwest Valley, Expo Sepulveda
+and Expo Westwood/Rancho Park in West LA, and CRN-La Brea/Beverly in Mid City. As
+discussed in Section IV of this report, a delayed effectuation ordinance requires effectuation prior
+to SB 79's July 1, 2026 effective date and may be subject to HCD review. Per the bill, the delayed
+effectuation ordinance would only be valid through one year following the adoption of the seventh
+cycle of the Housing Element, which would be approximately 2030 for the City of Los Angeles.
+
+IX. CONCLUSION AND NEXT STEPS
+
+This report provides insights into both the scale of SB 79's impact as well as how the City can act
+to ensure the bill applies in a way that furthers local land use and equity goals. Consistent with
+previous instructions adopted by the City Council, if the City Council wishes to implement a
+citywide delayed effectuation of SB 79 through upzoning ordinances while the City evaluates
+density increases to sensitive communities such as lower opportunity areas, neighborhoods in
+VHFHSZs, and those with higher concentrations of historic and cultural landmarks, the
+Department recommends that the City Council instruct the Department to create an ordinance to
+expand applicability of housing incentive programs. Moving forward with these recommendations
+could expand land available for multifamily development near transit, in alignment with the goals
+of the bill and would also advance objectives of the 2021-2029 Housing Element to AFFH and
+maximize value capture through provision of on-site affordable housing. The modeling discussed
+in this report as well as the eligibility mapping will continue to be refined in coordination with SCAG
+
+27 For further detail on delayed effectuation criteria for eligible areas, see pages 12-13 of the City
+Planning report dated November 13, 2025.
+28 Paragraph (2) of subdivision (e) of GCS 65912.160 defines an industrial employment hub as a
+contiguous area of at least 250 acres dedicated to industrial uses and designated as such in the local
+jurisdiction's general plan as of January 1, 2025.
+CF 25-1083
+PLUM Committee
+Page 35
+
+APPENDIX A: TOD ZONE INTERPRETATIONS
+
+Transit-Oriented Development (TOD) Stop Definition and Mapping Updates
+
+The Department released preliminary mapping30 of potential SB 79 TOD stops and associated
+TOD zones that included 150 stops along both existing and planned transit routes identified in
+SCAG's Regional Transportation Plan/Sustainable Communities Strategy (RTP/SCS) and the
+Los Angeles County Metropolitan Transportation Authority's (Metro) Regional Transportation
+Improvement Plan (RTIP). As a result of review of the TOD stop definition (GCS 65912.156(p)),
+which includes a requirement that any eligible planned transit stop be on a route which has a
+preferred alternative selected or is included in the RTIP, and evaluation of plans for future lines
+that may comprise the City of Los Angeles' transit network, the Department refined the number
+of stops along planned routes to ensure consistency with the bill's provisions. A revised draft map
+of eligible TOD stops, and TOD zones can be found in Map 1 above.
+
+Revised maps remove planned routes lacking a Locally Preferred Alternative (LPA) based on an
+interpretation of the bill that a planned route is considered to have an LPA if there is
+documentation of an approved action to certify an environmental document or to fund a project
+from the Metro Board or similar transportation authority or regulatory body. This interpretation
+informed removal of the Lincoln Bus Rapid Transit (BRT), Vermont Short Corridor (distinct from
+the Vermont Transit Corridor BRT project), B Line Extension, and East San Fernando Valley Light
+Rail Transit northern segment. On Jan. 22, 2026, the Metro Board approved an LPA31 for the
+Sepulveda Transit Corridor Project, therefore the stations have been retained, reclassified as Tier
+1, and added to the revised draft map. The Metro Board is anticipated to vote on an LPA for the
+K Line Northern Extension in March; therefore, the preliminary station locations included in
+SCAG's RTP/SCS in the City's draft map will be updated when an LPA is formally selected by the
+Metro Board.
+
+Additional mapping updates include the removal of three Metrolink stations as TOD zones and
+updated station locations for the Vermont BRT based on the final Metro Board report approved in
+March 2025. In particular, the Burbank Airport North, Burbank Airport South, and Van Nuys
+Metrolink32 stations were removed from the City's preliminary map of SB 79 TOD zones because
+they do not meet the 48-trains per day across both directions threshold for Tier 2 nor the 72-trains
+per day threshold for Tier 1. Additionally, the Department has revised maps to group transit hubs,
+stops that may be served by multiple types of lines (e.g., an intersection of heavy rail (Tier 1) and
+light rail (Tier 2) by their highest tier. The aforementioned changes and consolidations resulted in
+a new citywide total of 141 TOD stops or zones.
+
+30 https://storymaps.arcgis.com/stories/480791d9b665485ea798986dcad61e86
+31 Modified Alternative 5 was approved as the LPA.
+32 Note that a TOD zone remains adjacent to the Van Nuys Metrolink stop due to the presence of an
+eligible East San Fernando Valley Light Rail Transit stop.
+CF 25-1083
+PLUM Committee
+Page 36
+
+Review by the California Department of Housing and Community Development
+
+The Department continues to actively coordinate with state agencies, regional agencies, and
+other municipalities to refine interpretations on key provisions including those applicable to the
+adoption and implementation of local ordinances. After further review it was determined that
+delayed effectuation ordinances become effective immediately upon their operative date,
+therefore allowing the City until June 30, 2026, to effectuate any ordinance associated with
+Approaches B or C (discussed in Section III above). Following adoption, any implementing
+ordinance would be subject to HCD review, pursuant to the procedures and timelines described
+in GCS 65912.160 including a maximum 120-day review period, that may result in the need for
+corrections. The City remains in communication with HCD to minimize the need for any future
+corrections to legislative actions.
+
+2025 and 2026 CTCAC Opportunity Map Data
+
+The CTCAC and HCD Opportunity Area Map for 2026 was adopted in December 2025. Therefore,
+the analysis of TOD zones included in this report is based on the 2026 Opportunity Area Maps.
+Within the newly issued maps, approximately 99 census tracts have changed opportunity area
+categories, including 29 tracts which were reclassified as lower opportunity, 52 tracts which were
+reclassified as moderate opportunity, and 18 tracts which were reclassified as higher opportunity.
+Within TOD zones, areas reclassified as lower opportunity include Montecito Heights, Van Nuys,
+and parts of South Park. Those now designated as moderate opportunity include Highland Park
+and Koreatown, and those now designated highest or high opportunity include Highland Park,
+North Hollywood, and Chinatown.
+
+APPENDIX B: TOD ZONE ANALYSIS
+
+Affirmatively Furthering Fair Housing (AFFH) Considerations
+
+Taking a deeper look at the bill's AFFH impacts, Table 5 explores characteristics of sites located
+in TOD zones based on their CTCAC designation. Percentages in each row are reflective of each
+opportunity area's characteristic or the citywide ratio. As mentioned above, 57%33 of the City's
+TOD zones have a majority of sites within designated lower opportunity areas, these TOD zones
+fall largely within South and the eastern parts of Central Los Angeles. Conversely, about 30%13
+of the City's TOD zones are majority higher opportunity, which are predominantly located in West
+LA, the western parts of Central Los Angeles and South Valley.
+
+33 This percentage is based on area calculations of an entire TOD zone by CTCAC designation, including
+areas designated as "insufficient data."
+CF 25-1083
+PLUM Committee
+Page 37
+
+Table 5. SB 79 Eligible Sites by CTCAC Designation
+
+Opportunity Count of  Percent Percent Percent    Percent     Percent Percent Percent Percent
+
+Area     SB 79        of SB Single RD and        MIIP        1-2      3+ RSO VHFHSZ Historic
+         Sites34                                 Eligible35  RSO Units35 35
+                      79  Family more                                        Preservation
+                      Sites34 35  Restrictive35              Units35
+                                                                             Overlay
+
+                                                                             Zone
+                                                                             (HPOZ)35
+
+Lower    78,807 57% 36% 68%                      52%         13% 16% 2%      3%
+
+Moderate 14,896 11% 40% 60%                      49%         9% 18% 14% 12%
+                                                 40%
+Higher   43,906 32% 54% 70%                      48%         12% 13% 19% 8%
+
+Overall  137,609 100% 42% 68%                                12% 15% 9%      6%
+
+34 Numbers and percentages for low, moderate, and higher opportunity areas in this column are summed
+
+in the overall row at the bottom of the table.
+35 Percentages for low, moderate, and higher opportunity areas are based on the count of parcels for that
+
+category. The overall percentage is based on the number of eligible SB 79 parcels citywide.
+CF 25-1083
+PLUM Committee
+Page 38
+
+Table 6. SB 79 TOD zone Characteristics by APC Area*
+
+Area Planning Total Number  TOD zones TOD zones TOD zones              TOD zones TOD zones
+
+Commission  of Transit      that have a that have a with more          with more          located within
+(APC)       Oriented
+            Development     majority of majority of than 10% of        than 10% of the Very High
+
+                            parcels zoned parcels zoned parcels        parcels            Fire Hazard
+
+            (TOD) Zones     for Low-      Single Family containing 1-  located within Severity Zone
+
+                            density (RD               2 Rent           a Historic
+
+                            or more                   Stabilized       Preservation
+
+                            restrictive)              Ordinance        Overlay Zone
+
+                            TOD zones                 Units
+
+Central Los 40              6.5           2           10               7.5                7
+Angeles
+
+East Los    12.5            12            5           9.5              4                  9
+
+Angles
+
+Harbor Area 0               0             0           0                0                  0
+
+North Valley 10.5           9.5           8.5         3                0                  1
+
+South Los   35              26.5          8           25               4.5                0
+
+Angeles
+
+South Valley 28.5           23.5          23.5        3                2                  4
+
+West Los    14.5            6             4           .5               0                  2
+
+Angeles
+
+TOTAL       141             84            52          51               18                 23
+
+*Note that TOD zones which are split across multiple APCs are counted as 0.5 toward each
+APC total.
+CF 25-1083
+PLUM Committee
+Page 39
+
+Table 7. SB 79 TOD zone Majority CTCAC Designation by APC Area*
+
+Area        Total Transit  Majority Majority
+Planning    Oriented
+Commission  Development    Lower  Moderate
+(APC)       (TOD) Zones
+                           Opportunity Opportunity
+
+                           TOD zones TOD zones
+
+Central Los 40             21.5   5
+Angeles
+
+East Los    12.5           5.5    2
+
+Angles
+
+Harbor Area 0              0      0
+
+North Valley 10.5          8.5    0
+South Los 35
+Angeles                    34     0
+
+South Valley 28.5          10.5   3
+
+West Los    14.5           4      0
+
+Angeles
+
+TOTAL       141            84     10
+
+*Note that TOD zones which are split across multiple APCs are counted as 0.5 toward each
+APC total.
+CF 25-1083
+PLUM Committee
+Page 40
+
+Table 8. 20 Transit Oriented Development (TOD) zones with the highest percentage of
+sites with 1-2 Rent Stabilization Ordinance (RSO) units
+
+Area Planning     TOD zone Name                  Percent of Sites with Majority CTCAC/HCD
+Commission (APC)  K Extension - La Brea/Beverly
+                                                 1-2 RSO Units (%)  Opportunity Map
+Central
+                                                                    Designation*
+
+                                                 22                 Higher
+
+                  D Extension - Wilshire/Fairfax 22                 Higher
+                                                                    Higher
+                  D Extension - Wilshire/La                         Lower
+
+                  Cienega                        21
+
+East LA           E-Indiana                      29
+
+                  Metrolink ­ Glendale           24                 Higher
+
+                  E-Soto                         23                 Lower
+
+                  E-Mariachi Plaza               18                 Lower
+
+                  A-Heritage Square              16                 Lower
+                                                                    Lower
+South LA          Vermont BRT - Slauson Ave      26
+
+                  E - Expo/Western               25                 Lower
+
+                  A ­ Vernon                     24                 Lower
+
+                  Vermont BRT - Vernon Ave       22                 Lower
+
+                  A ­ Slauson                    21                 Lower
+
+                  E - Expo/La Brea               20                 Lower
+
+                  K - Crenshaw/Adams             19                 Lower
+
+                  Vermont BRT - W Adams Blvd 18                     Lower
+
+                  E - Expo/Vermont               17                 Lower
+CF 25-1083
+PLUM Committee
+Page 41
+
+Central, East LA   B/Vermont BRT -
+Central, South LA
+                   Vermont/Sunset    17               Mixed
+                                                      Higher
+                   K Extension - Pico/San Vicente 36
+
+                   A - San Pedro St  16               Lower
+
+*TOD zones with a CTCAC/HCD Opportunity Area Map designation of "Mixed" do not have a
+single map category that exceeds 50% of the TOD zone area.
+CF 25-1083
+PLUM Committee
+Page 42
+
+Table 9. Transit Oriented Development (TOD) Zones with Sites in Very High Fire Hazard
+Severity Zones (VHFHSZs)
+
+TOD Zone Name                            Percentage of TOD zone  Count of Sites in TOD zone
+                                         within VHFHSZs by Lot   within VHFHSZs by Lot
+A-Southwest Museum                       Area (%)*               Area
+NOHO to Pasadena BRT-Colorado Boulevard  100                     1951
+NOHO to Pasadena BRT-E Broadway          100                     875
+NOHO to Pasadena BRT-W Alameda Avenue    100                     33
+B - University City/Studio City          96                      5
+A-Heritage Square                        87                      724
+NOHO to Pasadena BRT-Eagle Rock          86                      1854
+Boulevard
+SP-UCLA Ackerman Union                   82                      1494
+NOHO to Pasadena BRT-Townsend Avenue     81                      28
+A-Lincoln/Cypress                        78                      1612
+NOHO to Pasadena BRT-W Riverside Drive   77                      465
+A-Highland Park                          73                      15
+SP - Ventura Blvd                        56                      1103
+A-Chinatown                              53                      729
+B/K Extension - Hollywood/Highland       51                      347
+Metro 234 -Ventura Boulevard             49                      718
+B - Hollywood/Vine                       35                      504
+B - Hollywood/Western                    33                      457
+D Extension/SP - Westwood/UCLA           31                      459
+D/Vermont BRT - Vermont/Sunset           28                      1
+Metrolink - Glendale                     8                       212
+G Line - Nordhoff                        7                       40
+                                         4                       28
+CF 25-1083
+PLUM Committee
+Page 43
+
+TOD Zone Name               Percentage of TOD zone  Count of Sites in TOD zone
+                            within VHFHSZs by Lot   within VHFHSZs by Lot
+                            Area (%)*               Area
+
+Metro 70 - N Spring Street  3                       27
+
+*Note that the above percentages only account for sites within TOD zones that are located within the City
+of Los Angeles.
+CF 25-1083
+PLUM Committee
+Page 44
+
+Table 10. Historic Preservation Overlay Zones (HPOZs) with Sites in Transit Oriented
+Development (TOD) Zones
+
+                 Number of
+
+                 Intersecting
+
+                 Transit       Number of
+
+Historic         Oriented      HPOZ       Percentage of Percentage of Land in a
+Preservation
+Overlay Zone     Development Sites in HPOZ Area in TOD zone Designated
+
+                 (TOD) Zones TOD zones a TOD zones as an HPOZ (%)
+
+Adams-Normandie 1              717        97  Vermont BRT - W Adams
+                                              Blvd: 38
+
+Carthay Circle   2             450        99  D  Extension            -
+
+                                              Wilshire/Fairfax: 17
+
+                                              D Extension - Wilshire/La
+                                              Cienega: 17
+
+Carthay Square   1             61         18  D  Extension            -
+
+                                              Wilshire/Fairfax: 4
+
+Hancock Park     2             393        32  K Extension - La
+                                              Brea/Beverly: 14
+
+                                              D Extension/K Extension -
+                                              Wilshire/La Brea: 6
+
+Highland Park - 3              2907       74  A-Heritage Square: 26
+Garvanza                                      A-Highland Park: 79
+
+                                              A-Southwest Museum: 38
+
+Hollywood Grove  1             87         63  B-Hollywood/Western: 6
+
+Jefferson Park   1             35         2   E-Expo/Western: 1
+
+La Fayette Square 1            95         40  K Extension - Pico/San
+                                              Vicente: 5
+
+Lincoln Heights  2             263        27  A-Heritage Square: 6
+
+                                              A-Lincoln/Cypress: 25
+
+Miracle Mile     3             847        64  K Extension - Pico/San
+                                              Vicente: 3
+
+                                              D Extension/K Extension -
+                                              Wilshire/La Brea: 20
+
+                                              D  Extension            -
+
+                                              Wilshire/Fairfax: 29
+CF 25-1083
+PLUM Committee
+Page 45
+
+                    Number of
+
+                    Intersecting
+
+                    Transit       Number of
+
+Historic            Oriented      HPOZ       Percentage of Percentage of Land in a
+Preservation
+Overlay Zone        Development Sites in HPOZ Area in TOD zone Designated
+Adams-Normandie
+Carthay Circle      (TOD) Zones TOD zones a TOD zones as an HPOZ (%)
+Miracle Mile North
+Pico-Union          1             717        97  Vermont BRT - W Adams
+
+South Carthay                                    Blvd: 38
+University Park
+                    2             450        99  D         Extension    -
+
+                                                 Wilshire/Fairfax: 17
+
+                                                 D Extension - Wilshire/La
+                                                 Cienega: 17
+
+                    2             482        81  D Extension - La
+
+                                                 Brea/Beverly: 22
+
+                                                 D Extension/K Extension -
+                                                 Wilshire/La Brea: <1
+
+                    8             190        23  A/E - Pico: 4
+
+                                                 A - Grand/LATTC: <1
+
+                                                 Metro 81 - Pico
+                                                 Boulevard: 15
+
+                                                 Metro 81 - Venice
+                                                 Boulevard: 17
+
+                                                 Metro 81 - W 12th Street:
+                                                 6
+
+                                                 Metro 81 - W Washington
+                                                 Boulevard: 8
+
+                                                 B/D - Westlake/MacArthur
+                                                 Park: 2
+
+                                                 Vermont BRT - Pico Blvd:
+                                                 2
+
+                    1             41         11  D Extension - Wilshire/La
+
+                                                 Cienega: 3
+
+                    8             576        88  A - Grand/LATTC: 17
+
+                                                 E - Jefferson/USC: <1
+
+                                                 E - LATTC/Ortho Institute:
+                                                 23
+CF 25-1083
+PLUM Committee
+Page 46
+
+                 Number of
+
+                 Intersecting
+
+                 Transit       Number of
+
+Historic         Oriented      HPOZ       Percentage of Percentage of Land in a
+Preservation
+Overlay Zone     Development Sites in HPOZ Area in TOD zone Designated
+
+Adams-Normandie  (TOD) Zones TOD zones a TOD zones as an HPOZ (%)
+
+                 1             717        97   Vermont BRT - W Adams
+
+                                               Blvd: 38
+
+Carthay Circle   2             450        99   D         Extension      -
+
+                                               Wilshire/Fairfax: 17
+
+                                               D Extension - Wilshire/La
+                                               Cienega: 17
+
+                                               Metro 81 - Pico
+                                               Boulevard: <1
+
+                                               Metro 81 - Venice
+                                               Boulevard: 19
+
+                                               Metro 81 - W 23rd Street:
+                                               37
+
+                                               Metro 81 - W Washington
+                                               Boulevard: 33
+
+                                               Vermont BRT - W Adams
+                                               Blvd: 13
+
+Van Nuys         3             255        100  ESFV/SP-              Van
+
+                                               Nuys/Oxnard: <1
+
+                                               ESFV-Van
+                                               Nuys/Vanowen: 15
+
+                                               ESFV-Van Nuys/Victory:
+                                               13
+
+West Adams Terrace 1           115        23   K         Extension      -
+
+                                               Crenshaw/Adams: 5
+
+Whitley Heights  1             124        52   B/K       Extension      -
+
+                                               Hollywood/Highland: 8
+
+Wilshire Park    1             102        20   D - Wilshire/Western: 8
+
+Windsor Square   1             65         6    D - Wilshire/Western: 5
+CF 25-1083
+PLUM Committee
+Page 47
+
+Table 11. Transit Oriented Development (TOD) Zones with 20% or Greater Zoned
+Industrial
+
+Area Planning               TOD zone Name                    Percentage of             Majority TCAC
+Commission                  A/B/D/Metrolink - Union Station  Industrial Area           Designation*
+                                                             (%)
+Central                                                                                Mixed
+                                                             27
+
+                                                                                   22  Higher
+                            K Extension - La Brea/Santa Monica
+
+South Los Angeles           A ­ Vernon                       39                        Lower
+
+South Los Angeles,          A ­ Washington                   79                        Lower
+Central
+
+East LA, Central            E Pico/Aliso                     30                        Lower
+
+North Valley                G ­ Nordhoff                     57                        Mixed
+
+                                                                                   36  Lower
+                            ESFV-Van Nuys/San Fernando
+
+                            G ­ Chatsworth                   27                        Higher
+
+                                                                                   20  Lower
+                            ESFV-Van Nuys/Roscoe
+
+North Valley, South Valley  Metro 234 - Roscoe Boulevard     32                        Lower
+
+                            G ­ Roscoe                       28                        Lower
+
+South Valley                ESFV/SP-Van Nuys                 56                        Lower
+
+                                                                                   25  Lower
+                            Metro 234 - Saticoy Street
+
+West                        C/K - Aviation/Century           26                        Moderate
+
+                                                                                   21  Higher
+                            K Line-Westchester/Veterans
+
+                                                                                   21  Higher
+                            C - LAX/Metro Transit Center
+
+*TOD zones with a CTCAC/HCD Opportunity Area Map designation of "Mixed" do not have a single map
+
+category that exceeds 50% of the TOD zone area.
+CF 25-1083
+PLUM Committee
+Page 48
+
+APPENDIX C: DELAYED EFFECTUATION ANALYSIS
+
+Table 12. Delayed Effectuation Eligibility Summary Table
+
+                 Local and SB79 Allowable Capacity                                            Delayed Effectuation (DE) Eligibility Criteria
+
+          Local Max. 79 Max.   Local Floor 79 Floor      Lower        Station    Majority     Site Level  Very High  1 foot     Local         1-mile      Parcels Parcels
+                                                                      Area       Lower                    Fire                  Historic                  Eligible for Statutorily
+          Potential Potential  Area1  Area2              Opportunity  Density    Opportunity  Density     Hazard     Sea Level  Resources     walking     any DE Exempt
+                                                         Areas3       and FAR 4  Stations5    and FAR 6   Severity   Rise 8                   distance10  Criteria from SB79
+          Units  Units                                                                                    Zones7                9
+
+Number    6,876,877 2,447,945  3,391,921,01 3,165,270,5  62,922       53,699     59,839       38,689 10,620          0          6,760         294 98,981 26,320
+of City
+Parcels                        6      68
+
+Percent                                                  56.16% 47.92% 53.40% 34.53% 9.48%                           0.00% 6.03% 0.26% 88.34% 19.02%
+of City
+Parcels
+
+Number                                                                83         79
+of
+Stations
+
+1 Maximum allowable building volume that could be developed under local zoning rules.
+2 Maximum allowable building volume that could be developed under SB79.
+3 Sites eligible for delayed effectuation of SB79 due to being located in a lower opportunity area as designated by the California Tax Credit Allocation Committee (TCAC).
+4 Station Hubs where both (a) at least 33 percent of lots produce at least 50% of density and FAR of SB79 and (b) lots estimated to produce at least 75% of the density of SB79.
+5 Station Hubs where (a) at least 50% of station area is designated as TCAC lower opportunity area and, (b) 40% of the aggregated density of SB79.
+6 Sites meeting 50% density and FAR of SB 79.
+7 Sites that are in Very High Fire Hazard Severity Zones (VHFHSZ).
+8 Sites that are in areas vulnerable to one foot of sea level rise.
+9 Sites contain historic resources designated before January 1, 2025 on the City's local register.
+10 Sites that are beyond one-mile walking distance from the SB79 TOD stop.
+CF 25-1083 Appendix B, Table 13_Delayed Effectuation Eligibility by Station Area
+
+Table 13. Delayed Effectuation Eligibility by Station Area
+
+Station Hub                   Local            79 Maximum       Local Floor     79 Floor Area   Parcels in      Station Areas  Lower          Parcels       Parcels in Very  Parcels in      Parcels        Parcels within                          Parcels      Total Parcels     Parcels          Percent of
+                              Maximum          Potential Units       Area                       Lower           Eligible for   Opportunity    Eligible for  High Fire        One-Foot Sea    Designated as  1-mile Walking   Total Parcels Statutorily           Eligible for      Eligible for SB  Station Area
+                              Potential Units                                                   Opportunity     Delayed        Station Areas  Delayed       Hazard           Level Rise      a Local        Distance of a    in Station Area Exempt from         Delayed           79               Eligible for
+                                                                                                Areas Eligible  Effectuation   Eligible for   Effectuation  Severity Zones   Areas Eligible  Historic       Station                                              Effectuation                       Delay
+                                                                                                for Delayed     Due to         Delayed        Due to        Eligible for     for Delayed     Resource       Entrance                                SB79
+                                                                                                Effectuation    Existing       Effectuation   Existing      Delayed          Effectuation    Eligible for   Eligible for SB
+                                                                                                                Capacity                      Capacity      Effectuation                     Delayed        79 Exemption
+                                                                                                                               No                                                            Effectuation
+                                                                                                                               Yes
+A-Chinatown                   166,511          27,436           18,395,829      35,985,157       57 Yes                        No             544                   277 -                       16 -                         821     202                         619               0                100.00%
+A-Heritage Square              15,954          31,354           23,676,058      40,876,985      816 No                         Yes            355                 1,589 -
+A-Highland Park                35,659          25,916           36,048,055      33,468,935      339 Yes                        No             954                                               514            53            2,034   300                         1,734             0                100.00%
+A-Lincoln/Cypress              27,144          22,208           30,397,116      28,979,650      762 Yes                        No             384                   892 -
+A-Little Tokyo/Arts District  212,727          23,300           24,358,356      30,506,447      301 Yes                                       450 -                 319 -                       1,493 -                      2,327   464                         1,863             0                100.00%
+A-Southwest Museum             12,507          27,243           15,782,159      35,311,559      210 No                         Yes            154
+A/RED/PUR/Metrolink-Union                                                                                                      Yes                                         -                    184 -                        1065    273                         792               0                100.00%
+Station                       148,493          27,948                                                                          Yes                                1,736 -
+BLU-103rd St/Watts Towers      16,549          29,920                                                                          Yes                                                              23 -                         594     134                         460               0                100.00%
+BLU-Firestone                    1,595                                                                                         Yes
+BLU-Grand/LATTC                                 2,970                                                                          Yes                                                              567            41            1,949   213                         1,736             0                100.00%
+BLU-San Pedro St              225,946          27,551                                                                          Yes
+BLU-Slauson                    95,010          21,794            16,671,197     35,695,172         63 Yes                      Yes            267 -                          -                  9-                             565   263                         302               0                100.00%
+BLU-Vernon                       8,366         10,216            31,079,135     38,753,371      2121 No                        Yes                                                                                           2,291
+BLU-Washington                 10,843          14,544                                                                                         380 -                          -                  2-                                   170                         2,121             0                100.00%
+BLU/EXP-Pico                     9,171                             2,339,924     3,844,435         60 No                       Yes                                                                                               81
+BLU/EXP/RED/PUR-7th                             6,714            64,116,710     35,333,458       621 Yes                                                    42 -             -               -              -                  890                           21  60                0                100.00%
+St/Metro Center               632,608          34,992            39,052,186     28,456,369       804 Yes                       No                                                                                            1,581
+BLU/GRN-Willowbrook/Rosa                                         15,929,209     13,282,436       677 Yes                       Yes            612 -                          -                  108 -                          765   222                         668               0                100.00%
+Parks                         860,279          46,607            21,639,932     18,710,234      1306 No                        No                                                                                            1,770
+CRN-Crenshaw/Adams                                                 8,728,237                     367 Yes                       No             726 -                          -                  3-                           1253    477                         1,104             0                100.00%
+CRN-La Brea/Beverly              6,154         16,253           128,428,457      8,678,816       425 Yes                       No                                                                                              725
+CRN-La Brea/Santa Monica       25,040          24,142                           45,079,341                                     Yes            469 -                          -               -              -                                                88  677               0                100.00%
+CRN-Pico/Rimpau                51,557          31,079                                                                          Yes
+E-Indiana                      94,530          12,842                                                                          Yes            770 -                          -                  1-                                   464                         1,306             0                100.00%
+E-Mariachi Plaza               75,018          25,741                                                                          Yes
+E-Pico/Aliso                                   11,110                                                                          No             269 -                          -               -              -                        829                         424               0                100.00%
+E-Soto                           5,062         21,334
+ESFV-Van Nuys/Arleta           16,735          18,437                                                                          No             662 -                          -                  36 -                                                         61  664               0                100.00%
+ESFV-Van Nuys/Laurel           32,173          20,356                                                                          Yes
+Canyon                         19,832          29,653           177,256,396     59,306,448      463 Yes                        Yes            677 -                          -                  93 -                         728                             48  680               0                100.00%
+ESFV-Van Nuys/Nordhoff
+ESFV-Van Nuys/Roscoe             6,110         33,112           13,614,334      21,323,991       971 No                        Yes                          94 -             -               -              -                1014                            31  975               8                99.19%
+ESFV-Van Nuys/San                              32,508           31,703,004      31,211,708      1734 Yes                       Yes                                                                                           2,172
+Fernando                         9,296         30,565           24,289,204      40,388,943                                     Yes            914 -                          -                  107 -                        2152    422                         1,750             0                100.00%
+ESFV-Van Nuys/Sherman          41,235                           28,383,153      16,692,621           0 No                      Yes                                                                                           1379
+ESFV-Van Nuys/Vanowen          37,343          26,555           41,978,709      33,243,590           0 Yes                     Yes            263 -                          -                  760 -                        2,104   177                         999               976              50.58%
+ESFV-Van Nuys/Victory                          33,550           10,288,960      14,261,212         26 Yes                      Yes                                                                                            1109
+ESFV-Van Nuys/Woodman          11,029          34,152           21,089,849      27,572,921       924 No                                       611 -                          -                  4-                           1390    508                         871               0                100.00%
+ESFV/SP-Van Nuys               36,161          25,212           14,645,312      24,023,220       839 No                        Yes
+ESFV/SP-Van Nuys/Oxnard        37,975          32,695           23,795,389      26,297,130       468 No                        No             857 -                          -                  144 -                          928   494                         1,610             0                100.00%
+(Orange)                       42,916          16,217           11,553,898      38,299,074      1220 No                        Yes                                                                                           1,996
+EXP-Culver City                20,409                                                           1614 No                        No                           0-               -               -              -                1,647   185                         924               0                100.00%
+EXP-Expo Park/USC              13,774          32,022                                                                          Yes
+EXP-Expo/Bundy                                  9,817                                                                          Yes                          0-               -                  2-                                   471                         919               0                100.00%
+EXP-Expo/Crenshaw              48,923                                                                                          Yes
+EXP-Expo/La Brea               68,317          29,648                                                                          Yes                          36 -             -                  3-                                   424                         504               0                100.00%
+EXP-Expo/Vermont               61,774          17,045                                                                          Yes
+EXP-Expo/Western               94,797          31,166                                                                          Yes                          0-               -                  5-                                   654                         1,342             0                100.00%
+EXP-Farmdale                   26,960          28,967                                                                          Yes
+EXP-Jefferson/USC              30,118          30,728                                                                          Yes                          26 -             -               -              -                                                33  1,614             0                100.00%
+EXP-La Cienega/Jefferson       56,583          28,499                                                                          No
+EXP-LATTC/Ortho Institute      15,012          25,180           11,011,164      42,983,928      2013 No                        No                           54 -             -               -              -                2,036                           23  2,013             0                100.00%
+EXP-Palms                      25,164          29,505           95,151,066      42,813,881      1107 No                        No                                                                                            1,231
+EXP-Westwood/Rancho Park       60,042          25,232           47,463,680      39,701,374      1343 No                        Yes            224 -                          -               -              -                1,528   104                         1,127             0                100.00%
+EXP/SP-Expo/Sepulveda          35,946          24,062                                                                          No
+GRN-Avalon                     47,979          22,074                                                                          Yes            201 -                          -               -              -                        185                         1,343             0                100.00%
+GRN-Aviation/LAX              136,326          31,798
+GRN-Harbor Freeway             41,929          26,945           12,179,950      34,412,236      1543 No                                       164 -                          -                  1-                           1,645   102                         1,543             0                100.00%
+                               66,431          21,229           33,438,118      43,604,624      1630 No
+                               11,914                           32,057,358      44,266,900      1358 Yes                                      284 -                          -               -              -                1,748   118                         1,630             0                100.00%
+                                                      0         35,820,354      32,771,149      1001 Yes
+                                       0       19,744           52,527,969      42,748,759      1289 No                                       417 -                          -                  243 -                        1,622   133                         1,489             0                100.00%
+                               12,584                           14,709,193      20,658,121
+                                                                                                 710 No                                       736 -                          -                  206 -                        1,574   397                         1,177             0                100.00%
+
+                                                                                                                                                            73 -             -               -              -                1,408                           34  1,374             0                100.00%
+
+                                                                                                                                                            82 -             -               -                 4             994     284                         710               0                100.00%
+
+                                                                34,081,795      40,447,666       809 Yes                                      689 -                          -                  10 -                         1,937   491                         1,446                  0           100.00%
+                                                                20,669,259      12,735,781           0 Yes                                                                                                                     851                                                      0           100.00%
+                                                                48,298,903      38,002,487                                                    478 -                          -                  1-                             504   262                         589                    0           100.00%
+                                                                27,774,572      22,134,311       338 Yes                                                                                                                                                                                0           100.00%
+                                                                33,949,511      40,161,771           0 Yes                                    312 -                          -                  4-                           1,277   166                         338                    0           100.00%
+                                                                45,591,697      37,823,542                                                                                                                                   2,325                                                      0           100.00%
+                                                                51,588,503      39,437,275      1169 Yes                                      490 -                          -               -              -                1,825   242                         1,035                  0           100.00%
+                                                                26,762,480      36,631,012      1466 Yes                                                                                                                      1156                                                      0           100.00%
+                                                                36,240,846      32,349,756                                                    650 -                          -                  1-                           2,868   254                         2,071                  0           100.00%
+                                                                42,636,382      37,934,301       784 Yes                                                                                                                     1,960                                                      0           100.00%
+                                                                46,482,934      32,835,038      2503 No                                       990 -                          -                  6-                                   339                         1,486                  0           100.00%
+                                                                41,551,132      31,035,060      1270 Yes                                                                                                                       704                                                      0           100.00%
+                                                                40,166,148      28,827,446                                                    719 -                          -                  3-                           1,154   372                         784                    0           100.00%
+                                                                17,309,938      41,055,695       292 Yes                                                                                                                     1014                                                  1966
+                                                                20,878,094      33,858,227       806 Yes                                      866 -                          -                  34 -                         1,675   365                         2,503             1188                9.86%
+                                                                22,971,364      27,243,261       493 Yes                                                                                                                     2245                                                       0            16.28%
+                                                                                                                                              799 -                          -               -              -                1690    220                         1,740                  0           100.00%
+                                                                             0               0       0 Yes                                                                                                                   1,876                                                      0           100.00%
+                                                                21,779,674      25,636,975           0 No                                     265 -                          -                  13 -                                 412                         292                                100.00%
+                                                                                                     0 No                                                                                                                        38
+                                                                                                1717 No                                       378 -                          -                  1-                           1,711   135                         1,019
+                                                                                                     0 No
+                                                                                                1508 No                                       507 -                          -                  162 -                                453                         561
+
+                                                                                                                                              455 -                          -               -              -                        561                         1,114
+
+                                                                                                                                              215 -                          -               -              -                                                64  215
+
+                                                                                                                                              231 -                          -               -              -                        271                         231
+
+                                                                                                                                              616 -                          -               -              -                        159                         1,717
+
+                                                                                                                                                            0-               -               -              -                                                38                 0
+
+                                                                                                                                              431 -                          -               -              -                        203                         1,508
+
+                                                                                                                                                                                                                                                                                                                  1
+CF 25-1083 Appendix B, Table 13_Delayed Effectuation Eligibility by Station Area
+
+Table 13. Delayed Effectuation Eligibility by Station Area
+
+Station Hub                    Local            79 Maximum       Local Floor  79 Floor Area  Parcels in      Station Areas  Lower          Parcels           Parcels in Very  Parcels in      Parcels        Parcels within                          Parcels      Total Parcels     Parcels          Percent of
+                               Maximum          Potential Units       Area                   Lower           Eligible for   Opportunity    Eligible for      High Fire        One-Foot Sea    Designated as  1-mile Walking   Total Parcels Statutorily           Eligible for      Eligible for SB  Station Area
+                               Potential Units                                               Opportunity     Delayed        Station Areas  Delayed           Hazard           Level Rise      a Local        Distance of a    in Station Area Exempt from         Delayed           79               Eligible for
+                                                                                             Areas Eligible  Effectuation   Eligible for   Effectuation      Severity Zones   Areas Eligible  Historic       Station                                              Effectuation                       Delay
+                                                                                             for Delayed     Due to         Delayed        Due to            Eligible for     for Delayed     Resource       Entrance                                SB79
+                                                                                             Effectuation    Existing       Effectuation   Existing          Delayed          Effectuation    Eligible for   Eligible for SB
+                                                                                                             Capacity                      Capacity          Effectuation                     Delayed        79 Exemption
+                                                                                                                            No                                                                Effectuation
+                                                                                                                            No
+GRN-Vermont/Athens                5,008         13,177            7,709,381   17,034,441      829 No                        No                           85 -                 -               -              -                929                             97  829               3                99.64%
+GRN/K Line-Aviation/96th St     17,481          10,142           22,858,722   13,426,424          0 Yes                     Yes
+GRN/K Line-Aviation/Century     15,054                           20,543,650   12,756,993          0 Yes                     Yes                          38 -                 -               -              -                231    155                          76                0                100.00%
+K Line-Crenshaw/Exposition      27,563           9,644           34,445,487   41,530,284                                    Yes
+K Line-Crenshaw/MLK             34,788          32,208           25,132,446   34,991,977     1157 Yes                       Yes                          12 -                 -               -              -                181    127                          54                0                100.00%
+K Line-Crenshaw/Slauson         28,860          27,090           31,235,333   39,950,737      749 No                        No
+K Line-Crenshaw/Vernon          26,777          30,773           18,541,908   23,679,964     2089 No                        Yes            634 -                              -                  1-                           2,375  249                          2,126             0                100.00%
+K Line-Florence/Hindy                           18,464                        14,443,663      928 Yes                       Yes
+K Line-Florence/West              2,977         11,176            4,905,922   50,421,904                                                   195 -                              -                  4-                           1,639  270                          1,369             0                100.00%
+Metro 234 - Parthenia Street    18,583          38,662           18,541,951   37,596,514          0 No                      Yes
+Metro 234 - Roscoe              31,208          28,644           55,701,638                   709 No                        Yes            440 -                              -                  2-                           2,468  284                          2,184             0                100.00%
+Boulevard                                                                                     598 Yes                       Yes
+Metro 234 - Saticoy Street      25,770          25,993                                                                      Yes            301 -                              -                  2-                           1261   272                          989               0                100.00%
+Metro 234 - Sherman Way         17,425          25,277                                                                      No
+Metro 234 - Vanowen Street      23,303          33,066                                                                                                   93 -                 -               -              -                859                             46  93                720              11.44%
+Metro 234 - Victory Boulevard   21,880          32,091                                                                      No
+Metro 234 -Ventura              15,555          26,175                                                                      No             358 -                              -                  1-                           952    221                          731               0                100.00%
+Boulevard                                                                                                                   Yes
+Metro 33 - Venice Boulevard     93,023          28,474                                                                      Yes            192 -                              -               -              -                892    183                          709               0                100.00%
+Metro 70 - N Spring Street     101,455          11,682                                                                      Yes
+Metro 78 - N Spring Street     152,524          18,623           44,896,349   33,854,544      810 No                        Yes            123 -                              -               -              -                1013   153                          860               0                100.00%
+Metro 81 - Olympic Boulevard   284,198          22,589           19,394,800   32,786,771     1060 No                        Yes                                                                                               1,209
+Metro 81 - Pico Boulevard      799,560          36,272           31,796,148   42,810,782     1338 No                        Yes            118 -                              -               -              -                1,410  149                          1,060             0                100.00%
+Metro 81 - Venice Boulevard    517,163          32,452           27,298,747   41,608,063     1185 No                        Yes                                                                                               1,468
+Metro 81 - W 12th Street       360,609          28,874           18,426,323   33,842,432                                                   133 -                              -               -              -                1352                            72  1,338             0                100.00%
+Metro 81 - W 23rd Street       633,746          33,512                                        971 No                        Yes
+Metro 81 - W Washington                         21,722                                                                      Yes                          90 -                 -               -              -                       114                          1,354             0                100.00%
+Boulevard                       41,805                                                                                      Yes
+Metro 910 - N Spring Street                     27,972                                                                      Yes                          87 -                 -               -              -                       159                          997               196              83.57%
+Metro 910 - S Figueroa Street  244,908          22,054
+Metro 910 - W Aliso Street     301,506          31,265            30,981,615  37,250,978        0 No                        Yes            220                 466 -                          -              -                1425                            87  641               697              47.91%
+Metro 910/70 - N Spring        705,913          20,112            32,701,587  15,135,992        0 Yes                       No             469 -                     -
+Street                         193,640                            17,307,910  24,279,536     104 Yes                                       318                                                   1-                           1200   472                          728               0                100.00%
+Metrolink - Glendale                            21,637            40,525,999  29,254,049     238 Yes                        No             349 -                14 -
+NOHO to Pasadena BRT-          298,735          16,406           165,420,261  46,877,674     338 Yes                                       566 -                     -                           14 -                         540    194                          346               0                100.00%
+Colorado Boulevard              15,022                           114,760,246  41,651,828     459 Yes                        No             623 -                     -
+NOHO to Pasadena BRT-E                          15,566            89,339,150  36,903,147     495 Yes                                       528 -                     -                           24 -                         464    102                          362               0                100.00%
+Broadway                        13,323                           131,076,216  43,234,663     387 Yes                        No             603 -                     -
+NOHO to Pasadena BRT-                               487           37,897,546  28,053,151     387 Yes                                       446 -                     -                           42 -                         625                             58  567               0                100.00%
+Eagle Rock Boulevard                347                                                                                     No                                       -
+NOHO to Pasadena BRT-                           29,828                                                                                                                                           83 -                         750    126                          624               0                100.00%
+Hesby Street                    58,452                                                                                      No
+NOHO to Pasadena BRT-                           27,997                                                                                                                                           177 -                        761    193                          568               0                100.00%
+Townsend Avenue                240,571                                                                                      No
+NOHO to Pasadena BRT-W                          33,934                                                                                                                                           42 -                         692                             87  605               0                100.00%
+Alameda Avenue                  31,201                                                                                      No
+NOHO to Pasadena BRT-W                              550                                                                     No                                                                   221 -                        889    374                          515               0                100.00%
+Riverside Drive                         2                                                                                   No
+Orange Line - Balboa                             5,204            74,170,216  35,765,005     465 Yes                        No             498 -                              -                  224 -                        800    237                          563               0                100.00%
+Orange Line - Canoga              5,671         42,354            43,963,352  28,466,931     260 Yes                        No                                                                    32 -
+Orange Line - Chatsworth          4,799         41,165           150,103,468  41,037,033     361 Yes                        No             350 -                              -                   65 -                        464    102                          362               0                100.00%
+Orange Line - De Soto           54,623          33,759            24,270,915  26,077,175     155 Yes                        No                                                                    19 -
+Orange Line - Laurel Canyon    243,419          34,678                                                                      No             502 -                              -                                               541                             38  503               0                100.00%
+Orange Line - Nordhoff          35,886          24,966                                                                      No
+Orange Line - Pierce College   132,340          36,123                                                                      Yes            296 -                              -                                               460    144                          316               0                100.00%
+Orange Line - Reseda           143,160          23,277                                                                      No
+Orange Line - Roscoe              3,255         28,344           43,915,619   27,933,011     277 Yes                        Yes            359 -                              -                  35 -                         474    104                          370               0                100.00%
+Orange Line - Sepulveda        146,074          28,479            7,743,717   21,144,927        0 No                        No
+Orange Line - Sherman Way       32,786          11,927                                                                      No             126                 7-                             -                 168           1273   166                          300               807              27.10%
+Orange Line - Tampa             14,523          28,294
+Orange Line - Valley College    38,698          37,622           6,261,776    20,228,504                     0 No                                        60    830 -                             6-                           866                             36  830               0                100.00%
+                                12,329          27,374
+                                17,168                           311,229      628,762                        0 No                                        0     28 -                           -              -                32                              4   28                0                100.00%
+
+                                                                 19,828,990   38,749,710                     0 No                          330                 1,425 -                           11 -                         1,892  147                          1,609             136              92.21%
+
+                                                                 70,626,340   36,702,750                     0 Yes                         906 -                              -                  4-                           1,655  381                          1,274             0                100.00%
+
+                                                                 15,200,989   44,158,139                     0 No                          182                 1,557 -                           6-                           2,197                           79  1,619             499              76.44%
+
+                                                                 135,312      747,086                        0 No                                        0     2-                             -                 2             4                               2                  2  0                100.00%
+
+                                                                  2,662,253    6,899,915          0 No                                      46                  4-                            -                 1             287                             4   47                236              16.61%
+                                                                  4,313,167   53,102,081      563 No                                        44 -                    -
+                                                                 61,449,367   54,246,243      319 Yes                                      131 -                    -                         -                 2             657                             26  566               65               89.70%
+                                                                 66,723,459   44,750,493                                                   259 -                    -
+                                                                 40,104,679   45,359,748          0 No                                      79 -                    -                         -              -                416                             65  351               0                100.00%
+                                                                 42,543,166   32,600,253      535 No                                       343 -                    -
+                                                                 39,030,959   48,148,775                                                   100                                                   2              13            887                             29  272               586              31.70%
+                                                                  6,976,493   30,476,918          0 Yes                                     12 -               24 -
+                                                                 61,036,944   37,274,511      145 Yes                                      103 -                    -                         -              -                627                             53  570               4                99.30%
+                                                                 32,039,005   37,639,837      674 No                                        72 -                    -
+                                                                  8,598,764   15,394,629                                                    37 -                    -                            2-                           1,743  372                          1,371             0                100.00%
+                                                                 36,358,161   37,101,289        47 No                                      462 -                    -
+                                                                 15,725,364   49,312,714     1069 No                                        30 -                    -                         -              -                403                             64  339               0                100.00%
+                                                                 11,130,626   35,533,202                                                    68 -                    -
+                                                                                              394 No                                                                -                            2-                           1257                            16  676               565              54.47%
+                                                                                             1230 Yes
+                                                                                                                                                                                              -              -                1177   104                          106               967              9.88%
+                                                                                                  4 No
+                                                                                                  0 No                                                                                        -              -                1,192  123                          1,069             0                100.00%
+
+                                                                                                                                                                                              -              -                668    137                          407               124              76.65%
+
+                                                                                                                                                                                                 2-                           1,407  177                          1,230             0                100.00%
+
+                                                                                                                                                                                              -              -                1680                            39  33                1608             2.01%
+
+                                                                                                                                                                                                 1-                           1602                            86  69                1447             4.55%
+
+                                                                                                                                                                                                                                                                                                                   2
+CF 25-1083 Appendix B, Table 13_Delayed Effectuation Eligibility by Station Area
+
+Table 13. Delayed Effectuation Eligibility by Station Area
+
+                                                                                          Parcels in      Station Areas  Lower          Parcels       Parcels in Very  Parcels in      Parcels                                  Parcels within
+                                                                                          Lower           Eligible for   Opportunity    Eligible for  High Fire        One-Foot Sea    Designated as
+Station Hub                 Local            79 Maximum       Local Floor  79 Floor Area  Opportunity     Delayed        Station Areas  Delayed       Hazard           Level Rise      a Local                                  1-mile Walking   Total Parcels    Parcels          Total Parcels  Parcels          Percent of
+                            Maximum          Potential Units       Area                   Areas Eligible  Effectuation   Eligible for   Effectuation  Severity Zones   Areas Eligible  Historic                                 Distance of a    in Station Area  Statutorily      Eligible for   Eligible for SB  Station Area
+                            Potential Units                                               for Delayed     Due to         Delayed        Due to        Eligible for     for Delayed     Resource                                 Station                           Exempt from      Delayed        79               Eligible for
+                                                                                          Effectuation    Existing       Effectuation   Existing      Delayed          Effectuation    Eligible for                             Entrance                          SB79             Effectuation                    Delay
+                                                                                                          Capacity                      Capacity      Effectuation                     Delayed                                  Eligible for SB
+                                                                                                                                                                                       Effectuation
+                                                                                                                                                                                                                                79 Exemption
+
+Orange Line - Van Nuys      43,852           25,995           30,331,734   33,232,114     774 Yes                        Yes            611 -                          -                                                    1-                   1,707            444              1,263          0                100.00%
+
+Orange Line - Woodley       6,179            45,045           9,896,061    56,644,164     715 No                         No                           89 -             -               -                                        -                814                           98  715            1                99.86%
+
+Orange Line - Woodman       22,928           29,220           18,796,255   38,026,766     365 No                         No             147 -                          -               -                                        -                1797             164              458            1175             28.05%
+
+PUR-Wilshire/Normandie      102,047          30,029 107,699,492            37,941,692     366 Yes                        Yes            495 -                          -                                                    13 -                 1072             537              535            0                100.00%
+
+PUR-Wilshire/Western        133,255          29,292           88,989,991   37,080,846     143 Yes                        No             566 -                          -                  150 -                                                  1245             493              752            0                100.00%
+
+PURex-Century City          200,380          31,843           56,165,855   40,494,356                     0 No           No             110 -                          -                                                    2-                   609                           38  110            461              19.26%
+
+PURex-Westwood/VA           57,208           32,477           19,526,435   41,721,910                     0 Yes          No             130                 1-                         -                                        -                265              130              135            0                100.00%
+Hospital
+
+PURex-Wilshire/Fairfax      153,218          32,175           51,712,716   40,576,878                     0 Yes          No             328 -                          -                  690 -                                                  1,610            290              1,320          0                100.00%
+
+PURex-Wilshire/La Cienega   76,075           18,840           24,844,722   23,773,329                     0 Yes          No             284 -                          -                  250 -                                                  1,320            257              1,063          0                100.00%
+
+PURex/CRN-Wilshire/La Brea  161,260          34,123           49,822,031   43,358,896                     0 Yes          No             301 -                          -                  387 -                                                  1,646            334              1,312          0                100.00%
+
+PURex/SP-Westwood UCLA      196,105          37,803           56,139,471   47,958,905                     0 Yes          No             339 -                          -                                                    9-                   932              134              798            0                100.00%
+
+RC-1st/Central              254,178          25,841           29,440,864   33,850,639     367 Yes                        Yes            580 -                          -                                                    26 -                 711              124              587            0                100.00%
+
+RC-2nd/Broadway             449,402          23,130           71,697,626   30,054,074     412 Yes                        Yes            469 -                          -                                                    57 -                 565                           93  472            0                100.00%
+
+RC-2nd/Hope                 401,511          23,406           89,721,775   30,752,917     183 Yes                        Yes            330 -                          -                                                    44                3  388                           50  338            0                100.00%
+
+RED-Hollywood/Vine          67,170           29,547           55,025,886   37,591,578     341 Yes                        No             508                 252 -                                                           25 -                 1151             383              768            0                100.00%
+
+RED-Hollywood/Western       51,004           27,204           48,292,726   34,640,713     459 Yes                        Yes            513                 358 -                                                           90 -                 1434             574              860            0                100.00%
+
+RED-Universal City/Studio   72,550           41,829           19,977,887   53,235,676                     0 No           No             172                 678 -                                                           2                 5  969                           75  731            163              81.77%
+City
+
+RED-Vermont/Beverly         51,918           18,644           42,622,400   23,611,209     114 Yes                        No             713 -                          -                                                    2-                   1552             769              783            0                100.00%
+
+RED/CRN-                    140,354          31,571           68,130,553   40,096,136     192 Yes                        No             668                 498 -                         162 -                                                  1,546            440              1,106          0                100.00%
+Hollywood/Highland
+
+RED/Orange Line-North       189,236          32,441           62,427,816   41,099,651     251 Yes                        No             812 -                          -                                                    3-                   1,489            309              1,180          0                100.00%
+Hollywood
+
+RED/PUR-Civic               431,467          29,547           69,612,566   37,433,874     307 Yes                        Yes            426 -                          -                                                    47 -                 561              127              434            0                100.00%
+Center/Grand Park
+
+RED/PUR-Pershing Square     826,956          42,321 134,980,120            53,523,608     632 Yes                        Yes            788 -                          -                  120 -                                                  867                           76  791            0                100.00%
+
+RED/PUR-                    79,720           27,969           75,155,403   35,675,014     706 Yes                        Yes            710 -                          -                                                    20 -                 1191             430              761            0                100.00%
+Westlake/Macarthur Park
+
+RED/PUR/Vermont BRT-        113,219          33,580 104,279,935            42,643,771     399 Yes                        Yes            577 -                          -                                                    12 -                 1122             505              617            0                100.00%
+Wilshire/Vermont
+
+RED/Vermont BRT-            89,042           29,367           56,311,825   36,967,573     763 Yes                        Yes            927 -                          -               -                                        -                2,085            789              1,296          0                100.00%
+Vermont/Santa Monica
+
+RED/Vermont BRT-            120,814          31,338           56,451,091   39,536,646     354 Yes                        No             714                 154 -                                                           2-                   1,817            698              1,119          0                100.00%
+Vermont/Sunset
+
+SP-Santa Monica             182,017          18,522           63,064,712   23,469,937                     0 Yes          No             494 -                          -                                                    1-                   1285             463              822            0                100.00%
+
+SP-UCLA Ackerman Union      36,398           8,354            15,246,612   10,747,994                     0 Yes          No             111                 21 -                                                            7                 2  370              146              224            0                100.00%
+
+SP-Ventura/Van Nuys         161,161          37,151           45,441,848   47,300,117                     0 Yes          No             337                 660 -                                                           1-                   1,501            155              1,346          0                100.00%
+
+Vermont BRT - Athens        4,732            12,694           7,366,736    16,405,183     796 No                         No                           81 -             -               -                                        -                890                           91  796            3                99.62%
+
+Vermont BRT - Century Blvd  7,422            13,165           12,134,181   16,987,969     1256 No                        Yes            388 -                          -               -                                        -                1,410            154              1,256          0                100.00%
+
+Vermont BRT - Florence Ave  71,441           56,151           75,834,100   72,335,034     2973 Yes                       Yes            1513 -                         -                                                    4-                   3,725            752              2,973          0                100.00%
+
+Vermont BRT - Pico Blvd     52,209           19,479           46,349,055   25,434,753     1040 Yes                       Yes            1007 -                         -                                                    14 -                 1,730            690              1,040          0                100.00%
+
+Vermont BRT - Slauson Ave   21,110           26,494           37,332,350   34,152,381     2242 Yes                       Yes            1625 -                         -                                                    3-                   2,742            500              2,242          0                100.00%
+
+Vermont BRT - Vernon Ave    23,220           23,052           33,776,571   29,936,680     1758 Yes                       Yes            1131 -                         -               -                                        -                2,364            606              1,758          0                100.00%
+
+Vermont BRT - W 3rd St      73,524           17,484           60,389,835   23,004,905     191 Yes                        No             544 -                          -                                                    5-                   1276             689              587            0                100.00%
+
+Vermont BRT - W Adams       27,770           18,702           37,015,530   24,170,899     1085 Yes                       Yes            786 -                          -                  671 -                                                  1,862            659              1,203          0                100.00%
+Blvd
+
+Vermont BRT - W             21,507           18,359           29,083,049   23,724,640     1414 Yes                       Yes            751 -                          -               -                                        -                1,803            389              1,414          0                100.00%
+Manchester Ave
+
+Footnote: Parcels may be eligible for more than one Delayed Effectuation criteria, (i.e. located in both a Lower Opportunity Station Area and Very High Fire Hazard Severity Zone), and parcels may appear more than once.
+
+                                                                                                                                                                                                                                                                                                                                 3
+CF 25-1083
+PLUM Committee
+Page 52
+
+Table 14. Station Level Attribute Summary - Metro 234 Ventura Boulevard
+
+           Local     SB 79     Number    Number Percent     Eligible Total           Total
+           Max Unit  Max Unit  of                           for DE5 Parcels          Parcels
+           Total     Total     Parcels   of       of        (VHFHSZ) Exempt          Eligible
+                               in                                                    for Delay
+                               Transit   Parcels Parcels                    36 from
+                               Oriented                                     SB 79
+                               Develop   Equal to Equal to
+                               ment
+                               (TOD)     or       or
+                               Zone
+                                         Greater Greater
+
+                                         than 50% than
+
+                                         of SB 79 50% of
+
+                                         Density SB79
+
+                                         and      Density
+
+                                         Floor    and
+
+                                         Area     Floor
+
+                                                  Area
+
+Metro 234
+
+-Ventura 93,023 28,474 1425                  220 15.44% 466              87          641
+Boulevard
+
+Table 15. Breakdown by Site Characteristics             Count and Percentage of Eligible
+  Delayed Effectuation/Exempt Sites by                                    Sites
+  Characteristics:
+                                                                  10,620 sites (9%)
+  Sites in a Very High Fire Hazard Severity Zone                   6,760 sites (6%)
+
+  Locally Designated Historic Resources37                                    0
+                                                                  294 sites (.002%)
+  Sites in a Sea Level Rise Area
+
+  Sites exempt because they are more than 1 mile
+  from a station entrance
+
+36 Including sites containing three or more RSO units, or land which does not permit residential units
+
+including industrial land, open space, right of ways, and public facilities.
+37Inclusive of HPOZs and HCMs
+CF 25-1083
+PLUM Committee
+Page 53
+
+Table 16. TOD zones Ineligible for Delay at Station Level
+
+Station Hub                           Percent of Station
+                                      Area Eligible for
+                                      Delay
+
+1 BLU/GRN-Willowbrook/Rosa Parks      99.19%
+
+2 CRN-La Brea/Beverly                 50.58%
+
+3 EXP-Westwood/Rancho Park            9.86%
+
+4 EXP/SP-Expo/Sepulveda               16.28%
+
+5 GRN-Vermont/Athens                  99.64%
+
+6 K Line-Florence/Hindry              11.44%
+
+7 Metro 234 - Victory Boulevard       83.57%
+
+8 Metro 234 -Ventura Boulevard        47.91%
+
+ 9 Metrolink - Glendale               27.10%
+                                      92.21%
+    NOHO to Pasadena BRT-Eagle Rock   76.44%
+10 Boulevard                          16.61%
+
+    NOHO to Pasadena BRT-Townsend
+11 Avenue
+
+    NOHO to Pasadena BRT-W Riverside
+12 Drive
+
+13 Orange Line - Balboa               89.70%
+
+14 Orange Line - Chatsworth           31.70%
+
+15 Orange Line - De Soto              99.30%
+
+16 Orange Line - Pierce College       54.47%
+
+17 Orange Line - Reseda               9.88%
+
+18 Orange Line - Sepulveda            76.65%
+
+19 Orange Line - Tampa                2.01%
+
+20 Orange Line - Valley College       4.55%
+
+21 Orange Line - Woodley              99.86%
+
+22 Orange Line - Woodman              28.05%
+
+23 PURex-Century City                 19.26%
+
+24 RED-Universal City/Studio City     81.77%
+
+25 Vermont BRT - Athens               99.62%
+CF 25-1083
+PLUM Committee
+Page 54
+
+APPENDIX D: DELAYED EFFECTUATION MAPS
+CF 25-1083
+PLUM Committee
+Page 55
+
+Map 8. Low Resource Sites Eligible for Delayed Effectuation due to Existing Zoned
+Capacity Citywide
+CF 25-1083
+PLUM Committee
+Page 56
+
+Map 9. Stations Eligible for Delayed Effectuation due to Existing Zoned Capacity
+CF 25-1083
+PLUM Committee
+Page 57
+
+Map 10. Low Resource Stations Eligible for Delayed Effectuation due to Existing Zoned
+Capacity
+CF 25-1083
+PLUM Committee
+Page 58
+
+Map 11. Sites Eligible for Delayed Effectuation due to Existing Zoned Capacity
+CF 25-1083
+PLUM Committee
+Page 59
+
+Map 12. Very High Fire Hazard Severity Zone Sites Eligible for Delayed Effectuation
+CF 25-1083
+PLUM Committee
+Page 60
+
+Map 13. Local Historic Resource Sites Eligible for Delayed Effectuation
+CF 25-1083
+PLUM Committee
+Page 61
+
+Map 14. Low Resource Sites and Low Resource Stations Eligible for Delayed Effectuation
+CF 25-1083
+PLUM Committee
+Page 62
+
+Map 15. Site Level Eligibility for Delayed Effectuation (Includes sites meeting 50% of
+SB79 Capacity, Low Opportunity Area sites, and sites designated as Very High Fire
+Hazard Severity Zones, One-Foot Sea Level Rise Areas, Local Historic Resources, and
+One-Mile Walking Distance Sites)
+CF 25-1083
+PLUM Committee
+Page 63
+
+Map 16. Station and Site Level Eligibility for Delayed Effectuation Citywide
+CF 25-1083
+PLUM Committee
+Page 64
+
+APPENDIX E: REZONING MAPS AND ADDITIONAL MATERIALS
+CF 25-1083
+PLUM Committee
+Page 65
+Map 17. Corridor Transition Expansion Area (in Low Density Zones)
+
+                                                                                                                                                                                    38
+
+38 High and moderate opportunity census tracts in majority low opportunity station areas will be removed
+if the station area is eligible for delay.
+CF 25-1083
+PLUM Committee
+Page 66
+Map 18. Transit Oriented Incentive Area and Corridor Transition Expansion Areas (in Low
+Density Zones)39
+
+39 High and moderate opportunity census tracts in majority low opportunity station areas will be removed
+if the station area is eligible for delay.
+CF 25-1083
+PLUM Committee
+Page 67
+Map 19. Transit Oriented Incentive Area and Corridor Transition Expansion Areas (in Low
+Density Zones)40
+
+40 High and moderate opportunity census tracts in majority low opportunity station areas will be removed
+if the station area is eligible for delay.
+CF 25-1083
+PLUM Committee
+Page 68
+
+List 1. Opportunity Stations
+    1. A-Highland Park
+    2. A-Southwest Museum
+    3. B - Hollywood/Vine
+    4. B - Universal City/Studio City
+    5. B -Vermont/Beverly
+    6. B/G Line-North Hollywood
+    7. B/K Extension - Hollywood/Highland
+    8. C - LAX/Metro Transit Center
+    9. C/K - Aviation/96th St
+    10. C/K - Aviation/Century
+    11. D Extension - Century City
+    12. D Extension - Westwood/VA Hospital
+    13. D Extension - Wilshire/Fairfax
+    14. D Extension - Wilshire/La Cienega
+    15. D Extension/K Extension-Wilshire/La Brea
+    16. D Extension/SP-Westwood/UCLA
+    17. D Line - Wilshire/Western
+    18. D/Vermont BRT - Vermont Sunset
+    19. E-Culver City
+    20. E-Expo/Bundy
+    21. E-Palms
+    22. E-Westwood/Rancho Park
+    23. E/SP-Expo/Sepulveda
+    24. G Line - Balboa
+    25. G Line - Canoga
+    26. G Line - Chatsworth
+    27. G Line - De Soto
+    28. G Line - Laurel Canyon
+    29. G Line - Nordhoff
+    30. G Line - Pierce College
+    31. G Line - Reseda
+    32. G Line - Sepulveda
+    33. G Line - Tampa
+    34. G Line - Valley College
+    35. G Line - Woodley
+    36. G Line - Woodman
+    37. K Extension - La Brea/Beverly
+    38. K Extension - Pico/San Vicente
+    39. K Extension -La Brea/Santa Monica
+    40. K Line-Westchester/Veterans
+    41. Metro 234 - Victory Boulevard
+    42. Metro 234 -Ventura Boulevard
+CF 25-1083
+PLUM Committee
+Page 69
+
+    43. Metro 33 - Venice Boulevard
+    44. Metrolink - Glendale
+    45. NOHO to Pasadena BRT-Colorado Boulevard
+    46. NOHO to Pasadena BRT-E Broadway
+    47. NOHO to Pasadena BRT-Eagle Rock Boulevard
+    48. NOHO to Pasadena BRT-Hesby Street
+    49. NOHO to Pasadena BRT-Townsend Avenue
+    50. NOHO to Pasadena BRT-W Alameda Avenue
+    51. NOHO to Pasadena BRT-W Riverside Drive
+    52. SP-Santa Monica
+    53. SP-UCLA Ackerman Union
+    54. SP-Ventura/Van Nuys
+    55. Vermont BRT - W 3rd St
+

@@ -1,0 +1,108 @@
+{
+  "_meta": {
+    "lastUpdated": "2026-05-20",
+    "sources": ["Firecrawl synthesis", "LA Planning", "Holland & Knight", "CalMatters", "Commercial Observer", "Streetsblog CA", "Senator Wiener office"],
+    "curator": "trevor@clscre.com"
+  },
+  "cards": [
+    {
+      "date": "2026-05-19",
+      "source": "LA Department of City Planning",
+      "url": "https://planning.lacity.gov/resources/senate-bill-sb-79",
+      "headline": "Low-Rise Ordinance adopted",
+      "summary": "LAMC residential zoning amendments take effect alongside SB 79 on July 1, 2026. Adds 17,562 sites that retain ≥ 50% SB 79 capacity under local rules — meaning SB 79 will apply to ~29,000 fewer sites than the un-amended baseline.",
+      "tags": ["LA", "ordinance", "Low-Rise", "Pathway-A"],
+      "verified": true
+    },
+    {
+      "date": "2026-05-14",
+      "source": "LA City Planning Commission",
+      "url": "https://planning.lacity.gov/resources/senate-bill-sb-79",
+      "headline": "CPC recommends approval of LA's two SB 79 ordinances",
+      "summary": "City Planning Commission voted to recommend approval of the Low-Rise Ordinance (CPC-2026-1797-CA) and Phased Implementation Ordinance (CPC-2026-1798-MSC), advancing LA's strategy to delay full SB 79 effectuation until 2030 via temporary exemptions.",
+      "tags": ["LA", "ordinance", "phased-implementation", "CPC"],
+      "verified": true
+    },
+    {
+      "date": "2026-04-30",
+      "source": "Commercial Observer",
+      "url": "https://commercialobserver.com/2026/04/la-calif-transit-housing-sb-79/",
+      "headline": "Why does LA oppose SB 79?",
+      "summary": "Industry analysis of LA's resistance contrasted with Culver City's 4,500-unit SB 79 pipeline. Developer-side reaction described as cautious due to LA's implementation uncertainty.",
+      "tags": ["LA", "developer-sentiment", "pipeline", "comparison"],
+      "verified": true
+    },
+    {
+      "date": "2026-04-17",
+      "source": "LA City Planning",
+      "url": "https://planning.lacity.gov/sb-79-phased-implementation-ordinance-and-low-rise-ordinance-hearing-notice",
+      "headline": "Draft SB 79 ordinances released for public review",
+      "summary": "City Planning published drafts of the Phased Implementation Ordinance and Low-Rise Ordinance covering 55 station areas, opening the public comment period.",
+      "tags": ["LA", "draft-ordinance", "public-comment"],
+      "verified": true
+    },
+    {
+      "date": "2026-04-15",
+      "source": "CalMatters",
+      "url": "https://calmatters.org/housing/2026/04/sb-79-implementation/",
+      "headline": "Cities scramble as SB 79 deadline nears",
+      "summary": "CalMatters investigates how LA, SF, Oakland and Sacramento are responding to SB 79's July 1 effective date. Highlights LA's maximum-delay strategy through the Low-Rise Ordinance + Phased Implementation Model.",
+      "tags": ["statewide", "implementation", "comparison"],
+      "verified": true
+    },
+    {
+      "date": "2026-03-24",
+      "source": "LA City Council",
+      "url": "https://larchmontbuzz.com/larchmont-village-news/la-city-council-approved-phased-implementation-of-sb79/",
+      "headline": "City Council adopts Option C1 — phased SB 79 compliance by 2030",
+      "summary": "Council directed Planning to pursue phased implementation while expanding the Corridor Transition program, excluding HPOZs from upzoning.",
+      "tags": ["LA", "council-action", "HPOZ", "CT-program"],
+      "verified": true
+    },
+    {
+      "date": "2026-02-18",
+      "source": "PLUM Committee",
+      "url": "https://planning.lacity.gov/resources/senate-bill-sb-79",
+      "headline": "PLUM Committee findings published",
+      "summary": "Planning and Land Use Management Committee held hearing on SB 79 implementation framework. Findings support the Phased Implementation Model methodology and identify open coordination items with HCD on industrial-zoned land treatment.",
+      "tags": ["LA", "PLUM", "committee", "HCD"],
+      "verified": true
+    },
+    {
+      "date": "2026-01-26",
+      "source": "Streetsblog California",
+      "url": "https://cal.streetsblog.org/2026/01/26/los-angeles-anti-housing-law-push-escalates-as-metro-board-seeks-sb-79-exemption",
+      "headline": "LA Metro Board seeks SB 79 exemption",
+      "summary": "11 of 13 Metro board members voted to support LA County exemption from SB 79, citing concerns about transit expansion opposition. SB 677 introduced to provide technical fixes.",
+      "tags": ["LA-Metro", "exemption", "SB-677", "transit"],
+      "verified": true
+    },
+    {
+      "date": "2025-11-15",
+      "source": "Holland & Knight",
+      "url": "https://www.hklaw.com/en/insights/publications/2025/11/california-courts-reemphasize-that-state-housing-laws-prevail",
+      "headline": "Courts reaffirm state housing laws preempt charter cities",
+      "summary": "Rancho Palos Verdes v. State and Kennedy Commission decisions establish that charter cities have minimal home-rule defense against SB 79. Strengthens enforceability against LA's anticipated charter-city objections.",
+      "tags": ["litigation", "charter-city", "precedent", "preemption"],
+      "verified": true
+    },
+    {
+      "date": "2025-10-15",
+      "source": "Holland & Knight",
+      "url": "https://www.hklaw.com/en/insights/publications/2025/10/california-gov-gavin-newsom-signs-sb-79",
+      "headline": "Critical finding: SB 79 height limits are hard caps",
+      "summary": "Holland & Knight analysis reveals local agencies are NOT required to grant Density Bonus Law waivers/concessions beyond SB 79's stated height floors, even though they must grant them for density and FAR. This breaks the typical SDBL stacking assumption — projects cannot exceed 95 ft (Tier 1) or 85 ft (Tier 2) regardless of bonus units.",
+      "tags": ["legal-analysis", "density-bonus", "height-cap", "must-read"],
+      "verified": true
+    },
+    {
+      "date": "2025-10-10",
+      "source": "Senator Scott Wiener",
+      "url": "https://sd11.senate.ca.gov/news/governor-newsom-signs-senator-wieners-landmark-law-build-more-homes-near-public-transit",
+      "headline": "Newsom signs SB 79 — landmark transit housing law",
+      "summary": "Governor signs the Abundant and Affordable Homes Near Transit Act. Statewide effective date July 1, 2026. HAA presumptive-violation enforcement begins January 1, 2027 — six-month soft launch window.",
+      "tags": ["enactment", "signing", "milestone", "HAA"],
+      "verified": true
+    }
+  ]
+}

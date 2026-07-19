@@ -1,0 +1,1098 @@
+Appendix 1 - SB 79 PHASED IMPLEMENTATION MODEL METHODOLOGY
+
+APPENDIX 1:
+SB 79 Phased Implementation Model Methodology
+
+CPC-2026-1798-MSC
+For consideration by City Planning Commission
+
+May 14, 2026
+Appendix 1 - SB 79 PHASED IMPLEMENTATION MODEL METHODOLOGY
+
+Appendix 1: SB 79 Phased Implementation Model Methodology
+
+The "Abundant and Affordable Homes Near Transit Act", signed into law as Senate Bill 79 (SB
+79), pursuant to California Government Code Section 65912.155 through 65912.162, offers
+incentives which supersede local zoning and General Plan land use regulations to increase the
+supply of affordable and market rate housing within a half mile of certain specified TOD zones.
+These development incentives apply to any site within the TOD Zone that is zoned for
+residential, mixed, or commercial development (Government Code Section 65912.157(a)). SB
+79 provides provisions for permanent or temporary exemptions from the development standards
+provided in SB 79 for sites and TOD zones that meet certain criteria, including those that
+already have a significant housing capacity, low resource areas as defined by the Opportunity
+Map tool created by the Department of HCD and the Tax Credit Allocation Committee (TCAC),
+and sites with sensitive environmental considerations, as detailed in Section 65912.161(b). The
+Department developed a model to understand the composition of sites within eligible TOD
+zones and determine if they meet the criteria for permanent exclusion or temporary exemption
+from SB 79. The following section describes the assumptions that were developed to identify
+sites in compliance with the phased implementation criteria outlined in SB 79.
+
+Model Overview
+
+The following section describes the assumptions that were developed to determine whether
+sites eligible for the zoning provisions of SB 79 meet the criteria for permanent or temporary
+exemption. At a high level, the model is designed to calculate the City's local capacity and the
+capacity permitted by the development standards set forth by SB 79 (SB 79 capacity), and
+analyzes whether sites and TOD zones meet the criteria for permanent or temporary exemption
+as set forth in the bill. SB 79 requires capacity to be calculated by density, or the maximum
+number of units allowable on a site, and FAR, or the amount of area that may be developed with
+a building on a site.
+
+The model considers the City's maximum buildout capacity, inclusive of local incentive programs
+such as the MIIP (LAMC Section 12.22 A.38) and recently updated Downtown LA Community
+Plan and Hollywood Community Plan. External factors such as market conditions or the realistic
+likelihood of new development occurring on each parcel are not required under SB 79 and were
+not incorporated in model logic. For clarity, a local TOD alternative plan, pursuant to GCS
+65912.161(a) includes requirements for net gain capacity calculations when considering the
+application of local development standards. The maximum buildout capacity model is specific to
+the temporary exemption criteria pursuant to GCS 65912.161(b), as shown in the flowchart
+below.
+
+                                                                                                                               1
+Appendix 1 - SB 79 PHASED IMPLEMENTATION MODEL METHODOLOGY
+
+Figure 1. Phased Implementation Model Flowchart
+
+Local Capacity Assumptions
+To calculate the City's local capacity within eligible TOD zones, the model accounts for a
+parcel's zoned capacity before and after development bonuses (base and bonus capacity),
+including incentive bonuses from the MIIP and two recently adopted and effective Community
+Plan Updates, the Downtown LA Community Plan and the Hollywood Community Plan. For the
+purposes of the model analysis, capacity in terms of density and floor area will be called
+Maximum Allowable Units, and Maximum Allowable Residential Building Volume, respectively in
+the following sections.
+As described above, eligible sites exclude parcels that do not permit residential, mixed, or
+commercial uses. Sites zoned for Parking have been excluded from the SB 79 capacity
+calculation as they do not allow residential or commercial uses, but have been included in the
+analysis for local capacity as though they are eligible for bonus incentives through the MIIP.
+For all parcels within eligible TOD zones, base and bonus capacity are calculated using
+assumptions at the BOE Parcel Identification Number (PIN) level. Density for residential,
+commercial, and industrial-mixed zoned parcels is divided by lot area to result in Maximum
+Allowable Units. For parcels where FAR is considered the limited factor, including when density
+is Unlimited, the Maximum Allowable Units is calculated by multiplying the FAR by PIN lot area
+
+                                                                                                                               2
+Appendix 1 - SB 79 PHASED IMPLEMENTATION MODEL METHODOLOGY
+
+and dividing by 11501. In areas that require a certain amount of non-residential area per parcel,
+such as the Industrial-Mixed-3 (IX3) Use District2 in the Downtown LA Community Plan Area,
+then the Maximum Allowable Units is calculated as PIN lot area multiplied by FAR minus 1,
+divided by 1150.
+
+Building volume assumptions for residentially zoned parcels includes adjustments to FAR to
+account for the calculation of RFAR. Residential floor area is calculated by multiplying the
+parcel's Buildable Area by the FAR. Buildable Area is defined in LAMC Section 12.03, as all
+portions of a lot located within the proper zone for the proposed main building, excluding those
+portions of the lot which must be reserved for yard spaces, building line setback space, or which
+may only be used for accessory buildings or uses. This method of calculating Buildable Area is
+applicable to zones that allow residential uses, with the exception of the C2, C4 and C5 zones.
+As yard space and building line setback may differ depending on the zone, the model used the
+following RFAR factor assumptions detailed in Table 1 below, to estimate residential floor area in
+zones subject to the Buildable Area definition. For zones considered Single Family Residential,
+a RFAR of 0.45 was applied. For sites within the Downtown Community Plan or eligible for the
+LIA in MIIP, lot area is the same as buildable area, and not subject to LAMC Section 12.03.
+
+Table 1: Residential Floor Area Factor Assumptions
+
+APN Lot Size Range      Residential Floor Area Factor
+
+Base Capacity
+
+Less than 3,000 sf      0.45
+
+3,001 sf to 5,000 sf    0.55
+
+5,001 sf to 10,000 sf   0.65
+
+Greater than 10,001 sf  0.75
+
+Bonus Capacity
+
+Less than 3,000 sf      0.5
+
+3,001 sf to 5,000 sf    0.6
+
+5,001 sf to 10,000 sf   0.7
+
+Greater than 10,001 sf  0.8
+
+As mentioned above, the local capacity calculation included the application of local bonus
+programs, either through the MIIP (LAMC 12.22 A.38 of Chapter 1) or Local Affordable Housing
+Incentive Program (Article 9, Sec. 9.3.2 of Chapter 1A) in the Downtown LA Community Plan
+Area. The model first calculates units and floor area using base zoning, and then applies the
+
+1 This figure is based on an average unit size assumption.
+2 The Industrial-Mixed-3 (IX-3) Use District requires 1.0 FAR of a proposed development to be utilized for
+non-residential uses, pursuant to Sec. 5B.6.3 of Article 5 in Chapter 1A of the LAMC.
+
+                                                                                                   3
+Appendix 1 - SB 79 PHASED IMPLEMENTATION MODEL METHODOLOGY
+
+bonus density and FAR through the applicable local incentive programs to determine the
+Maximum Allowable Units and Maximum Allowable Residential Building Volume on the site. In
+cases where a site is eligible for more than one incentive program, a general hierarchy of MIIP
+incentive tiers, as shown in Table 2 below, establishes which incentive tier to apply. As there are
+sites where the CT incentive program will permit more units than the TOIA incentive program.
+The model includes an override rule for sites eligible for both the TOIA and CT Incentive Area,
+denoted as T and CT incentive subareas in the table below. The model first will calculate the
+Maximum Allowable Units using the TOIA subarea incentives. If the Maximum Allowable Units
+permitted by the TOIA subarea is greater than 10 or 16 units, depending on the CT incentive
+subarea, the Maximum Allowable Units will reflect the TOIA value. Otherwise, the value is
+replaced with the greater CT incentive subarea value. It is important to note that the model
+utilizes the development standards of the CT program as adopted in February 2025, and does
+not reflect the proposed updates to the program through the Low-Rise Ordinance.
+
+Table 2: Hierarchy of MIIP Incentive Tiers  Rank
+                                              1
+                         Incentive Tier       2
+                               OC-3           3
+                                 T-3          4
+                               OC-2           5
+                                 T-2          6
+                               OC-1           7
+                                 T-1          8
+                                CT-3          9
+                                CT-2
+                                CT-1
+
+The MIIP assigns differing density and FAR incentives based on the designated TCAC
+Opportunity Area, with greater incentives for sites in Higher Opportunity Areas. The model
+utilizes the TCAC Opportunity Area map from 2024 to assign the bonus density and FAR.
+
+The Boyle Heights and Harbor Gateway Community Plan Updates have been adopted by the
+City Council but are currently in the Form and Legality process with the City Attorney. The model
+utilizes a conservative approach and does not consider Transit Oriented Communities (TOC)
+incentives for these recently adopted Community Plans, as the TOC program is anticipated to
+sunset in 2026 and would not be available in the future on SB 79 eligible sites. The assumptions
+for these community plans utilize the existing zoned capacity available today and do not include
+assumptions regarding bonus capacity from the TOC program or the proposed New Zoning
+Code.
+
+                                                            4
+Appendix 1 - SB 79 PHASED IMPLEMENTATION MODEL METHODOLOGY
+
+The MIIP assigns varying density bonus and FAR incentives based on whether a site is zoned
+for residential or commercial. The model is built to categorize each site based on the zone
+class, and classified every parcel into one of eight zone descriptors: Single Family Residential,
+Multiple Family Residential, Commercial, Parking, Industrial Mixed, Manufacturing, Public
+Facilities or Open Space, as shown in Table 3 below. The model uses the zone descriptors to
+apply the corresponding MIIP development incentives. For sites in the Single Family Residential
+zone descriptor category, the model assumes the Maximum Allowable Unit per parcel is one
+unit.
+
+Table 3: Zone Descriptor Categories and Associated Zone Classes
+
+Zone Descriptor    Associated Zone Classes
+
+Single Family      RA, RE, RE40, RE20, RE15, RE11, RE9, R1, R1H1, R1', R1R3,
+Residential        R1V1, R1V2, R1V3, RMP, RU, RZ2.5,RZ3, 'RZ4, RZ5, RG3, RG4,
+                   RS, RW1, A2, A2(PV), A2P
+
+Multiple Family    PVSP, RD6, RD5, RD4, RD3, RD2, RD1.5, R2, R3, R3(EC),
+Residential        R3(PV), R3(UV), R4, R4(UV), R5, RAS3, RAS3(UV), RAS4,
+                   RAS4(UV), RW2,RG1, RG2, RX1, RX2, RX3, RX4
+
+Commercial         ADP, C1, C1(PV), C1.5, C2, C2(PV), C4, C4(OX), C5, CEC,
+                   CM(GM), CM(UV), CR, CR(PKM), CW, LASED, MU(EC),
+                   NMU(EC), PPS, UC(CA), UI(CA), USC-1A, USC-1B, USC-2,
+                   USC-3, UV(CA), CM, HJ(EC), HR(EC), (WC)River,
+                   (WC)Downtown, (WC)Uptown, (WC)North Village, (WC)Topanga,
+                   (WC)Park, (WC)College, (WC)Commerce, DNSP, CCA, CX1, CX2,
+                   CX3, CX4, CX5, CX6, CX7, CX8, CX9, CX10
+
+Parking            P, PB, R2P, R3P, R4P, R5P
+
+Industrial Mixed   IX1, IX2, IX3, IX4, IX5, IX6, IX7, UV(CA), UI(CA), UC(CA)
+
+Manufacturing      LAX, MR1, MR2, M, M(PV), M1, M2, M2(PV), M3, NI(EC), CCS, I1,
+                   I2, I3, I4, I5, I6, I7, I8
+
+Public Facilities  PF, PF(UV), P1, P2, FWY, FRWY, Various
+
+Open Space         OS1, OS, OS(PV), OS(UV), A1, A1(UV), A2, GW(CA)
+
+                   If the parcel is zoned A1 or A1(UV) and the General Plan Land Use
+                   is Single Family Residential, then it is assigned Single Family
+                   Residential.
+
+After the corresponding incentive program density and FAR bonuses are applied, Maximum
+Allowable Units is calculated by either multiplying the units allowed by the base zoning by the
+bonus density percent, or when density is Unlimited then the PIN lot area is multiplied by the
+bonus FAR and divided by 1150. When the parcel is not eligible for a bonus incentive program,
+
+                                                                                                 5
+Appendix 1 - SB 79 PHASED IMPLEMENTATION MODEL METHODOLOGY
+
+Maximum Allowable Units is equivalent to the units allowed by the base zoning. Maximum
+Allowable Residential Building Volume is calculated by multiplying the PIN lot area by the bonus
+FAR, if applicable, and multiplying by the Residential Floor Area Factor for bonus capacity (refer
+to Table 1 for bonus RFAR factors). When the parcel is not eligible for a bonus incentive
+program, Maximum Allowable Residential Building Volume is equivalent to the building volume
+allowed by the base zoning.
+
+SB 79 Capacity Assumptions
+
+To calculate the development capacity permitted by the development standard provisions of SB
+79, the model considered the following assumptions shown on the table, pursuant to
+Government Code Section 65912.157(a). The development assumptions were applied to each
+parcel at the LA BOE PIN level, and summed to the LA County APN level after the initial
+capacity calculations were completed. For example, Maximum Allowable Units is calculated by
+PIN lot area divided by density, and Maximum Allowable Residential Building Volume is
+calculated by PIN lot area multiplied by FAR, these values are then summed to the APN level.
+The law includes additional development standards for any site that is immediately adjacent to a
+TOD stop, pursuant to GCS 65912.157(e). As it is challenging to identify all sites adjacent to
+TOD stops, the model assumes any site within 200 feet of a TOD stop would be eligible for the
+additional development standards, as reflected in the Table 4 below.
+
+Table 4: SB 79 Development Assumptions (GCS Section 65912.157(a))
+
+TOD Zone Tier    Density per Acre     Density (per          FAR
+and Distance                       square foot of lot
+
+                                           area)
+
+Tier 1 200 feet  160               272                             4.5
+
+Tier 1 ¼ mile    120               363                             3.5
+
+Tier 1 ½ mile    100               435.6                           3.0
+
+Tier 2 200 feet  140               311                             4.0
+
+Tier 2 ¼ mile    100               435.6                           3.0
+
+Tier 2 ½ mile               80     544.5                           2.5
+
+SB 79 Statutorily Exempt Assumptions
+According to the statute, a housing development project is an allowed use on any site zoned for
+residential, mixed, or commercial development within a TOD zone (GCS 65912.157(a)). SB 79
+permits housing as a use in zones that allow commercial, even if residential uses are prohibited.
+
+                                                                                                                               6
+Appendix 1 - SB 79 PHASED IMPLEMENTATION MODEL METHODOLOGY
+
+As a result, the model assumes sites zoned for public facilities, parking, and open space are
+statutorily exempt from the provisions of SB 79, and no capacity is assigned to these zones.
+However, industrial zoned land in the City of LA permits commercial uses. The City has reached
+out to HCD and is awaiting guidance on this issue. To be conservative, pending future guidance,
+the model calculates SB 79 capacity on industrial zoned land, including MR1, MR2, M1, M2,
+and M3 zones, unless identified as part of an industrial employment hub. The model does not
+calculate capacity on industrial zoned land as part of the local capacity model as no residential
+uses are currently permitted.
+
+Consistent with the criteria described above, sites zoned for Public Facilities or Open Space do
+not allow residential or commercial uses and were not evaluated for capacity as a part of this
+model. However, there are many sites in the City with split zones, where one site may include
+multiple zones. The following paragraph describes the method for isolating the exempt zones
+from sites with split zones to ensure they are not evaluated for capacity by the model.
+
+GCS 65912.157(h)(1) states a proposed development may not utilize the zoning provisions of
+SB 79 on sites with more than two units that would require the demolition of housing subject to
+the RSO. This has been interpreted as a project level exemption due to the demolition provision,
+rather than a site level criteria that can qualify for a statutory exemption. Therefore, the model
+includes sites subject to the RSO in the capacity analysis for determining eligibility for temporary
+exemption. Including sites with RSO units acknowledges that projects on sites with more than
+two units would be permitted to utilize SB 79 zoning provisions provided they do not result in the
+demolition of RSO units that have been occupied in the last seven years.
+
+The City of LA uses two types of parcel identification geometries: BOE PINs and LA County
+Assessor Parcel Numbers (APNs). They are two disparate systems for tracking land area, and
+in general, BOE PINs are more granular than LA County Assessor APNs. Using the BOE PIN
+geometry allowed the model to address split zones (instances where one APN may have
+multiple zones), and allowed for accuracy when calculating capacity on sites where there may
+be a portion of the site not eligible for capacity. In the example below, the sites located on the
+eastern side of Etiwanda Avenue and Collins Street in the Encino-Tarzana Community Plan
+Area are identified in the LA County Assessor system as APN 2157009033. This APN includes
+two zones, R3-1 and OS-1XL, where the site intersects the LA River channel. In order for the
+analysis to calculate capacity only on the portions of the site zoned for R3-1, the site utilized the
+BOE PIN land base to isolate the OS-1XL parcels and assign 0 value for capacity, while
+calculating capacity at the local and SB 79 level on the R3-1 portions of the site. For the
+purpose of this analysis, local capacity and SB 79 capacity are calculated at the BOE PIN level
+and then summed to the APN level when determining whether a site meets the temporary
+exemption criteria.
+
+                                                                                                                               7
+Appendix 1 - SB 79 PHASED IMPLEMENTATION MODEL METHODOLOGY
+
+Figure 2. Split Zone Site Located on the eastern side of Etiwanda Avenue in
+Encino-Tarzana
+
+      ZIMAS, 2026
+
+Permanent Exclusions
+As mentioned above, SB 79 includes permanent exclusions for sites where no walking path of
+less than one-mile exist and for industrial employment hubs. The following analysis describes
+the process for determining whether a site meets the permanent exclusion criteria. If the site
+meets the criteria, it is ascribed a "yes" value, if it does not meet the criteria, it is ascribed a "no"
+value. When the value is "yes", the model considers the site permanently excluded from the
+zoning provisions of SB 79, and does not calculate SB 79 capacity for the site. When the value
+is "no", the model considers the site eligible for the zoning provisions of SB 79 and calculates
+capacity on the site.
+
+No Walking Path of Less than One-Mile
+SB 79 permits permanent exclusions for sites that do not have a walking path of less than one
+mile to the TOD station (GCS 65912.160(e)(1)). The one-mile walkability distance is measured
+by analyzing the street network within TOD zones utilizing ArcGIS Network Analyst and LA
+County TIGER. Natural impediments to walkability that are within the one-mile buffer around
+TOD zones are excluded from the qualifying walkable street network, including highways,
+railroads, hillside areas, waterways and subdivision neighborhoods with no road connectivity.
+After these exclusions for impediments to walkability, the walking distance along the street
+network deemed walkable from the TOD Station to the site is calculated. Sites that have a mile
+or more distance along the walkable street network are determined as eligible to be
+permanently excluded from SB 79.
+
+                                                                                                8
+Appendix 1 - SB 79 PHASED IMPLEMENTATION MODEL METHODOLOGY
+
+Industrial Employment Hub
+SB 79 defines an industrial employment hub as "a contiguous area of at least 250 acres
+designated in the jurisdiction's general plan on or before January 1, 2025, as an employment
+lands area" (GSC 65912.160(e)(2)). The bill further specifies that these areas must be primarily
+dedicated to industrial use and that housing cannot be a prohibited use on any of the sites
+excluded. Mapping analysis identified sites meeting the criteria of the bill located in MR1, M1,
+MR2, M2, M3, I1, I2, and LAX zones, and select PF zoned sites with known industrial uses.
+Hybrid industrial zones were not included due to the allowance of residential uses in these types
+of zones. To meet the contiguous acreage criteria, sites were considered to be contiguous if
+located across a right-of-way (including streets, freeways, and open space containing the LA
+River), have a shared property line, or across a common corner. Industrial parcels that are
+separated by residential, commercial, or open space uses were not considered contiguous, and
+do not count as industrial employment hubs.
+
+Mapping analysis of the industrial areas of the city identified six areas summarized in the table
+below which meet the criteria of industrial employment hubs, and therefore are permanently
+excluded from SB 79 eligibility. For additional information about industrial land in the City and
+the six industrial employment hubs, please refer to Appendix 3 of this report. The analysis also
+identified other areas of contiguous industrial land across the city that did not meet the 250 acre
+threshold, and as such, these areas are not exempt from the bill and are included in the
+modeling analysis.
+
+Table 5: Summary of Industrial Employment Hubs
+
+Name/Location            Acreage                                                         Number of Sites1
+
+LAX                      3623                                                            297
+
+Van Nuys                 2383                                                            1733
+
+Downtown / Southeast LA  1758                                                            3077
+
+Chatsworth               1282                                                            1023
+
+Pacoima                  664                                                             442
+
+Atwater / Cypress Park   312                                                             413
+
+1 The number of sites included here are inclusive of sites outside of a SB 79 TOD zone.
+
+Table 6 below summarizes the sites eligible for permanent exclusion from the zoning provisions
+of SB 79 pursuant to GCS 65912.160(e)(1) and (2).
+
+                                                                                                           9
+Appendix 1 - SB 79 PHASED IMPLEMENTATION MODEL METHODOLOGY
+
+Table 6: Summary of Sites Eligible for Permanent Exclusion from SB 79
+
+SB 79 Statutory Exemption              Count of Sites
+
+No Walking Path of Less than One-Mile  341
+
+Industrial Employment Hub              2,377
+
+Temporary Exemptions
+
+Pursuant to GCS 65912.161(b), sites, low resource areas, and TOD zone stations may be
+eligible for temporary exemption if they meet one of the criteria described below. The analysis
+performed for each temporary exemption criteria corresponds to a subsection of GCS
+65912.161(b) as shown in Table 7, below.
+
+                                                                                                 10
+Appendix 1 - SB 79 PHASED IMPLEMENTATION MODEL METHODOLOGY
+
+Table 7: Phased Implementation Criteria                                                    Level of
+                                                                                           Analysis
+ Government Code Temporary Exemption Criteria
+ Statute
+
+65912.161(b)(1)(A)       A site which permits density and RFAR at no less than 50% of      Individual
+                         the standards specified under subdivision (a) of Section          Site
+                         65912.157.
+
+65912.161(b)(1)(B)(i)    A site in a TOD zone in which at least 33% of sites in the        TOD zone
+                         relevant TOD zone have permitted density and RFAR no less
+                         than 50% of the standards specified under subdivision (a) of
+                         Section 65912.157 and which includes sites with densities that
+                         cumulatively allow for at least 75% of the aggregate density
+                         for the TOD zone specified under subdivision (a) of Section
+                         65912.157.
+
+65912.161(b)(1)(B)(ii)   A site in a TOD zone that is primarily composed of a              TOD zone
+                         low-resource area which includes sites with densities that
+                         cumulatively allow for at least 40% of the aggregate density
+                         for the TOD zone specified under subdivision (a) of Section
+                         65912.157.
+
+65912.161(b)(1)(B)(iii)  A site in an area designated as low resource on the most          Individual
+                         recently adopted version of the opportunity area maps             Site
+                         published by the TCAC/HCD, and within a jurisdiction that
+                         cumulatively allows for at least 50% of the total capacity for
+                         units and floor area as specified under subdivision (a) of
+                         Section 65912.157.
+
+65912.161(b)(1)(C)       A site that is covered by a local TODalternative plan adopted     Individual
+                         by a local government                                             Site
+
+65912.161(b)(1)(D)       Sites within a VHFHSZ as determined by the Department of          Individual
+                         Forestry and Fire Protection pursuant to Section 5118, or         Site
+                         within the state responsibility area, as defined in Section 4102
+                         of the Public Resources Code.
+
+65912.161(b)(1)(E)       Sites vulnerable to one foot of sea level rise (SLR), as          Individual
+                         determined by the National Oceanic and Atmospheric                Site
+                         Administration, the Ocean Protection Council, the United
+                         States Geological Survey, the University of California, or a
+                         local government's coastal hazards vulnerability assessment.
+
+65912.161(b)(1)(F)       Sites with a historic resource designated as of January 1,        Individual
+                         2025, on a local register.                                        Site
+
+                                                                                                       11
+Appendix 1 - SB 79 PHASED IMPLEMENTATION MODEL METHODOLOGY
+
+Assessment of the City's Temporary Exemption Eligibility based on Station Area
+Characteristics
+
+After existing baseline capacity and SB 79 capacity are established, the existing baseline
+capacity in terms of Maximum Allowable Units (density) and Maximum Allowable Residential
+Building Volume are compared to SB 79 capacity and evaluated by the requirements of GCS
+65912.161(b)(1) to determine if the site is eligible for temporary exemption. The section below
+describes the assumptions and analysis performed to determine if a site is eligible for temporary
+exemption.
+
+TOD Zone Level Temporary Exemption Criteria Assumptions
+
+Primarily Low Resource TOD Zones
+Government Code Section 65912.161(b)(1)(ii) permits temporary exemptions for sites within the
+entire TOD zone if they meet criteria as a primarily low resource TOD zone. The City utilized a
+plurality methodology to identify TOD zones that meet the temporary exemption criteria as a
+primarily low resource TOD zone. This methodology was decided on after input from HCD
+clarified that the term "primarily" in the SB 79 bill text (GCS 65912.161(b)(1)(B)(ii)) describes a
+"plurality" rather than a "majority." The area in square feet of each TCAC designation (High &
+Highest Resource, Moderate Resource, and Low Resource) was calculated for every TOD zone
+and divided by the total area of the TOD zone to result in a percentage of land area per TCAC
+designation. Census tracts designated as Insufficient Data (which are areas identified on the
+CTCAC Opportunity Maps where data reliability is too low to accurately determine opportunity
+resource levels), have been removed as a category and from the total land area of the TOD
+zone.
+
+A TOD Zone in which Low Resource Areas constitute a plurality of the land is illustrated with the
+Vermont/Sunset TOD Zone below (which is 38% Low Opportunity Area, 27% Moderate
+Opportunity Area, and 35% Higher Opportunity Area). Note that because Moderate and Higher
+Opportunity Areas make up a majority (over 50%) of the TOD Zone, this would be considered
+an "Opportunity Station" in the Low-Rise Ordinance even though under SB 79 it is considered a
+primarily low resource station. In this way, the City is exceeding the requirements of SB 79 to
+rezone beyond what is required.
+
+                                                                                                                             12
+Appendix 1 - SB 79 PHASED IMPLEMENTATION MODEL METHODOLOGY
+
+                 Figure 3. Vermont/Sunset TOD Zone with Low Resource Plurality
+
+Table 9 at the end of this Appendix 1 shows the breakdown of TCAC categories by TOD zone
+and identifies the TOD Zones that are considered primarily Low Resource. Sites that permit at
+least 40 percent of the Maximum Allowable Units and Maximum Allowable Residential Building
+Volume provided by SB 79 are identified. When the TOD zone is considered a primarily Low
+Resource TOD zone and all sites permit at least 40% of the density and FAR standards of SB
+79, then the entire TOD zone is eligible for temporary exemption.
+TOD Zones Permitting Half of the Density and Floor Area of SB 79
+An entire TOD zone may be temporarily exempt from the provisions of SB 79 when at least 33
+percent of sites in the TOD zone permit at least 50 percent of the density and RFAR of the
+standards of SB 79, and at least 75 percent of the aggregate density standards provided by SB
+79. To determine TOD Zones eligible for this temporary exemption, first, sites that meet at least
+50 percent of SB 79 provisions are identified, and a count of sites meeting this criteria is
+calculated by TOD zone area. To determine whether 33 percent of sites in a TOD zone permits
+at least 50 percent of SB 79 development standards, the count of sites meeting 50 percent of
+SB 79 in both is divided by the count of sites eligible for SB 79 in the TOD zone. If the result is
+greater than or equal to 33 percent, the TOD zone meets the first part of this criteria. Next, the
+model calculates 75 percent of the capacity permitted by SB 79 within the TOD zone, and
+
+                                                                                                                             13
+Appendix 1 - SB 79 PHASED IMPLEMENTATION MODEL METHODOLOGY
+
+compares it to the local Maximum Allowable Units and local Maximum Allowable Residential
+Building Volume for the TOD zone permitted by existing zoned capacity. If the local capacity for
+the TOD zone is greater than or equal to 75 percent of the capacity permitted by SB 79 in the
+TOD zone then the TOD zone is considered eligible for temporary exemption under GCS
+65912.161(b)(1)(B)(i).
+
+Individual Site Level Temporary Exemption Criteria Assumptions
+
+Sites Meeting 50% of Density and FAR permitted by SB 79 (GCS 65912.161(b)(1)(A))
+To identify sites eligible for temporary exemption because the local zoning permits at least 50
+percent of the density and FAR afforded by SB 79, the model calculates whether local density in
+units per acre and local FAR are greater than or equal to 50 percent of SB 79 density and floor
+area, if both are true, then the site is eligible for temporary exemption under this criteria. If one
+or none are true, then the site is not eligible for temporary exemption under this criteria.
+
+Low Resource Site GSC 65912.161(b)(1)(B)(ii)
+To identify sites eligible for this temporary exemption, as a Low Resource site as designated by
+the California TCAC, the model determines first whether the parcel is in a Low Resource area.
+Then, the model evaluates if the local Maximum Allowable Units and local Maximum Allowable
+Residential Building Volume is greater than or equal to 50 percent of the SB 79 Maximum
+Allowable Units and SB 79 Maximum Allowable Residential Building Volume, respectively. If
+both local Maximum Allowable Units and Maximum Allowable Residential Building Volume are
+greater than or equal to half of SB 79 density and floor area, then the model inputs a "Yes"
+value, and the site is eligible for temporary exemption.
+
+Local Transit-Oriented Development Alternative Plan GSC 65912.161(b)(1)(C)
+No sites are currently relying on a local TOD alternative plan to meet the temporary exemption
+from SB 79 provisions criteria.
+
+Very High Fire Hazard Severity Zones GSC 65912.161(b)(1)(D)
+Sites located within a VHFHSZ, as determined by the Department of Forestry and Fire
+Protection are considered eligible for temporary exemption. The model identifies sites located in
+a VHFHSZ considers these sites eligible for temporary exemption from SB 79 and indicates so
+with a "Yes" value, for temporary exemption. Sites were identified at the PIN level.
+
+Sites Vulnerable to One-Foot Sea Level Rise Areas GSC 65912.161(b)(1)(E)
+Sites located within an area vulnerable to one-foot sea level rise, as determined by the National
+Oceanic and Atmospheric Administration, Ocean Protection Council, United States Geological
+Survey, the University of California, or a local government's coastal hazards vulnerability
+assessment are considered eligible for temporary exemption. The model identifies sites located
+in an area vulnerable to one-foot of sea level rise and considers these sites eligible for
+temporary exemption from SB 79 and indicates so with a "Yes" value, for temporary exemption.
+Sites were identified at the PIN level.
+
+                                                                                                                             14
+Appendix 1 - SB 79 PHASED IMPLEMENTATION MODEL METHODOLOGY
+
+Sites Designated as a Local Historic Register GSC 65912.161(b)(1)(F)
+Sites designated as a historic resource on a local register prior to January 1, 2025 are
+considered eligible for temporary exemption. For the City of LA, these are sites designated as
+local HCMs and HPOZs before January 1, 2025. The model identifies sites designated as a
+HCM or HPOZ before January 1, 2025, and considers these sites eligible for temporary
+exemption from SB 79 and indicates so with a "Yes" value, for temporary exemption. Sites were
+identified at the PIN level.
+Sites Eligible for Any Temporary Exemption Criteria
+Pursuant to GCS 65912.161(b)(1), a site may be eligible for at least one of the temporary
+exemption criteria. Table 8 below summarizes the sites and TOD zones that meet each
+temporary criteria. Some sites may be counted as eligible for more than one temporary
+exemption criteria.
+
+                                                                                                                             15
+Appendix 1 - SB 79 PHASED IMPLEMENTATION MODEL METHODOLOGY
+
+Table 8: Sites Eligible for Temporary Exemption
+
+                                                          Count of            Percent of
+
+Temporary Exemption Criteria                              Eligible Sites or Eligible Sites
+
+                                                          TOD zones           or TOD zones
+
+Sites permitting half of density and residential floor    Existing Zoned      Existing Zoned
+area ratio afforded in SB 79 (GCS                         Capacity: 46,526    Capacity: 34.34%
+65912.161(b)(1)(A))                                       parcels             of sites
+
+                                                          Inclusive of        Inclusive of
+                                                          Low-Rise Ordinance  Low-Rise
+                                                          Amendments:         Ordinance
+                                                          17,562 parcels      Amendments:
+                                                                              12.59% of sites
+
+Sites in TOD zones meeting capacity, density and          74 TOD zones        51% of TOD
+floor area minimums (GCS 65912.161(b)(1)(B)(i))                                   zones
+
+Sites in an area designated as low resource on the        75,704 parcels      55.88% of sites
+most recently adopted version of the opportunity area
+maps published by the TCAC, within a jurisdiction that
+cumulatively allows for at at least 50% of the
+Residential Capacity required by SB 79 (GCS
+65912.161(b)(1)(B)(ii))
+
+Sites in primarily low resource TOD zones permitting      80 TOD zones        55.1% of TOD
+half of the total capacity and floor area afforded in SB                           zones
+79 (GCS 65912.161(b)(1)(B)(iii))
+
+Sites covered by a local TOD alternative plan. (GCS       0 parcels           0% of sites
+65912.161(b)(1)(C))
+
+Sites within a VHFHSZ (GCS 65912.161(b)(1)(D))            12,910 parcels      10.59% of sites
+
+Sites vulnerable to one-foot of sea level rise (GCS       0 parcels           0% of sites
+65912.161(b)(1)(E))
+
+Sites with a historic resource designated as of           7,689 parcels       6.31% of sites
+January 1, 2025, on a local register (GCS
+65912.161(b)(1)(F))
+
+Sites eligible for at least one temporary exemption       135,474 parcels     100% of sites
+criteria
+
+Model Example
+The section that follows provides an example of the model process for determining eligibility for
+phased implementation. The example below first considers site-level information to determine
+eligibility for phased implementation, then analyzes eligibility of the site's TOD Zone for phased
+implementation.
+
+                                                                                                16
+Appendix 1 - SB 79 PHASED IMPLEMENTATION MODEL METHODOLOGY
+
+Site Analysis
+ Site Information
+
+Zone                          RD 1.5-1
+
+                              Lot Area 8,951.9 sq ft
+
+                                      Base Density 8,951.9/ 1500 (rounded up)
+      (Lot Area/ Minimum Lot Area per DU) = 6 units
+
+                              Base FAR 3:1
+
+Applicable Incentive Program  TOIA T-2, Low Resource
+
+                              Bonus Density 6 * 110% (rounded up)
+                                                    = 7 units
+
+                              Bonus FAR 3 * 40% increase
+                                                = 4.2 bonus FAR
+
+Qualifying TOD Station        ESFV-Van Nuys/Vanowen, within 1/4 mile
+
+Eligible SB 79 TOD Tier       Tier 2
+
+                   Density permitted by TOD tier 436 sq ft of lot area per DU3
+
+                                FAR permitted by TOD tier 3.0:1
+
+Step 1: Calculate Local and SB 79 Capacity
+
+Local Capacity
+
+                       (Base Density+ Bonus Density)= (6+7)
+                     Site's Maximum Allowable Units =13 units
+
+     Lot Area* (Base FAR+ Bonus FAR)*Applicable
+                                        RFAR Assumption = 8,951.9*(3 +1.2)*(.7)
+
+Site's Maximum Allowable Residential Building
+                                                         Volume =26,318 sq ft
+
+SB 79 Capacity
+
+                                    (Lot Area/ Tier Density) 8,951.9/ 436(rounded up)
+                     Site's Maximum Allowable Units = 21 units
+
+                                      (Lot Area* Tier FAR)= 8,951.9*3
+            Site's Maximum Allowable Residential
+
+                                            Building Volume =26,855 sq ft
+
+3 SB 79 grants density as DU per acre. Sites within 1/4 mile of a Tier 2 TOD Stop receive 100DU per acre,
+which is equivalent to 436 sq ft of lot area per DU.
+
+                                                                                                                             17
+Appendix 1 - SB 79 PHASED IMPLEMENTATION MODEL METHODOLOGY
+
+Step 2: Determine Site's Eligibility for Temporary Exemption
+
+If the site qualifies for at least one temporary exemption criteria below, the site is eligible for phased
+implementation.
+
+Site Specific Temporary Exemption Criteria
+
+Site is/ has:                               Does Example Site Qualify?
+
+ Half capacity of SB 79                     Yes. Both the site's local Maximum Allowable
+                                            Residential Building Volume and the local Maximum
+                                            Allowable Units exceed the threshold for half capacity
+                                            allowed by SB 79.
+
+ Low Resource site & the City has half of   Yes. This site is designated as Low Resource and the
+ SB 79 capacity                             City as whole exceeds the 50% threshold in both
+                                            density and building volume permitted by SB 79.
+
+ Within a Local Alternative Plan            No. As of the release of this staff report, the City has
+                                            not adopted a Local Alternative Plan.
+
+ Within VHFHSZ                              No. This site is not within the VHFHSZ.
+
+ Within one-foot of sea level rise          No. This site is not located in an area vulnerable to
+                                            one-foot of sea level rise.
+ Local historic resource designated as of
+ Jan 1, 2025                                No. This site does not contain a local historic resource
+                                            designated as of Jan. 1, 2025.
+
+As outlined in the table above, the example site meets site-level criteria to qualify for temporary
+exemption. However, additional temporary exemption criteria that consider eligibility for
+exemption at the TOD zone level can be analyzed.
+
+                                                                                                            18
+Appendix 1 - SB 79 PHASED IMPLEMENTATION MODEL METHODOLOGY
+
+TOD Zone Analysis
+ TOD Zone Information
+
+TOD Station                             ESFV-Van Nuys/Vanowen
+
+Step 1: Calculate Local and SB 79 Capacity
+
+Local Capacity
+
+Calculate local capacity for each site within the TOD Zone4, then sum for all sites:
+
+TOD Zone Maximum Allowable Units 36,295 units
+
+TOD Zone Maximum Residential Building 39,333,581 sq ft
+                                                Volume
+
+SB 79 Capacity
+
+Calculate SB 79 capacity for each site within the TOD Zone4, excluding any sites meeting criteria for permanent
+exemption:
+
+           No Walking Path within less than ½ mile from Station (0 sites for this TOD Station)
+
+           Industrial Employment Hub (0 sites for this TOD Station)
+
+Then sum for all SB 79 eligible sites:
+
+TOD Zone Maximum Allowable Units 35,847 units
+
+TOD Zone Maximum Allowable 46,201,924 sq ft
+   Residential Building Volume
+
+Step 2: Determine TOD Zone's Eligibility for Temporary Exemption
+
+If the TOD Zone qualifies for at least one temporary exemption criteria below, the entire TOD Zone is eligible for
+phased implementation.
+
+TOD Zone- Specific Temporary Exemption Criteria
+
+TOD Zone is:                            Does Example TOD Zone Qualify?
+
+ Within a TOD Zone of which a third     Yes. At least one-third of sites within the ESFV-Van
+ of sites have half SB 79 capacity      Nuys/Vanowen TOD Zone have at least half SB 79 capacity.
+ and the TOD zone cumulatively has      Additionally, the TOD Zone cumulatively allows 36,295units
+ 75% of SB 79 density                   within local capacity, which exceeds the 75% threshold of
+                                        units permitted by SB 79 (35,847 units).
+
+ Within TOD zone that is primarily      Yes. Although the example site is designated as Moderate
+ Low Resource and cumulatively has      Resource, the ESFV-Van Nuys/Vanowen TOD Zone is
+ 40% SB 79 density                      primarily designated as Low Resource since it is the
+                                        designation that makes up the highest percentage of area
+                                        within the TOD Zone. Additionally, the TOD Zone cumulatively
+                                        allows 36,295 units within local capacity, which exceeds the
+                                        40% threshold of units permitted by SB 79 (35,847 units).
+
+4 The model assumes sites zoned for public facilities, parking, and open space are statutorily exempt from
+the provisions of SB 79, and no capacity is assigned to these zones.
+
+                                                                                                                             19
+Appendix 1 - SB 79 PHASED IMPLEMENTATION MODEL METHODOLOGY
+
+Since the site's TOD Zone qualifies for temporary exemption, the site also achieves eligibility for
+temporary exemption.
+
+                                                                                                                             20
+Appendix 1, Primarily Low Resource TOD Zone Analysis, 5.5.2026                                                                                       Page 1
+
+                                                                Table 9: Primarily Low Resource TOD Zones by Analysis
+
+                      TOD Zone Name  High & Highest Resource          Moderate Resource  Low Resource                        Primarily Low Resource  Permits 40% of SB 79
+                                                                                                                                     TOD Zone           Density and FAR
+A/RED/PUR/Metrolink-Union Station                               29%   38%                                              33%
+A-Chinatown                                                     39%                                                                       No         No
+A-Heritage Square                                                0%   56%                                              5%                 No         No
+A-Highland Park                                                 23%                                                                      Yes         Yes
+A-Lincoln/Cypress                                                3%   41%                                              59%                No         No
+A-Little Tokyo/Arts District                                     7%                                                                      Yes         Yes
+A-Southwest Museum                                              48%   54%                                              23%               Yes         Yes
+BLU/EXP/RED/PUR-7th St/Metro Center                              0%                                                                       No         No
+BLU/EXP-Pico                                                     0%   1%                                               96%               Yes         Yes
+BLU/GRN-Willowbrook/Rosa Parks                                   0%                                                                      Yes         Yes
+BLU-103rd St/Watts Towers                                        0%   41%                                              52%               Yes         Yes
+BLU-Firestone                                                    0%                                                                      Yes         Yes
+BLU-Grand/LATTC                                                  0%   39%                                              12%               Yes         Yes
+BLU-San Pedro St                                                 0%                                                                      Yes         Yes
+BLU-Slauson                                                      0%   43%                                              57%               Yes         Yes
+BLU-Vernon                                                       0%                                                                      Yes         Yes
+BLU-Washington                                                  31%   42%                                              58%               Yes         Yes
+E-Indiana                                                        0%                                                                      Yes         Yes
+E-Mariachi Plaza                                                 0%   0%                                               100%              Yes         No
+E-Pico/Aliso                                                     0%                                                                      Yes         Yes
+ESFV/SP-Van Nuys                                                 0%   0%                                               100%              Yes         Yes
+ESFV/SP-Van Nuys/Oxnard (Orange)                                30%                                                                      Yes         Yes
+ESFV-Van Nuys/Arleta                                             0%   0%                                               100%              Yes         Yes
+ESFV-Van Nuys/Laurel Canyon                                      0%                                                                      Yes         No
+ESFV-Van Nuys/Nordhoff                                           0%   4%                                               96%               Yes         No
+ESFV-Van Nuys/Roscoe                                             0%                                                                      Yes         Yes
+ESFV-Van Nuys/San Fernando                                       0%   0%                                               100%              Yes         Yes
+ESFV-Van Nuys/Sherman                                            0%                                                                      Yes         No
+ESFV-Van Nuys/Vanowen                                            0%   0%                                               100%              Yes         Yes
+ESFV-Van Nuys/Victory                                            1%                                                                      Yes         Yes
+ESFV-Van Nuys/Woodman                                            0%   0%                                               100%              Yes         Yes
+E-Soto                                                           0%                                                                      Yes         No
+EXP/SP-Expo/Sepulveda                                           100%  0%                                               69%               Yes         Yes
+EXP-Culver City                                                 87%                                                                       No         No
+EXP-Expo Park/USC                                                0%   0%                                               100%               No         No
+EXP-Expo/Bundy                                                  100%                                                                     Yes         Yes
+EXP-Expo/Crenshaw                                                0%   4%                                               96%                No         No
+EXP-Expo/La Brea                                                 0%                                                                      Yes         Yes
+EXP-Expo/Vermont                                                 0%   23%                                              77%               Yes         Yes
+EXP-Expo/Western                                                 0%                                                                      Yes         Yes
+EXP-Farmdale                                                     0%   0%                                               100%              Yes         No
+EXP-Jefferson/USC                                                0%                                                                      Yes         Yes
+EXP-La Cienega/Jefferson                                        26%   2%                                               68%               Yes         Yes
+EXP-LATTC/Ortho Institute                                        0%                                                                      Yes         Yes
+EXP-Palms                                                       100%  7%                                               93%               Yes         Yes
+EXP-Westwood/Rancho Park                                        100%                                                                      No         No
+GRN/K Line-Aviation/96th St                                     72%   0%                                               100%               No         No
+GRN/K Line-Aviation/Century                                     99%                                                                       No         No
+GRN-Avalon                                                       0%   2%                                               98%                No         No
+GRN-Aviation/LAX                                                95%                                                                      Yes         Yes
+GRN-Harbor Freeway                                               0%   0%                                               100%               No         No
+GRN-Vermont/Athens                                               0%                                                                      Yes         Yes
+K Line-Crenshaw/Adams                                            0%   0%                                               100%              Yes         No
+K Line-Crenshaw/Exposition                                       0%                                                                      Yes         Yes
+K Line-Crenshaw/MLK                                              0%   0%                                               100%              Yes         Yes
+K Line-Crenshaw/Slauson                                          0%                                                                      Yes         Yes
+K Line-Crenshaw/Vernon                                           0%   11%                                              89%               Yes         Yes
+K Line-Fairfax/3rd                                              100%                                                                     Yes         Yes
+K Line-Florence/Hindry                                          55%   17%                                              82%                No         No
+K Line-Florence/West                                             0%                                                                       No         No
+K Line-Highland/Odin                                            91%   10%                                              90%               Yes         Yes
+K Line-LaCienega/Beverly                                        100%                                                                      No         No
+K Line-SantaMonica/Fairfax                                      100%  6%                                               94%                No         No
+K Line-SantaMonica/LaBrea                                       100%                                                                      No         No
+K Line-SantaMonica/Palm                                         100%  0%                                               0%                 No         No
+K Line-SanVicente/Pico                                          81%                                                                       No         No
+Metro 234 - Parthenia Street                                     0%   13%                                              0%                 No         No
+Metro 234 - Roscoe Boulevard                                     0%                                                                      Yes         Yes
+Metro 234 - Saticoy Street                                       0%   0%                                               100%              Yes         Yes
+Metro 234 - Sherman Way                                          0%                                                                      Yes         Yes
+Metro 234 - Vanowen Street                                       0%   0%                                               0%                Yes         Yes
+Metro 234 - Victory Boulevard                                    9%                                                                      Yes         Yes
+Metro 234 -Ventura Boulevard                                    100%  43%                                              57%               Yes         Yes
+Metro 33 - Venice Boulevard                                     100%                                                                      No         No
+Metro 70 - N Spring Street                                      35%   10%                                              90%                No         No
+Metro 78 - N Spring Street                                      17%                                                                      Yes         Yes
+                                                                      0%                                               100%              Yes         Yes
+
+                                                                      0%                                               100%
+
+                                                                      20%                                              80%
+
+                                                                      0%                                               100%
+
+                                                                      13%                                              61%
+
+                                                                      4%                                               96%
+
+                                                                      0%                                               0%
+
+                                                                      0%                                               0%
+
+                                                                      0%                                               28%
+
+                                                                      0%                                               1%
+
+                                                                      0%                                               100%
+
+                                                                      0%                                               5%
+
+                                                                      0%                                               100%
+
+                                                                      0%                                               100%
+
+                                                                      0%                                               100%
+
+                                                                      45%                                              55%
+
+                                                                      36%                                              64%
+
+                                                                      6%                                               94%
+
+                                                                      38%                                              62%
+
+                                                                      0%                                               0%
+
+                                                                      0%                                               45%
+
+                                                                      23%                                              77%
+
+                                                                      8%                                               1%
+
+                                                                      0%                                               0%
+
+                                                                      0%                                               0%
+
+                                                                      0%                                               0%
+
+                                                                      0%                                               0%
+
+                                                                      16%                                              3%
+
+                                                                      0%                                               100%
+
+                                                                      0%                                               100%
+
+                                                                      0%                                               100%
+
+                                                                      0%                                               100%
+
+                                                                      11%                                              89%
+
+                                                                      15%                                              76%
+
+                                                                      0%                                               0%
+
+                                                                      0%                                               0%
+
+                                                                      9%                                               56%
+
+                                                                      13%                                              70%
+Appendix 1, Primarily Low Resource TOD Zone Analysis, 5.5.2026                                                                                       Page 2
+
+                                                                Table 9: Primarily Low Resource TOD Zones by Analysis
+
+                      TOD Zone Name        High & Highest Resource    Moderate Resource  Low Resource                        Primarily Low Resource  Permits 40% of SB 79
+                                                                                                                                     TOD Zone           Density and FAR
+Metro 81 - Olympic Boulevard                                     0%   51%                                              49%
+Metro 81 - Pico Boulevard                                        0%                                                                       No         No
+Metro 81 - Venice Boulevard                                      0%   34%                                              66%               Yes         Yes
+Metro 81 - W 12th Street                                         0%                                                                      Yes         Yes
+Metro 81 - W 23rd Street                                         0%   19%                                              81%               Yes         Yes
+Metro 81 - W Washington Boulevard                                0%                                                                      Yes         Yes
+Metro 910 - N Spring Street                                     14%   43%                                              57%               Yes         Yes
+Metro 910 - S Figueroa Street                                    0%                                                                      Yes         Yes
+Metro 910 - W Aliso Street                                      23%   13%                                              87%               Yes         Yes
+Metro 910/70 - N Spring Street                                  13%                                                                      Yes         Yes
+Metrolink - Glendale                                            69%   11%                                              89%               Yes         Yes
+NOHO to Pasadena BRT-Colorado Boulevard                         100%                                                                      No         No
+NOHO to Pasadena BRT-E Broadway                                 80%   14%                                              72%                No         No
+NOHO to Pasadena BRT-Eagle Rock Boulevard                       100%                                                                      No         No
+NOHO to Pasadena BRT-Hesby Street                               75%   40%                                              60%                No         No
+NOHO to Pasadena BRT-Townsend Avenue                            100%                                                                      No         No
+NOHO to Pasadena BRT-W Alameda Avenue                           100%  18%                                              60%                No         No
+NOHO to Pasadena BRT-W Riverside Drive                          100%                                                                      No         No
+Orange Line - Balboa                                            56%   15%                                              72%                No         No
+Orange Line - Canoga                                             0%                                                                       No         No
+Orange Line - Chatsworth                                        100%  31%                                              0%                Yes         Yes
+Orange Line - De Soto                                            0%                                                                       No         No
+Orange Line - Laurel Canyon                                     100%  0%                                               0%                Yes         Yes
+Orange Line - Nordhoff                                          40%                                                                       No         No
+Orange Line - Pierce College                                    19%   20%                                              0%                Yes         Yes
+Orange Line - Reseda                                            57%                                                                       No         No
+Orange Line - Roscoe                                             0%   0%                                               0%                 No         No
+Orange Line - Sepulveda                                         62%                                                                      Yes         Yes
+Orange Line - Sherman Way                                        0%   25%                                              0%                 No         No
+Orange Line - Tampa                                             52%                                                                      Yes         Yes
+Orange Line - Valley College                                    52%   0%                                               0%                 No         No
+Orange Line - Van Nuys                                          29%                                                                       No         No
+Orange Line - Woodley                                           54%   0%                                               0%                Yes         Yes
+Orange Line - Woodman                                           32%                                                                       No         No
+PURex/K Line-Wilshire/Fairfax                                   100%  0%                                               0%                 No         No
+PURex/SP-Westewood UCLA                                         86%                                                                       No         No
+PURex-Century City                                              100%  20%                                              24%                No         No
+PURex-Westwood/VA Hospital                                      85%                                                                       No         No
+PURex-Wilshire/La Brea                                          100%  16%                                              84%                No         No
+PURex-Wilshire/La Cienega                                       100%                                                                      No         No
+PUR-Wilshire/Normandie                                           0%   0%                                               0%                 No         No
+PUR-Wilshire/Western                                             8%                                                                      Yes         Yes
+RC-1st/Central                                                   7%   47%                                              53%                No         No
+RC-2nd/Broadway                                                  3%                                                                      Yes         Yes
+RC-2nd/Hope                                                      0%   0%                                               0%                Yes         Yes
+RED/CRN-Hollywood/Highland                                      58%                                                                      Yes         Yes
+RED/Orange Line-North Hollywood                                 49%   14%                                              46%                No         No
+RED/PUR/Vermont BRT-Wilshire/Vermont                             0%                                                                       No         No
+RED/PUR-Civic Center/Grand Park                                 11%   47%                                              34%               Yes         Yes
+RED/PUR-Pershing Square                                          0%                                                                      Yes         Yes
+RED/PUR-Westlake/Macarthur Park                                  0%   26%                                              17%               Yes         Yes
+RED/Vermont BRT-Vermont/Santa Monica                            11%                                                                      Yes         Yes
+RED/Vermont BRT-Vermont/Sunset                                  34%   0%                                               100%              Yes         Yes
+RED-Hollywood/Vine                                               7%                                                                      Yes         Yes
+RED-Hollywood/Western                                           19%   1%                                               37%                No         No
+RED-Universal City/Studio City                                  100%                                                                     Yes         Yes
+RED-Vermont/Beverly                                              2%   0%                                               100%               No         No
+SP-Santa Monica                                                 100%                                                                      No         No
+SP-UCLA Ackerman Union                                          66%   47%                                              1%                 No         No
+SP-Ventura/Van Nuys                                             100%                                                                      No         No
+Vermont BRT - Athens                                             0%   48%                                              0%                 No         No
+Vermont BRT - Century Blvd                                       0%                                                                      Yes         No
+Vermont BRT - Florence Ave                                       0%   2%                                               70%               Yes         Yes
+Vermont BRT - Pico Blvd                                          0%                                                                      Yes         Yes
+Vermont BRT - Slauson Ave                                        0%   0%                                               46%               Yes         Yes
+Vermont BRT - Vernon Ave                                         0%                                                                      Yes         Yes
+Vermont BRT - W 3rd St                                           0%   45%                                              24%               Yes         Yes
+Vermont BRT - W Adams Blvd                                       0%                                                                       No         No
+Vermont BRT - W Manchester Ave                                   0%   0%                                               0%                Yes         Yes
+                                                                                                                                         Yes         Yes
+                                                                      14%                                              0%
+
+                                                                      0%                                               0%
+
+                                                                      15%                                              0%
+
+                                                                      0%                                               0%
+
+                                                                      0%                                               0%
+
+                                                                      35%                                              65%
+
+                                                                      72%                                              20%
+
+                                                                      37%                                              56%
+
+                                                                      20%                                              77%
+
+                                                                      42%                                              58%
+
+                                                                      23%                                              19%
+
+                                                                      37%                                              13%
+
+                                                                      43%                                              57%
+
+                                                                      19%                                              71%
+
+                                                                      30%                                              70%
+
+                                                                      1%                                               99%
+
+                                                                      23%                                              65%
+
+                                                                      29%                                              37%
+
+                                                                      50%                                              43%
+
+                                                                      18%                                              63%
+
+                                                                      0%                                               0%
+
+                                                                      82%                                              15%
+
+                                                                      0%                                               0%
+
+                                                                      34%                                              0%
+
+                                                                      0%                                               0%
+
+                                                                      0%                                               100%
+
+                                                                      0%                                               100%
+
+                                                                      0%                                               100%
+
+                                                                      0%                                               100%
+
+                                                                      0%                                               100%
+
+                                                                      0%                                               100%
+
+                                                                      61%                                              39%
+
+                                                                      12%                                              88%
+
+                                                                      0%                                               100%
+
