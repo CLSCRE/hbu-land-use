@@ -428,6 +428,32 @@ function expandSb79Record(compact, cleanApn) {
     return expanded;
 }
 
+// Resolve a lat/lon point to the LA County parcel that actually contains it,
+// via the same public ArcGIS parcel layer LA Planning's own maps use. Returns
+// the clean 10-digit AIN string, or null if no parcel was found there.
+async function resolveApnFromLatLon(lat, lon) {
+    if (typeof PARCEL_QUERY_URL === 'undefined') return null;
+    try {
+        const url = PARCEL_QUERY_URL + '?' + new URLSearchParams({
+            geometry: lon + ',' + lat,
+            geometryType: 'esriGeometryPoint',
+            inSR: '4326',
+            spatialRel: 'esriSpatialRelIntersects',
+            outFields: 'AIN',
+            returnGeometry: 'false',
+            f: 'json',
+        }).toString();
+        const resp = await fetch(url);
+        if (!resp.ok) return null;
+        const data = await resp.json();
+        const ain = data.features && data.features[0] && data.features[0].attributes && data.features[0].attributes.AIN;
+        return ain ? String(ain).replace(/[^0-9]/g, '') : null;
+    } catch (e) {
+        console.warn('Parcel resolve from coordinates failed:', e);
+        return null;
+    }
+}
+
 // === MAIN ELIGIBILITY LOOKUP ===
 // lookupAPN(apn) — async: queries sharded JSON; falls back to coordinate-based
 //   logic if no data layer is loaded.
@@ -474,7 +500,27 @@ async function lookupAPN(apn, opts) {
         }
     }
 
-    // 2. Coordinate-based fallback (requires lat/lon in opts)
+    // 2. Resolve the actual parcel APN from coordinates, then re-run the
+    // authoritative Table 1C lookup on that real APN, instead of guessing
+    // tier/band from straight-line distance to a hardcoded station list.
+    if (opts.lat && opts.lon) {
+        const resolvedApn = await resolveApnFromLatLon(opts.lat, opts.lon);
+        const alreadyTried = String(apn).replace(/[^0-9]/g, '');
+        if (resolvedApn && resolvedApn !== alreadyTried) {
+            const resolved = await lookupAPN(resolvedApn);
+            if (resolved && resolved.found) {
+                resolved.notes = (resolved.notes || []).concat([
+                    'Resolved from the geocoded address to APN ' + (resolved.apn || resolvedApn) + ' via the LA County parcel service.',
+                ]);
+                return resolved;
+            }
+        }
+    }
+
+    // 3. Coordinate-radius fallback (requires lat/lon in opts) — used only when
+    // the parcel resolve above found no containing parcel, or that parcel isn't
+    // in the Table 1C phased-implementation universe. Approximate: straight-line
+    // distance to the nearest station, not LA Planning's walking-path analysis.
     if (opts.lat && opts.lon) {
         const ns = getNearestStation(opts.lat, opts.lon);
         if (!ns || ns.distanceBand === 'beyond') {
