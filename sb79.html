@@ -1577,9 +1577,12 @@
         const card  = document.getElementById('verdictCard');
         if (!val) { input.focus(); return; }
 
-        // Detect APN vs address
+        // Detect APN vs address. An APN is digits only (with optional space/dash
+        // separators) — anything containing letters or a comma is a street address,
+        // even if its digit count happens to total 10 (house number + zip often does).
         const cleanApn = val.replace(/[^0-9]/g, '');
-        const isApn = /^\d{10}$/.test(cleanApn);
+        const looksLikeApnFormat = /^[\d\s-]+$/.test(val);
+        const isApn = looksLikeApnFormat && /^\d{10}$/.test(cleanApn);
 
         if (isApn) {
             const result = await lookupAPN(cleanApn);
