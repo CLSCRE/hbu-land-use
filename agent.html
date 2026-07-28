@@ -3074,6 +3074,8 @@ async function lookupAddress() {
         checkFirePerimeter(coords.lat, coords.lon).then(function(f) { window._lastFireCheck = f; }).catch(function() {});
     }
     let zoningResult = null, parcelResult = null;
+    window._zoningIsUnverified = false;
+    window._parcelSizeIsUnverified = false;
     try {
         const _dataTimeout = new Promise(resolve => setTimeout(() => resolve([{ error: 'timeout' }, { error: 'timeout' }]), 12000));
         [zoningResult, parcelResult] = await Promise.race([
@@ -3096,6 +3098,7 @@ async function lookupAddress() {
     if (zoningResult && (zoningResult.error === 'cors' || zoningResult.error === 'timeout')) {
         // Estimate zoning from street type and neighborhood when ZIMAS unavailable
         const estZone = estimateZoningFallback(coords.matched || address, coords.address, hood);
+        window._zoningIsUnverified = true;
         if (estZone) {
             document.getElementById('zoning').value = estZone;
             markAutofill('zoning');
@@ -3120,6 +3123,7 @@ async function lookupAddress() {
     } else {
         // Also try fallback estimation when ZIMAS returns nothing
         const estZone = estimateZoningFallback(coords.matched || address, coords.address, hood);
+        window._zoningIsUnverified = true;
         if (estZone) {
             document.getElementById('zoning').value = estZone;
             markAutofill('zoning');
@@ -3193,6 +3197,7 @@ async function lookupAddress() {
 
     // Apply parcel size
     if (parcelResult && (parcelResult.error === 'cors' || parcelResult.error === 'timeout')) {
+        window._parcelSizeIsUnverified = true;
         statusParts.push(`<span class="status-item warn">Parcel size: County GIS unavailable — enter manually</span>`);
     } else if (parcelResult && parcelResult.area && parcelResult.area > 0) {
         document.getElementById('parcelSize').value = Math.round(parcelResult.area).toLocaleString();
@@ -3223,6 +3228,7 @@ async function lookupAddress() {
             }
         }
     } else {
+        window._parcelSizeIsUnverified = true;
         statusParts.push(`<span class="status-item warn">Parcel size: could not retrieve — enter manually</span>`);
     }
 
@@ -3549,16 +3555,27 @@ function renderResults(results, inp) {
     document.getElementById('resultsSummary').textContent =
         `Analysis for a ${inp.parcelSize.toLocaleString()} SF parcel, zoned ${inp.zoning}, in ${document.getElementById('neighborhood').selectedOptions[0].text}. Jurisdiction: ${(window._lastJurisdiction || {}).jurisdiction || 'City of Los Angeles'}.`;
 
+    // Unverified-data warning banner — takes priority over the feasibility banner
+    let warningHTML = '';
+    if (window._parcelSizeIsUnverified || window._zoningIsUnverified) {
+        const unverifiedParts = [];
+        if (window._parcelSizeIsUnverified) unverifiedParts.push(`parcel size (defaulted to ${inp.parcelSize.toLocaleString()} SF)`);
+        if (window._zoningIsUnverified) unverifiedParts.push(`zoning (defaulted to ${inp.zoning})`);
+        warningHTML += `<div style="background:#fff5f5;border:2px solid #e53e3e;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:0.88rem;color:#c53030;">
+            <strong>⚠ Unverified Data — Results Below May Not Reflect This Property</strong><br>
+            We could not retrieve real ${unverifiedParts.join(' and ')} for this address from LA County records, so this analysis uses estimated defaults instead. Every dollar figure, score, and recommendation below is built on those defaults, not verified parcel data. Please confirm the actual lot size and zoning at <a href="https://zimas.lacity.org" target="_blank" rel="noopener">ZIMAS</a> before relying on this report.
+        </div>`;
+    }
+
     // Feasibility warning banner
     const topMargin = results[0] ? results[0].devMarginPct : 0;
     const anyFeasible = results.slice(0, 3).some(r => r.devMarginPct >= 0);
-    let warningHTML = '';
     if (!anyFeasible) {
-        warningHTML = `<div style="background:#fff5f5;border:1px solid #fc8181;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:0.88rem;color:#c53030;">
+        warningHTML += `<div style="background:#fff5f5;border:1px solid #fc8181;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:0.88rem;color:#c53030;">
             <strong>No Feasible Development Identified</strong> — Based on current market rents, construction costs, and land values, none of the evaluated uses produce a positive development margin at this site. Consider: (1) acquiring the land below market, (2) a condo/for-sale exit strategy, (3) value-add renovation of the existing structure, or (4) holding the property.
         </div>`;
     } else if (topMargin < 0.10) {
-        warningHTML = `<div style="background:#fffff0;border:1px solid #ecc94b;border-radius:10px;padding:0.85rem 1.15rem;margin-bottom:1.25rem;font-size:0.85rem;color:#b7791f;">
+        warningHTML += `<div style="background:#fffff0;border:1px solid #ecc94b;border-radius:10px;padding:0.85rem 1.15rem;margin-bottom:1.25rem;font-size:0.85rem;color:#b7791f;">
             <strong>Marginal Feasibility</strong> — The top-ranked use shows a ${(topMargin * 100).toFixed(0)}% development margin. Most developers target 15-25%. Profitability depends on favorable execution, cost control, and rent achievement.
         </div>`;
     }
@@ -7511,6 +7528,12 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
   setupCommaFormatting('parcelSize');
   setupCommaFormatting('marketValue');
+  // Manual edit means the user has verified/overridden the field themselves —
+  // clear the "unverified lookup" flag so the results banner doesn't misfire.
+  var _parcelSizeEl = document.getElementById('parcelSize');
+  if (_parcelSizeEl) _parcelSizeEl.addEventListener('change', function() { window._parcelSizeIsUnverified = false; });
+  var _zoningEl = document.getElementById('zoning');
+  if (_zoningEl) _zoningEl.addEventListener('change', function() { window._zoningIsUnverified = false; });
 });
 
 // Demo mode URL parameter check

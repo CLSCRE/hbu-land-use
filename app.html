@@ -130,6 +130,51 @@
 }
 .massing-popup .leaflet-popup-content { margin: 8px 12px; }
 .massing-popup .leaflet-popup-tip-container { display: none; }
+
+.sb79-intel-panel {
+    background: #f8fafc;
+    border: 1px solid #dbeafe;
+    border-left: 4px solid #2563eb;
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    margin-bottom: 1rem;
+}
+.sb79-intel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+.sb79-status-chip {
+    display: inline-block;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.sb79-status-chip.study_ready { background: rgba(56,161,105,0.14); color: #2f855a; }
+.sb79-status-chip.temporary_hold { background: rgba(236,201,75,0.22); color: #975a16; }
+.sb79-status-chip.excluded { background: rgba(245,101,101,0.16); color: #c53030; }
+.sb79-status-chip.outside_dataset { background: rgba(160,174,192,0.2); color: #4a5568; }
+.sb79-overlay-btn, .pipeline-overlay-btn {
+    position: absolute;
+    top: 18px;
+    z-index: 1000;
+    padding: 8px 14px;
+    background: #1a365d;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.22);
+}
+.sb79-overlay-btn { right: 165px; }
+.pipeline-overlay-btn { right: 18px; }
+.sb79-overlay-btn.active, .pipeline-overlay-btn.active { background: #b7791f; }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -191,6 +236,7 @@ window.activateDemo = window.activateDemo || function() {};
 <div class="tab-bar">
     <button class="tab-btn active" data-tab="calculator" onclick="switchTab('calculator')">HBU Calculator</button>
     <button class="tab-btn" data-tab="finder" onclick="switchTab('finder')">SB 79 Opportunity Finder</button>
+    <a class="tab-btn" href="sb79.html" style="text-decoration:none;background:linear-gradient(135deg,#805ad5,#6b46c1);color:white;">🏛️ SB 79 Portal</a>
     <a class="tab-btn" href="bill-finder.html" style="text-decoration:none;">🔍 Bill-to-Property Finder</a>
     <a class="tab-btn" href="newsletter.html" style="text-decoration:none;">📋 Legislative Edge Newsletter</a>
     <button class="tab-btn" data-tab="pipeline" onclick="switchTab('pipeline')">Development Pipeline</button>
@@ -511,6 +557,24 @@ window.activateDemo = window.activateDemo || function() {};
     <div class="intro-box" style="border-left-color:#805ad5;">
         <h3>SB 79 Opportunity Finder</h3>
         <p><strong>SB 79</strong> (effective July 1, 2026) overrides local zoning near qualifying transit stations, allowing up to <strong>95ft height, 160 du/acre, and 4.5 FAR</strong> for Tier 1 heavy rail and <strong>85ft, 140 du/acre, 4.0 FAR</strong> for Tier 2 light rail/Metrolink. Select a transit station below (or click one on the map) and set filters to find underbuilt parcels that SB 79 unlocks for higher-density development.</p>
+        <p style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed rgba(128,90,213,0.3);font-size:0.88rem;">
+            💡 <strong>New:</strong> Visit the <a href="sb79.html" style="color:#805ad5;font-weight:700;">full SB 79 Portal</a> for instant APN eligibility lookup, all 8 exemption pathways, the official LA Planning dataset, and the July 1 readiness checklist.
+        </p>
+    </div>
+
+    <div class="sb79-intel-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+            <div>
+                <h3 style="margin:0;color:#1a365d;font-size:1rem;">SB 79 Intelligence Layer</h3>
+                <p style="margin:0.25rem 0 0;color:#4a5568;font-size:0.86rem;">Finder results are joined to the full Table 1C APN lookup, including status, temporary pathways, source page, and screening-grade buildable layers.</p>
+            </div>
+            <a href="sb79.html#stations" style="font-size:0.82rem;font-weight:800;color:#2563eb;text-decoration:none;">Open public map overlay</a>
+        </div>
+        <div class="sb79-intel-grid">
+            <div><span class="sb79-status-chip study_ready">Available</span><div style="font-size:0.78rem;color:#4a5568;margin-top:0.25rem;">Prioritize for immediate study.</div></div>
+            <div><span class="sb79-status-chip temporary_hold">Temp Exempt</span><div style="font-size:0.78rem;color:#4a5568;margin-top:0.25rem;">Watchlist or verify pathway sunset.</div></div>
+            <div><span class="sb79-status-chip excluded">Excluded</span><div style="font-size:0.78rem;color:#4a5568;margin-top:0.25rem;">Screen out unless facts are wrong.</div></div>
+        </div>
     </div>
 
     <div id="finderMapContainer" style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
@@ -598,6 +662,7 @@ window.activateDemo = window.activateDemo || function() {};
                     <th style="cursor:default;width:30px;"><input type="checkbox" id="savedSelectAll" onclick="toggleSavedSelectAll()" title="Select for combining"></th>
                     <th style="cursor:default;">Address</th>
                     <th style="cursor:default;">APN</th>
+                    <th style="cursor:default;">SB 79</th>
                     <th style="cursor:default;">Lot Size</th>
                     <th style="cursor:default;">Zone</th>
                     <th style="cursor:default;">Links</th>
@@ -906,6 +971,7 @@ window.HBU_PORTAL_CONFIG = {
 <!-- Core shared modules -->
 <script src="core-data.js?v=4.3"></script>
 <script src="core-geo.js?v=4.5"></script>
+<script src="core-sb79.js?v=2.0"></script>
 <script src="core-hbu.js?v=4.7"></script>
 <script src="core-finance.js?v=4.3"></script>
 
@@ -951,6 +1017,36 @@ function formatAPN(apn) {
     if (s.length === 10) return s.slice(0,4) + '-' + s.slice(4,7) + '-' + s.slice(7);
     return apn;
 }
+
+var SB79_APN_INDEX = null;
+var SB79_DATA_META = null;
+var SB79_LOOKUP_STATS = null;
+var finderSb79OverlayLayer = null;
+var finderSb79OverlayActive = false;
+
+function sb79StatusChip(status) {
+    var key = status && status.key ? status.key : 'outside_dataset';
+    var label = status && status.label ? status.label : 'Not in Table 1C';
+    return '<span class="sb79-status-chip ' + key + '">' + label + '</span>';
+}
+
+async function loadDeveloperSb79Index() {
+    try {
+        var responses = await Promise.all([
+            fetch('sb79-data/apn-index.json'),
+            fetch('sb79-data/source-metadata.json'),
+            fetch('sb79-data/lookup-stats.json'),
+        ]);
+        if (responses[0].ok) SB79_APN_INDEX = await responses[0].json();
+        if (responses[1].ok) SB79_DATA_META = await responses[1].json();
+        if (responses[2].ok) SB79_LOOKUP_STATS = await responses[2].json();
+    } catch (e) {
+        console.warn('Developer SB79 APN index failed to load:', e);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadDeveloperSb79Index);
+
 function buildParcelPopup(attr) {
     const apn = formatAPN(attr.APN);
     const addr = attr.SitusFullAddress || 'No address';
@@ -1170,6 +1266,8 @@ async function _lookupAddressBody(address, coords, btn) {
     }
 
     let zoningResult, parcelResult;
+    window._zoningIsUnverified = false;
+    window._parcelSizeIsUnverified = false;
     try {
         [zoningResult, parcelResult] = await Promise.all([
             fetchWithTimeout(fetchZoning(coords.lat, coords.lon, _geocodedCity), 12000),
@@ -1188,6 +1286,7 @@ async function _lookupAddressBody(address, coords, btn) {
     if (zoningResult && (zoningResult.error === 'cors' || zoningResult.error === 'timeout')) {
         // Estimate zoning from street type and neighborhood when ZIMAS blocked/timed out
         const estZone = estimateZoningFallback(coords.matched || address, coords.address, hood);
+        window._zoningIsUnverified = true;
         if (estZone) {
             document.getElementById('zoning').value = estZone;
             markAutofill('zoning');
@@ -1212,6 +1311,7 @@ async function _lookupAddressBody(address, coords, btn) {
     } else {
         // Also try fallback estimation when ZIMAS returns nothing
         const estZone = estimateZoningFallback(coords.matched || address, coords.address, hood);
+        window._zoningIsUnverified = true;
         if (estZone) {
             document.getElementById('zoning').value = estZone;
             markAutofill('zoning');
@@ -1287,6 +1387,7 @@ async function _lookupAddressBody(address, coords, btn) {
 
     // Apply parcel size
     if (parcelResult && (parcelResult.error === 'cors' || parcelResult.error === 'timeout')) {
+        window._parcelSizeIsUnverified = true;
         statusParts.push(`<span class="status-item warn">Parcel size: County GIS unavailable — enter manually</span>`);
     } else if (parcelResult && parcelResult.area && parcelResult.area > 0) {
         document.getElementById('parcelSize').value = Math.round(parcelResult.area).toLocaleString();
@@ -1305,6 +1406,7 @@ async function _lookupAddressBody(address, coords, btn) {
         markAutofill('frontage');
         filledCount++;
     } else {
+        window._parcelSizeIsUnverified = true;
         statusParts.push(`<span class="status-item warn">Parcel size: could not retrieve — enter manually</span>`);
     }
 
@@ -1604,16 +1706,27 @@ function renderResults(results, inp) {
     document.getElementById('resultsSummary').textContent =
         `Analysis for a ${inp.parcelSize.toLocaleString()} SF parcel, zoned ${inp.zoning}, in ${document.getElementById('neighborhood').selectedOptions[0].text}. Jurisdiction: ${(window._lastJurisdiction || {}).jurisdiction || 'City of Los Angeles'}.`;
 
+    // Unverified-data warning banner — takes priority over the feasibility banner
+    let warningHTML = '';
+    if (window._parcelSizeIsUnverified || window._zoningIsUnverified) {
+        const unverifiedParts = [];
+        if (window._parcelSizeIsUnverified) unverifiedParts.push(`parcel size (defaulted to ${inp.parcelSize.toLocaleString()} SF)`);
+        if (window._zoningIsUnverified) unverifiedParts.push(`zoning (defaulted to ${inp.zoning})`);
+        warningHTML += `<div style="background:#fff5f5;border:2px solid #e53e3e;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:0.88rem;color:#c53030;">
+            <strong>⚠ Unverified Data — Results Below May Not Reflect This Property</strong><br>
+            We could not retrieve real ${unverifiedParts.join(' and ')} for this address from LA County records, so this analysis uses estimated defaults instead. Every dollar figure, score, and recommendation below is built on those defaults, not verified parcel data. Please confirm the actual lot size and zoning at <a href="https://zimas.lacity.org" target="_blank" rel="noopener">ZIMAS</a> before relying on this report.
+        </div>`;
+    }
+
     // Feasibility warning banner
     const topMargin = results[0] ? results[0].devMarginPct : 0;
     const anyFeasible = results.slice(0, 3).some(r => r.devMarginPct >= 0);
-    let warningHTML = '';
     if (!anyFeasible) {
-        warningHTML = `<div style="background:#fff5f5;border:1px solid #fc8181;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:0.88rem;color:#c53030;">
+        warningHTML += `<div style="background:#fff5f5;border:1px solid #fc8181;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:0.88rem;color:#c53030;">
             <strong>No Feasible Development Identified</strong> — Based on current market rents, construction costs, and land values, none of the evaluated uses produce a positive development margin at this site. Consider: (1) acquiring the land below market, (2) a condo/for-sale exit strategy, (3) value-add renovation of the existing structure, or (4) holding the property.
         </div>`;
     } else if (topMargin < 0.10) {
-        warningHTML = `<div style="background:#fffff0;border:1px solid #ecc94b;border-radius:10px;padding:0.85rem 1.15rem;margin-bottom:1.25rem;font-size:0.85rem;color:#b7791f;">
+        warningHTML += `<div style="background:#fffff0;border:1px solid #ecc94b;border-radius:10px;padding:0.85rem 1.15rem;margin-bottom:1.25rem;font-size:0.85rem;color:#b7791f;">
             <strong>Marginal Feasibility</strong> — The top-ranked use shows a ${(topMargin * 100).toFixed(0)}% development margin. Most developers target 15-25%. Profitability depends on favorable execution, cost control, and rent achievement.
         </div>`;
     }
@@ -4058,6 +4171,41 @@ function getLegislationForResult(result) {
     };
 }
 
+async function enrichFinderResultsWithSb79Status(results) {
+    if (!Array.isArray(results) || results.length === 0 || typeof lookupAPN !== 'function') return results;
+    if (!SB79_APN_INDEX) await loadDeveloperSb79Index();
+    for (var i = 0; i < results.length; i++) {
+        var r = results[i];
+        var apn = String(r.apn || '').replace(/[^0-9]/g, '');
+        if (!/^\d{10}$/.test(apn)) continue;
+        try {
+            var sb = await lookupAPN(apn);
+            if (sb && sb.found) {
+                var layerSet = buildSb79ScenarioSet(sb, { lotSf: r.lotSizeSqFt });
+                r.sb79Record = {
+                    phase: sb.phase,
+                    statusKey: sb.studyStatus && sb.studyStatus.key,
+                    statusLabel: sb.studyStatus && sb.studyStatus.label,
+                    sourcePage: sb.source && sb.source.sourcePage,
+                    sourceDate: sb.source && sb.source.snapshotDate,
+                    exemptions: (sb.exemptions || []).map(function(e) { return e.pathway; }),
+                    permanentExclusions: (sb.permanentExclusions || []).map(function(e) { return e.reason; }),
+                    zoning: sb.zoning,
+                    phasedLowRise: sb.phasedLowRise,
+                    buildableLayers: layerSet,
+                };
+                r.sb79Status = sb.studyStatus || null;
+                r.sb79StatusKey = sb.studyStatus && sb.studyStatus.key;
+                r.sb79SourcePage = sb.source && sb.source.sourcePage;
+                r.buildableLayers = layerSet;
+            }
+        } catch (e) {
+            console.warn('SB79 enrich failed for APN ' + apn, e);
+        }
+    }
+    return results;
+}
+
 function filterAndScoreResults(features, station, filters) {
     const results = [];
     for (const f of features) {
@@ -5570,6 +5718,84 @@ function injectPipelineOverlayButton() {
     container.appendChild(btn);
 }
 
+function injectFinderSb79OverlayButton() {
+    const container = document.getElementById('finderMapContainer');
+    if (!container || container.querySelector('.sb79-overlay-btn')) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'sb79-overlay-btn';
+    btn.textContent = 'Shade APN Status';
+    btn.onclick = toggleFinderSb79StatusOverlay;
+    container.style.position = 'relative';
+    container.appendChild(btn);
+}
+
+function buildFinderSb79Popup(feature, result, lotSf) {
+    var a = feature.attributes || {};
+    var sourcePage = result.source && result.source.sourcePage ? result.source.sourcePage : '-';
+    var layerSet = buildSb79ScenarioSet(result, { lotSf: lotSf });
+    var sb79Scenario = layerSet.scenarios.find(function(s) { return s.id === 'sb79_statutory'; }) || {};
+    var env = sb79Scenario.envelope || {};
+    return '<div style="min-width:230px;">'
+        + '<strong>' + formatAPN(a.APN || result.apn) + '</strong><br>'
+        + (a.SitusFullAddress || 'No address') + '<br>'
+        + '<div style="margin:0.5rem 0;">' + sb79StatusChip(result.studyStatus) + '</div>'
+        + '<div style="font-size:0.78rem;line-height:1.45;">'
+        + 'Zoning: <strong>' + (result.zoning || '-') + '</strong><br>'
+        + 'TOD: <strong>' + ((result.station && result.station.name) || '-') + '</strong><br>'
+        + (env.maxUnits !== undefined ? 'SB79 screen: <strong>' + env.maxUnits.toLocaleString() + ' units</strong>, ' + (env.maxGfa || 0).toLocaleString() + ' sf<br>' : '')
+        + 'Source: Table 1C p. ' + sourcePage
+        + '</div></div>';
+}
+
+async function toggleFinderSb79StatusOverlay() {
+    if (!finderMapInstance) return;
+    var btn = document.querySelector('.sb79-overlay-btn');
+    if (finderSb79OverlayActive) {
+        if (finderSb79OverlayLayer) finderSb79OverlayLayer.clearLayers();
+        finderSb79OverlayActive = false;
+        if (btn) { btn.classList.remove('active'); btn.textContent = 'Shade APN Status'; }
+        return;
+    }
+    if (finderMapInstance.getZoom() < 15) {
+        showToast('Zoom in to level 15+ before shading APN status.', 3500);
+        return;
+    }
+    if (!SB79_APN_INDEX) await loadDeveloperSb79Index();
+    if (btn) { btn.disabled = true; btn.textContent = 'Loading APN Status...'; }
+    try {
+        var features = await fetchParcelsByBounds(finderMapInstance.getBounds());
+        if (!finderSb79OverlayLayer) finderSb79OverlayLayer = L.layerGroup().addTo(finderMapInstance);
+        finderSb79OverlayLayer.clearLayers();
+        var matched = 0;
+        for (var i = 0; i < Math.min(features.length, 700); i++) {
+            var f = features[i];
+            if (!f.geometry || !f.geometry.rings) continue;
+            var apn = String((f.attributes || {}).APN || '').replace(/[^0-9]/g, '');
+            var lotSf = Number((f.attributes || {})['Shape.STArea()'] || (f.attributes || {}).Shape__Area || 0);
+            var result = apn ? await lookupAPN(apn) : { found: false, studyStatus: getSb79StudyStatus({}) };
+            if (result.found) matched++;
+            var style = result.mapStyle || result.studyStatus || SB79_STATUS_STYLES.outside_dataset;
+            var latlngs = f.geometry.rings.map(function(ring) { return ring.map(function(pt) { return [pt[1], pt[0]]; }); });
+            L.polygon(latlngs, {
+                color: style.color,
+                weight: 1,
+                opacity: 0.75,
+                fillColor: style.fillColor,
+                fillOpacity: result.found ? 0.24 : 0.08,
+            }).bindPopup(buildFinderSb79Popup(f, result, lotSf), { maxWidth: 320 }).addTo(finderSb79OverlayLayer);
+        }
+        finderSb79OverlayActive = true;
+        if (btn) { btn.classList.add('active'); btn.textContent = 'Clear APN Status'; }
+        showToast('Shaded ' + Math.min(features.length, 700).toLocaleString() + ' visible parcels; ' + matched.toLocaleString() + ' matched Table 1C.', 5000);
+    } catch (e) {
+        console.warn('Finder SB79 overlay failed:', e);
+        showToast('SB79 overlay failed: ' + e.message, 5000);
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+}
+
 async function togglePipelineOverlay() {
     const btn = document.querySelector('.pipeline-overlay-btn');
     if (!btn) return;
@@ -5715,6 +5941,7 @@ function initFinderMap() {
     setTimeout(() => { if (finderMapInstance) finderMapInstance.invalidateSize(); }, 200);
 
     // Inject pipeline overlay button
+    injectFinderSb79OverlayButton();
     injectPipelineOverlayButton();
 }
 
@@ -5870,6 +6097,8 @@ async function runStandaloneSearch() {
         textEl.textContent = `Filtering ${features.length} parcels...`;
 
         finderResults2 = filterAndScoreResults(features, station, filters);
+        textEl.textContent = `Joining ${finderResults2.length} candidates to Table 1C APN status...`;
+        finderResults2 = await enrichFinderResultsWithSb79Status(finderResults2);
 
         finderSortCol2 = 'impRatio';
         finderSortAsc2 = true;
@@ -5925,6 +6154,7 @@ function renderFinderResults2(station) {
             <th onclick="sortFinderTable2('yearBuilt')">Year Built</th>
             <th onclick="sortFinderTable2('estimatedMarketValue')">Est. Market Value</th>
             <th onclick="sortFinderTable2('impRatio')" class="${finderSortCol2 === 'impRatio' ? (finderSortAsc2 ? 'sort-asc' : 'sort-desc') : ''}">Imp/Land</th>
+            <th onclick="sortFinderTable2('sb79StatusKey')">SB 79</th>
             <th onclick="sortFinderTable2('zone')">SB 79 Zone</th>
             <th>Allowances</th>
             <th style="cursor:default;">Links</th>
@@ -5943,6 +6173,7 @@ function renderFinderResults2(station) {
             <td>${r.yearBuilt > 0 ? r.yearBuilt : '-'}</td>
             <td>${fmt(r.estimatedMarketValue)}</td>
             <td class="${ratioClass(r.impRatio)}">${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'}</td>
+            <td>${sb79StatusChip(r.sb79Status)}</td>
             <td>${zoneBadge(r.zone)}</td>
             <td style="font-size:0.75rem;">${allowStr}</td>
             <td>${propLinks(r.address, r.apn)}</td>
@@ -5979,7 +6210,7 @@ function sortFinderTable2(col) {
     renderFinderResults2(station);
 
     const headers = document.querySelectorAll('#finderTable2 th');
-    const colMap = [null, 'address', 'apn', 'lotSizeSqFt', 'useType', 'yearBuilt', 'landVal', 'impVal', 'impRatio', 'zone', null, null];
+    const colMap = [null, 'address', 'apn', 'lotSizeSqFt', 'useType', 'yearBuilt', 'estimatedMarketValue', 'impRatio', 'sb79StatusKey', 'zone', null, null];
     headers.forEach((th, i) => {
         if (colMap[i] && colMap[i] === col) {
             th.classList.add(finderSortAsc2 ? 'sort-asc' : 'sort-desc');
@@ -6000,6 +6231,7 @@ function addFinderParcelsToMap2(station) {
         let color = '#38a169';
         if (r.impRatio < 0.5) color = '#e53e3e';
         else if (r.impRatio < 1.0) color = '#dd6b20';
+        if (r.sb79Status && r.sb79Status.fillColor) color = r.sb79Status.fillColor;
 
         const marker = L.circleMarker([r.lat, r.lon], {
             radius: 8, fillColor: color, color: '#fff',
@@ -6011,7 +6243,7 @@ function addFinderParcelsToMap2(station) {
         const allowStr = allow ? `Height: ${allow.height}ft | Density: ${allow.density}du/ac | FAR: ${allow.far}` : '';
         const encAddr = encodeURIComponent(r.address);
         const apnClean = (r.apn || '').replace(/[^0-9]/g, '');
-        marker.bindTooltip(`<strong>${r.address}</strong><br>Imp/Land: ${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'} | Lot: ${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString() + ' sf' : '-'}`, { direction: 'top', offset: [0, -8] });
+        marker.bindTooltip(`<strong>${r.address}</strong><br>SB79: ${(r.sb79Status && r.sb79Status.label) || 'Not joined'}<br>Imp/Land: ${r.impRatio < 100 ? r.impRatio.toFixed(2) : 'N/A'} | Lot: ${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString() + ' sf' : '-'}`, { direction: 'top', offset: [0, -8] });
 
         marker.on('click', () => {
             toggleFinderMapSelect(i);
@@ -6074,14 +6306,18 @@ function highlightFinderParcel2(idx) {
 
 function exportFinderCSV2() {
     if (finderResults2.length === 0) return;
-    const headers = ['Address', 'APN', 'Lot Size (sf)', 'Use Type', 'Year Built', 'Land Value', 'Imp Value', 'Imp/Land Ratio', 'SB79 Zone', 'Max Height (ft)', 'Max Density (du/ac)', 'Max FAR', 'Parking Req', 'Zillow URL', 'Assessor URL', 'Latitude', 'Longitude'];
+    const headers = ['Address', 'APN', 'SB79 Status', 'SB79 Source Page', 'Temporary Pathways', 'Lot Size (sf)', 'Use Type', 'Year Built', 'Land Value', 'Imp Value', 'Imp/Land Ratio', 'SB79 Zone', 'Max Height (ft)', 'Max Density (du/ac)', 'Max FAR', 'Parking Req', 'Zillow URL', 'Assessor URL', 'Latitude', 'Longitude'];
     const rows = finderResults2.map(r => {
         const a = r.allowances || {};
         const enc = encodeURIComponent(r.address || '');
         const apnClean = (r.apn || '').replace(/[^0-9]/g, '');
+        const sb = r.sb79Record || {};
         return [
             `"${(r.address || '').replace(/"/g, '""')}"`,
-            r.apn, r.lotSizeSqFt, r.useType, r.yearBuilt || '',
+            r.apn, sb.statusLabel || (r.sb79Status && r.sb79Status.label) || '',
+            sb.sourcePage || r.sb79SourcePage || '',
+            `"${((sb.exemptions || []).join('; ')).replace(/"/g, '""')}"`,
+            r.lotSizeSqFt, r.useType, r.yearBuilt || '',
             r.landVal, r.impVal, r.impRatio < 100 ? r.impRatio.toFixed(3) : '',
             r.zone, a.height || '', a.density || '', a.far || '', a.parking ?? '',
             `https://www.google.com/search?q=site%3Azillow.com+${enc}`,
@@ -6187,6 +6423,8 @@ function addSelectionToSaved() {
                 useType: r.useType, yearBuilt: r.yearBuilt, landVal: r.landVal,
                 impVal: r.impVal, impRatio: r.impRatio, zone: r.zone,
                 allowances: r.allowances, lat: r.lat, lon: r.lon, tier: r.tier,
+                sb79Status: r.sb79Status, sb79Record: r.sb79Record,
+                buildableLayers: r.buildableLayers, sb79SourcePage: r.sb79SourcePage,
             });
             added++;
         }
@@ -6231,6 +6469,7 @@ function renderSavedList() {
             <td><input type="checkbox" class="saved-select" data-idx="${i}"></td>
             <td>${r.address}</td>
             <td>${r.apn}</td>
+            <td>${sb79StatusChip(r.sb79Status || (r.sb79Record ? { key: r.sb79Record.statusKey, label: r.sb79Record.statusLabel } : null))}</td>
             <td>${r.lotSizeSqFt > 0 ? r.lotSizeSqFt.toLocaleString() + ' sf' : '-'}</td>
             <td>${r.zone || '-'}</td>
             <td>${links}</td>
@@ -6410,14 +6649,18 @@ function highlightAssemblyOnMap(parcels, combined) {
 function exportSavedCSV() {
     const saved = getSavedList();
     if (saved.length === 0) return;
-    const headers = ['Address', 'APN', 'Lot Size (sf)', 'Use Type', 'Year Built', 'Land Value', 'Imp Value', 'Imp/Land Ratio', 'SB79 Zone', 'Max Height (ft)', 'Max Density (du/ac)', 'Max FAR', 'Zillow URL', 'Assessor URL', 'Latitude', 'Longitude'];
+    const headers = ['Address', 'APN', 'SB79 Status', 'SB79 Source Page', 'Temporary Pathways', 'Lot Size (sf)', 'Use Type', 'Year Built', 'Land Value', 'Imp Value', 'Imp/Land Ratio', 'SB79 Zone', 'Max Height (ft)', 'Max Density (du/ac)', 'Max FAR', 'Zillow URL', 'Assessor URL', 'Latitude', 'Longitude'];
     const rows = saved.map(r => {
         const a = r.allowances || {};
         const enc = encodeURIComponent(r.address || '');
         const apnClean = (r.apn || '').replace(/[^0-9]/g, '');
+        const sb = r.sb79Record || {};
         return [
             `"${(r.address || '').replace(/"/g, '""')}"`,
-            r.apn, r.lotSizeSqFt, r.useType, r.yearBuilt || '',
+            r.apn, sb.statusLabel || (r.sb79Status && r.sb79Status.label) || '',
+            sb.sourcePage || r.sb79SourcePage || '',
+            `"${((sb.exemptions || []).join('; ')).replace(/"/g, '""')}"`,
+            r.lotSizeSqFt, r.useType, r.yearBuilt || '',
             r.landVal, r.impVal, r.impRatio < 100 ? r.impRatio.toFixed(3) : '',
             r.zone, a.height || '', a.density || '', a.far || '',
             `https://www.google.com/search?q=site%3Azillow.com+${enc}`,
@@ -7037,7 +7280,8 @@ function buildInpFromSaved(prop) {
 
     // Detect zoning from saved property zone / allowances
     let zoning = 'C2'; // default for SB79 opportunity properties
-    if (prop.allowances && prop.allowances.far >= 4.0) zoning = 'TOD';
+    if (prop.sb79Record && prop.sb79Record.statusKey && prop.sb79Record.statusKey !== 'excluded') zoning = 'TOD';
+    else if (prop.allowances && prop.allowances.far >= 4.0) zoning = 'TOD';
     else if (prop.zone === 'adjacent' || prop.zone === 'inner') zoning = 'TOD';
 
     // Detect transit proximity from SB79 zone
@@ -7059,7 +7303,7 @@ function buildInpFromSaved(prop) {
         utilities: 'full',
         constFlood: false,
         constHillside: false,
-        constHistoric: false,
+        constHistoric: !!(prop.sb79Record && prop.sb79Record.exemptions && prop.sb79Record.exemptions.indexOf('F') !== -1),
         constFault: false,
         constCoastal: false,
         constParking: false,
@@ -8511,11 +8755,14 @@ const MELLO_ROOS_DISTRICTS = {
 };
 
 const TRANSFER_TAX_RATES = {
-    // LA City documentary transfer tax
-    base: 0.00056, // $5.60 per $1,000 — LA County
-    city: 0.00450, // $4.50 per $1,000 — LA City
-    ula_tier1: { threshold: 5000000, rate: 0.04 },    // Measure ULA 4% on $5M-$10M
-    ula_tier2: { threshold: 10000000, rate: 0.055 },   // Measure ULA 5.5% on >$10M
+    // LA City documentary transfer tax — ULA thresholds after 2026-06-30 (finance.lacity.gov)
+    base: 0.00056, // ~$0.56 per $1,000 — LA County documentary estimate
+    city: 0.00450, // 0.45% — LA City base RPTT
+    // mid band: consideration > $5.4M and < $10.9M → 4% on FULL consideration (cliff)
+    ula_tier1: { threshold: 5400000, rate: 0.04 },
+    // high band: consideration >= $10.9M → 5.5% on FULL consideration (cliff)
+    ula_tier2: { threshold: 10900000, rate: 0.055 },
+    asOf: '2026-07-01',
 };
 
 const SCHOOL_IMPACT_FEES = {
@@ -16958,6 +17205,12 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
   setupCommaFormatting('parcelSize');
   setupCommaFormatting('marketValue');
+  // Manual edit means the user has verified/overridden the field themselves —
+  // clear the "unverified lookup" flag so the results banner doesn't misfire.
+  var _parcelSizeEl = document.getElementById('parcelSize');
+  if (_parcelSizeEl) _parcelSizeEl.addEventListener('change', function() { window._parcelSizeIsUnverified = false; });
+  var _zoningEl = document.getElementById('zoning');
+  if (_zoningEl) _zoningEl.addEventListener('change', function() { window._zoningIsUnverified = false; });
 });
 
 
