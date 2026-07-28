@@ -3,12 +3,31 @@
 //  Rules engine for California Senate Bill 79 ("Abundant and
 //  Affordable Homes Near Transit Act", Gov. Code §65912.155-162)
 //  as implemented by City of LA Department of City Planning
-//  (Phased Implementation Model, CPC-2026-1798-MSC, May 2026).
-//  Effective: July 1, 2026.
+//  (Phased Implementation Model, CPC-2026-1798-MSC; Low-Rise Ord.
+//  188967 + Phased Implementation Ord. 188968 effective 2026-06-30).
+//  Statewide operative: July 1, 2026.
+//
+//  UNDERWRITE RULE (City of LA): Prefer ZIMAS SB 79 eligibility
+//  maps and local ordinances over pure statutory tier floors.
+//  SCAG TOD stop maps and City working maps have diverged on some
+//  planned corridors — confirm map source before LOI underwriting.
 //
 //  Used by: sb79.html (primary), app.html, agent.html
 //  Depends on: core-geo.js (METRO_STATIONS, haversine), shared.js
 // ============================================================
+
+/** Policy meta — bump when ords/maps change */
+SB79_POLICY_META = {
+    asOf: '2026-07-25',
+    statewideEffective: '2026-07-01',
+    laLowRiseOrd: '188967',
+    laPhasedOrd: '188968',
+    laOrdsEffective: '2026-06-30',
+    underwriteFirst: 'ZIMAS local eligibility maps',
+    caveat: 'City of LA phased path toward ~2030 alternative plan; Low-Rise retention and temporary exemptions reduce near-term study-ready set vs pure statute.',
+    planningUrl: 'https://planning.lacity.gov/resources/senate-bill-sb-79',
+    zimasUrl: 'https://zimas.lacity.org/',
+};
 
 // === STATUTORY DEVELOPMENT STANDARDS ===
 // Gov. Code §65912.157(a) Table — six (tier × distance band) cells.
@@ -234,18 +253,31 @@ function getSb79StudyStatus(record) {
 }
 
 function getSb79SourceInfo(compact) {
+    compact = compact || {};
     const meta = (typeof SB79_DATA_META !== 'undefined' && SB79_DATA_META) ? SB79_DATA_META : {};
+    const policy = (typeof SB79_POLICY_META !== 'undefined' && SB79_POLICY_META) ? SB79_POLICY_META : {};
     return {
         source: meta.source || 'LA Department of City Planning - Table 1C',
         sourcePdf: compact.sourcePdf || meta.sourcePdf || 'Regulation/Table_1C-Sites_Eligible_for_Phased_Implementation.pdf',
-        sourceUrl: meta.sourceUrl || '',
+        sourceUrl: meta.sourceUrl || policy.planningUrl || '',
         sourcePage: compact.sp || compact.sourcePage || null,
         snapshotDate: meta.snapshotDate || '2026-05-05',
         cpcMeetingDate: meta.cpcMeetingDate || '2026-05-14',
         determinationMailingDate: meta.determinationMailingDate || '2026-05-19',
         extractedAt: meta.extractedAt || '2026-05-22',
         rowHash: compact.rh || compact.sourceRowHash || '',
+        laOrds: (policy.laLowRiseOrd || '') + '/' + (policy.laPhasedOrd || ''),
+        underwriteFirst: policy.underwriteFirst || 'ZIMAS',
+        asOf: policy.asOf || '2026-07-25',
     };
+}
+
+/** Human disclaimer for UI footers */
+function getSb79UnderwriteDisclaimer() {
+    const p = (typeof SB79_POLICY_META !== 'undefined' && SB79_POLICY_META) ? SB79_POLICY_META : {};
+    return 'SB 79 screening only (as of ' + (p.asOf || '2026-07') + '). Underwrite ZIMAS eligibility and LA Ords ' +
+        (p.laLowRiseOrd || '188967') + '/' + (p.laPhasedOrd || '188968') +
+        ' before relying on statutory tier floors. Not legal advice.';
 }
 
 function getBaseZoneFromZoning(zoning) {
@@ -685,8 +717,10 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         SB79_ENVELOPE, SB79_DISTANCE_BANDS, SB79_INDUSTRIAL_HUBS,
         SB79_EXEMPTION_PATHWAYS, SB79_STATUTORY_EXEMPT_ZONES, SB79_LA_FUNNEL, SB79_STATUS_STYLES,
+        SB79_POLICY_META,
         getDistanceBand, getNearestStation, computeEnvelope,
         inIndustrialHub, normalizeSb79Phase, getSb79StudyStatus, getSb79SourceInfo,
+        getSb79UnderwriteDisclaimer,
         estimateBaseZoningEnvelope, buildSb79ScenarioSet,
         expandSb79Record, lookupAPN, evaluateExemptions, runProForma,
     };

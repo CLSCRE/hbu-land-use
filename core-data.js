@@ -444,12 +444,12 @@ CA_HOUSING_LEGISLATION = [
         id: 'sb79',
         name: 'SB 79 (Transit-Oriented)',
         description: 'Overrides local zoning near qualifying transit stations — up to 95ft, 160 du/acre, 4.5 FAR.',
-        detail: 'SB 79 (effective July 1, 2026) is California\'s transit-oriented development bill that overrides local zoning near qualifying heavy and light rail stations. Tier 1 (heavy rail, including all Metro Rail lines) allows 95ft height, 160 du/acre, and 4.5 FAR. Tier 2 (light rail, BRT, qualifying Metrolink) allows 85ft height, 140 du/acre, and 4.0 FAR. Three distance zones apply: Adjacent (within 200ft of station entrance) and Inner (within 1/4 mile) get full tier benefits and zero parking requirements. Outer zone (1/4 to 1/2 mile) is limited to 65ft height and 3.25 FAR, with 0.5 parking spaces per unit. All projects require 15% affordable units. 100% affordable projects receive the full tier benefits regardless of zone. Impact: Unlocks massive upzoning near every Metro station in LA County, making transit-adjacent parcels significantly more valuable for higher-density development.',
+        detail: 'SB 79 (statewide July 1, 2026; LA Ords 188967/188968 eff. June 30, 2026 — underwrite ZIMAS first) is California\'s transit-oriented development bill that overrides local zoning near qualifying heavy and light rail stations. Tier 1 (heavy rail, including all Metro Rail lines) allows 95ft height, 160 du/acre, and 4.5 FAR. Tier 2 (light rail, BRT, qualifying Metrolink) allows 85ft height, 140 du/acre, and 4.0 FAR. Three distance zones apply: Adjacent (within 200ft of station entrance) and Inner (within 1/4 mile) get full tier benefits and zero parking requirements. Outer zone (1/4 to 1/2 mile) is limited to 65ft height and 3.25 FAR, with 0.5 parking spaces per unit. All projects require 15% affordable units. 100% affordable projects receive the full tier benefits regardless of zone. Impact: Unlocks massive upzoning near every Metro station in LA County, making transit-adjacent parcels significantly more valuable for higher-density development.',
         effectiveDate: 'July 1, 2026',
         author: 'Sen. Scott Wiener',
         codeSection: 'Cal. Gov. Code §§ 65913.6–65913.12',
         billUrl: 'https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202520260SB79',
-        chaptered: 'Stats. 2025 (pending enrollment)',
+        chaptered: 'Stats. 2025; LA Ords 188967/188968 (2026)',
         applies: (useId, inp) => {
             if (!window.lastGeocode) return false;
             if (inp && inp.constHistoric) return false;  // SB 79 excludes historic overlay areas

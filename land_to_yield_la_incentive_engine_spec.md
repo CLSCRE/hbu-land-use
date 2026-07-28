@@ -19,7 +19,31 @@ Release v1 as a Los Angeles-only engine with the following capabilities:[cite:29
 5. Objective-based optimization, allowing users to prioritize NOI, IRR, timeline, or low-risk execution.[cite:68][cite:71]
 6. Explainability and auditability, including rule traces, verification items, overlay provenance, and source versioning.[cite:29][cite:43][cite:53]
 
-Do not implement SB 79 calculations in v1, but design the schema and interfaces so SB 79 Opportunity Station Areas, Low-Rise Incentive Areas, and phased implementation logic can be added as the next module.[cite:3][cite:53]
+Current implementation note as of 2026-05-22: SB 79 APN status lookup, Table 1C source fields, and the strategic map overlay are now required parcel-screening facts. Exact yield still requires parcel geometry, zoning overlays, RSO/existing units, frontage, hillside/fire/coastal/historic constraints, and verified local Low-Rise/base zoning rules before a result can be labeled as buildable instead of a screened estimate.[cite:3][cite:53]
+
+## Durable HBU decision: four internal option lanes
+
+Every APN evaluation should generate internal candidate paths before ranking the top three highest-and-best-use options for the user. The product may display the three most useful options by default, but the engine must preserve all four lanes for audit and comparison:
+
+1. **Baseline / current zoning lane**: what appears buildable under base zoning and verified parcel facts without relying on an incentive.
+2. **Local Low-Rise / local program lane**: local Low-Rise Ordinance, base local housing programs, and locally mapped incentives where applicable.
+3. **SB 79 / transit statutory lane**: SB 79 Table 1C status, tier, distance band, temporary exemption path, permanent/statutory exclusion checks, and transit-area logic.
+4. **Legislative incentive / override stack lane**: statewide and local development incentives that may override or modify density, height, parking, setbacks, affordability, labor standards, review path, fee exposure, or timeline.
+
+The fourth lane must not be limited to currently hardcoded programs. It should be driven by a versioned incentive inventory and should search all known state and local incentives that can affect development feasibility. Treat the user's estimated count of roughly 135 incentives as an inventory target to verify, not as a confirmed count until each item has source provenance and a review date.
+
+Required incentive / override facts for every parcel run:
+
+- SB 79 Table 1C status
+- SB 79 tier and distance band
+- temporary exemption pathway
+- permanent/statutory exclusion
+- Low-Rise Ordinance applicability
+- State Density Bonus applicability
+- TOC / CHIP / AHIP / MIIP applicability where relevant
+- source, source date, last-reviewed date, and confidence for each fact
+
+No scenario should be marked "verified buildable" unless the facts above are present, sourced, and reconciled with parcel geometry, base zoning, existing-unit/RSO status, frontage, and exclusion overlays. Missing facts should produce verification items, lower confidence, and keep the output in screening mode.
 
 ## Core product principles
 
@@ -72,11 +96,24 @@ Required parcel inputs:
 - `in_sea_level_rise_area`
 - `in_chip_miip_area`
 - `in_chip_ahip_area`
-- placeholder `in_sb79_opportunity_station_area`
+- `in_sb79_opportunity_station_area`
+- `sb79_table_1c_status`
+- `sb79_tier`
+- `sb79_distance_band`
+- `sb79_temporary_exemption_pathway`
+- `sb79_permanent_statutory_exclusion`
+- `low_rise_ordinance_applicability`
+- `state_density_bonus_applicability`
+- `toc_applicability`
+- `chip_applicability`
+- `ahip_applicability`
+- `miip_applicability`
+- `incentive_inventory_matches`
+- `incentive_inventory_source_version`
 - `map_version_ids`
 - `data_provenance`
 
-These should be modeled as facts rather than conclusions, because the rules engine needs to preserve how each conclusion was reached.[cite:29][cite:43][cite:53]
+These should be modeled as raw or derived facts with traceable provenance rather than unsupported conclusions, because the rules engine needs to preserve how each conclusion was reached.[cite:29][cite:43][cite:53]
 
 ### Layer 2: Project program intake
 
@@ -113,10 +150,13 @@ Implement the legal layer as modular evaluation components:[cite:29][cite:30][ci
 - `chipStateDensityBonusModule`
 - `ahipModule`
 - `miipModule`
+- `tocModule`
+- `lowRiseOrdinanceModule`
+- `sb79Module`
+- `legislativeIncentiveInventoryModule`
 - `parkingReliefModule`
 - `verificationModule`
 - `scenarioRanker`
-- placeholder `sb79Module`
 
 Each module should return:
 
@@ -128,6 +168,7 @@ Each module should return:
 - unresolved verifications
 - warnings
 - source references to internal legal rule ids
+- source date, effective date, last-reviewed date, and confidence level
 
 ### Layer 4: Economic and execution model
 
@@ -288,6 +329,31 @@ Stores versioned legal/program configurations.[cite:29][cite:30][cite:58]
 | `rules_json` | jsonb | Config payload |
 | `source_manifest_json` | jsonb | Underlying sources |
 | `created_at` | timestamptz | Audit field |
+
+#### `development_incentive_inventory`
+Stores the reviewed statewide and local incentive catalog that feeds the fourth HBU lane.
+
+| Column | Type | Notes |
+|---|---|---|
+| `incentive_id` | text PK | Stable id, e.g., `state_density_bonus` |
+| `name` | text | Program, statute, ordinance, or overlay name |
+| `jurisdiction` | text | State, county, city, or agency |
+| `level` | text | state, county, city, special_district, federal |
+| `status` | text | active, pending, expired, superseded, needs_review |
+| `effective_date` | date | Effective date when known |
+| `sunset_date` | date | Sunset or repeal date when known |
+| `eligibility_facts_required` | jsonb | Parcel/project facts needed to evaluate |
+| `yield_effects` | jsonb | Density, height, FAR, unit, setback, or typology effects |
+| `parking_effects` | jsonb | Parking minimum, maximum, or reduction effects |
+| `affordability_requirements` | jsonb | Income bands, set-asides, term, replacement rules |
+| `labor_standards` | jsonb | Prevailing wage or skilled-workforce triggers |
+| `entitlement_path` | jsonb | Ministerial, administrative, discretionary, CEQA, appeal risk |
+| `source_url` | text | Primary official source |
+| `source_date` | date | Publication, adoption, or source document date |
+| `last_reviewed` | date | Last legal/data review date |
+| `confidence` | text | high, medium, low |
+
+This table should be populated from a source registry rather than one-off code branches. A parcel can only claim an incentive when the relevant inventory row is active or pending with explicit confidence and source provenance.
 
 #### `benchmark_sets`
 Stores economic benchmark assumptions.
@@ -463,12 +529,27 @@ Evaluate whether the project appears to fit:
 - AHIP
 - MIIP[cite:29][cite:43][cite:48]
 
+### Step 4A: Incentive / override fact assembly
+Assemble the required incentive and override facts before scenario synthesis:
+
+- SB 79 Table 1C status, tier, distance band, temporary exemption pathway, and permanent/statutory exclusion result
+- Low-Rise Ordinance applicability
+- State Density Bonus applicability
+- TOC / CHIP / AHIP / MIIP applicability where relevant
+- matching statewide and local incentives from the versioned incentive inventory
+- source, source date, last-reviewed date, confidence, and unresolved verification items for every positive or negative finding
+
+If a fact is missing, stale, or contradicted by another source, the engine should continue but mark the affected scenario as screening-only until verified.
+
 ### Step 5: Legal scenario synthesis
 Generate legal candidate scenarios such as:
 - state density bonus only
 - MIIP plus state density bonus
 - AHIP path
 - AHIP plus state density bonus if supported by configured logic
+- SB 79 statutory path where eligible
+- local Low-Rise path where eligible
+- legislative incentive / override stack
 - conservative scenario
 - maximize yield scenario[cite:29][cite:43]
 
@@ -536,6 +617,13 @@ type VerificationItem = {
     | "map_overlay"
     | "transit_distance"
     | "affordability_program"
+    | "state_density_bonus"
+    | "toc_chip_ahip_miip"
+    | "sb79_table_1c"
+    | "low_rise_ordinance"
+    | "incentive_inventory"
+    | "rso_existing_units"
+    | "frontage_geometry"
     | "historic"
     | "fire_hazard"
     | "industrial_exclusion"
@@ -948,7 +1036,8 @@ Design v1 so the following modules can be added without refactoring the core eng
 1. **SB 79 module** for Opportunity Station Areas, Low-Rise Incentive Areas, phased implementation geographies, and exclusions such as VHFHSZ, historic, industrial, or sea-level-rise-related limits where applicable.[cite:3][cite:53]
 2. **SB 9 module** for duplex and lot-split workflows with city-specific objective standards.[cite:63]
 3. **SB 1123 / Starter Home Revitalization module** for small-lot subdivision and ministerial pathways on eligible multifamily and vacant single-family parcels in Los Angeles.[cite:57]
-4. **Cross-module optimizer** to compare Density Bonus, CHIP, SB 79, SB 9, and SB 1123 as alternative development strategies for the same parcel.[cite:29][cite:53]
+4. **Legislative incentive inventory module** to maintain the reviewed state/local incentive catalog and expose all eligibility facts, yield effects, parking effects, affordability requirements, labor standards, entitlement path, and source provenance.
+5. **Cross-module optimizer** to compare Density Bonus, TOC, CHIP, AHIP, MIIP, SB 79, SB 9, SB 1123, ADU/JADU, and other inventory-backed incentives as alternative development strategies for the same parcel.[cite:29][cite:53]
 
 ## Final instruction for Claude Code
 

@@ -154,6 +154,11 @@ function computeFromAssumptions(useId, inp, assumptions, effects) {
     const yieldOnCost = totalDev > 0 ? noi / totalDev : 0;
     const devMargin = totalDev > 0 ? (stabilizedValue - totalDev) / totalDev : 0;
 
+    // Exit transfer tax stack (ULA cliff on stabilized value; City of LA default)
+    const ulaResult = (typeof calculateUlaTax === 'function')
+        ? calculateUlaTax(stabilizedValue)
+        : { ulaTax: 0, totalTransferTax: 0, band: 'none', cliffWarning: null };
+
     return {
         gsf, nsf, revenueNSF, stories, buildingHeight, buildingFootprint, units, parkingSpaces, far,
         landCost, siteWork, siteWorkBreakdown, demolition, construction, buildCostPSF, parkingCost, landscaping, hardContingency, totalHard,
@@ -166,6 +171,10 @@ function computeFromAssumptions(useId, inp, assumptions, effects) {
         setbacks: { front: setF, side: setS, rear: setR },
         coveragePct: covPct * 100,
         efficiencyPct: effPct * 100,
+        // Measure ULA (Jul 2026 thresholds)
+        ula: ulaResult,
+        measureUlaTax: ulaResult.ulaTax || 0,
+        totalTransferTax: ulaResult.totalTransferTax || 0,
     };
 }
 
@@ -325,6 +334,93 @@ function renderProgramDisplay(computed) {
             : `<div class="program-item"><div class="program-value">${computed.nsf.toLocaleString()}</div><div class="program-label">Net Leasable SF</div></div>`}
         <div class="program-item"><div class="program-value">${computed.parkingSpaces}</div><div class="program-label">Parking Spaces</div></div>
     </div>`;
+}
+
+// === MEASURE ULA + TRANSFER TAX (City of LA) — thresholds after 2026-06-30 ===
+// Source: finance.lacity.gov. Cliff: elevated rate applies to FULL gross consideration.
+// Not legal advice.
+const ULA_POLICY = {
+    asOf: '2026-07-01',
+    midThreshold: 5400000,   // 4% if > mid and < high
+    highThreshold: 10900000, // 5.5% if >= high
+    midRate: 0.04,
+    highRate: 0.055,
+    cityBaseRate: 0.0045,    // City base RPTT (approx 0.45%)
+    countyBaseRate: 0.00056, // County documentary, kept for stack estimate
+    effectiveAfter: '2026-06-30',
+};
+
+function calculateUlaTax(grossConsideration, opts) {
+    opts = opts || {};
+    const situs = Math.min(1, Math.max(0, opts.citySitusFraction != null ? opts.citySitusFraction : 1));
+    const gross = Math.max(0, Number(grossConsideration) || 0);
+    const base = Math.round(gross * situs * 100) / 100;
+    let band = 'none';
+    let ulaRate = 0;
+    if (base >= ULA_POLICY.highThreshold) {
+        band = 'high_5_5pct';
+        ulaRate = ULA_POLICY.highRate;
+    } else if (base > ULA_POLICY.midThreshold) {
+        band = 'mid_4pct';
+        ulaRate = ULA_POLICY.midRate;
+    }
+    const ulaTax = Math.round(base * ulaRate * 100) / 100;
+    // City base RPTT stylus: $2.25 per $500 or fraction thereof on taxable base
+    const baseUnits = base > 0 ? Math.ceil(base / 500) : 0;
+    const cityBaseRptt = Math.round(baseUnits * 2.25 * 100) / 100;
+    const countyEst = Math.round(base * ULA_POLICY.countyBaseRate * 100) / 100;
+    const totalTransferTax = Math.round((ulaTax + cityBaseRptt + countyEst) * 100) / 100;
+    let cliffWarning = null;
+    if (band === 'mid_4pct') {
+        cliffWarning = 'Cliff: 4% ULA applies to the entire consideration once above $' +
+            ULA_POLICY.midThreshold.toLocaleString() + ', not just the overage.';
+    } else if (band === 'high_5_5pct') {
+        cliffWarning = 'Cliff: 5.5% ULA applies to the entire consideration at/above $' +
+            ULA_POLICY.highThreshold.toLocaleString() + '.';
+    }
+    return {
+        asOf: ULA_POLICY.asOf,
+        grossConsideration: gross,
+        taxableBase: base,
+        band: band,
+        ulaRate: ulaRate,
+        ulaTax: ulaTax,
+        cityBaseRptt: cityBaseRptt,
+        countyEst: countyEst,
+        totalTransferTax: totalTransferTax,
+        cliffWarning: cliffWarning,
+        thresholds: {
+            mid: ULA_POLICY.midThreshold,
+            high: ULA_POLICY.highThreshold,
+        },
+    };
+}
+
+function isUlaExposed(grossConsideration, citySitusFraction) {
+    return calculateUlaTax(grossConsideration, { citySitusFraction: citySitusFraction }).band !== 'none';
+}
+
+/** Attach ULA exposure to a completed pro forma budget (exit at stabilized value). */
+function attachUlaToBudget(budget, opts) {
+    if (!budget) return budget;
+    const exit = budget.stabilizedValue || budget.salePrice || 0;
+    budget.ula = calculateUlaTax(exit, opts);
+    budget.measureUlaTax = budget.ula.ulaTax;
+    budget.totalTransferTax = budget.ula.totalTransferTax;
+    return budget;
+}
+
+// Developer Top-20 rank lookup (from July 2025/2026 legislative scan; ids match tool tags)
+const DEVELOPER_TOP20_RANKS = {
+    sb79: 1, ula: 2, ab130: 3, chip: 4, dbl: 5, sb35: 6, ab2011: 7,
+    aro: 8, parking: 9, rso: 10, sb9: 11, builders_remedy: 12, fee_deferral: 13,
+    jjj: 14, road: 15, lihtc: 16, surplus: 17, yigby: 18, lacahsa: 19, starter: 20,
+};
+
+function developerTop20Boost(programId) {
+    const r = DEVELOPER_TOP20_RANKS[programId];
+    if (r == null) return 0;
+    return Math.max(0, 21 - r);
 }
 
 function renderAssumptions(assumptions, hasUnits) {
