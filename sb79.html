@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SB 79 Portal — LA's Phased Implementation, Decoded | Land to Yield</title>
-    <meta name="description" content="Comprehensive SB 79 portal for LA developers. Instant APN eligibility lookup, tier classification, envelope calculator, pro forma modeler, and the full Phased Implementation Model — ready for July 1, 2026.">
+    <meta name="description" content="SB 79 and Los Angeles Low-Rise parcel screening for developers. Resolve APN status, compare exact envelopes, and verify current eligibility in ZIMAS.">
 
     <!-- Open Graph -->
     <meta property="og:title" content="SB 79 Portal — Land to Yield">
-    <meta property="og:description" content="The authoritative SB 79 resource for LA developers. 139,450 phased APNs, exemption pathways, instant lookup, and parcel status overlays. Ready for July 1, 2026.">
+    <meta property="og:description" content="SB 79 and Los Angeles Low-Rise screening for 139,450 phased APNs, with current-path labels and required ZIMAS verification.">
     <meta property="og:image" content="https://landtoyield.com/og-image.png">
     <meta property="og:url" content="https://landtoyield.com/sb79.html">
     <meta property="og:type" content="website">
@@ -714,7 +714,7 @@
             <span class="hero-pretitle">California Senate Bill 79 · LA Phased Implementation</span>
             <h1 class="hero-title">By-right housing<br>near transit, <em>decoded.</em></h1>
             <p class="hero-subtitle">
-                On <strong>July 1, 2026</strong>, SB 79 supersedes LA's local zoning on
+                Since <strong>July 1, 2026</strong>, SB 79 can supersede local zoning on qualifying parcels, while
                 <strong>139,450 phased implementation APNs</strong>. This portal turns the City of LA's
                 Phased Implementation Model into an instant, parcel-by-parcel answer: <em>Is this
                 site eligible? What's buildable? When can I file?</em>
@@ -725,14 +725,9 @@
             </div>
         </div>
         <div class="countdown-card">
-            <div class="countdown-label">SB 79 effective in</div>
-            <div class="countdown-grid">
-                <div class="countdown-cell"><div class="countdown-num" id="cdDays">--</div><div class="countdown-unit">days</div></div>
-                <div class="countdown-cell"><div class="countdown-num" id="cdHours">--</div><div class="countdown-unit">hours</div></div>
-                <div class="countdown-cell"><div class="countdown-num" id="cdMins">--</div><div class="countdown-unit">mins</div></div>
-                <div class="countdown-cell"><div class="countdown-num" id="cdSecs">--</div><div class="countdown-unit">secs</div></div>
-            </div>
-            <div class="countdown-target">Effective <strong>July 1, 2026 · 12:00 AM PT</strong></div>
+            <div class="countdown-label">Current underwriting status</div>
+            <div style="font-size:1.35rem;font-weight:900;color:white;margin-bottom:0.75rem;">SB 79 is operative</div>
+            <div class="countdown-target">LA Ords <strong>188967 / 188968</strong> are effective. The May 5 Sean Lahijani / LA Planning APN snapshot is a screening control; verify final/current eligibility in <strong>ZIMAS</strong>.</div>
         </div>
     </div>
 </section>
@@ -1175,9 +1170,9 @@
 <section class="section" id="checklist" style="background:var(--bg-alt);max-width:none;padding-left:1.5rem;padding-right:1.5rem;">
     <div style="max-width:1280px;margin:0 auto;">
         <span class="section-eyebrow">Developer Playbook</span>
-        <h2 class="section-title">42-day readiness checklist.</h2>
+        <h2 class="section-title">Current parcel diligence checklist.</h2>
         <p class="section-lead">
-            Action items between now and July 1, 2026. Check items off — your progress saves locally.
+            Current action items for screening, design and filing. Check items off — your progress saves locally.
         </p>
 
         <div class="checklist-week">
@@ -1205,14 +1200,14 @@
             <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Confirm demolition permit timing for any existing structures (note RSO restriction).</span></label>
         </div>
         <div class="checklist-week">
-            <h4>Week 5 · Pre-submittal (days 29–35)</h4>
-            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Have ministerial application ready to file July 1.</span></label>
+            <h4>Pre-submittal</h4>
+            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Reconcile the APN against current ZIMAS and the final City eligibility map before relying on a ministerial path.</span></label>
             <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Schedule pre-submittal meeting with LADBS.</span></label>
             <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Confirm financial close timing aligns with SB 79 entitlement.</span></label>
         </div>
         <div class="checklist-week">
-            <h4>Week 6 · Launch (days 36–42)</h4>
-            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>File ministerial application on July 1, 2026.</span></label>
+            <h4>Filing and plan check</h4>
+            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Confirm the applicable direct SB 79 or LA Low-Rise path with the project team, then file the current application package.</span></label>
             <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Track the 60/90-day plan check clock.</span></label>
             <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Begin construction mobilization planning.</span></label>
         </div>
@@ -1225,7 +1220,7 @@
     <h2 class="section-title">The official record.</h2>
     <p class="section-lead">
         Every claim in this portal traces back to a primary source. Below is LA Planning's full
-        SB 79 implementation package as of May 2026.
+        SB 79 implementation package. May 2026 materials are provenance controls and must be reconciled to the signed June ordinances and current ZIMAS.
     </p>
 
     <div class="docs-grid">
@@ -1397,26 +1392,6 @@
         }
     }
     document.addEventListener('DOMContentLoaded', loadSb79ApnIndex);
-
-    // ─────────── Countdown ───────────
-    const SB79_EFFECTIVE = new Date('2026-07-01T00:00:00-07:00');
-    function updateCountdown() {
-        const now = new Date();
-        let delta = Math.max(0, SB79_EFFECTIVE - now);
-        const days = Math.floor(delta / (1000 * 60 * 60 * 24));
-        delta -= days * (1000 * 60 * 60 * 24);
-        const hours = Math.floor(delta / (1000 * 60 * 60));
-        delta -= hours * (1000 * 60 * 60);
-        const mins = Math.floor(delta / (1000 * 60));
-        delta -= mins * (1000 * 60);
-        const secs = Math.floor(delta / 1000);
-        document.getElementById('cdDays').textContent  = String(days).padStart(2, '0');
-        document.getElementById('cdHours').textContent = String(hours).padStart(2, '0');
-        document.getElementById('cdMins').textContent  = String(mins).padStart(2, '0');
-        document.getElementById('cdSecs').textContent  = String(secs).padStart(2, '0');
-    }
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
 
     // ─────────── FAQ Accordion ───────────
     function toggleFaq(el) {

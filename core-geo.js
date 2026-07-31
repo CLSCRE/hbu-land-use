@@ -304,11 +304,26 @@ SB79_TIERS = {
     1: { label: 'Tier 1 (Heavy Rail)', height: 95, density: 160, far: 4.5 },
     2: { label: 'Tier 2 (Light Rail/BRT)', height: 85, density: 140, far: 4.0 },
 };
-SB79_ZONES = {
-    adjacent: { maxDist: 0.038, label: '200ft (Adjacent)', parking: 0, heightMult: 1.0 },
-    inner:    { maxDist: 0.25,  label: '1/4 Mile (Inner)',  parking: 0, heightMult: 1.0 },
-    outer:    { maxDist: 0.50,  label: '1/2 Mile (Outer)',  parking: 0.5, heightMult: 0.68 },
+// Gov. Code §65912.157(a): exact tier × distance cells. Never derive
+// inner/outer standards by multiplying the adjacent envelope.
+SB79_ENVELOPE_BY_BAND = {
+    '1-adjacent': { height: 95, density: 160, far: 4.5, parking: 0 },
+    '1-inner':    { height: 75, density: 120, far: 3.5, parking: 0 },
+    '1-outer':    { height: 65, density: 100, far: 3.0, parking: 0.5 },
+    '2-adjacent': { height: 85, density: 140, far: 4.0, parking: 0 },
+    '2-inner':    { height: 65, density: 100, far: 3.0, parking: 0 },
+    '2-outer':    { height: 55, density: 80,  far: 2.5, parking: 0.5 },
 };
+SB79_ZONES = {
+    adjacent: { maxDist: 0.038, label: '200ft (Adjacent)' },
+    inner:    { maxDist: 0.25,  label: '1/4 Mile (Inner)' },
+    outer:    { maxDist: 0.50,  label: '1/2 Mile (Outer)' },
+};
+
+function getSB79BandAllowances(tier, zoneKey) {
+    const envelope = SB79_ENVELOPE_BY_BAND[String(tier) + '-' + zoneKey];
+    return envelope ? Object.assign({}, envelope) : null;
+}
 
 // Line display colors for map markers
 LINE_COLORS = {
@@ -516,9 +531,7 @@ function detectSB79Eligibility(lat, lon) {
     else if (nearestDist <= SB79_ZONES.inner.maxDist) { zone = SB79_ZONES.inner; zoneKey = 'inner'; }
     else { zone = SB79_ZONES.outer; zoneKey = 'outer'; }
 
-    const height = Math.round(tierData.height * zone.heightMult);
-    const far = parseFloat((tierData.far * zone.heightMult).toFixed(2));
-    const density = Math.round(tierData.density * zone.heightMult);
+    const allowances = getSB79BandAllowances(tier, zoneKey);
     return {
         eligible: true,
         station: nearest,
@@ -528,7 +541,7 @@ function detectSB79Eligibility(lat, lon) {
         zone: zoneKey,
         zoneLabel: zone.label,
         distMiles: nearestDist,
-        allowances: { height, density, far, parking: zone.parking },
+        allowances,
     };
 }
 
@@ -711,9 +724,16 @@ async function fetchConstraintsFromGIS(lat, lon) {
 // Refine heuristic results with GIS API data (called in background)
 // NOTE: This function manipulates DOM elements — portals must provide
 // markAutofill() and addStatus() in their own scope.
-async function refineConstraintsFromGIS(lat, lon) {
+function applyFireCheckForGeneration(result, lookupGeneration) {
+    if (lookupGeneration !== window._lookupGeneration) return false;
+    window._lastFireCheck = result;
+    return true;
+}
+
+async function refineConstraintsFromGIS(lat, lon, lookupGeneration) {
     try {
         var gis = await fetchConstraintsFromGIS(lat, lon);
+        if (lookupGeneration !== undefined && lookupGeneration !== window._lookupGeneration) return;
         var updated = false;
         ['constFlood', 'constHillside', 'constHistoric', 'constFault', 'constCoastal'].forEach(function(id) {
             if (gis[id] !== null) {

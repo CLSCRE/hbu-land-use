@@ -2,5 +2,8 @@
   "name": "land-to-yield",
   "version": "1.0.0",
   "private": true,
-  "description": "Land to Yield — instant HBU analysis for LA County parcels"
+  "description": "Land to Yield — instant HBU analysis for LA County parcels",
+  "scripts": {
+    "test": "node tests/acquisition-controls.test.js && node tests/acquisition-ui-wiring.test.js && node tests/sb79-rules.test.js && node tests/sb79-ui-wiring.test.js && node tests/lookup-generation.test.js"
+  }
 }

@@ -35,11 +35,28 @@ SB79_POLICY_META = {
 // LA Planning Phased Implementation Model assumptions.
 SB79_ENVELOPE = {
     'tier1-adjacent': { density: 160, far: 4.5, height: 95, label: 'Tier 1 / 200 feet',  parking: 0   },
-    'tier1-inner':    { density: 120, far: 3.5, height: 95, label: 'Tier 1 / ¼ mile',    parking: 0   },
-    'tier1-outer':    { density: 100, far: 3.0, height: 95, label: 'Tier 1 / ½ mile',    parking: 0.5 },
+    'tier1-inner':    { density: 120, far: 3.5, height: 75, label: 'Tier 1 / ¼ mile',    parking: 0   },
+    'tier1-outer':    { density: 100, far: 3.0, height: 65, label: 'Tier 1 / ½ mile',    parking: 0.5 },
     'tier2-adjacent': { density: 140, far: 4.0, height: 85, label: 'Tier 2 / 200 feet',  parking: 0   },
-    'tier2-inner':    { density: 100, far: 3.0, height: 85, label: 'Tier 2 / ¼ mile',    parking: 0   },
-    'tier2-outer':    { density:  80, far: 2.5, height: 85, label: 'Tier 2 / ½ mile',    parking: 0.5 },
+    'tier2-inner':    { density: 100, far: 3.0, height: 65, label: 'Tier 2 / ¼ mile',    parking: 0   },
+    'tier2-outer':    { density:  80, far: 2.5, height: 55, label: 'Tier 2 / ½ mile',    parking: 0.5 },
+};
+
+// LA Ordinance 188967, LAMC Table 12.22 A.38(g)(3)(i).
+// Each density choice is paired with the FAR shown in the signed table.
+SB79_LOW_RISE_POLICY = {
+    ordinance: '188967',
+    effective: '2026-06-30',
+    source: 'LAMC 12.22 A.38(g)',
+    ladder: {
+        5: 1.30, 6: 1.45, 7: 1.60, 8: 1.75, 9: 1.90, 10: 2.00,
+        11: 2.15, 12: 2.30, 13: 2.45, 14: 2.60, 15: 2.75, 16: 2.90,
+    },
+    subareas: {
+        'LR-1': { minUnits: 5, maxUnits: 11 },
+        'LR-2': { minUnits: 12, maxUnits: 16 },
+    },
+    parkingRatio: 0,
 };
 
 // Distance band thresholds (miles)
@@ -173,6 +190,31 @@ SB79_LA_FUNNEL = {
 
 // Shard cache avoids repeated fetches while map overlays color many parcels.
 SB79_SHARD_CACHE = {};
+if (typeof SB79_APN_INDEX === 'undefined') globalThis.SB79_APN_INDEX = null;
+if (typeof SB79_DATA_META === 'undefined') globalThis.SB79_DATA_META = null;
+if (typeof SB79_LOOKUP_STATS === 'undefined') globalThis.SB79_LOOKUP_STATS = null;
+let SB79_DATA_LOAD_PROMISE = null;
+
+async function loadSb79Data() {
+    if (SB79_APN_INDEX) return true;
+    if (SB79_DATA_LOAD_PROMISE) return SB79_DATA_LOAD_PROMISE;
+    if (typeof fetch !== 'function') return false;
+    SB79_DATA_LOAD_PROMISE = Promise.all([
+        fetch('sb79-data/apn-index.json'),
+        fetch('sb79-data/source-metadata.json'),
+        fetch('sb79-data/lookup-stats.json'),
+    ]).then(async function(responses) {
+        if (!responses[0].ok) return false;
+        SB79_APN_INDEX = await responses[0].json();
+        if (responses[1].ok) SB79_DATA_META = await responses[1].json();
+        if (responses[2].ok) SB79_LOOKUP_STATS = await responses[2].json();
+        return true;
+    }).catch(function(error) {
+        console.warn('Shared SB79 data failed to load:', error);
+        return false;
+    }).finally(function() { SB79_DATA_LOAD_PROMISE = null; });
+    return SB79_DATA_LOAD_PROMISE;
+}
 
 // === HELPERS ===
 
@@ -229,6 +271,254 @@ function computeEnvelope(lotSf, tier, distanceBand) {
     };
 }
 
+/**
+ * Classify a site into Ordinance 188967's LR-1/LR-2 subareas.
+ * Explicit final-map/ZIMAS classification always wins. Distance-only
+ * classification remains screening unless the Table 1C phased exception is set.
+ */
+function classifyLowRiseSubarea(facts) {
+    facts = facts || {};
+    const explicit = String(facts.subarea || facts.lowRiseSubarea || '').toUpperCase();
+    if (explicit === 'LR-1' || explicit === 'LR-2') return explicit;
+
+    const distanceFeet = Number(facts.distanceFeet);
+    if (!Number.isFinite(distanceFeet) || distanceFeet < 0) return null;
+    const qualifier = String(facts.transportationQualifier || '').toLowerCase();
+    let subarea = null;
+
+    if (qualifier === 'opportunity_corridor') {
+        if (distanceFeet <= 250) subarea = 'LR-2';
+        else if (distanceFeet <= 750) subarea = 'LR-1';
+    } else if (Number(facts.tier) === 1 && distanceFeet <= 2640) {
+        subarea = 'LR-2';
+    } else if (Number(facts.tier) === 2) {
+        if (distanceFeet <= 1320) subarea = 'LR-2';
+        else if (distanceFeet <= 2640) subarea = 'LR-1';
+    }
+
+    if (!subarea) return null;
+    if (!facts.residentialZone && !facts.phasedImplementationException && qualifier !== 'opportunity_corridor') return null;
+    // Designated historic resources/non-contributors cannot use LR-2.
+    if (facts.designatedHistoricResource && subarea === 'LR-2') subarea = 'LR-1';
+    return subarea;
+}
+
+/** Compute the signed local Low-Rise base envelope for a single project site. */
+function computeLowRiseEnvelope(lotSf, options) {
+    options = options || {};
+    const lot = Number(lotSf) || 0;
+    if (lot <= 0) return null;
+    const subarea = classifyLowRiseSubarea(options);
+    if (!subarea) return null;
+    const policy = SB79_LOW_RISE_POLICY.subareas[subarea];
+    let maxUnits = policy.maxUnits;
+    if (options.requestedUnits) {
+        maxUnits = Math.max(policy.minUnits, Math.min(policy.maxUnits, Math.floor(Number(options.requestedUnits))));
+    }
+    let maxFar = SB79_LOW_RISE_POLICY.ladder[maxUnits];
+    let maxStories = maxUnits <= 6 ? 2 : 3;
+    const multiBedroomApplied = Number(options.multiBedroomShare || 0) >= 0.20;
+    if (multiBedroomApplied) {
+        maxFar += 0.5;
+        maxStories += 1;
+    }
+    const result = {
+        subarea: subarea,
+        maxUnits: maxUnits,
+        maxFar: maxFar,
+        maxGfa: Math.floor(lot * maxFar),
+        maxStories: maxStories,
+        parkingRatio: SB79_LOW_RISE_POLICY.parkingRatio,
+        multiBedroomIncentiveApplied: multiBedroomApplied,
+        ordinance: SB79_LOW_RISE_POLICY.ordinance,
+        source: SB79_LOW_RISE_POLICY.source,
+        screeningOnly: !options.zimasConfirmed,
+        constraints: {
+            minimumLotAreaSf: 600,
+            minimumLotWidthFt: 15,
+            pedestrianAccessFt: 3,
+            sideYardFt: maxStories >= 3 ? 4 : 3,
+            rearYardFt: 8,
+            alleySetbackFt: 0,
+        },
+    };
+    if (subarea === 'LR-1') {
+        result.affordability = { moderateIncomeUnits: 1 };
+    } else {
+        result.affordabilityOptions = [
+            { veryLowIncomeUnits: 1 },
+            { lowerIncomeUnits: 1 },
+            { moderateIncomeUnits: 2 },
+        ];
+    }
+    return result;
+}
+
+function validateLowRiseVerification(record, parcelFacts) {
+    parcelFacts = parcelFacts || {};
+    const verification = parcelFacts.lowRiseVerification || {};
+    const band = record.distanceBand || ({ a: 'adjacent', i: 'inner', o: 'outer' }[record.b]);
+    const bandFeet = band === 'adjacent' ? 200 : band === 'inner' ? 1320 : band === 'outer' ? 2640 : null;
+    const expectedSubarea = classifyLowRiseSubarea({
+        tier: record.tier || record.t,
+        distanceFeet: bandFeet,
+        residentialZone: /^R/.test(getBaseZoneFromZoning(record.zoning || record.zn)),
+        phasedImplementationException: true,
+    });
+    const verificationMs = parseSb79IsoDateStrict(verification.verificationDate);
+    const asOfMs = parseSb79IsoDateStrict(verification.asOf);
+    const ageDays = (asOfMs - verificationMs) / 86400000;
+    const lotSf = Number(parcelFacts.lotSf || parcelFacts.lotSizeSqFt || parcelFacts.parcelSize || 0);
+    const verifiedLotSf = Number(verification.lotAreaSf);
+    const lotWidthFt = Number(verification.lotWidthFt);
+    const pedestrianAccessFt = Number(verification.pedestrianAccessFt);
+    const verified = parcelFacts.zimasConfirmed === true
+        && verification.sourceType === 'ZIMAS'
+        && Number.isFinite(ageDays) && ageDays >= 0 && ageDays <= 180
+        && verification.legalPathResult === 'eligible'
+        && (verification.finalMapSubarea === 'LR-1' || verification.finalMapSubarea === 'LR-2')
+        && verification.finalMapSubarea === expectedSubarea
+        && verification.overlaysResolved === true
+        && verification.fireHazard === false
+        && verification.coastalZone === false
+        && verification.designatedHistoricResource === false
+        && Number.isFinite(verifiedLotSf) && verifiedLotSf >= 600
+        && Number.isFinite(lotSf) && lotSf > 0 && Math.abs(verifiedLotSf - lotSf) <= 1
+        && Number.isFinite(lotWidthFt) && lotWidthFt >= 15
+        && Number.isFinite(pedestrianAccessFt) && pedestrianAccessFt >= 3;
+    return { verified: verified, subarea: verified ? verification.finalMapSubarea : null };
+}
+
+/** Gate a coordinate screen through the City APN status record. */
+function resolveParcelAwareSb79(proximity, record, parcelFacts) {
+    proximity = proximity || {};
+    parcelFacts = parcelFacts || {};
+    if (!record) {
+        return {
+            finalEligibility: false,
+            statutoryEligible: false,
+            lowRiseEligible: false,
+            screeningOnly: true,
+            currentPath: 'zimas_verification_required',
+            proximity: proximity,
+        };
+    }
+    const phase = normalizeSb79Phase(record);
+    if (phase === 'permanent_exclude' || phase === 'statutory_exempt') {
+        return {
+            finalEligibility: false,
+            statutoryEligible: false,
+            lowRiseEligible: false,
+            screeningOnly: false,
+            currentPath: 'excluded',
+            phase: phase,
+            proximity: proximity,
+        };
+    }
+    const lowRiseFlag = !!(record.lr || record.phasedLowRise);
+    const zimasConfirmed = parcelFacts.zimasConfirmed === true;
+    const lowRiseVerification = validateLowRiseVerification(record, parcelFacts);
+    const lowRiseEligible = lowRiseFlag && lowRiseVerification.verified;
+    const statutoryEligible = phase === 'eligible' && !!proximity.eligible && zimasConfirmed;
+    let currentPath = 'zimas_verification_required';
+    if (statutoryEligible && lowRiseEligible) currentPath = 'sb79_and_la_low_rise';
+    else if (statutoryEligible) currentPath = 'sb79_statutory';
+    else if (lowRiseEligible) currentPath = 'la_low_rise';
+    return {
+        finalEligibility: statutoryEligible || lowRiseEligible,
+        statutoryEligible: statutoryEligible,
+        lowRiseEligible: lowRiseEligible,
+        screeningOnly: !statutoryEligible && lowRiseFlag && !lowRiseEligible,
+        currentPath: currentPath,
+        phase: phase,
+        proximity: proximity,
+    };
+}
+
+/** Resolve an assessor APN into one parcel-aware rules context for every portal. */
+async function resolveSb79ParcelContext(apn, parcelFacts, proximity) {
+    const cleanApn = String(apn || '').replace(/[^0-9]/g, '');
+    const record = /^\d{10}$/.test(cleanApn) ? await lookupAPN(cleanApn) : null;
+    const foundRecord = record && record.found ? record : null;
+    const decision = resolveParcelAwareSb79(proximity || {}, foundRecord, parcelFacts || {});
+    return {
+        apn: cleanApn || null,
+        found: !!foundRecord,
+        record: foundRecord,
+        decision: decision,
+        evidence: { zimasConfirmed: parcelFacts && parcelFacts.zimasConfirmed === true },
+        scenarios: foundRecord ? buildSb79ScenarioSet(foundRecord, parcelFacts || {}) : null,
+        source: foundRecord ? foundRecord.source : getSb79SourceInfo({}),
+    };
+}
+
+/** Parse an ISO date only when it round-trips to the same calendar day. */
+function parseSb79IsoDateStrict(value) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));
+    if (!match) return NaN;
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const timestamp = Date.UTC(year, month - 1, day);
+    const date = new Date(timestamp);
+    return date.getUTCFullYear() === year
+        && date.getUTCMonth() === month - 1
+        && date.getUTCDate() === day ? timestamp : NaN;
+}
+
+/** Apply explicit, dated City verification evidence to an existing APN context. */
+function applySb79VerificationEvidence(context, evidence) {
+    if (!context || !/^\d{10}$/.test(String(context.apn || '').replace(/[^0-9]/g, ''))) return context;
+    evidence = evidence || {};
+    const verificationDate = String(evidence.verificationDate || '');
+    const asOf = String(evidence.asOf || '');
+    const verificationMs = parseSb79IsoDateStrict(verificationDate);
+    const asOfMs = parseSb79IsoDateStrict(asOf);
+    const ageDays = (asOfMs - verificationMs) / 86400000;
+    const confirmed = evidence.zimasConfirmed === true
+        && evidence.sourceType === 'ZIMAS'
+        && Number.isFinite(ageDays) && ageDays >= 0 && ageDays <= 180;
+    const facts = Object.assign({}, evidence.parcelFacts || {}, { zimasConfirmed: confirmed });
+    context.evidence = {
+        zimasConfirmed: confirmed,
+        sourceType: confirmed ? 'ZIMAS' : null,
+        verificationDate: confirmed ? verificationDate : null,
+        asOf: asOf || null,
+    };
+    if (context.record) {
+        context.decision = resolveParcelAwareSb79(context.decision && context.decision.proximity, context.record, facts);
+        context.scenarios = buildSb79ScenarioSet(context.record, facts);
+    } else {
+        context.decision = Object.assign({}, context.decision || {}, {
+            finalEligibility: false,
+            statutoryEligible: false,
+            lowRiseEligible: false,
+            screeningOnly: false,
+            currentPath: confirmed ? 'not_in_dataset' : 'zimas_verification_required',
+        });
+        context.scenarios = null;
+    }
+    return context;
+}
+
+/** Return the verified APN scenario that controls underwriting and rendering. */
+function getSb79DecisionScenario(context) {
+    if (!context || !context.decision || !context.decision.finalEligibility) return null;
+    const scenarios = context.scenarios && context.scenarios.scenarios;
+    if (!Array.isArray(scenarios)) return null;
+    const scenarioId = context.decision.currentPath === 'la_low_rise'
+        ? 'low_rise_retained'
+        : 'sb79_statutory';
+    const scenario = scenarios.find(function(item) { return item.id === scenarioId; });
+    return scenario && scenario.envelope ? scenario : null;
+}
+
+/** Safe synchronous accessor used by core-data.js legislation applicability. */
+function getCurrentSb79Decision() {
+    if (typeof window === 'undefined' || !window.lastSb79Context) return null;
+    return window.lastSb79Context.decision || null;
+}
+
 // Check if coordinates fall inside any Industrial Employment Hub
 function inIndustrialHub(lat, lon) {
     for (const hub of SB79_INDUSTRIAL_HUBS) {
@@ -270,6 +560,15 @@ function getSb79SourceInfo(compact) {
         underwriteFirst: policy.underwriteFirst || 'ZIMAS',
         asOf: policy.asOf || '2026-07-25',
     };
+}
+
+function escapeSb79Metadata(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 /** Human disclaimer for UI footers */
@@ -334,6 +633,21 @@ function buildSb79ScenarioSet(record, parcelFacts) {
     const status = getSb79StudyStatus(record);
     const base = estimateBaseZoningEnvelope(lotSf, record.zoning || record.zn);
     const sb79Env = lotSf ? computeEnvelope(lotSf, record.tier || record.t, record.distanceBand) : null;
+    const band = record.distanceBand || ({ a: 'adjacent', i: 'inner', o: 'outer' }[record.b]);
+    const bandFeet = band === 'adjacent' ? 200 : band === 'inner' ? 1320 : band === 'outer' ? 2640 : null;
+    const excluded = status.key === 'excluded';
+    const lowRiseVerification = validateLowRiseVerification(record, parcelFacts);
+    const lowRiseAvailable = !excluded && !!(record.phasedLowRise || record.lr) && lowRiseVerification.verified;
+    const lowRiseEnv = lowRiseAvailable && lotSf ? computeLowRiseEnvelope(lotSf, {
+        tier: record.tier || record.t,
+        distanceFeet: bandFeet,
+        residentialZone: /^R/.test(getBaseZoneFromZoning(record.zoning || record.zn)),
+        phasedImplementationException: true,
+        designatedHistoricResource: false,
+        multiBedroomShare: parcelFacts.multiBedroomShare,
+        zimasConfirmed: !!parcelFacts.zimasConfirmed,
+        finalMapSubarea: lowRiseVerification.subarea,
+    }) : null;
     return {
         status: status,
         lotSf: lotSf || null,
@@ -350,11 +664,11 @@ function buildSb79ScenarioSet(record, parcelFacts) {
             {
                 id: 'low_rise_retained',
                 label: 'Local / Low-Rise retained capacity',
-                eligibilityStatus: record.phasedLowRise || record.lr ? 'potentially_available' : 'needs_verification',
-                confidence: 'medium',
-                envelope: null,
-                source: 'LA Low-Rise Ordinance / phased implementation materials',
-                note: 'Table 1C confirms the APN is in the final Low-Rise phased universe; parcel-level Low-Rise yield needs zoning module verification.',
+                eligibilityStatus: excluded ? 'blocked' : lowRiseEnv ? 'current_local_path' : 'needs_verification',
+                confidence: lowRiseAvailable ? 'high' : 'low',
+                envelope: lowRiseEnv,
+                source: 'LA Ordinance 188967, LAMC 12.22 A.38(g)',
+                note: lowRiseEnv ? 'Local Low-Rise envelope calculated from the signed LR-1/LR-2 table; confirm current ZIMAS subarea and overlays.' : 'Low-Rise eligibility/subarea requires current ZIMAS verification.',
             },
             {
                 id: 'sb79_statutory',
@@ -497,6 +811,7 @@ async function resolveApnFromLatLon(lat, lon) {
 // }
 async function lookupAPN(apn, opts) {
     opts = opts || {};
+    if (!SB79_APN_INDEX) await loadSb79Data();
     const result = {
         apn:                 (typeof formatAPN === 'function') ? formatAPN(apn) : apn,
         found:               false,
@@ -715,11 +1030,14 @@ function runProForma(envelope, costInputs) {
 // === EXPORTS (when used as module) ===
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
-        SB79_ENVELOPE, SB79_DISTANCE_BANDS, SB79_INDUSTRIAL_HUBS,
+        SB79_ENVELOPE, SB79_LOW_RISE_POLICY, SB79_DISTANCE_BANDS, SB79_INDUSTRIAL_HUBS,
         SB79_EXEMPTION_PATHWAYS, SB79_STATUTORY_EXEMPT_ZONES, SB79_LA_FUNNEL, SB79_STATUS_STYLES,
         SB79_POLICY_META,
         getDistanceBand, getNearestStation, computeEnvelope,
-        inIndustrialHub, normalizeSb79Phase, getSb79StudyStatus, getSb79SourceInfo,
+        classifyLowRiseSubarea, computeLowRiseEnvelope, resolveParcelAwareSb79,
+        resolveSb79ParcelContext, getCurrentSb79Decision, getSb79DecisionScenario,
+        loadSb79Data, applySb79VerificationEvidence,
+        inIndustrialHub, normalizeSb79Phase, getSb79StudyStatus, getSb79SourceInfo, escapeSb79Metadata,
         getSb79UnderwriteDisclaimer,
         estimateBaseZoningEnvelope, buildSb79ScenarioSet,
         expandSb79Record, lookupAPN, evaluateExemptions, runProForma,

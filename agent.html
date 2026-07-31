@@ -1822,6 +1822,13 @@ window.activateDemo = window.activateDemo || function() {};
                         </select>
                     </div>
 
+                    <div class="field" id="field-zimasEvidence">
+                        <label><input type="checkbox" id="zimasConfirmed" style="width:auto;"> Current ZIMAS / final map reviewed for this APN</label>
+                        <label for="zimasVerificationDate">Verification date</label>
+                        <input type="date" id="zimasVerificationDate">
+                        <small>This is an auditable parcel-specific verification, not an override of unresolved zoning.</small>
+                    </div>
+
                     <div class="field" id="field-neighborhood">
                         <label>Neighborhood / Submarket <span class="autofill-badge">auto-filled</span></label>
                         <select id="neighborhood">
@@ -2465,8 +2472,10 @@ window.HBU_PORTAL_CONFIG = {
 </script>
 
 <!-- Core shared modules -->
-<script src="core-data.js?v=4.3"></script>
 <script src="core-geo.js?v=4.5"></script>
+<script src="core-sb79.js?v=2.0"></script>
+<script src="core-data.js?v=4.3"></script>
+<script src="core-acquisition.js?v=1.0"></script>
 <script src="core-hbu.js?v=4.7"></script>
 <script src="core-finance.js?v=4.3"></script>
 
@@ -2720,9 +2729,9 @@ const SB79_TIERS = {
     2: { label: 'Tier 2 (Light Rail/BRT)', height: 85, density: 140, far: 4.0 },
 };
 const SB79_ZONES = {
-    adjacent: { maxDist: 0.038, label: '200ft (Adjacent)', parking: 0, heightMult: 1.0 },
-    inner:    { maxDist: 0.25,  label: '1/4 Mile (Inner)',  parking: 0, heightMult: 1.0 },
-    outer:    { maxDist: 0.50,  label: '1/2 Mile (Outer)',  parking: 0.5, heightMult: 0.68 },
+    adjacent: { maxDist: 0.038, label: '200ft (Adjacent)' },
+    inner:    { maxDist: 0.25,  label: '1/4 Mile (Inner)' },
+    outer:    { maxDist: 0.50,  label: '1/2 Mile (Outer)' },
 };
 
 // Line display colors for map markers
@@ -2776,9 +2785,10 @@ async function fetchConstraintsFromGIS(lat, lon) {
     await Promise.all(queries);
     return results;
 }
-async function refineConstraintsFromGIS(lat, lon) {
+async function refineConstraintsFromGIS(lat, lon, lookupGeneration) {
     try {
         var gis = await fetchConstraintsFromGIS(lat, lon);
+        if (lookupGeneration !== undefined && lookupGeneration !== window._lookupGeneration) return;
         var updated = false;
         ['constFlood','constHillside','constHistoric','constFault','constCoastal'].forEach(function(id) {
             if (gis[id] !== null) { var el = document.getElementById(id); if (el && el.checked !== gis[id]) { el.checked = gis[id]; updated = true; } }
@@ -3030,6 +3040,16 @@ function clearAutofill() {
 // === MAIN LOOKUP ORCHESTRATOR ===
 
 async function lookupAddress() {
+    const lookupGeneration = (window._lookupGeneration || 0) + 1;
+    window._lookupGeneration = lookupGeneration;
+    resetParcelVerificationControls();
+    clearBlockedAcquisitionOutput('Lookup in progress. Prior parcel results cleared.');
+    window.lastSb79Context = null;
+    window.lastAcquisitionReadiness = null;
+    window.lastGeocode = null;
+    window.lastParcelGeometry = null;
+    window._lastFireCheck = null;
+    window._parcelAreaEvidence = null;
     const address = document.getElementById('addressInput').value.trim();
     if (!address) {
         setStatus('<span class="err">Please enter an address.</span>');
@@ -3045,8 +3065,10 @@ async function lookupAddress() {
     let coords;
     try {
         coords = await geocodeAddress(address);
+        if (lookupGeneration !== window._lookupGeneration) return;
         setStatus(`<span class="status-item ok">Matched: ${coords.matched}</span>`);
     } catch (e) {
+        if (lookupGeneration !== window._lookupGeneration) return;
         setStatus(`<span class="err">${e.message}</span>`);
         btn.disabled = false;
         btn.textContent = 'Look Up';
@@ -3071,11 +3093,14 @@ async function lookupAddress() {
     addStatus('<br><span class="loading">Querying zoning &amp; parcel data...</span>');
     window._lastFireCheck = null;
     if (typeof checkFirePerimeter === 'function') {
-        checkFirePerimeter(coords.lat, coords.lon).then(function(f) { window._lastFireCheck = f; }).catch(function() {});
+        checkFirePerimeter(coords.lat, coords.lon).then(function(f) {
+            applyFireCheckForGeneration(f, lookupGeneration);
+        }).catch(function() {});
     }
     let zoningResult = null, parcelResult = null;
     window._zoningIsUnverified = false;
-    window._parcelSizeIsUnverified = false;
+    window._parcelSizeIsUnverified = true;
+    window._parcelAreaEvidence = null;
     try {
         const _dataTimeout = new Promise(resolve => setTimeout(() => resolve([{ error: 'timeout' }, { error: 'timeout' }]), 12000));
         [zoningResult, parcelResult] = await Promise.race([
@@ -3090,10 +3115,12 @@ async function lookupAddress() {
         zoningResult = { error: 'timeout' };
         parcelResult = { error: 'timeout' };
     }
+    if (lookupGeneration !== window._lookupGeneration) return;
 
     // Build status summary
     let statusParts = [`<span class="status-item ok">Matched: ${coords.matched}</span>`];
 
+    window._rawZoning = zoningResult && zoningResult.raw ? zoningResult.raw : '';
     // Apply zoning
     if (zoningResult && (zoningResult.error === 'cors' || zoningResult.error === 'timeout')) {
         // Estimate zoning from street type and neighborhood when ZIMAS unavailable
@@ -3112,13 +3139,16 @@ async function lookupAddress() {
         const opt = sel.querySelector(`option[value="${zoningResult.mapped}"]`);
         if (opt) {
             sel.value = zoningResult.mapped;
+            if (hasComplexZoningControls(zoningResult.raw)) window._zoningIsUnverified = true;
             markAutofill('zoning');
             filledCount++;
             statusParts.push(`<span class="status-item ok">Zoning: ${zoningResult.raw}</span>`);
         } else {
+            window._zoningIsUnverified = true;
             statusParts.push(`<span class="status-item warn">Zoning "${zoningResult.raw}" — not in dropdown, please select manually</span>`);
         }
     } else if (zoningResult && zoningResult.raw) {
+        window._zoningIsUnverified = true;
         statusParts.push(`<span class="status-item warn">Zoning "${zoningResult.raw}" — please select closest match</span>`);
     } else {
         // Also try fallback estimation when ZIMAS returns nothing
@@ -3140,6 +3170,9 @@ async function lookupAddress() {
         const _rl = parseFloat(parcelResult.attrs.Roll_LandValue) || 0;
         const _ri = parseFloat(parcelResult.attrs.Roll_ImpValue) || 0;
         window.lastAssessedTotal = _rl + _ri;
+        if (window.lastGeocode) {
+            window.lastGeocode.apn = String(parcelResult.attrs.APN || parcelResult.attrs.AIN || '').replace(/[^0-9]/g, '');
+        }
     }
     // Populate market value field — try RentCast AVM first, fallback to neighborhood median $/SF
     var _structSF = (parcelResult && parcelResult.attrs) ? parseInt(parcelResult.attrs.SQFTmain1) || 0 : 0;
@@ -3157,6 +3190,7 @@ async function lookupAddress() {
     (async () => {
         try {
             const mv = await getMarketValue(_addrForLinks, _structSF, _lotSF, _structSF > 0 ? 'Residential' : 'Vacant', _nhood, _parcelAttrs);
+            if (lookupGeneration !== window._lookupGeneration) return;
             if (_mvInput) _mvInput.value = Math.round(mv.value).toLocaleString();
             var _badge = document.getElementById('mvSourceBadge');
             var _footer = document.getElementById('mvSourceFooter');
@@ -3204,6 +3238,12 @@ async function lookupAddress() {
         markAutofill('parcelSize');
         filledCount++;
         statusParts.push(`<span class="status-item ok">Lot: ${Math.round(parcelResult.area).toLocaleString()} SF</span>`);
+        const _areaApn = String((parcelResult.attrs || {}).APN || (parcelResult.attrs || {}).AIN || '').replace(/[^0-9]/g, '');
+        const _areaDate = new Date().toISOString().slice(0, 10);
+        if (/^\d{10}$/.test(_areaApn)) {
+            window._parcelAreaEvidence = { apn: _areaApn, area: Math.round(parcelResult.area), sourceType: 'LA_COUNTY_GIS', verificationDate: _areaDate, asOf: _areaDate };
+            window._parcelSizeIsUnverified = false;
+        }
 
         // Store parcel geometry for satellite massing overlay
         if (parcelResult._geometry) {
@@ -3225,6 +3265,18 @@ async function lookupAddress() {
                 window.lastGeocode.assessedImp = assessedImp;
                 window.lastGeocode.assessedTotal = assessedLand + assessedImp;
                 window.lastGeocode.structureSqFt = parseInt(parcelResult.attrs.SQFTmain1) || 0;
+            }
+        }
+        window.lastSb79Context = null;
+        if (parcelResult.attrs && window.lastGeocode && typeof resolveSb79ParcelContext === 'function') {
+            const _sb79Apn = String(parcelResult.attrs.APN || parcelResult.attrs.AIN || '').replace(/[^0-9]/g, '');
+            window.lastGeocode.apn = _sb79Apn;
+            if (/^\d{10}$/.test(_sb79Apn)) {
+                const _sb79Proximity = detectSB79Eligibility(coords.lat, coords.lon);
+                const _sb79LotSf = Number(parcelResult.area || parcelResult.attrs['Shape.STArea()'] || 0);
+                const resolvedContext = await resolveSb79ParcelContext(_sb79Apn, { lotSf: _sb79LotSf, zimasConfirmed: false }, _sb79Proximity);
+                if (lookupGeneration !== window._lookupGeneration) return;
+                window.lastSb79Context = resolvedContext;
             }
         }
     } else {
@@ -3296,7 +3348,7 @@ async function lookupAddress() {
     setStatus(statusParts.join('<br>'));
 
     // Refine constraints from GIS APIs in background (non-blocking)
-    refineConstraintsFromGIS(coords.lat, coords.lon);
+    refineConstraintsFromGIS(coords.lat, coords.lon, lookupGeneration);
 
     // Show autofill notice
     if (filledCount > 0) {
@@ -3476,8 +3528,75 @@ async function getMarketValue(address, structureSqFt, lotSizeSqFt, useType, neig
 let lastResults = null;
 let lastInputs = null;
 
+function resetParcelVerificationControls() {
+    const confirmed = document.getElementById('zimasConfirmed');
+    const verificationDate = document.getElementById('zimasVerificationDate');
+    if (confirmed) confirmed.checked = false;
+    if (verificationDate) verificationDate.value = '';
+}
+
+function applyCurrentZimasEvidence() {
+    const confirmed = document.getElementById('zimasConfirmed');
+    const verificationDate = document.getElementById('zimasVerificationDate');
+    if (!window.lastSb79Context || typeof applySb79VerificationEvidence !== 'function') return;
+    applySb79VerificationEvidence(window.lastSb79Context, {
+        zimasConfirmed: !!(confirmed && confirmed.checked),
+        sourceType: 'ZIMAS',
+        verificationDate: verificationDate ? verificationDate.value : '',
+        asOf: new Date().toISOString().slice(0, 10),
+        parcelFacts: { lotSf: Number(String((document.getElementById('parcelSize') || {}).value || '').replace(/,/g, '')) || 0 },
+    });
+}
+
+function clearBlockedAcquisitionOutput(message) {
+    const results = document.getElementById('results');
+    const cards = document.getElementById('resultCards');
+    const summary = document.getElementById('resultsSummary');
+    const sb79Panel = document.getElementById('sb79Eligibility');
+    const mapSection = document.getElementById('mapSection');
+    if (cards) cards.replaceChildren();
+    if (summary) summary.textContent = message || 'Verification required.';
+    if (results) results.style.display = 'none';
+    if (sb79Panel) { sb79Panel.replaceChildren(); sb79Panel.style.display = 'none'; }
+    if (mapSection) mapSection.style.display = 'none';
+    if (typeof sb79Map !== 'undefined' && sb79Map) { sb79Map.remove(); sb79Map = null; }
+    lastResults = null;
+    lastInputs = null;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmed = document.getElementById('zimasConfirmed');
+    const verificationDate = document.getElementById('zimasVerificationDate');
+    const handleVerificationEvidenceChange = function() {
+        applyCurrentZimasEvidence();
+        window.lastAcquisitionReadiness = null;
+        clearBlockedAcquisitionOutput('Verification inputs changed. Recalculate after verification.');
+    };
+    if (confirmed) confirmed.addEventListener('change', handleVerificationEvidenceChange);
+    if (verificationDate) verificationDate.addEventListener('change', handleVerificationEvidenceChange);
+});
+
 function calculateHBU() {
     const inp = getInputs();
+    const parcelEvidenceStatus = deriveParcelEvidenceStatus(window.lastSb79Context);
+    const acquisitionReadiness = evaluateAcquisitionReadiness({
+        apn: window.lastGeocode && window.lastGeocode.apn,
+        evidenceApn: parcelEvidenceStatus.evidenceApn,
+        parcelSize: Number(String((document.getElementById('parcelSize') || {}).value || '').replace(/,/g, '')),
+        parcelAreaEvidence: window._parcelAreaEvidence,
+        rawZoning: window._rawZoning,
+        zoningResolution: window._zoningIsUnverified ? 'unresolved' : 'verified',
+        legalPathStatus: parcelEvidenceStatus.legalPathStatus,
+        criticalSourceStatus: parcelEvidenceStatus.criticalSourceStatus,
+    });
+    window.lastAcquisitionReadiness = acquisitionReadiness;
+    lastResults = null;
+    lastInputs = null;
+    if (!acquisitionReadiness.canUnderwrite) {
+        clearBlockedAcquisitionOutput(acquisitionReadiness.message);
+        if (typeof showToast === 'function') showToast(acquisitionReadiness.message, 7000);
+        return;
+    }
 
     // Score all uses
     const results = LAND_USES.map(use => {
@@ -3541,6 +3660,12 @@ function calculateHBU() {
     if (window.lastGeocode && typeof L !== 'undefined') {
         const { lat, lon } = window.lastGeocode;
         const sb79 = detectSB79Eligibility(lat, lon);
+        const parcelDecision = window.lastSb79Context
+            ? window.lastSb79Context.decision
+            : resolveParcelAwareSb79(sb79, null);
+        sb79.parcelDecision = parcelDecision;
+        sb79.parcelRecord = window.lastSb79Context && window.lastSb79Context.record;
+        sb79.buildableLayers = window.lastSb79Context && window.lastSb79Context.scenarios;
         document.getElementById('mapSection').style.display = 'block';
         initSB79Map(lat, lon);
         renderSB79Eligibility(sb79);
@@ -4218,21 +4343,23 @@ function initSB79Map(lat, lon) {
 function showZonePopup(mapInstance, latlng, station, dist) {
     var tierData = SB79_TIERS[station.tier];
     var distFeet = Math.round(dist * 5280);
-    var zoneName, zoneColor, zoneDetail;
+    var zoneName, zoneColor, zoneDetail, zoneKey;
 
     if (dist <= 0.038) {
+        zoneKey = 'adjacent';
         zoneName = '200ft Adjacent Zone';
         zoneColor = '#553c9a';
-        zoneDetail = tierData.label + ' — Full tier benefits, zero parking';
     } else if (dist <= 0.25) {
+        zoneKey = 'inner';
         zoneName = '1/4 Mile Inner Zone';
         zoneColor = '#2b6cb0';
-        zoneDetail = tierData.label + ' — Full tier benefits, zero parking';
     } else {
+        zoneKey = 'outer';
         zoneName = '1/2 Mile Outer Zone';
         zoneColor = '#4a5568';
-        zoneDetail = tierData.label + ' — 65ft height, 3.25 FAR, 0.5 parking/unit';
     }
+    var zoneEnvelope = getSB79BandAllowances(station.tier, zoneKey);
+    zoneDetail = tierData.label + ' — ' + zoneEnvelope.height + 'ft height, ' + zoneEnvelope.density + ' du/ac, ' + zoneEnvelope.far + ' FAR, ' + zoneEnvelope.parking + ' parking/unit';
 
     L.popup()
         .setLatLng(latlng)
@@ -4363,28 +4490,57 @@ function renderMapLegend() {
 function renderSB79Eligibility(eligibility) {
     const el = document.getElementById('sb79Eligibility');
     if (!el) return;
+    const parcelDecision = eligibility && eligibility.parcelDecision
+        ? eligibility.parcelDecision
+        : resolveParcelAwareSb79(eligibility || {}, null);
+    const currentPath = parcelDecision.currentPath || 'zimas_verification_required';
+    const apn = (window.lastSb79Context && window.lastSb79Context.apn) || 'not resolved';
+    const source = window.lastSb79Context && window.lastSb79Context.source;
+    const sourceDate = escapeSb79Metadata(source && source.snapshotDate ? source.snapshotDate : 'unknown');
+    const directScenario = getSb79DecisionScenario(window.lastSb79Context);
+    const lowRiseScenario = eligibility && eligibility.buildableLayers && eligibility.buildableLayers.scenarios
+        ? eligibility.buildableLayers.scenarios.find(function(s) { return s.id === 'low_rise_retained'; }) : null;
+    if (currentPath === 'excluded' || currentPath === 'zimas_verification_required' || currentPath === 'la_low_rise') {
+        const isLowRise = currentPath === 'la_low_rise';
+        const isExcluded = currentPath === 'excluded';
+        const lr = isLowRise && lowRiseScenario ? lowRiseScenario.envelope : null;
+        const title = isLowRise ? 'LA Low-Rise Current Path' : (isExcluded ? 'SB 79 / Low-Rise Excluded' : 'ZIMAS Verification Required');
+        const detail = isLowRise
+            ? (lr ? `${lr.subarea}: up to ${lr.maxUnits} units, ${lr.maxFar} FAR, ${lr.maxStories} stories, no required parking.` : 'Local Low-Rise flag found; parcel facts are incomplete for an envelope.')
+            : (isExcluded ? 'The APN control record blocks direct SB 79 and LA Low-Rise.' : 'Transit proximity is a screening result only. Resolve the assessor APN in current ZIMAS before applying an envelope.');
+        el.style.display = 'block';
+        el.innerHTML = `<h3>${title}</h3><p>${detail}</p><p style="font-size:0.78rem;color:var(--text-light);">APN ${apn}. Sean Lahijani / LA Planning snapshot ${sourceDate}; verify the final/current ZIMAS map before underwriting.</p>`;
+        return;
+    }
+    eligibility.pathLabel = currentPath === 'sb79_and_la_low_rise' ? 'Direct SB 79 + LA Low-Rise Comparison' : 'Direct SB 79 Current Path';
     if (!eligibility || !eligibility.eligible) {
         el.style.display = 'none';
         return;
     }
-    const a = eligibility.allowances;
+    if (!directScenario) {
+        el.style.display = 'block';
+        el.textContent = 'Verified APN development scenario unavailable. Confirm current ZIMAS before underwriting.';
+        return;
+    }
+    const a = directScenario.envelope;
     const tierClass = eligibility.tier === 1 ? 'tier1' : 'tier2';
     const zoneClass = eligibility.zone;
     el.style.display = 'block';
     el.innerHTML = `
-        <h3>SB 79 Eligibility — Your Property</h3>
+        <h3>${eligibility.pathLabel || 'SB 79 Parcel Status'}</h3>
         <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.75rem;">
             <span class="tier-badge ${tierClass}">${eligibility.tierLabel}</span>
             <span class="zone-badge ${zoneClass}">${eligibility.zoneLabel}</span>
             &mdash; ${eligibility.distMiles.toFixed(2)} mi from <strong>${eligibility.station.name}</strong>
             (${LINE_LABELS[eligibility.station.line] || eligibility.station.line})
         </p>
+        <p style="font-size:0.78rem;color:var(--text-light);">APN ${apn}. Sean Lahijani / LA Planning snapshot ${sourceDate}; confirm final/current ZIMAS before underwriting.</p>
         <div class="sb79-grid">
-            <div class="sb79-stat"><div class="stat-label">Max Height</div><div class="stat-value">${a.height} ft</div></div>
-            <div class="sb79-stat"><div class="stat-label">Max Density</div><div class="stat-value">${a.density} du/ac</div></div>
-            <div class="sb79-stat"><div class="stat-label">Max FAR</div><div class="stat-value">${a.far}</div></div>
-            <div class="sb79-stat"><div class="stat-label">Parking Req</div><div class="stat-value">${a.parking === 0 ? 'None' : a.parking + '/unit'}</div></div>
-            <div class="sb79-stat"><div class="stat-label">Affordable Req</div><div class="stat-value">15%</div></div>
+            <div class="sb79-stat"><div class="stat-label">Max Height</div><div class="stat-value">${a.maxHeight} ft</div></div>
+            <div class="sb79-stat"><div class="stat-label">Max Density</div><div class="stat-value">${a.densityDuAc} du/ac</div></div>
+            <div class="sb79-stat"><div class="stat-label">Max FAR</div><div class="stat-value">${a.maxFar}</div></div>
+            <div class="sb79-stat"><div class="stat-label">Parking Req</div><div class="stat-value">${a.parkingRatio === 0 ? 'None' : a.parkingRatio + '/unit'}</div></div>
+            <div class="sb79-stat"><div class="stat-label">Affordability</div><div class="stat-value">Project-specific</div></div>
             <div class="sb79-stat"><div class="stat-label">Effective Date</div><div class="stat-value">Jul 2026</div></div>
         </div>
     `;
@@ -5342,11 +5498,11 @@ function classifyResidentialType(useType, useDesc, useCode, units) {
 }
 
 function classifySB79Zone(parcelLat, parcelLon, stationLat, stationLon) { const dist = haversine(parcelLat, parcelLon, stationLat, stationLon); if (dist <= SB79_ZONES.adjacent.maxDist) return { key: 'adjacent', dist }; if (dist <= SB79_ZONES.inner.maxDist) return { key: 'inner', dist }; if (dist <= SB79_ZONES.outer.maxDist) return { key: 'outer', dist }; return { key: 'outside', dist }; }
-function getSB79Allowances(tier, zoneKey) { const tierData = SB79_TIERS[tier]; const zone = SB79_ZONES[zoneKey]; if (!tierData || !zone) return null; return { height: Math.round(tierData.height * zone.heightMult), density: Math.round(tierData.density * zone.heightMult), far: parseFloat((tierData.far * zone.heightMult).toFixed(2)), parking: zone.parking }; }
+function getSB79Allowances(tier, zoneKey) { return getSB79BandAllowances(tier, zoneKey); }
 
 function getAllNearbyTransit(lat, lon, maxMiles) {
     if (!maxMiles) maxMiles = 0.75; var nearby = [];
-    for (var i = 0; i < METRO_STATIONS.length; i++) { var s = METRO_STATIONS[i]; var d = haversine(lat, lon, s.lat, s.lon); if (d <= maxMiles) { var tierData = SB79_TIERS[s.tier] || {}; var zoneKey = 'outside', parking = 1.0, heightMult = 0; if (d <= SB79_ZONES.adjacent.maxDist) { zoneKey = 'adjacent'; parking = 0; heightMult = 1.0; } else if (d <= SB79_ZONES.inner.maxDist) { zoneKey = 'inner'; parking = 0; heightMult = 1.0; } else if (d <= SB79_ZONES.outer.maxDist) { zoneKey = 'outer'; parking = 0.5; heightMult = 0.68; } var allowances = null; if (zoneKey !== 'outside') { allowances = { height: Math.round((tierData.height||0)*heightMult), density: Math.round((tierData.density||0)*heightMult), far: parseFloat(((tierData.far||0)*heightMult).toFixed(2)), parking }; } nearby.push({ station: s, stationIdx: i, distMiles: Math.round(d*1000)/1000, tier: s.tier, tierLabel: tierData.label||('Tier '+s.tier), line: s.line, lineLabel: LINE_LABELS[s.line]||s.line, zoneKey, allowances }); } }
+    for (var i = 0; i < METRO_STATIONS.length; i++) { var s = METRO_STATIONS[i]; var d = haversine(lat, lon, s.lat, s.lon); if (d <= maxMiles) { var tierData = SB79_TIERS[s.tier] || {}; var zoneKey = 'outside'; if (d <= SB79_ZONES.adjacent.maxDist) zoneKey = 'adjacent'; else if (d <= SB79_ZONES.inner.maxDist) zoneKey = 'inner'; else if (d <= SB79_ZONES.outer.maxDist) zoneKey = 'outer'; var allowances = zoneKey === 'outside' ? null : getSB79BandAllowances(s.tier, zoneKey); nearby.push({ station: s, stationIdx: i, distMiles: Math.round(d*1000)/1000, tier: s.tier, tierLabel: tierData.label||('Tier '+s.tier), line: s.line, lineLabel: LINE_LABELS[s.line]||s.line, zoneKey, allowances }); } }
     nearby.sort((a,b) => a.distMiles - b.distMiles); return nearby;
 }
 
@@ -5356,11 +5512,11 @@ function getLegislationForResult(result) {
     var lotSf = result.lotSizeSqFt || 10000; var transit = 'moderate';
     if (result.zone === 'adjacent') transit = 'adjacent'; else if (result.zone === 'inner' || result.zone === 'outer') transit = 'near';
     var zoning = 'C2'; if ((result.allowances && result.allowances.far >= 4.0) || result.zone === 'adjacent' || result.zone === 'inner') zoning = 'TOD';
-    var prevGeocode = window.lastGeocode; if (result.lat && result.lon) window.lastGeocode = { lat: result.lat, lon: result.lon };
+    var prevGeocode = window.lastGeocode; var prevSb79Context = window.lastSb79Context; window.lastSb79Context = null; if (result.lat && result.lon) window.lastGeocode = { lat: result.lat, lon: result.lon };
     var inp = { parcelSize: lotSf, frontage: Math.round(Math.sqrt(lotSf)*0.8), zoning, neighborhood: 'dtla', siteCondition: result.useType === 'Vacant' ? 'vacant' : 'demolition', topography: 'flat', cornerLot: false, transit, arterial: 'major', utilities: 'full', constFlood: false, constHillside: false, constHistoric: false, constFault: false, constCoastal: false, constParking: false };
     window._lastScoringInput = inp;
     for (var u = 0; u < useTypes.length; u++) { try { var bills = getApplicableLegislation(useTypes[u], inp); for (var b = 0; b < bills.length; b++) allBills[bills[b].id] = bills[b]; if (bills.length > bestCount) { bestCount = bills.length; bestUseType = useTypes[u]; } } catch(e) {} }
-    window.lastGeocode = prevGeocode;
+    window.lastGeocode = prevGeocode; window.lastSb79Context = prevSb79Context;
     var billList = []; for (var key in allBills) { if (allBills.hasOwnProperty(key)) billList.push(allBills[key]); }
     return { bills: billList, effects: stackLegislationEffects(billList), bestUseType, inp };
 }
@@ -5881,17 +6037,20 @@ function generateListingOnePager(result, inp, address) {
     let sb79HTML = '';
     if (window.lastGeocode) {
         const sb79 = detectSB79Eligibility(window.lastGeocode.lat, window.lastGeocode.lon);
-        if (sb79 && sb79.eligible) {
-            const st = sb79.nearestStation;
+        const sb79Decision = typeof getCurrentSb79Decision === 'function' ? getCurrentSb79Decision() : null;
+        if (sb79 && sb79.eligible && sb79Decision && sb79Decision.finalEligibility) {
+            const st = sb79.station;
             sb79HTML = `
             <div class="onepager-sb79">
-                <h4 style="margin:0 0 0.5rem;font-size:0.85rem;color:#0f766e;">SB 79 Transit-Oriented Development</h4>
+                <h4 style="margin:0 0 0.5rem;font-size:0.85rem;color:#0f766e;">SB 79 / LA Low-Rise Parcel Path</h4>
                 <div style="font-size:0.8rem;color:#334155;">
-                    <strong>Eligible</strong> — ${st.zone.charAt(0).toUpperCase()+st.zone.slice(1)} Zone (${(st.distance).toFixed(2)} mi from ${st.name})<br>
-                    Tier ${st.tier} (${st.tier===1?'Heavy Rail':'Light Rail / Commuter Rail'})
-                    ${st.allowances ? `<br>Height: ${st.allowances.height} ft &bull; Density: ${st.allowances.density} du/ac &bull; FAR: ${st.allowances.far} &bull; Parking: ${st.allowances.parking}` : ''}
+                    <strong>${sb79Decision.currentPath === 'la_low_rise' ? 'LA Low-Rise' : 'Direct SB 79'}</strong> — APN-gated current path<br>
+                    ${sb79.zone.charAt(0).toUpperCase()+sb79.zone.slice(1)} transit band (${sb79.distMiles.toFixed(2)} mi from ${st.name})<br>
+                    Verify the Sean Lahijani / LA Planning May snapshot against current ZIMAS before underwriting.
                 </div>
             </div>`;
+        } else if (sb79 && sb79.eligible) {
+            sb79HTML = `<div class="onepager-sb79"><h4 style="margin:0 0 0.5rem;font-size:0.85rem;color:#92400e;">ZIMAS Verification Required</h4><div style="font-size:0.8rem;color:#334155;">Transit proximity is screening only; no SB 79 or Low-Rise envelope is applied without an assessor APN decision.</div></div>`;
         }
     }
 
@@ -7528,12 +7687,12 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
   setupCommaFormatting('parcelSize');
   setupCommaFormatting('marketValue');
-  // Manual edit means the user has verified/overridden the field themselves —
-  // clear the "unverified lookup" flag so the results banner doesn't misfire.
+  // Manual edits invalidate assessor/GIS parcel-area provenance.
+  // A new sourced lookup is required before underwriting can resume.
   var _parcelSizeEl = document.getElementById('parcelSize');
-  if (_parcelSizeEl) _parcelSizeEl.addEventListener('change', function() { window._parcelSizeIsUnverified = false; });
+  if (_parcelSizeEl) _parcelSizeEl.addEventListener('change', function() { window._parcelSizeIsUnverified = true; window._parcelAreaEvidence = null; window.lastAcquisitionReadiness = null; clearBlockedAcquisitionOutput('Parcel area changed. Verify sourced area before recalculating.'); });
   var _zoningEl = document.getElementById('zoning');
-  if (_zoningEl) _zoningEl.addEventListener('change', function() { window._zoningIsUnverified = false; });
+  if (_zoningEl) _zoningEl.addEventListener('change', function() { window._zoningIsUnverified = true; window.lastAcquisitionReadiness = null; clearBlockedAcquisitionOutput('Zoning changed. Verify exact zoning before recalculating.'); });
 });
 
 // Demo mode URL parameter check

@@ -214,6 +214,13 @@ RATIONALE = {
 //  CALIFORNIA HOUSING LEGISLATION
 // ============================================================
 
+function getCurrentSb79Envelope() {
+    if (typeof window === 'undefined' || !window.lastSb79Context) return null;
+    const context = window.lastSb79Context;
+    const scenario = typeof getSb79DecisionScenario === 'function' ? getSb79DecisionScenario(context) : null;
+    return scenario ? scenario.envelope : null;
+}
+
 CA_HOUSING_LEGISLATION = [
     {
         id: 'sb9',
@@ -443,8 +450,8 @@ CA_HOUSING_LEGISLATION = [
     {
         id: 'sb79',
         name: 'SB 79 (Transit-Oriented)',
-        description: 'Overrides local zoning near qualifying transit stations — up to 95ft, 160 du/acre, 4.5 FAR.',
-        detail: 'SB 79 (statewide July 1, 2026; LA Ords 188967/188968 eff. June 30, 2026 — underwrite ZIMAS first) is California\'s transit-oriented development bill that overrides local zoning near qualifying heavy and light rail stations. Tier 1 (heavy rail, including all Metro Rail lines) allows 95ft height, 160 du/acre, and 4.5 FAR. Tier 2 (light rail, BRT, qualifying Metrolink) allows 85ft height, 140 du/acre, and 4.0 FAR. Three distance zones apply: Adjacent (within 200ft of station entrance) and Inner (within 1/4 mile) get full tier benefits and zero parking requirements. Outer zone (1/4 to 1/2 mile) is limited to 65ft height and 3.25 FAR, with 0.5 parking spaces per unit. All projects require 15% affordable units. 100% affordable projects receive the full tier benefits regardless of zone. Impact: Unlocks massive upzoning near every Metro station in LA County, making transit-adjacent parcels significantly more valuable for higher-density development.',
+        description: 'Parcel-gated transit housing standards, with LA Low-Rise and phased implementation under Ords 188967/188968.',
+        detail: 'SB 79 is operative statewide July 1, 2026. In Los Angeles, first resolve the assessor APN against current ZIMAS and the City\'s final eligibility maps. Direct statutory floors vary by tier and distance: Tier 1 adjacent/inner/outer are 95/75/65 ft, 160/120/100 du/acre and 4.5/3.5/3.0 FAR; Tier 2 values are 85/65/55 ft, 140/100/80 du/acre and 4.0/3.0/2.5 FAR. LA Ordinance 188967 can provide a local LR-1 or LR-2 path, generally 5–16 units, 1.30–2.90 FAR, two or three stories and no required parking, subject to affordability and parcel constraints. Proximity alone is screening—not a legal eligibility conclusion.',
         effectiveDate: 'July 1, 2026',
         author: 'Sen. Scott Wiener',
         codeSection: 'Cal. Gov. Code §§ 65913.6–65913.12',
@@ -452,30 +459,26 @@ CA_HOUSING_LEGISLATION = [
         chaptered: 'Stats. 2025; LA Ords 188967/188968 (2026)',
         applies: (useId, inp) => {
             if (!window.lastGeocode) return false;
-            if (inp && inp.constHistoric) return false;  // SB 79 excludes historic overlay areas
             if (!['multifamily_low','multifamily_mid','multifamily_high','mixeduse','senior','hotel'].includes(useId)) return false;
-            const sb79 = detectSB79Eligibility(window.lastGeocode.lat, window.lastGeocode.lon);
-            return sb79.eligible;
+            const decision = typeof getCurrentSb79Decision === 'function' ? getCurrentSb79Decision() : null;
+            return !!(decision && decision.finalEligibility);
         },
         get densityBonus() {
-            if (!window.lastGeocode) return 0;
-            const sb79 = detectSB79Eligibility(window.lastGeocode.lat, window.lastGeocode.lon);
-            if (!sb79.eligible) return 0;
-            return sb79.allowances.far / 3.0 - 1;
+            const env = getCurrentSb79Envelope();
+            if (!env || !env.maxFar) return 0;
+            return env.maxFar / 3.0 - 1;
         },
         get parkingReduction() {
-            if (!window.lastGeocode) return 0;
-            const sb79 = detectSB79Eligibility(window.lastGeocode.lat, window.lastGeocode.lon);
-            if (!sb79.eligible) return 0;
-            return sb79.allowances.parking === 0 ? 1.0 : 0.5;
+            const env = getCurrentSb79Envelope();
+            if (!env) return 0;
+            const parking = env.parkingRatio !== undefined ? env.parkingRatio : env.parking;
+            return parking === 0 ? 1.0 : 0.5;
         },
         softCostReduction: 0.10,
         legalOverride: true,
         get minFAR() {
-            if (!window.lastGeocode) return 0;
-            const sb79 = detectSB79Eligibility(window.lastGeocode.lat, window.lastGeocode.lon);
-            if (!sb79.eligible) return 0;
-            return sb79.allowances.far;
+            const env = getCurrentSb79Envelope();
+            return env && env.maxFar ? env.maxFar : 0;
         },
     },
     {
