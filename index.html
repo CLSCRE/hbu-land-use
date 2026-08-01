@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Land to Yield</title>
-    <meta name="description" content="Instantly score highest-and-best-use for any LA County parcel. SB 79 analysis, 27-tab deep feasibility, pro forma modeling — all in one tool.">
+    <title>Los Angeles Parcel Feasibility — Land to Yield</title>
+    <meta name="description" content="Screen City of Los Angeles parcels for development potential, applicable housing programs, preliminary economics, and the issues that still require professional verification.">
+    <link rel="canonical" href="https://landtoyield.com/">
 
     <!-- Open Graph / Social Sharing -->
-    <meta property="og:title" content="Land to Yield — Instant HBU Analysis for LA County">
-    <meta property="og:description" content="The instant PDA for every LA County parcel. What consultants charge thousands for, delivered in seconds.">
+    <meta property="og:title" content="Los Angeles Parcel Feasibility — Land to Yield">
+    <meta property="og:description" content="Screen a City of Los Angeles parcel before spending time and money on full diligence.">
     <meta property="og:image" content="https://landtoyield.com/og-image.png">
-    <meta property="og:url" content="https://landtoyield.com">
+    <meta property="og:url" content="https://landtoyield.com/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Land to Yield">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Land to Yield — Instant HBU Analysis for LA County">
-    <meta name="twitter:description" content="The instant PDA for every LA County parcel. What consultants charge thousands for, delivered in seconds.">
+    <meta name="twitter:title" content="Los Angeles Parcel Feasibility — Land to Yield">
+    <meta name="twitter:description" content="Screen a City of Los Angeles parcel before spending time and money on full diligence.">
     <meta name="twitter:image" content="https://landtoyield.com/og-image.png">
 
     <!-- Favicon -->
@@ -32,8 +33,8 @@
       "name": "Land to Yield",
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Web",
-      "url": "https://landtoyield.com",
-      "description": "Instant highest-and-best-use analysis for any LA County parcel. 27-tab deep feasibility, SB 79 transit analysis, pro forma modeling, and investor-ready reports.",
+      "url": "https://landtoyield.com/",
+      "description": "Preliminary development-potential screening for City of Los Angeles parcels, with source-linked verification steps and editable underwriting assumptions.",
       "offers": [
         {
           "@type": "Offer",
@@ -75,7 +76,7 @@
       "creator": {
         "@type": "Organization",
         "name": "Land to Yield",
-        "url": "https://landtoyield.com"
+        "url": "https://landtoyield.com/"
       }
     }
     </script>
@@ -281,6 +282,14 @@
             color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.85rem;
             font-weight: 500; transition: color .2s;
         }
+        .hero-links a[data-primary-cta] {
+            background: var(--primary); color: var(--white);
+            padding: .85rem 1.5rem; border-radius: 999px;
+            font-size: 1rem; font-weight: 800;
+            box-shadow: 0 10px 30px rgba(0,0,0,.25);
+        }
+        .hero-links a[data-primary-cta]:hover { background: var(--primary-dark); color: var(--white); }
+        .hero-links + .hero-links { margin-top: 1.15rem; }
         .hero-links a:hover { color: var(--white); }
 
         /* ── SECTIONS ── */
@@ -948,13 +957,11 @@
             <a href="#" class="nav-brand-text">Land <span>to</span> Yield</a>
         </div>
         <ul class="nav-links" id="navLinks">
-            <li><a href="#features">Features</a></li>
-            <li><a href="#pricing">Pricing</a></li>
-            <li><a href="#faq">FAQ</a></li>
-            <li><a href="sb79.html" style="color:#805ad5;font-weight:700;">SB 79 Portal</a></li>
-            <li><a href="bill-finder.html">Bill Finder</a></li>
-            <li><a href="newsletter.html">Newsletter</a></li>
-            <li><a href="#role-portals" class="btn btn-primary">Choose Portal</a></li>
+            <li><a href="app.html" class="btn btn-primary">Analyze a Parcel</a></li>
+            <li><a href="developers/">For Developers</a></li>
+            <li><a href="land-use-attorneys/">For Attorneys</a></li>
+            <li><a href="guides/">Insights</a></li>
+            <li><a href="login.html">Sign In</a></li>
         </ul>
         <button class="hamburger" id="hamburger" aria-label="Toggle menu">
             <span></span><span></span><span></span>
@@ -970,33 +977,16 @@
             <div class="hero-brand-name">Land to Yield</div>
         </div>
         <div class="hero-divider"></div>
-        <h1>Know Every LA Parcel's<br>Development Potential in <em>60 Seconds</em></h1>
-        <p class="sub">Stop spending days on zoning research and manual pro formas. Get instant highest-and-best-use scoring for any parcel in LA County.</p>
-
-        <div class="portal-cards" id="role-portals">
-            <a href="agent.html" class="portal-card">
-                <div class="portal-icon">🏠</div>
-                <h3>I'm a Real Estate Agent</h3>
-                <p>Discover hidden development value in any property. Get a clean, shareable report for your homeowners.</p>
-                <span class="portal-arrow">Get Started &rarr;</span>
-            </a>
-            <a href="app.html" class="portal-card">
-                <div class="portal-icon">🏗️</div>
-                <h3>I'm a Developer</h3>
-                <p>Full feasibility analysis with 27-tab deep dive, pro forma modeling, and investor-ready reports.</p>
-                <span class="portal-arrow">Launch Tool &rarr;</span>
-            </a>
-            <a href="lender.html" class="portal-card">
-                <div class="portal-icon">🏦</div>
-                <h3>I'm a Lender / Capital Partner</h3>
-                <p>Quickly assess collateral quality, use options, and pipeline around any parcel.</p>
-                <span class="portal-arrow">Enter Lender Portal &rarr;</span>
-            </a>
-        </div>
+        <h1>Screen an LA Parcel<br>Before You Spend on <em>Full Diligence</em></h1>
+        <p class="sub">Identify preliminary development pathways, economics, and unresolved issues for City of Los Angeles parcels. Verify controlling zoning and legal conclusions before relying on any result.</p>
 
         <div class="hero-links">
-            <a href="#pricing">View Pricing &darr;</a>
-            <a href="#how">See How It Works &darr;</a>
+            <a href="app.html" data-primary-cta class="btn btn-solid btn-lg">Analyze a Parcel</a>
+            <a href="newsletter.html">Get the LA Development Brief &rarr;</a>
+        </div>
+        <div class="hero-links" aria-label="Professional pathways">
+            <a href="developers/">Built for developers</a>
+            <a href="land-use-attorneys/">Built with attorneys in mind</a>
         </div>
     </div>
 </section>
@@ -1034,7 +1024,7 @@
     <img src="https://images.unsplash.com/photo-1580655653885-65763b2597d0?w=1920&q=80" alt="Los Angeles skyline at sunset" loading="lazy">
     <div class="photo-banner-text">
         <h3>Built for Los Angeles.</h3>
-        <p>Every parcel. Every zone. Every piece of legislation that affects what you can build.</p>
+        <p>Parcel facts, planning controls, legislative pathways, and verification questions in one documented screen.</p>
     </div>
 </div>
 
@@ -1050,12 +1040,12 @@
             <div class="feature-card">
                 <div class="feature-icon icon-amber">🏆</div>
                 <h3>HBU Scoring Engine</h3>
-                <p>Proprietary algorithm scores every allowable use — residential, commercial, mixed-use, industrial — and ranks by development potential.</p>
+                <p>Compare preliminary residential, commercial, mixed-use, and industrial scenarios using visible legal, physical, financial, and productivity assumptions.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon icon-blue">🚇</div>
                 <h3>SB 79 Transit Finder</h3>
-                <p>Automatically identifies parcels within SB 79 transit zones with tier classification. Heavy rail, light rail, and commuter rail mapped instantly.</p>
+                <p>Maps transit proximity and potential SB 79 study areas while preserving the parcel-specific evidence and local implementation questions that still require verification.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon icon-purple">📋</div>
@@ -1065,7 +1055,7 @@
             <div class="feature-card">
                 <div class="feature-icon icon-rose">⚖️</div>
                 <h3>Legislation Stacking</h3>
-                <p>Automatically layers applicable state and local legislation — SB 79, TOC, density bonus, ED1, ADU — showing exactly how each affects your site.</p>
+                <p>Screens potential state and local pathways — including SB 79, TOC, density bonus, ED1, and ADU rules — and identifies what still must be verified.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon icon-indigo">💰</div>
@@ -1092,13 +1082,13 @@
         <div class="section-header">
             <div class="section-label">How It Works</div>
             <h2>From address to analysis<br>in 3 steps.</h2>
-            <p>No training required. Enter any LA County address and get actionable development intelligence.</p>
+            <p>No training required. Enter a City of Los Angeles address or APN to begin a preliminary, source-linked screen.</p>
         </div>
         <div class="steps">
             <div class="step">
                 <div class="step-num">1</div>
                 <h3>Enter an Address</h3>
-                <p>Type any LA County address or APN. We pull zoning, overlays, lot size, and transit data automatically.</p>
+                <p>Enter a City of Los Angeles address or APN. Review the parcel identity and public-source evidence before relying on the result.</p>
                 <div class="step-screenshot">
                     <div class="mock-bar">
                         <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
@@ -1119,7 +1109,7 @@
             <div class="step">
                 <div class="step-num">2</div>
                 <h3>Get Your HBU Score</h3>
-                <p>See every allowable land use ranked by development potential with applicable legislation identified.</p>
+                <p>Compare preliminary land-use scenarios and potential legislative pathways, with unresolved evidence kept visible.</p>
                 <div class="step-screenshot">
                     <div style="padding:.4rem">
                         <div style="color:#86868b;font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">HBU Score</div>
@@ -1170,7 +1160,7 @@
         <div class="section-header">
             <div class="section-label">Get Started</div>
             <h2>Start your free analysis.</h2>
-            <p>Enter your email and get instant access to the most powerful land use tool in LA County.</p>
+            <p>Enter your email to access preliminary City of Los Angeles parcel screening and transparent underwriting tools.</p>
         </div>
         <form class="lead-form" id="leadForm">
             <input type="email" placeholder="you@company.com" required id="leadEmail">
@@ -1186,15 +1176,16 @@
     <div class="section-inner">
         <div class="section-header">
             <div class="section-label">See It In Action</div>
-            <h2>From address to analysis<br>in 60 seconds.</h2>
-            <p>Watch how Land to Yield delivers instant development intelligence.</p>
+            <h2>From parcel lookup<br>to a documented issue list.</h2>
+            <p>See an illustrative workflow from parcel lookup through verification and preliminary underwriting.</p>
         </div>
+        <div class="notice" style="max-width:900px;margin:0 auto 1rem;background:#fff7e9;border-left:5px solid #f59e0b;padding:.9rem 1.1rem;text-align:left;border-radius:8px;"><strong>Illustrative example only.</strong> The parcel, values, scores, program flags, and conclusions shown below are fictional and are not a live zoning or legal analysis.</div>
         <div class="demo-video-wrapper" id="demoVideoWrapper">
 
             <div class="wt-viewport" id="wtViewport">
 
                 <!-- Slide 1: Enter Address -->
-                <div class="wt-slide active" data-caption="<strong>Step 1:</strong> Enter any LA County address and click Look Up. Parcel data auto-fills instantly from the County Assessor.">
+                <div class="wt-slide active" data-caption="<strong>Illustrative Step 1:</strong> Enter a City of Los Angeles address or APN, then verify the returned parcel identity and sources.">
                     <div class="wt-chrome">
                         <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
                         <div class="wt-tab active"><span class="wt-tab-icon">&#128200;</span> Developer Portal</div>
@@ -1341,7 +1332,7 @@
                     </div>
                     <div class="wt-body">
                         <div class="wt-h2">Applicable CA Housing Legislation</div>
-                        <div class="wt-sub">7 bills apply to this parcel based on zoning, lot size, and transit proximity</div>
+                        <div class="wt-sub">7 hypothetical pathways shown for illustration; parcel-specific evidence is not verified</div>
                         <div class="wt-card">
                             <div style="display:flex;justify-content:space-between;align-items:center;">
                                 <div class="wt-h3">SB 79 — Transit-Oriented Development</div>
@@ -1486,8 +1477,8 @@
                         </div>
                         <div class="wt-card" style="padding:0.35rem 0.5rem;">
                             <div class="wt-row" style="gap:0.6rem;">
-                                <div><span class="wt-stat-label">SB 79 Eligible</span> <span class="wt-badge wt-badge-green">Yes — Tier 1</span></div>
-                                <div><span class="wt-stat-label">Entitlement</span> <span class="wt-badge wt-badge-blue">By-right</span></div>
+                                <div><span class="wt-stat-label">SB 79 Screen</span> <span class="wt-badge wt-badge-amber">Verify parcel</span></div>
+                                <div><span class="wt-stat-label">Potential pathway</span> <span class="wt-badge wt-badge-blue">Requires counsel</span></div>
                                 <div><span class="wt-stat-label">Ease of Execution</span> <span class="wt-badge wt-badge-green">82/100</span></div>
                             </div>
                         </div>
@@ -1523,14 +1514,14 @@
                                 <div class="wt-card-title">Risk Assessment</div>
                                 <div class="wt-row">
                                     <div class="wt-stat"><span class="wt-stat-label">Market Risk</span><span class="wt-badge wt-badge-green">Low</span></div>
-                                    <div class="wt-stat"><span class="wt-stat-label">Entitlement</span><span class="wt-badge wt-badge-green">By-right</span></div>
+                                    <div class="wt-stat"><span class="wt-stat-label">Entitlement</span><span class="wt-badge wt-badge-amber">Unverified</span></div>
                                 </div>
                                 <div class="wt-row">
                                     <div class="wt-stat"><span class="wt-stat-label">Construction</span><span class="wt-badge wt-badge-amber">Moderate</span></div>
                                     <div class="wt-stat"><span class="wt-stat-label">Exit</span><span class="wt-badge wt-badge-green">Strong</span></div>
                                 </div>
                                 <div class="wt-divider"></div>
-                                <div style="text-align:center;"><span class="wt-stat-label">Overall: </span><span class="wt-badge wt-badge-green" style="font-size:0.55rem;">RECOMMEND — Meets all criteria</span></div>
+                                <div style="text-align:center;"><span class="wt-stat-label">Overall: </span><span class="wt-badge wt-badge-amber" style="font-size:0.55rem;">HOLD — Verify inputs</span></div>
                             </div>
                         </div>
                     </div>
@@ -1572,7 +1563,7 @@
                 </div>
 
                 <!-- Slide 11: Jurisdiction & Entitlement -->
-                <div class="wt-slide" data-caption="<strong>Step 11:</strong> Jurisdiction auto-detected for 15+ LA cities &mdash; permit pathways, impact fees, and entitlement risk scored automatically.">
+                <div class="wt-slide" data-caption="<strong>Step 11:</strong> Illustrative jurisdiction screen showing where local permit, fee, and entitlement research belongs.">
                     <div class="wt-chrome">
                         <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
                         <div class="wt-tab active"><span class="wt-tab-icon">&#127963;</span> Entitlement</div>
@@ -1598,20 +1589,20 @@
                         </div>
                         <div class="wt-card">
                             <div class="wt-card-title">Recommended Consultants</div>
-                            <div class="wt-sub">Entitlement attorney, expediter, and environmental consultants auto-suggested for City of LA projects over 50 units.</div>
+                            <div class="wt-sub">Example team roles include land-use counsel, an expediter, and environmental consultants; actual needs depend on the verified project.</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Slide 12: Final CTA -->
-                <div class="wt-slide" data-caption="<strong>Ready to start?</strong> Choose your portal and analyze your first property in under 60 seconds.">
+                <div class="wt-slide" data-caption="<strong>Ready to start?</strong> Begin a preliminary parcel screen and verify the evidence before relying on the result.">
                     <div class="wt-chrome">
                         <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
                         <div class="wt-tab active"><span class="wt-tab-icon">&#127968;</span> Land to Yield</div>
                     </div>
                     <div class="wt-body" style="align-items:center;justify-content:center;text-align:center;gap:0.8rem;">
                         <div style="font-size:2rem;">&#127919;</div>
-                        <div class="wt-h2" style="font-size:1rem;">Every parcel has untapped potential.<br>Find it in seconds.</div>
+                        <div class="wt-h2" style="font-size:1rem;">Every parcel decision starts with evidence.<br>Organize it before full diligence.</div>
                         <div class="wt-sub" style="max-width:360px;font-size:0.6rem;">16 land uses scored &middot; Full pro forma &middot; SB 79 transit analysis &middot; Legislation scanner &middot; Opportunity finder &middot; Lender underwriting &middot; Agent one-pagers</div>
                         <div class="wt-row" style="justify-content:center;gap:0.6rem;margin-top:0.3rem;">
                             <a href="app.html" class="wt-btn" style="padding:0.4rem 1rem;font-size:0.65rem;text-decoration:none;">Developer Portal &#8594;</a>
@@ -1647,98 +1638,89 @@
     <div class="section-inner">
         <div class="section-header">
             <div class="section-label">Why Land to Yield</div>
-            <h2>What takes consultants weeks,<br>we deliver in seconds.</h2>
-            <p>See how we compare to traditional development advisory.</p>
+            <h2>Automate the first screen.<br>Keep professional judgment in the loop.</h2>
+            <p>Each tool has a different role in a defensible development decision.</p>
         </div>
         <table class="compare-table">
             <thead>
                 <tr>
                     <th></th>
-                    <th>Manual PDA<br><small style="font-weight:400;text-transform:none;letter-spacing:0;">Crest, consultants</small></th>
-                    <th>Underbuilt</th>
+                    <th>Professional diligence</th>
+                    <th>Data products</th>
                     <th class="highlight">Land to Yield</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td><strong>Price</strong></td>
-                    <td>$2,500 – $10,000+<br><small>per report</small></td>
-                    <td>$80/mo<br><small>basic zoning only</small></td>
-                    <td class="highlight">$149 – $299/mo<br><small>unlimited lookups</small></td>
+                    <td><strong>Primary role</strong></td>
+                    <td>Verify and advise</td>
+                    <td>Supply records or market data</td>
+                    <td class="highlight">Organize a preliminary screen</td>
                 </tr>
                 <tr>
-                    <td><strong>Turnaround</strong></td>
-                    <td>2 – 3 weeks</td>
-                    <td>Instant</td>
-                    <td class="highlight">Instant</td>
+                    <td><strong>Timing</strong></td>
+                    <td>Depends on scope and team</td>
+                    <td>Depends on provider and record</td>
+                    <td class="highlight">Browser-based workflow</td>
                 </tr>
                 <tr>
-                    <td><strong>HBU Scoring</strong></td>
-                    <td class="check">&#10003; Manual</td>
-                    <td class="cross">&#10007;</td>
-                    <td class="highlight check">&#10003; Automated</td>
-                </tr>
-                <tr>
-                    <td><strong>Legislation Stacking</strong></td>
+                    <td><strong>Development scenarios</strong></td>
+                    <td class="check">Professional analysis</td>
                     <td class="partial">Varies</td>
-                    <td class="cross">&#10007;</td>
-                    <td class="highlight check">&#10003; SB 79, TOC, ED1+</td>
+                    <td class="highlight check">Editable preliminary comparisons</td>
                 </tr>
                 <tr>
-                    <td><strong>Pro Forma & Sensitivity</strong></td>
-                    <td class="check">&#10003;</td>
-                    <td class="cross">&#10007;</td>
-                    <td class="highlight check">&#10003; Interactive</td>
+                    <td><strong>Legislation</strong></td>
+                    <td class="check">Controlling legal review</td>
+                    <td class="partial">Source-dependent</td>
+                    <td class="highlight check">Potential-pathway screen</td>
                 </tr>
                 <tr>
-                    <td><strong>Transit Analysis</strong></td>
-                    <td class="partial">Manual</td>
-                    <td class="cross">&#10007;</td>
-                    <td class="highlight check">&#10003; Auto-mapped</td>
+                    <td><strong>Economics</strong></td>
+                    <td class="check">Project-specific advice</td>
+                    <td class="partial">Market inputs may be available</td>
+                    <td class="highlight check">Interactive assumptions</td>
                 </tr>
                 <tr>
-                    <td><strong>Investor Reports</strong></td>
-                    <td class="check">&#10003;</td>
-                    <td class="cross">&#10007;</td>
-                    <td class="highlight check">&#10003; PDF export</td>
+                    <td><strong>Unresolved questions</strong></td>
+                    <td class="check">Resolved through diligence</td>
+                    <td class="partial">Usually outside scope</td>
+                    <td class="highlight check">Kept visible and assigned</td>
                 </tr>
                 <tr>
-                    <td><strong>27-Tab Deep Analysis</strong></td>
-                    <td class="cross">&#10007;</td>
-                    <td class="cross">&#10007;</td>
-                    <td class="highlight check">&#10003;</td>
+                    <td><strong>Best used for</strong></td>
+                    <td class="check">Reliance and decisions</td>
+                    <td class="check">Specific facts and datasets</td>
+                    <td class="highlight check">Triage before full diligence</td>
                 </tr>
             </tbody>
         </table>
-        <p class="compare-tagline">The depth of a $10,000 PDA report. The speed of a Google search. <em>From $149/mo.</em></p>
+        <p class="compare-tagline">Land to Yield supports the first screen; qualified professionals verify the decision.</p>
     </div>
 </section>
 
-<!-- ── SOCIAL PROOF ── -->
+<!-- ── TRUST PRINCIPLES ── -->
 <section class="social-proof">
     <div class="section-inner">
         <div class="section-header">
-            <div class="section-label">Trusted by Professionals</div>
-            <h2>Built for LA developers,<br>agents, and lenders.</h2>
+            <div class="section-label">Designed for Professional Diligence</div>
+            <h2>Useful because uncertainty<br>stays visible.</h2>
         </div>
         <div class="proof-grid">
             <div class="proof-card">
-                <div class="proof-stat">2.4M+</div>
-                <div class="proof-label">LA County parcels covered</div>
+                <div class="proof-stat">Source-linked</div>
+                <div class="proof-label">Official records, dates, and parcel identity remain reviewable</div>
             </div>
             <div class="proof-card">
-                <div class="proof-stat">27</div>
-                <div class="proof-label">Deep analysis tabs per parcel</div>
+                <div class="proof-stat">Fail-closed</div>
+                <div class="proof-label">Missing critical evidence blocks final eligibility and offer conclusions</div>
             </div>
             <div class="proof-card">
-                <div class="proof-stat">60s</div>
-                <div class="proof-label">Average time to full HBU report</div>
+                <div class="proof-stat">Transparent</div>
+                <div class="proof-label">Sourced facts, derived calculations, and user assumptions stay distinct</div>
             </div>
         </div>
-        <blockquote class="proof-quote">
-            "We used to spend $5,000 and wait three weeks for a PDA report. Now I run the same analysis while I'm still on the phone with my client."
-        </blockquote>
-        <p class="proof-attribution">— LA County Developer &amp; Early Access User</p>
+        <p class="compare-tagline">Preliminary screening is the start of diligence—not a legal, architectural, appraisal, title, tax, environmental, or lending conclusion.</p>
     </div>
 </section>
 
@@ -1776,7 +1758,7 @@
                 <div class="price-desc">For individual brokers and agents</div>
                 <ul class="price-features">
                     <li>Unlimited address lookups</li>
-                    <li>HBU scoring for all parcels</li>
+                    <li>Preliminary HBU screening within stated coverage</li>
                     <li>SB 79 transit analysis</li>
                     <li>Legislation stacking</li>
                     <li>5 Deep Analysis reports/mo</li>
@@ -1832,15 +1814,15 @@
         <div class="faq-list">
             <div class="faq-item">
                 <button class="faq-q">How accurate is the zoning and legislation data?</button>
-                <div class="faq-a">Our data is sourced directly from LA County and City of LA zoning databases, with legislation verified against published state and local statutes. We update our database as new legislation is enacted. Every calculation is transparent and auditable through our 27-tab analysis framework.</div>
+                <div class="faq-a">Land to Yield is a preliminary screening tool. It uses public parcel, zoning, planning, and legislative sources and shows unresolved verification steps. Confirm the current ZIMAS record, controlling maps, overlays, and legal pathway with qualified professionals before relying on a result.</div>
             </div>
             <div class="faq-item">
                 <button class="faq-q">What areas does the tool cover?</button>
-                <div class="faq-a">The tool currently covers all parcels within the City of Los Angeles. We are actively expanding to cover all of LA County and additional Southern California markets. Coverage updates are included in your subscription at no extra cost.</div>
+                <div class="faq-a">The core workflow is currently designed for parcel screening within the City of Los Angeles. Source availability and workflow support vary by parcel and tool. We are evaluating broader LA County and Southern California coverage.</div>
             </div>
             <div class="faq-item">
                 <button class="faq-q">How is this different from CoStar or ZIMAS?</button>
-                <div class="faq-a">CoStar provides market comps and ZIMAS shows base zoning — neither tells you what you can actually build. Our tool layers all applicable legislation (SB 79, TOC, density bonus, ED1, ADU rules), scores every allowable use, and runs financial feasibility — all from a single address lookup.</div>
+                <div class="faq-a">CoStar focuses on market data, while ZIMAS provides official parcel-linked planning information. Land to Yield organizes those kinds of inputs into preliminary pathway screens, transparent scenarios, and a verification list; qualified professionals still determine what can legally and physically be built.</div>
             </div>
             <div class="faq-item">
                 <button class="faq-q">Can I cancel my subscription anytime?</button>
@@ -1863,9 +1845,10 @@
     <div class="footer-inner">
         <div class="footer-brand">Land to Yield</div>
         <div class="footer-links">
-            <a href="app.html">Developer Portal</a>
-            <a href="agent.html">Agent Portal</a>
-            <a href="lender.html">Lender Portal</a>
+            <a href="app.html">Analyze a Parcel</a>
+            <a href="developers/">For Developers</a>
+            <a href="land-use-attorneys/">For Attorneys</a>
+            <a href="guides/">Insights</a>
             <a href="privacy.html">Privacy</a>
             <a href="terms.html">Terms</a>
             <a href="mailto:contact@landtoyield.com">Contact</a>
@@ -1879,9 +1862,9 @@
     <div class="sticky-cta-inner">
         <div class="sticky-cta-text">
             Land to Yield
-            <span>Instant HBU analysis</span>
+            <span>Preliminary parcel screening</span>
         </div>
-        <a href="#role-portals" class="btn-cta">Try Free</a>
+        <a href="app.html" class="btn-cta">Analyze a Parcel</a>
     </div>
 </div>
 

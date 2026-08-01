@@ -2,26 +2,38 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://landtoyield.com/</loc>
-    <lastmod>2026-02-26</lastmod>
+    <lastmod>2026-07-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://landtoyield.com/app.html</loc>
-    <lastmod>2026-02-26</lastmod>
-    <changefreq>weekly</changefreq>
+    <loc>https://landtoyield.com/developers/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://landtoyield.com/lender.html</loc>
-    <lastmod>2026-02-26</lastmod>
+    <loc>https://landtoyield.com/land-use-attorneys/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://landtoyield.com/about-methodology/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://landtoyield.com/guides/</loc>
+    <lastmod>2026-07-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://landtoyield.com/agent.html</loc>
-    <lastmod>2026-02-26</lastmod>
-    <changefreq>weekly</changefreq>
+    <loc>https://landtoyield.com/guides/evaluate-la-development-parcel/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 </urlset>

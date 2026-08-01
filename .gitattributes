@@ -1,2 +1,3 @@
 app.html whitespace=cr-at-eol
 lender.html whitespace=cr-at-eol
+sitemap.xml text eol=lf

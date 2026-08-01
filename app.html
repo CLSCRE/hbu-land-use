@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Highest &amp; Best Use Calculator — Los Angeles, CA</title>
-    <meta name="description" content="Full 27-tab HBU analysis for any LA County parcel. Zoning, pro forma, sensitivity analysis, and investor-ready reports.">
+    <meta name="description" content="Preliminary City of Los Angeles parcel screening with source-linked verification, editable development scenarios, and transparent underwriting assumptions.">
+    <meta name="robots" content="noindex, follow">
 
     <!-- Open Graph / Social Sharing -->
     <meta property="og:title" content="Developer Portal — Land to Yield">
-    <meta property="og:description" content="Full 27-tab highest-and-best-use analysis for any LA County parcel. Zoning, pro forma, sensitivity, and investor reports.">
+    <meta property="og:description" content="Preliminary City of Los Angeles parcel screening with source-linked verification and editable development scenarios.">
     <meta property="og:image" content="https://landtoyield.com/og-image.png">
     <meta property="og:url" content="https://landtoyield.com/app.html">
     <meta property="og:type" content="website">
@@ -175,6 +176,50 @@
 .sb79-overlay-btn { right: 165px; }
 .pipeline-overlay-btn { right: 18px; }
 .sb79-overlay-btn.active, .pipeline-overlay-btn.active { background: #b7791f; }
+.newsletter-side-cta {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    z-index: 10000;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.75rem 0.9rem;
+    max-width: 170px;
+    color: #fff;
+    background: #1a365d;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-right: 0;
+    border-radius: 10px 0 0 10px;
+    box-shadow: 0 5px 18px rgba(26,54,93,0.3);
+    font-size: 0.8rem;
+    font-weight: 800;
+    line-height: 1.25;
+    text-decoration: none;
+    transition: background 0.2s, padding-right 0.2s;
+}
+.newsletter-side-cta:hover,
+.newsletter-side-cta:focus-visible {
+    background: #2b6cb0;
+    padding-right: 1.1rem;
+}
+.newsletter-side-cta:focus-visible {
+    outline: 3px solid #f6ad55;
+    outline-offset: 2px;
+}
+@media (max-width: 700px) {
+    .newsletter-side-cta {
+        top: auto;
+        right: 12px;
+        bottom: 12px;
+        transform: none;
+        max-width: none;
+        border-right: 1px solid rgba(255,255,255,0.3);
+        border-radius: 999px;
+        padding: 0.65rem 0.9rem;
+    }
+}
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -235,13 +280,17 @@ window.activateDemo = window.activateDemo || function() {};
 
 <div class="tab-bar">
     <button class="tab-btn active" data-tab="calculator" onclick="switchTab('calculator')">HBU Calculator</button>
-    <button class="tab-btn" data-tab="finder" onclick="switchTab('finder')">SB 79 Opportunity Finder</button>
+    <button class="tab-btn" data-tab="finder" onclick="switchTab('finder')">Development Opportunity Finder</button>
     <a class="tab-btn" href="sb79.html" style="text-decoration:none;background:linear-gradient(135deg,#805ad5,#6b46c1);color:white;">🏛️ SB 79 Portal</a>
     <a class="tab-btn" href="bill-finder.html" style="text-decoration:none;">🔍 Bill-to-Property Finder</a>
-    <a class="tab-btn" href="newsletter.html" style="text-decoration:none;">📋 Legislative Edge Newsletter</a>
     <button class="tab-btn" data-tab="pipeline" onclick="switchTab('pipeline')">Development Pipeline</button>
     <button class="tab-btn" data-tab="contacts" onclick="switchTab('contacts')">Contacts Directory</button>
 </div>
+
+<a class="newsletter-side-cta" href="newsletter.html" aria-label="Join Our Newsletter">
+    <span aria-hidden="true">📬</span>
+    <span>Join Our Newsletter</span>
+</a>
 
 <div id="tabCalculator" class="tab-content active">
 <div class="container">
@@ -552,7 +601,7 @@ window.activateDemo = window.activateDemo || function() {};
         </section>
 
 
-        <!-- SB 79 map removed from calculator tab — available in the SB 79 Opportunity Finder tab -->
+        <!-- SB 79 map removed from calculator tab — available in the Development Opportunity Finder tab -->
         <div id="mapSection" style="display:none;"></div>
         <div id="sb79Eligibility" style="display:none;"></div>
     </div>
@@ -562,10 +611,10 @@ window.activateDemo = window.activateDemo || function() {};
 <div id="tabFinder" class="tab-content">
 <div class="container">
     <div class="intro-box" style="border-left-color:#805ad5;">
-        <h3>SB 79 Opportunity Finder</h3>
+        <h3>Development Opportunity Finder</h3>
         <p><strong>SB 79</strong> is operative statewide. This Finder screens transit proximity using the exact six statutory tier/distance envelopes, but proximity alone does not establish City of Los Angeles eligibility. Resolve the assessor APN, current ZIMAS/final City map status, temporary holds, exclusions, and any LA Low-Rise path before underwriting or changing yield.</p>
         <p style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed rgba(128,90,213,0.3);font-size:0.88rem;">
-            💡 <strong>New:</strong> Visit the <a href="sb79.html" style="color:#805ad5;font-weight:700;">full SB 79 Portal</a> for instant APN eligibility lookup, all 8 exemption pathways, the official LA Planning dataset, and the July 1 readiness checklist.
+            💡 <strong>SB 79 research:</strong> Visit the <a href="sb79.html" style="color:#805ad5;font-weight:700;">SB 79 Portal</a> for preliminary APN screening, exemption checks, the official LA Planning dataset, and a readiness checklist. Verify parcel-specific evidence before relying on a result.
         </p>
     </div>
 
@@ -17397,7 +17446,7 @@ if (new URLSearchParams(window.location.search).get('demo') === 'true') {
 
         var steps = [
             { icon: '📍', title: 'Enter Any LA Address', desc: 'Type an address or APN in the search bar above. We auto-fill zoning, lot size, transit proximity, and site constraints from public databases.' },
-            { icon: '🏆', title: 'View HBU Analysis', desc: 'See every allowable land use ranked by development potential. Each use is scored across four dimensions: Legal, Physical, Financial, and Productive.' },
+            { icon: '🏆', title: 'View HBU Analysis', desc: 'Compare preliminary land-use scenarios across four dimensions: Legal, Physical, Financial, and Productive. Verify controlling records before relying on a result.' },
             { icon: '📊', title: 'Explore 27 Deep Analysis Tabs', desc: 'Click "Deep Analysis" on any result to open the full feasibility workbook — pro forma, sensitivity analysis, investor module, entitlement pathway, and more.' },
             { icon: '💾', title: 'Save & Compare Properties', desc: 'Save properties to your list, generate PDF one-pagers, and compare multiple sites side-by-side. Your data persists between sessions.' },
         ];
