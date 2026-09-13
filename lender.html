@@ -1084,6 +1084,7 @@ async function lookupAddress() {
     }
 
     window._zoningIsUnverified = false;
+    window._zoningAttested = false;
     window._parcelSizeIsUnverified = true;
     window._parcelAreaEvidence = null;
     const _dataTimeout = new Promise(resolve => setTimeout(() => resolve([{ error: 'timeout' }, { error: 'timeout' }]), 12000));
@@ -1447,8 +1448,8 @@ function calculateHBU() {
         evidenceApn: parcelEvidenceStatus.evidenceApn,
         parcelSize: Number(String((document.getElementById('parcelSize') || {}).value || '').replace(/,/g, '')),
         parcelAreaEvidence: window._parcelAreaEvidence,
-        rawZoning: window._rawZoning,
-        zoningResolution: window._zoningIsUnverified ? 'unresolved' : 'verified',
+        rawZoning: window._zoningAttested ? document.getElementById('zoning').value : window._rawZoning,
+        zoningResolution: (window._zoningAttested || !window._zoningIsUnverified) ? 'verified' : 'unresolved',
         legalPathStatus: parcelEvidenceStatus.legalPathStatus,
         criticalSourceStatus: parcelEvidenceStatus.criticalSourceStatus,
     });
@@ -15106,7 +15107,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var _parcelSizeEl = document.getElementById('parcelSize');
   if (_parcelSizeEl) _parcelSizeEl.addEventListener('change', function() { window._parcelSizeIsUnverified = true; window._parcelAreaEvidence = null; window.lastAcquisitionReadiness = null; clearBlockedAcquisitionOutput('Parcel area changed. Verify sourced area before recalculating.'); });
   var _zoningEl = document.getElementById('zoning');
-  if (_zoningEl) _zoningEl.addEventListener('change', function() { window._zoningIsUnverified = true; window.lastAcquisitionReadiness = null; clearBlockedAcquisitionOutput('Zoning changed. Verify exact zoning before recalculating.'); });
+  if (_zoningEl) _zoningEl.addEventListener('change', function(e) { if (e && !e.isTrusted) return; window._zoningIsUnverified = true; window._zoningAttested = String((document.getElementById('zoning')||{}).value||'').trim().length > 0; window.lastAcquisitionReadiness = null; clearBlockedAcquisitionOutput(window._zoningAttested ? 'Zoning attested manually. Recalculate to apply.' : 'Zoning changed. Verify exact zoning before recalculating.'); });
 });
 
 // Demo mode URL parameter check

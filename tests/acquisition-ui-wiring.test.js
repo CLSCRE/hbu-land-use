@@ -47,7 +47,7 @@ for (const portal of ['app.html', 'lender.html', 'agent.html']) {
     /evaluateAcquisitionReadiness\([\s\S]{0,900}canUnderwrite/,
     `${portal} checks shared readiness before underwriting`
   );
-  assert.match(html, /rawZoning:\s*window\._rawZoning/, `${portal} sends source zoning to the shared gate`);
+  assert.match(html, /rawZoning:\s*window\._zoningAttested \? document\.getElementById\('zoning'\)\.value : window\._rawZoning/, `${portal} sends source or attested zoning to the shared gate`);
   assert.match(html, /deriveParcelEvidenceStatus\(window\.lastSb79Context\)/, `${portal} derives legal/source status from parcel evidence`);
   assert.match(html, /id="zimasConfirmed"/, `${portal} exposes explicit current ZIMAS confirmation`);
   assert.match(html, /id="zimasVerificationDate"/, `${portal} records the verification date`);
@@ -57,7 +57,7 @@ for (const portal of ['app.html', 'lender.html', 'agent.html']) {
   assert.match(html, /evidenceApn:\s*parcelEvidenceStatus\.evidenceApn/, `${portal} binds readiness to the evidence APN`);
   assert.match(html, /parcelAreaEvidence:\s*window\._parcelAreaEvidence/, `${portal} sends APN-bound parcel-area provenance to readiness`);
   assert.match(html, /_parcelSizeEl\.addEventListener\('change',[\s\S]{0,320}_parcelAreaEvidence\s*=\s*null[\s\S]{0,220}clearBlockedAcquisitionOutput\(/, `${portal} invalidates area evidence and clears output after manual edits`);
-  assert.match(html, /_zoningEl\.addEventListener\('change',[\s\S]{0,260}_zoningIsUnverified\s*=\s*true[\s\S]{0,200}clearBlockedAcquisitionOutput\(/, `${portal} clears output immediately after zoning changes`);
+  assert.match(html, /_zoningEl\.addEventListener\('change',[\s\S]{0,260}_zoningIsUnverified\s*=\s*true[\s\S]{0,260}clearBlockedAcquisitionOutput\(/, `${portal} clears output immediately after zoning changes`);
   assert.match(html, /handleVerificationEvidenceChange[\s\S]{0,320}applyCurrentZimasEvidence\(\)[\s\S]{0,220}clearBlockedAcquisitionOutput\(/, `${portal} clears output immediately after ZIMAS evidence changes`);
   assert.doesNotMatch(html, /_parcelSizeEl\.addEventListener\('change',[\s\S]{0,160}_parcelSizeIsUnverified\s*=\s*false/, `${portal} never treats a manual area edit as verified`);
   assert.match(html, /clearBlockedAcquisitionOutput\(/, `${portal} clears visible stale results when blocked`);
@@ -87,10 +87,35 @@ for (const portal of ['app.html', 'lender.html', 'agent.html']) {
   assert.doesNotMatch(html, /criticalSourceStatus:\s*'current'/, `${portal} does not hardcode source currency`);
   assert.match(html, /hasComplexZoningControls\(zoningResult\.raw\)/, `${portal} keeps conditioned zoning unresolved`);
   assert.match(
-    html,
-    /_zoningEl\.addEventListener\('change',[\s\S]{0,120}_zoningIsUnverified\s*=\s*true/,
-    `${portal} treats manual zoning changes as unverified`
-  );
+      html,
+      /_zoningEl\.addEventListener\('change',[\s\S]{0,140}_zoningIsUnverified\s*=\s*true/,
+      `${portal} treats manual zoning changes as unverified`
+    );
+    assert.match(
+      html,
+      /_zoningEl\.addEventListener\('change',[\s\S]{0,300}_zoningAttested\s*=\s*String\(\(document\.getElementById\('zoning'\)\|\|\{\}\)\.value\|\|''\)\.trim\(\)\.length\s*>\s*0/,
+      `${portal} attests the base zone on a non-empty manual selection`
+    );
+    assert.match(
+      html,
+      /_zoningEl\.addEventListener\('change',\s*function\(e\)\s*\{\s*if \(e && !e\.isTrusted\) return;/,
+      `${portal} ignores programmatic zoning events`
+    );
+    assert.match(
+      html,
+      /window\._zoningAttested\s*=\s*false;/,
+      `${portal} resets attestation at each new lookup`
+    );
+    assert.match(
+      html,
+      /rawZoning:\s*window\._zoningAttested \? document\.getElementById\('zoning'\)\.value : window\._rawZoning/,
+      `${portal} sends the attested zone to the shared gate`
+    );
+    assert.match(
+      html,
+      /zoningResolution:\s*\(window\._zoningAttested \|\| !window\._zoningIsUnverified\) \? 'verified' : 'unresolved'/,
+      `${portal} treats attestation or verified GIS zoning as resolved`
+    );
 }
 
 const app = fs.readFileSync(path.join(__dirname, '..', 'app.html'), 'utf8');
