@@ -3,1344 +3,762 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SB 79 Portal — LA's Phased Implementation, Decoded | Land to Yield</title>
-    <meta name="description" content="SB 79 and Los Angeles Low-Rise parcel screening for developers. Resolve APN status, compare exact envelopes, and verify current eligibility in ZIMAS.">
+    <title>SB 79 in Los Angeles, Parcel by Parcel | Land to Yield</title>
+    <meta name="description" content="SB 79 and Los Angeles Low-Rise parcel screening. Resolve an APN's City status, compare the statutory and local envelopes, and verify current eligibility in ZIMAS.">
 
-    <!-- Open Graph -->
-    <meta property="og:title" content="SB 79 Portal — Land to Yield">
-    <meta property="og:description" content="SB 79 and Los Angeles Low-Rise screening for 139,450 phased APNs, with current-path labels and required ZIMAS verification.">
+    <meta property="og:title" content="SB 79 in Los Angeles, Parcel by Parcel | Land to Yield">
+    <meta property="og:description" content="Screen 139,450 station-area APNs against SB 79 and Ordinances 188967 and 188968, with ZIMAS verification kept visible.">
     <meta property="og:image" content="https://landtoyield.com/og-image.png">
     <meta property="og:url" content="https://landtoyield.com/sb79.html">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Land to Yield">
+    <meta name="theme-color" content="#F3F1EC">
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <script defer data-domain="landtoyield.com" src="https://plausible.io/js/script.js"></script>
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-    <!-- Leaflet for station browser map -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
-    <!-- Shared design system -->
-    <link rel="stylesheet" href="core-styles.css?v=4.7">
 
     <style>
         :root {
-            --primary:        #1a365d;
-            --primary-light:  #2b6cb0;
-            --primary-dark:   #122948;
-            --accent:         #e8a838;
-            --accent-light:   #f5c453;
-            --accent-dark:    #c77e1a;
-            --bg:             #f7fafc;
-            --bg-alt:         #edf2f7;
-            --card:           #ffffff;
-            --text:           #1a202c;
-            --text-light:     #4a5568;
-            --text-muted:     #718096;
-            --border:         #e2e8f0;
-            --success:        #38a169;
-            --warning:        #d69e2e;
-            --danger:         #e53e3e;
-            --info:           #3182ce;
-            --tier1:          #805ad5;
-            --tier2:          #3182ce;
-            --radius:         14px;
-            --radius-sm:      8px;
-            --shadow:         0 2px 12px rgba(0,0,0,0.06);
-            --shadow-lg:      0 10px 40px rgba(0,0,0,0.10);
+            --paper: #F3F1EC; --paper-2: #EAE6DE; --card: #FBFAF7;
+            --ink: #0E1B2A; --ink-2: #2B3846; --muted: #5E6873;
+            --line: #D9D4C9; --line-soft: #E5E1D8;
+            --navy: #153D63; --navy-deep: #0C2237; --brass: #8A5A12; --green: #006A4E; --red: #9B2C2C;
+            --serif: 'Newsreader', 'Iowan Old Style', Georgia, serif;
+            --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+            --max: 1240px; --gutter: clamp(16px, 4vw, 40px);
+            /* legacy tokens still referenced by inline styles in rendered results */
+            --primary: #153D63; --text: #0E1B2A; --text-light: #2B3846; --text-muted: #5E6873;
+            --border: #D9D4C9; --bg-alt: #EAE6DE; --tier1: #153D63; --tier2: #5B8DB8; --danger: #8A5A12;
+            --radius: 16px; --shadow: none; --accent-dark: #8A5A12;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; scroll-padding-top: 90px; }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-        }
+        html { scroll-behavior: smooth; scroll-padding-top: 130px; -webkit-text-size-adjust: 100%; }
+        body { font-family: var(--sans); font-size: 17px; line-height: 1.6; color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+        a { color: var(--navy); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+        ::selection { background: var(--navy); color: #fff; }
+        code { font-family: var(--mono); font-size: .86em; background: var(--paper-2); padding: 1px 5px; border-radius: 4px; }
+        .wrap { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+        h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02em; }
+        h2 em, h1 em { font-style: italic; color: var(--navy); }
+        .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 10px; }
+        .eyebrow::before { content: ""; width: 22px; height: 1px; background: currentColor; }
+        .lede { font-size: clamp(17px, 1.35vw, 19px); color: var(--ink-2); max-width: 64ch; }
+        .cite-chip { display: inline-block; font-family: var(--mono); font-size: 12px; color: var(--brass); border: 1px solid rgba(138,90,18,.3); border-radius: 4px; padding: 2px 7px; margin: 0 6px 6px 0; }
 
-        /* ─────────── Top Nav ─────────── */
-        .topnav {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-            background: rgba(255,255,255,0.92);
-            backdrop-filter: saturate(180%) blur(20px);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
-            border-bottom: 1px solid var(--border);
-            padding: 0 1.5rem;
-        }
-        .topnav-inner {
-            max-width: 1280px; margin: 0 auto;
-            display: flex; align-items: center; justify-content: space-between;
-            height: 64px;
-        }
-        .topnav-brand {
-            display: flex; align-items: center; gap: 0.5rem;
-            text-decoration: none;
-        }
-        .topnav-brand-text {
-            font-weight: 900; font-size: 1.35rem;
-            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-dark) 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -0.03em;
-        }
-        .topnav-brand-text span { color: var(--accent); -webkit-text-fill-color: var(--accent); }
-        .topnav-badge {
-            display: inline-block; background: var(--accent); color: var(--primary);
-            font-size: 0.7rem; font-weight: 800; padding: 0.2rem 0.55rem;
-            border-radius: 20px; margin-left: 0.5rem; letter-spacing: 0.04em;
-            text-transform: uppercase;
-        }
-        .topnav-links { display: flex; gap: 1.25rem; align-items: center; list-style: none; }
-        .topnav-links a {
-            color: var(--text-light); text-decoration: none; font-size: 0.84rem;
-            font-weight: 500; transition: color 0.2s;
-        }
-        .topnav-links a:hover { color: var(--primary); }
-        .topnav-cta {
-            background: var(--primary); color: white; padding: 0.5rem 1.1rem;
-            border-radius: 980px; font-weight: 600; font-size: 0.82rem;
-            text-decoration: none; transition: all 0.2s;
-        }
-        .topnav-cta:hover { background: var(--primary-dark); color: white; }
+        /* Nav */
+        .nav { position: sticky; top: 0; z-index: 60; background: rgba(243,241,236,.88); backdrop-filter: saturate(160%) blur(16px); -webkit-backdrop-filter: saturate(160%) blur(16px); border-bottom: 1px solid var(--line); }
+        .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+        .brand { display: flex; align-items: center; gap: 10px; font-family: var(--serif); font-size: 22px; letter-spacing: -0.02em; text-decoration: none; color: var(--ink); white-space: nowrap; }
+        .brand span { font-style: italic; color: var(--brass); }
+        .brand .tag { font-family: var(--mono); font-style: normal; font-size: 11px; letter-spacing: .1em; color: var(--navy); border: 1px solid rgba(21,61,99,.3); border-radius: 4px; padding: 2px 6px; }
+        .nav-links { display: flex; align-items: center; gap: 24px; list-style: none; }
+        .nav-links a { text-decoration: none; font-size: 14px; font-weight: 500; color: var(--ink-2); white-space: nowrap; }
+        .nav-links a:hover { color: var(--navy); }
+        .nav-links a.nav-cta { background: var(--ink); color: #fff; padding: 8px 15px; border-radius: 999px; }
+        .nav-links a.nav-cta:hover { background: var(--navy); }
+        .subnav { position: sticky; top: 64px; z-index: 55; background: rgba(243,241,236,.94); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+        .subnav::-webkit-scrollbar { display: none; }
+        .subnav-inner { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); display: flex; gap: 2px; }
+        .subnav-link { white-space: nowrap; padding: 12px 12px 10px; font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); text-decoration: none; border-bottom: 2px solid transparent; transition: color .2s, border-color .2s; }
+        .subnav-link:first-child { padding-left: 0; }
+        .subnav-link:hover { color: var(--ink); }
+        .subnav-link.active { color: var(--navy); border-bottom-color: var(--navy); }
 
-        /* ─────────── Section Sub-Nav (sticky) ─────────── */
-        .subnav {
-            position: sticky; top: 64px; z-index: 90;
-            background: var(--primary);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            overflow-x: auto;
-            scrollbar-width: thin;
-        }
-        .subnav-inner {
-            max-width: 1280px; margin: 0 auto;
-            display: flex; gap: 0; padding: 0 1.5rem;
-        }
-        .subnav-link {
-            white-space: nowrap;
-            padding: 0.85rem 1rem;
-            color: rgba(255,255,255,0.7);
-            text-decoration: none;
-            font-size: 0.78rem; font-weight: 600;
-            transition: all 0.2s;
-            border-bottom: 3px solid transparent;
-        }
-        .subnav-link:hover { color: white; }
-        .subnav-link.active { color: var(--accent); border-bottom-color: var(--accent); }
+        /* Hero */
+        .hero { padding: clamp(48px, 7vw, 96px) 0 clamp(40px, 5vw, 64px); }
+        .hero-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: clamp(28px, 5vw, 72px); align-items: end; }
+        .hero h1 { font-size: clamp(44px, 6.6vw, 92px); line-height: .98; letter-spacing: -0.035em; margin: 20px 0 22px; }
+        .actions { display: flex; flex-wrap: wrap; gap: 12px 22px; align-items: center; margin-top: 28px; }
+        .btn-solid { background: var(--navy); color: #fff; padding: 14px 22px; border-radius: 999px; font-weight: 600; font-size: 15px; text-decoration: none; transition: background .2s; }
+        .btn-solid:hover { background: var(--navy-deep); }
+        .text-link { font-size: 15px; font-weight: 500; text-decoration: none; color: var(--ink); border-bottom: 1px solid var(--line); padding-bottom: 2px; }
+        .text-link:hover { border-color: var(--ink); }
+        .status-card { background: var(--card); border: 1px solid var(--line-soft); border-radius: 18px; padding: 24px 26px; }
+        .status-card .k { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--brass); }
+        .status-card h3 { font-size: 26px; line-height: 1.15; margin: 6px 0 14px; }
+        .status-card dl { display: grid; grid-template-columns: auto 1fr; gap: 9px 18px; font-size: 14px; }
+        .status-card dt { color: var(--muted); }
+        .status-card dd { text-align: right; font-weight: 600; }
 
-        /* ─────────── Hero ─────────── */
-        .hero {
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-light) 100%);
-            color: white; padding: 3.5rem 1.5rem 4rem;
-            position: relative; overflow: hidden;
-        }
-        .hero::before {
-            content: ''; position: absolute; top: -50%; right: -10%;
-            width: 600px; height: 600px;
-            background: radial-gradient(circle, rgba(232,168,56,0.15) 0%, transparent 70%);
-            pointer-events: none;
-        }
-        .hero-inner {
-            max-width: 1280px; margin: 0 auto; position: relative; z-index: 1;
-            display: grid; grid-template-columns: 1.4fr 1fr; gap: 3rem; align-items: center;
-        }
-        @media (max-width: 900px) { .hero-inner { grid-template-columns: 1fr; gap: 2rem; } }
+        .kpis { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--ink); border-bottom: 1px solid var(--line); }
+        .kpi { padding: 22px 18px 22px 0; }
+        .kpi + .kpi { border-left: 1px solid var(--line); padding-left: 22px; }
+        .kpi-num { font-family: var(--serif); font-size: clamp(34px, 3.6vw, 50px); letter-spacing: -0.03em; line-height: 1; font-variant-numeric: lining-nums tabular-nums; }
+        .kpi-label { font-size: 14px; color: var(--ink-2); margin-top: 8px; }
+        .kpi-sub { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: .04em; margin-top: 2px; }
+        .kpi-note { font-size: 12.5px; color: var(--muted); margin-top: 12px; }
 
-        .hero-pretitle {
-            display: inline-block; background: rgba(232,168,56,0.18);
-            color: var(--accent-light);
-            font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em;
-            text-transform: uppercase; padding: 0.4rem 1rem;
-            border-radius: 20px; margin-bottom: 1.25rem;
-            border: 1px solid rgba(232,168,56,0.35);
-        }
-        .hero-title {
-            font-size: clamp(2rem, 4.5vw, 3.4rem); font-weight: 900;
-            letter-spacing: -0.03em; line-height: 1.05; margin-bottom: 1.25rem;
-        }
-        .hero-title em { color: var(--accent-light); font-style: normal; }
-        .hero-subtitle {
-            font-size: 1.05rem; line-height: 1.55; opacity: 0.92;
-            max-width: 560px; margin-bottom: 1.5rem;
-        }
-        .hero-cta-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
-        .hero-btn {
-            padding: 0.85rem 1.5rem; border-radius: 980px;
-            font-weight: 700; font-size: 0.92rem;
-            text-decoration: none; transition: all 0.2s;
-            display: inline-flex; align-items: center; gap: 0.5rem;
-        }
-        .hero-btn-primary { background: var(--accent); color: var(--primary-dark); }
-        .hero-btn-primary:hover { background: var(--accent-light); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(232,168,56,0.35); }
-        .hero-btn-secondary { background: rgba(255,255,255,0.1); color: white; border: 1.5px solid rgba(255,255,255,0.3); }
-        .hero-btn-secondary:hover { background: rgba(255,255,255,0.2); }
+        /* Sections */
+        .section { padding: clamp(72px, 9vw, 120px) 0; }
+        .section.alt { background: var(--paper-2); }
+        .section-head { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(24px, 5vw, 72px); align-items: end; margin-bottom: clamp(32px, 5vw, 56px); }
+        .section-title { font-size: clamp(32px, 4vw, 52px); line-height: 1.05; margin-top: 16px; }
 
-        /* Countdown */
-        .countdown-card {
-            background: rgba(255,255,255,0.08); backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: var(--radius); padding: 1.75rem;
-            text-align: center;
-        }
-        .countdown-label {
-            font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em;
-            text-transform: uppercase; color: var(--accent-light); margin-bottom: 0.75rem;
-        }
-        .countdown-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem;
-            margin-bottom: 1.25rem;
-        }
-        .countdown-cell {
-            background: rgba(0,0,0,0.25);
-            border-radius: var(--radius-sm); padding: 0.85rem 0.4rem;
-        }
-        .countdown-num { font-size: 2.1rem; font-weight: 900; line-height: 1; color: white; }
-        .countdown-unit {
-            font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em;
-            text-transform: uppercase; color: rgba(255,255,255,0.65); margin-top: 0.3rem;
-        }
-        .countdown-target {
-            font-size: 0.8rem; color: rgba(255,255,255,0.75);
-            border-top: 1px solid rgba(255,255,255,0.1);
-            padding-top: 0.85rem;
-        }
-        .countdown-target strong { color: white; }
-
-        /* KPI Ribbon */
-        .kpi-ribbon {
-            max-width: 1280px; margin: -2.5rem auto 0;
-            background: var(--card); border-radius: var(--radius);
-            box-shadow: var(--shadow-lg);
-            display: grid; grid-template-columns: repeat(4, 1fr);
-            position: relative; z-index: 5;
-            border: 1px solid var(--border);
-            overflow: hidden;
-        }
-        @media (max-width: 760px) { .kpi-ribbon { grid-template-columns: repeat(2, 1fr); } }
-        .kpi {
-            padding: 1.5rem 1.25rem; text-align: center;
-            border-right: 1px solid var(--border);
-        }
-        .kpi:last-child { border-right: none; }
-        @media (max-width: 760px) {
-            .kpi:nth-child(2n) { border-right: none; }
-            .kpi:nth-child(1), .kpi:nth-child(2) { border-bottom: 1px solid var(--border); }
-        }
-        .kpi-num {
-            font-size: 1.85rem; font-weight: 900; color: var(--primary);
-            letter-spacing: -0.02em; line-height: 1;
-        }
-        .kpi-label {
-            font-size: 0.72rem; font-weight: 700; color: var(--text-muted);
-            letter-spacing: 0.06em; text-transform: uppercase; margin-top: 0.5rem;
-        }
-        .kpi-sub { font-size: 0.78rem; color: var(--text-light); margin-top: 0.3rem; }
-
-        /* ─────────── Section Layout ─────────── */
-        .section {
-            max-width: 1280px; margin: 0 auto;
-            padding: 4rem 1.5rem 2rem;
-        }
-        .section-eyebrow {
-            display: inline-block;
-            font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--accent-dark);
-            background: rgba(232,168,56,0.12);
-            padding: 0.3rem 0.85rem; border-radius: 20px;
-            margin-bottom: 1rem;
-        }
-        .section-title {
-            font-size: clamp(1.6rem, 3vw, 2.3rem); font-weight: 800;
-            color: var(--text); letter-spacing: -0.02em; line-height: 1.15;
-            margin-bottom: 0.75rem;
-        }
-        .section-lead {
-            font-size: 1.05rem; color: var(--text-light); line-height: 1.6;
-            max-width: 760px; margin-bottom: 2rem;
-        }
-
-        /* ─────────── Section 2: Instant Lookup ─────────── */
-        .lookup-card {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            color: white; border-radius: var(--radius);
-            padding: 2.5rem 2rem; box-shadow: var(--shadow-lg);
-            margin: 0 auto;
-        }
-        .lookup-row {
-            display: flex; gap: 0.75rem; max-width: 720px; margin: 0 auto;
-        }
-        .lookup-input {
-            flex: 1; padding: 1rem 1.25rem;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: var(--radius-sm);
-            font-size: 1rem; background: rgba(255,255,255,0.95); color: var(--text);
-            font-family: inherit;
-        }
-        .lookup-input:focus { outline: none; border-color: var(--accent); background: white; }
-        .lookup-btn {
-            padding: 1rem 1.75rem; background: var(--accent); color: var(--primary-dark);
-            border: none; border-radius: var(--radius-sm);
-            font-weight: 800; font-size: 0.92rem; cursor: pointer;
-            transition: all 0.2s;
-        }
-        .lookup-btn:hover { background: var(--accent-light); transform: translateY(-1px); }
-        .lookup-hint {
-            text-align: center; font-size: 0.82rem; opacity: 0.8;
-            margin-top: 0.85rem;
-        }
-
-        .verdict-card {
-            background: var(--card); color: var(--text);
-            border-radius: var(--radius); padding: 2rem;
-            margin-top: 1.5rem; box-shadow: var(--shadow);
-            border-top: 5px solid var(--success);
-            display: none;
-        }
+        /* Lookup */
+        .lookup-card { background: var(--card); border: 1px solid var(--line-soft); border-radius: 18px; padding: 10px; display: flex; gap: 10px; }
+        .lookup-input { flex: 1; min-width: 0; border: 0; background: transparent; font: 500 18px var(--sans); color: var(--ink); padding: 14px 16px; outline: none; }
+        .lookup-input::placeholder { color: #9AA1A9; }
+        .lookup-btn { appearance: none; border: 0; cursor: pointer; background: var(--navy); color: #fff; font: 600 15px var(--sans); padding: 0 26px; border-radius: 12px; transition: background .2s; }
+        .lookup-btn:hover { background: var(--navy-deep); }
+        .lookup-hint { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 12px; letter-spacing: .02em; }
+        .verdict-card { display: none; margin-top: 28px; background: var(--card); border: 1px solid var(--line-soft); border-top: 3px solid var(--green); border-radius: 18px; padding: 28px; }
         .verdict-card.show { display: block; }
-        .verdict-card.excluded { border-top-color: var(--danger); }
-        .verdict-card.exempt { border-top-color: var(--warning); }
-        .verdict-pill {
-            display: inline-block; padding: 0.35rem 0.85rem;
-            border-radius: 20px; font-weight: 700; font-size: 0.78rem;
-            letter-spacing: 0.04em; text-transform: uppercase;
-            margin-bottom: 1rem;
-        }
-        .pill-eligible { background: rgba(56,161,105,0.15); color: var(--success); }
-        .pill-excluded { background: rgba(229,62,62,0.15); color: var(--danger); }
-        .pill-exempt   { background: rgba(214,158,46,0.18); color: var(--warning); }
-        .verdict-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
-            margin-top: 1.25rem;
-        }
-        @media (max-width: 700px) { .verdict-grid { grid-template-columns: repeat(2, 1fr); } }
-        .verdict-stat {
-            background: var(--bg); padding: 1rem;
-            border-radius: var(--radius-sm); border: 1px solid var(--border);
-        }
-        .verdict-stat-label {
-            font-size: 0.68rem; font-weight: 700; color: var(--text-muted);
-            letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.35rem;
-        }
-        .verdict-stat-value { font-size: 1.05rem; font-weight: 700; color: var(--text); }
-        .verdict-source {
-            margin-top: 1rem; padding: 0.9rem 1rem;
-            background: #f8fafc; border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            font-size: 0.8rem; color: var(--text-light);
-        }
-        .scenario-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;
-            margin-top: 1rem;
-        }
-        @media (max-width: 760px) { .scenario-grid { grid-template-columns: 1fr; } }
-        .scenario-card {
-            background: #fff; border: 1px solid var(--border);
-            border-radius: var(--radius-sm); padding: 0.9rem;
-        }
-        .scenario-label {
-            font-size: 0.72rem; font-weight: 800; color: var(--primary);
-            letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.45rem;
-        }
-        .scenario-metric { font-size: 0.86rem; color: var(--text-light); line-height: 1.45; }
-        .scenario-metric strong { color: var(--text); }
-        .overlay-toolbar {
-            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-            margin: 0 0 1rem; flex-wrap: wrap;
-            background: #f8fafc; border: 1px solid var(--border);
-            border-radius: var(--radius-sm); padding: 0.85rem 1rem;
-        }
-        .overlay-status {
-            font-size: 0.82rem; color: var(--text-light);
-        }
-        .overlay-legend {
-            display: flex; flex-wrap: wrap; gap: 0.7rem; align-items: center;
-            font-size: 0.78rem; color: var(--text-light);
-        }
-        .overlay-swatch {
-            display: inline-block; width: 12px; height: 12px; border-radius: 3px;
-            vertical-align: middle; margin-right: 4px; border: 1px solid rgba(0,0,0,0.14);
-        }
-        .map-overlay-btn {
-            padding: 0.65rem 1rem; background: var(--primary); color: white;
-            border: none; border-radius: var(--radius-sm); font-weight: 800;
-            font-size: 0.82rem; cursor: pointer;
-        }
-        .map-overlay-btn.active { background: var(--accent-dark); }
-        .db-action-row {
-            display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; margin-top: 1rem;
-        }
-        .db-results-table {
-            width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.82rem;
-        }
-        .db-results-table th, .db-results-table td {
-            text-align: left; padding: 0.65rem; border-bottom: 1px solid var(--border);
-        }
-        .db-results-table th {
-            color: var(--text-muted); font-size: 0.68rem; letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-        .status-chip {
-            display: inline-block; padding: 0.18rem 0.5rem; border-radius: 999px;
-            font-size: 0.68rem; font-weight: 800; text-transform: uppercase;
-        }
-        .status-chip.study_ready { background: rgba(56,161,105,0.14); color: #2f855a; }
-        .status-chip.temporary_hold { background: rgba(236,201,75,0.2); color: #975a16; }
-        .status-chip.excluded { background: rgba(245,101,101,0.16); color: #c53030; }
-        .status-chip.outside_dataset { background: rgba(160,174,192,0.2); color: #4a5568; }
-
-        /* ─────────── Section 4: Funnel ─────────── */
-        .funnel-wrap {
-            background: var(--card); border-radius: var(--radius);
-            padding: 2.25rem; box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-        }
-        .funnel-step {
-            display: grid; grid-template-columns: 120px 1fr auto;
-            align-items: center; gap: 1.25rem;
-            padding: 1rem 1.25rem; margin-bottom: 0.5rem;
-            border-radius: var(--radius-sm);
-            transition: all 0.2s;
-        }
-        .funnel-step:hover { transform: translateX(4px); }
-        .funnel-step-start  { background: rgba(49,130,206,0.08); border-left: 4px solid var(--info); }
-        .funnel-step-deduct { background: rgba(229,62,62,0.06); border-left: 4px solid var(--danger); }
-        .funnel-step-warn   { background: rgba(214,158,46,0.08); border-left: 4px solid var(--warning); }
-        .funnel-step-end    { background: rgba(56,161,105,0.10); border-left: 4px solid var(--success); }
-
-        .funnel-step-num {
-            font-size: 1.6rem; font-weight: 900;
-            letter-spacing: -0.02em; color: var(--text);
-            font-variant-numeric: tabular-nums;
-        }
-        .funnel-step-label { font-size: 0.92rem; font-weight: 600; color: var(--text); }
-        .funnel-step-sub   { font-size: 0.78rem; color: var(--text-light); margin-top: 0.15rem; }
-        .funnel-step-citation {
-            font-size: 0.72rem; color: var(--text-muted);
-            font-family: 'SF Mono', Menlo, Consolas, monospace;
-        }
-
-        /* ─────────── Section 5: Tier Comparator ─────────── */
-        .tier-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
-        }
-        @media (max-width: 800px) { .tier-grid { grid-template-columns: 1fr; } }
-        .tier-card {
-            background: var(--card); border-radius: var(--radius);
-            padding: 1.75rem; box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            border-top: 4px solid var(--tier1);
-        }
-        .tier-card.tier-2 { border-top-color: var(--tier2); }
-        .tier-card-label {
-            font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em;
-            text-transform: uppercase; margin-bottom: 0.35rem;
-        }
-        .tier-card.tier-1 .tier-card-label { color: var(--tier1); }
-        .tier-card.tier-2 .tier-card-label { color: var(--tier2); }
-        .tier-card-title { font-size: 1.3rem; font-weight: 800; color: var(--text); margin-bottom: 0.35rem; }
-        .tier-card-sub { font-size: 0.85rem; color: var(--text-light); margin-bottom: 1.25rem; }
-        .tier-envelope {
-            display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        .tier-envelope-cell {
-            background: var(--bg); padding: 0.65rem 0.5rem;
-            border-radius: var(--radius-sm); text-align: center;
-            border: 1px solid var(--border);
-        }
-        .tier-envelope-band {
-            font-size: 0.62rem; font-weight: 800; color: var(--text-muted);
-            letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.25rem;
-        }
-        .tier-envelope-val { font-size: 1.05rem; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
-        .tier-envelope-unit { font-size: 0.65rem; color: var(--text-muted); margin-top: 0.1rem; }
-
-        .tier-stations {
-            font-size: 0.82rem; color: var(--text-light);
-            border-top: 1px solid var(--border); padding-top: 1rem;
-        }
-        .tier-stations strong { color: var(--text); }
-
-        /* ─────────── Section 6: Station Browser ─────────── */
-        #stationMap {
-            width: 100%; height: 500px;
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            background: var(--bg-alt);
-        }
-
-        /* ─────────── Section 7: APN Database ─────────── */
-        .db-search-card {
-            background: var(--card); border-radius: var(--radius);
-            padding: 1.5rem; box-shadow: var(--shadow); border: 1px solid var(--border);
-            margin-bottom: 1.5rem;
-        }
-        .db-controls {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
-        }
-        @media (max-width: 800px) { .db-controls { grid-template-columns: repeat(2, 1fr); } }
-        .db-field label {
-            font-size: 0.72rem; font-weight: 700; color: var(--text-muted);
-            letter-spacing: 0.04em; text-transform: uppercase; display: block; margin-bottom: 0.4rem;
-        }
-        .db-field select, .db-field input {
-            width: 100%; padding: 0.6rem 0.85rem;
-            border: 1.5px solid var(--border); border-radius: var(--radius-sm);
-            font-size: 0.88rem; background: var(--card); font-family: inherit;
-        }
-
-        /* ─────────── Section 8: Exemption Pathways ─────────── */
-        .pathway-grid {
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;
-        }
-        @media (max-width: 760px) { .pathway-grid { grid-template-columns: 1fr; } }
-        .pathway-card {
-            background: var(--card); border: 1px solid var(--border);
-            border-left: 4px solid var(--primary-light);
-            border-radius: var(--radius-sm);
-            padding: 1.1rem 1.25rem;
-        }
-        .pathway-card.zone { border-left-color: var(--accent); }
-        .pathway-id {
-            display: inline-block;
-            font-family: 'SF Mono', Menlo, Consolas, monospace;
-            font-size: 0.7rem; font-weight: 800;
-            background: var(--primary); color: white;
-            padding: 0.15rem 0.55rem; border-radius: 4px;
-            margin-right: 0.5rem;
-        }
-        .pathway-card.zone .pathway-id { background: var(--accent-dark); }
-        .pathway-label { font-weight: 700; color: var(--text); }
-        .pathway-desc { font-size: 0.83rem; color: var(--text-light); margin-top: 0.5rem; line-height: 1.5; }
-        .pathway-stats {
-            display: flex; justify-content: space-between;
-            font-size: 0.75rem; color: var(--text-muted);
-            margin-top: 0.65rem; padding-top: 0.65rem;
-            border-top: 1px solid var(--border);
-        }
-        .pathway-stats strong { color: var(--text); }
-
-        /* ─────────── Section 11: Checklist ─────────── */
-        .checklist-week {
-            background: var(--card); border-radius: var(--radius);
-            padding: 1.25rem 1.5rem; margin-bottom: 1rem;
-            box-shadow: var(--shadow); border: 1px solid var(--border);
-        }
-        .checklist-week h4 {
-            color: var(--primary); font-weight: 800; font-size: 1rem;
-            margin-bottom: 0.85rem;
-            display: flex; align-items: center; gap: 0.5rem;
-        }
-        .checklist-week h4::before {
-            content: ''; display: inline-block; width: 6px; height: 6px;
-            background: var(--accent); border-radius: 50%;
-        }
-        .checklist-item {
-            display: flex; gap: 0.65rem; align-items: flex-start;
-            padding: 0.5rem 0;
-            font-size: 0.88rem; color: var(--text-light); line-height: 1.55;
-        }
-        .checklist-checkbox {
-            margin-top: 0.25rem; width: 16px; height: 16px;
-            accent-color: var(--primary);
-            cursor: pointer; flex-shrink: 0;
-        }
-
-        /* ─────────── Section 12: Docs ─────────── */
-        .docs-grid {
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;
-        }
-        @media (max-width: 760px) { .docs-grid { grid-template-columns: 1fr; } }
-        .doc-card {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: var(--radius-sm); padding: 1.1rem 1.25rem;
-            text-decoration: none; color: var(--text);
-            transition: all 0.2s;
-            display: block;
-        }
-        .doc-card:hover {
-            border-color: var(--primary-light); transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.07);
-        }
-        .doc-card-title { font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
-        .doc-card-desc { font-size: 0.82rem; color: var(--text-light); line-height: 1.5; }
-        .doc-card-tag {
-            display: inline-block;
-            font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: var(--primary-light); background: rgba(43,108,176,0.08);
-            padding: 0.15rem 0.55rem; border-radius: 12px;
-            margin-bottom: 0.5rem;
-        }
-
-        /* ─────────── Section 13: Updates ─────────── */
-        .update-card {
-            background: var(--card); border-radius: var(--radius-sm);
-            border: 1px solid var(--border); padding: 1.1rem 1.25rem;
-            margin-bottom: 0.85rem;
-        }
-        .update-meta {
-            font-size: 0.75rem; color: var(--text-muted);
-            display: flex; gap: 0.75rem; margin-bottom: 0.3rem;
-        }
-        .update-meta-date { font-weight: 700; }
-        .update-meta-source { color: var(--primary-light); }
-        .update-card-title { font-weight: 700; color: var(--text); margin-bottom: 0.4rem; }
-        .update-card-summary { font-size: 0.85rem; color: var(--text-light); line-height: 1.55; }
-
-        /* ─────────── Auth Gate Overlay (for gated sections) ─────────── */
-        .gate-overlay {
-            position: relative;
-            min-height: 200px;
-        }
-        .gate-blur {
-            filter: blur(6px); pointer-events: none; user-select: none; opacity: 0.5;
-        }
-        .gate-prompt {
-            position: absolute; inset: 0;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: rgba(255,255,255,0.85); backdrop-filter: blur(4px);
-            border-radius: var(--radius); padding: 2rem;
-            text-align: center;
-        }
-        .gate-prompt h4 { color: var(--primary); font-size: 1.15rem; margin-bottom: 0.5rem; }
-        .gate-prompt p { color: var(--text-light); font-size: 0.9rem; margin-bottom: 1rem; max-width: 380px; }
-        .gate-prompt-btn {
-            background: var(--primary); color: white;
-            padding: 0.65rem 1.5rem; border: none; border-radius: 980px;
-            font-weight: 700; font-size: 0.85rem; cursor: pointer;
-            text-decoration: none;
-        }
-        .gate-prompt-btn:hover { background: var(--primary-dark); }
-
-        /* ─────────── Footer ─────────── */
-        footer {
-            background: var(--primary-dark); color: rgba(255,255,255,0.75);
-            padding: 3rem 1.5rem 2rem; margin-top: 4rem;
-        }
-        .footer-inner { max-width: 1280px; margin: 0 auto; }
-        .footer-grid {
-            display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 2rem;
-            margin-bottom: 2rem; padding-bottom: 2rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        @media (max-width: 760px) { .footer-grid { grid-template-columns: 1fr 1fr; gap: 1.5rem; } }
-        .footer-brand { font-weight: 900; font-size: 1.5rem; color: white; letter-spacing: -0.03em; }
-        .footer-brand span { color: var(--accent); }
-        .footer-tag { font-size: 0.82rem; line-height: 1.6; margin-top: 0.5rem; opacity: 0.7; }
-        .footer-col h5 {
-            color: white; font-weight: 800; font-size: 0.75rem;
-            letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.85rem;
-        }
-        .footer-col a {
-            display: block; color: rgba(255,255,255,0.7); text-decoration: none;
-            font-size: 0.85rem; padding: 0.3rem 0; transition: color 0.2s;
-        }
-        .footer-col a:hover { color: white; }
-        .footer-bottom {
-            font-size: 0.78rem; opacity: 0.5; text-align: center;
-        }
-
-        .container-narrow { max-width: 880px; margin: 0 auto; }
+        .verdict-card.excluded { border-top-color: var(--brass); }
+        .verdict-card.exempt { border-top-color: #B08640; }
+        .verdict-card h3 { font-size: 30px; margin-top: 12px; }
+        .verdict-pill { display: inline-block; font-family: var(--mono); font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; padding: 5px 10px; border-radius: 4px; }
+        .pill-eligible { background: rgba(0,106,78,.1); color: var(--green); }
+        .pill-excluded { background: rgba(138,90,18,.12); color: var(--brass); }
+        .pill-exempt { background: rgba(176,134,64,.14); color: #7A5214; }
+        .verdict-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 0; margin-top: 22px; border-top: 1px solid var(--line-soft); }
+        .verdict-stat { padding: 14px 14px 14px 0; border-bottom: 1px solid var(--line-soft); }
+        .verdict-stat-label { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+        .verdict-stat-value { font-weight: 600; margin-top: 3px; font-variant-numeric: tabular-nums; }
+        .scenario-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; }
+        .scenario-card { border: 1px solid var(--line-soft); border-radius: 12px; padding: 14px 16px; background: var(--paper); }
+        .scenario-label { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+        .scenario-metric { font-size: 14px; color: var(--ink-2); line-height: 1.5; }
+        .scenario-metric strong { color: var(--ink); }
+        .verdict-source { font-size: 13px; color: var(--muted); margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line-soft); }
 
         /* FAQ */
-        .faq-item {
-            background: var(--card); border-radius: var(--radius-sm);
-            border: 1px solid var(--border); margin-bottom: 0.6rem;
-            overflow: hidden;
-        }
-        .faq-q {
-            padding: 1rem 1.25rem; font-weight: 700; color: var(--text);
-            cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-            user-select: none;
-        }
-        .faq-q::after { content: '+'; color: var(--primary-light); font-size: 1.4rem; line-height: 1; }
-        .faq-item.open .faq-q::after { content: '−'; }
-        .faq-a {
-            display: none; padding: 0 1.25rem 1.1rem;
-            font-size: 0.92rem; color: var(--text-light); line-height: 1.65;
-        }
+        .faq-list { border-top: 1px solid var(--ink); }
+        .faq-item { border-bottom: 1px solid var(--line); }
+        .faq-q { cursor: pointer; padding: 22px 40px 22px 0; position: relative; font-family: var(--serif); font-size: clamp(20px, 1.9vw, 25px); letter-spacing: -0.01em; line-height: 1.25; }
+        .faq-q::after { content: ""; position: absolute; right: 6px; top: 50%; width: 11px; height: 11px; margin-top: -8px; border-right: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); transform: rotate(45deg); transition: transform .3s; }
+        .faq-item.open .faq-q::after { transform: rotate(225deg); margin-top: -2px; }
+        .faq-a { display: none; padding: 0 0 24px; color: var(--ink-2); max-width: 76ch; }
         .faq-item.open .faq-a { display: block; }
+        .faq-wrap { display: grid; grid-template-columns: 1fr 1.6fr; gap: clamp(28px, 5vw, 72px); }
+
+        /* Status bar */
+        .split-bar { display: flex; height: 58px; border-radius: 10px; overflow: hidden; background: var(--paper-2); }
+        .split-bar span { display: block; height: 100%; flex: 0 0 var(--w); }
+        .split-bar span + span { border-left: 2px solid var(--paper); }
+        .seg-a { background: var(--green); }
+        .seg-t { background: repeating-linear-gradient(135deg, #C9B48C 0 6px, #BFA87C 6px 12px); }
+        .seg-x { background: var(--brass); }
+        .seg-s { background: #5E6873; }
+        .split-key { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; margin-top: 22px; }
+        .split-key > div { border-top: 1px solid var(--line); padding-top: 12px; }
+        .split-key .v { font-family: var(--serif); font-size: 32px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+        .split-key .k { font-size: 13.5px; color: var(--ink-2); }
+        .split-key .d { font-size: 13px; color: var(--muted); margin-top: 6px; }
+        .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; vertical-align: 0; }
+        .note { margin-top: 30px; font-size: 13.5px; color: var(--muted); max-width: 92ch; }
+
+        /* Envelopes */
+        .env-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .env-card { background: var(--card); border: 1px solid var(--line-soft); border-radius: 18px; padding: 26px; display: flex; flex-direction: column; }
+        .env-card.local { background: var(--ink); color: #E9EEF4; border-color: var(--ink); }
+        .env-card .k { font-family: var(--mono); font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+        .env-card.local .k { color: #8FD3BE; }
+        .env-card h3 { font-size: 28px; line-height: 1.1; margin: 8px 0 18px; }
+        .env-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 14.5px; }
+        .env-table th { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; font-weight: 400; color: var(--muted); text-align: right; padding: 0 0 8px; border-bottom: 1px solid var(--line); }
+        .env-table th:first-child, .env-table td:first-child { text-align: left; }
+        .env-table td { text-align: right; padding: 11px 0; border-bottom: 1px solid var(--line-soft); }
+        .env-table td.h { font-weight: 600; }
+        .env-card.local .env-table th { color: rgba(233,238,244,.55); border-color: rgba(233,238,244,.2); }
+        .env-card.local .env-table td { border-color: rgba(233,238,244,.12); }
+        .env-foot { margin-top: auto; padding-top: 18px; font-size: 13px; color: var(--muted); }
+        .env-card.local .env-foot { color: rgba(233,238,244,.65); }
+
+        /* Pathways */
+        .pathway-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; border-top: 1px solid var(--ink); }
+        .pathway-card { padding: 22px 22px 22px 0; border-bottom: 1px solid var(--line); }
+        .pathway-card:nth-child(even) { padding-left: 22px; border-left: 1px solid var(--line); }
+        .pathway-id { display: inline-block; font-family: var(--mono); font-size: 12px; color: #fff; background: var(--navy); border-radius: 4px; padding: 2px 7px; margin-right: 10px; vertical-align: 2px; }
+        .pathway-card.zone .pathway-id { background: var(--brass); }
+        .pathway-label { font-family: var(--serif); font-size: 21px; letter-spacing: -0.01em; }
+        .pathway-desc { font-size: 14.5px; color: var(--ink-2); margin: 8px 0 10px; }
+        .pathway-stats { display: flex; justify-content: space-between; gap: 14px; font-size: 13px; color: var(--muted); }
+        .pathway-stats strong { color: var(--ink); }
+
+        /* Map */
+        .map-card { background: var(--card); border: 1px solid var(--line-soft); border-radius: 18px; padding: 18px; }
+        .overlay-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 14px; }
+        .overlay-status { font-size: 13px; color: var(--muted); }
+        .map-overlay-btn { appearance: none; border: 1px solid var(--ink); background: transparent; color: var(--ink); font: 600 14px var(--sans); padding: 9px 16px; border-radius: 999px; cursor: pointer; }
+        .map-overlay-btn:hover, .map-overlay-btn.active { background: var(--ink); color: #fff; }
+        .overlay-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); width: 100%; }
+        .overlay-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+        #stationMap { height: 520px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line-soft); z-index: 1; }
+        .leaflet-container { font-family: var(--sans); }
+        .map-legend { margin-top: 12px; display: flex; gap: 18px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
+
+        /* Database */
+        .db-search-card { background: var(--card); border: 1px solid var(--line-soft); border-radius: 18px; padding: 24px; }
+        .db-controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+        .db-field label { display: block; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+        .db-field select, .db-field input { width: 100%; font: 500 15px var(--sans); color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; outline: none; }
+        .db-field select:focus, .db-field input:focus { border-color: var(--navy); }
+        .db-action-row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 18px; }
+        .db-action-row .lookup-btn { padding: 12px 20px; }
+        .db-results-table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 14px; }
+        .db-results-table th { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; font-weight: 400; color: var(--muted); text-align: left; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--ink); }
+        .db-results-table td { padding: 9px 10px 9px 0; border-bottom: 1px solid var(--line-soft); }
+        #dbResults { overflow-x: auto; }
+        .status-chip { display: inline-block; font-family: var(--mono); font-size: 11px; letter-spacing: .04em; padding: 3px 8px; border-radius: 4px; white-space: nowrap; }
+        .status-chip.study_ready { background: rgba(0,106,78,.1); color: var(--green); }
+        .status-chip.temporary_hold { background: rgba(176,134,64,.16); color: #7A5214; }
+        .status-chip.excluded { background: rgba(138,90,18,.12); color: var(--brass); }
+        .status-chip.outside_dataset { background: rgba(94,104,115,.12); color: var(--muted); }
+
+        /* Portal tools */
+        .tools { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--ink); }
+        .tools a { display: block; text-decoration: none; color: inherit; padding: 28px 28px 30px 0; }
+        .tools a + a { border-left: 1px solid var(--line); padding-left: 28px; }
+        .tools .k { font-family: var(--mono); font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+        .tools h3 { font-size: 27px; line-height: 1.12; margin: 12px 0 10px; }
+        .tools p { font-size: 15px; color: var(--ink-2); }
+        .tools .go { display: inline-block; margin-top: 16px; font-weight: 600; font-size: 14px; color: var(--navy); }
+
+        /* Checklist */
+        .check-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 40px; border-top: 1px solid var(--ink); }
+        .checklist-week { padding: 22px 0; border-bottom: 1px solid var(--line); }
+        .checklist-week h4 { font-size: 22px; margin-bottom: 10px; }
+        .checklist-week h4 span { font-family: var(--mono); font-size: 12px; color: var(--brass); margin-right: 10px; letter-spacing: .06em; vertical-align: 3px; }
+        .checklist-item { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; padding: 6px 0; font-size: 15px; color: var(--ink-2); cursor: pointer; }
+        .checklist-checkbox { margin-top: 5px; accent-color: var(--navy); width: 15px; height: 15px; }
+        .checklist-item input:checked + span { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+
+        /* Docs */
+        .docs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+        .doc-card { display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--line-soft); border-radius: 16px; padding: 22px; text-decoration: none; color: inherit; transition: border-color .2s, transform .2s; }
+        .doc-card:hover { border-color: var(--navy); transform: translateY(-2px); }
+        .doc-card-tag { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--brass); }
+        .doc-card.signed .doc-card-tag { color: var(--green); }
+        .doc-card-title { font-family: var(--serif); font-size: 21px; line-height: 1.2; letter-spacing: -0.01em; margin: 8px 0; }
+        .doc-card-desc { font-size: 14px; color: var(--ink-2); }
+
+        /* Updates */
+        .updates { border-top: 1px solid var(--ink); }
+        .update-card { display: grid; grid-template-columns: 170px 1fr; gap: 24px; padding: 22px 0; border-bottom: 1px solid var(--line); }
+        .update-meta-date { font-family: var(--mono); font-size: 13px; color: var(--navy); display: block; }
+        .update-meta-source { font-size: 13px; color: var(--muted); display: block; margin-top: 2px; }
+        .update-card-title { font-family: var(--serif); font-size: 22px; letter-spacing: -0.01em; line-height: 1.2; }
+        .update-card-summary { font-size: 15px; color: var(--ink-2); margin-top: 6px; max-width: 80ch; }
+
+        /* Footer */
+        .footer { border-top: 1px solid var(--line); padding: 44px 0 56px; font-size: 14px; color: var(--muted); }
+        .footer-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 24px; align-items: center; }
+        .footer-links { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+        .footer-links a { text-decoration: none; color: var(--ink-2); }
+        .disclaimer { margin-top: 24px; font-size: 13px; max-width: 110ch; }
+
+        @media (max-width: 1020px) {
+            .hero-grid, .section-head, .faq-wrap { grid-template-columns: 1fr; }
+            .env-grid, .docs-grid { grid-template-columns: 1fr 1fr; }
+            .scenario-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 780px) {
+            .nav-inner { height: auto; padding-top: 12px; padding-bottom: 10px; flex-direction: column; align-items: flex-start; gap: 8px; }
+            .nav-links { width: 100%; overflow-x: auto; gap: 18px; padding-bottom: 4px; scrollbar-width: none; }
+            .subnav { top: 0; position: relative; }
+            html { scroll-padding-top: 20px; }
+            .nav { position: relative; }
+            .kpis { grid-template-columns: 1fr 1fr; }
+            .kpi:nth-child(3) { border-left: 0; padding-left: 0; }
+            .kpi:nth-child(n+3) { border-top: 1px solid var(--line); }
+            .lookup-card { flex-direction: column; }
+            .lookup-btn { padding: 14px; }
+            .split-key { grid-template-columns: 1fr 1fr; }
+            .env-grid, .docs-grid, .tools, .check-grid, .pathway-grid, .scenario-grid { grid-template-columns: 1fr; }
+            .pathway-card:nth-child(even) { padding-left: 0; border-left: 0; }
+            .tools a + a { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); }
+            .db-controls { grid-template-columns: 1fr 1fr; }
+            .update-card { grid-template-columns: 1fr; gap: 6px; }
+            #stationMap { height: 400px; }
+        }
     </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════ TOP NAV ═══════════════════════════════════ -->
-<nav class="topnav">
-    <div class="topnav-inner">
-        <a class="topnav-brand" href="index.html">
-            <span class="topnav-brand-text">land<span>to</span>yield</span>
-            <span class="topnav-badge">SB 79</span>
-        </a>
-        <ul class="topnav-links">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="app.html">HBU Calculator</a></li>
+<nav class="nav">
+    <div class="nav-inner">
+        <a class="brand" href="/">Land <span>to</span> Yield <em class="tag">SB 79</em></a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
             <li><a href="bill-finder.html">Bill Finder</a></li>
+            <li><a href="guides/">Insights</a></li>
             <li><a href="newsletter.html">Newsletter</a></li>
-            <li><a class="topnav-cta" href="trial.html">Start Trial</a></li>
+            <li><a class="nav-cta" href="app.html">Analyze a Parcel</a></li>
         </ul>
     </div>
 </nav>
 
-<!-- ═══════════════════════════════════ SUB-NAV ═══════════════════════════════════ -->
 <nav class="subnav" aria-label="Section navigation">
     <div class="subnav-inner" id="subnavInner">
         <a class="subnav-link" href="#lookup">Lookup</a>
-        <a class="subnav-link" href="#what-is-sb79">What is SB 79</a>
-        <a class="subnav-link" href="#phasing">Phasing</a>
-        <a class="subnav-link" href="#tiers">Tier 1 vs Tier 2</a>
+        <a class="subnav-link" href="#what-is-sb79">The statute</a>
+        <a class="subnav-link" href="#phasing">LA status</a>
+        <a class="subnav-link" href="#tiers">Envelopes</a>
+        <a class="subnav-link" href="#pathways">Exemptions</a>
         <a class="subnav-link" href="#stations">Stations</a>
-        <a class="subnav-link" href="#database">APN Database</a>
-        <a class="subnav-link" href="#calculator">Calculator</a>
-        <a class="subnav-link" href="#envelope">Envelope</a>
-        <a class="subnav-link" href="#proforma">Pro Forma</a>
-        <a class="subnav-link" href="#checklist">Readiness</a>
-        <a class="subnav-link" href="#docs">Docs</a>
+        <a class="subnav-link" href="#database">APN database</a>
+        <a class="subnav-link" href="#checklist">Checklist</a>
+        <a class="subnav-link" href="#docs">Sources</a>
         <a class="subnav-link" href="#updates">Updates</a>
     </div>
 </nav>
 
-<!-- ═══════════════════════════════════ SECTION 1: HERO ═══════════════════════════════════ -->
-<section class="hero" id="hero">
-    <div class="hero-inner">
-        <div>
-            <span class="hero-pretitle">California Senate Bill 79 · LA Phased Implementation</span>
-            <h1 class="hero-title">By-right housing<br>near transit, <em>decoded.</em></h1>
-            <p class="hero-subtitle">
-                Since <strong>July 1, 2026</strong>, SB 79 can supersede local zoning on qualifying parcels, while
-                <strong>139,450 phased implementation APNs</strong>. This portal turns the City of LA's
-                Phased Implementation Model into an instant, parcel-by-parcel answer: <em>Is this
-                site eligible? What's buildable? When can I file?</em>
-            </p>
-            <div class="hero-cta-row">
-                <a class="hero-btn hero-btn-primary" href="#lookup">⚡ Check an APN</a>
-                <a class="hero-btn hero-btn-secondary" href="#what-is-sb79">Read the brief</a>
+<main>
+<header class="hero" id="hero">
+    <div class="wrap">
+        <div class="hero-grid">
+            <div>
+                <div class="eyebrow">SB 79 portal · City of Los Angeles</div>
+                <h1>SB 79 in Los Angeles, <em>parcel by parcel.</em></h1>
+                <p class="lede">The statute sets development floors near transit. Ordinances 188967 and 188968 decide how, and when, those floors reach a given Los Angeles parcel. Look up an APN to see its City status, the rule path that status allows, and what still needs verification in ZIMAS.</p>
+                <div class="actions">
+                    <a class="btn-solid" href="#lookup">Look up an APN</a>
+                    <a class="text-link" href="#what-is-sb79">Read the brief &rarr;</a>
+                </div>
             </div>
-        </div>
-        <div class="countdown-card">
-            <div class="countdown-label">Current underwriting status</div>
-            <div style="font-size:1.35rem;font-weight:900;color:white;margin-bottom:0.75rem;">SB 79 is operative</div>
-            <div class="countdown-target">LA Ords <strong>188967 / 188968</strong> are effective. The May 5 LA Planning APN snapshot is a screening control; verify final/current eligibility in <strong>ZIMAS</strong>.</div>
+            <aside class="status-card">
+                <div class="k">Current status · October 2026</div>
+                <h3>The statute is operative. The City's reply governs how it lands.</h3>
+                <dl>
+                    <dt>SB 79 operative</dt><dd>July 1, 2026</dd>
+                    <dt>Ords. 188967 and 188968</dt><dd>Effective June 30, 2026</dd>
+                    <dt>Parcel data in this portal</dt><dd>May 5, 2026 snapshot</dd>
+                    <dt>Controlling source</dt><dd>Current ZIMAS record</dd>
+                </dl>
+            </aside>
         </div>
     </div>
-</section>
+</header>
 
-<!-- KPI Ribbon -->
-<div class="kpi-ribbon">
-    <div class="kpi">
-        <div class="kpi-num">139,450</div>
-        <div class="kpi-label">Phased APNs</div>
-        <div class="kpi-sub">with Low-Rise adoption</div>
+<div class="wrap">
+    <div class="kpis">
+        <div class="kpi"><div class="kpi-num">139,450</div><div class="kpi-label">APNs in LA station areas</div><div class="kpi-sub">Phased implementation universe</div></div>
+        <div class="kpi"><div class="kpi-num">13,585</div><div class="kpi-label">Available to study</div><div class="kpi-sub">No exclusion or temporary flag</div></div>
+        <div class="kpi"><div class="kpi-num">121,519</div><div class="kpi-label">Temporary hold</div><div class="kpi-sub">§ 65912.161(b) pathways</div></div>
+        <div class="kpi"><div class="kpi-num">4,346</div><div class="kpi-label">Excluded</div><div class="kpi-sub">2,718 permanent · 1,628 statutory</div></div>
     </div>
-    <div class="kpi">
-        <div class="kpi-num">2,718</div>
-        <div class="kpi-label">Permanent exclusions</div>
-        <div class="kpi-sub">walking-path + industrial</div>
-    </div>
-    <div class="kpi">
-        <div class="kpi-num">8</div>
-        <div class="kpi-label">Exemption pathways</div>
-        <div class="kpi-sub">§65912.161(b)(1)</div>
-    </div>
-    <div class="kpi">
-        <div class="kpi-num">~150</div>
-        <div class="kpi-label">Qualifying stations</div>
-        <div class="kpi-sub">Tier 1 + Tier 2</div>
-    </div>
+    <p class="kpi-note">City Planning parcel lists, May 5, 2026 snapshot. This predates Council adoption and the final June maps; treat it as a screening control and confirm each parcel in ZIMAS.</p>
 </div>
 
-<!-- ═══════════════════════════════════ SECTION 2: INSTANT LOOKUP ═══════════════════════════════════ -->
 <section class="section" id="lookup">
-    <span class="section-eyebrow">Instant Eligibility</span>
-    <h2 class="section-title">Check any APN or address.</h2>
-    <p class="section-lead">
-        Paste an LA County APN (e.g. <code>5435-006-029</code>) or a street address.
-        We'll return the tier, distance band, envelope, and any permanent or temporary exemption flags
-        — using the official LA Planning Phased Implementation Model dataset.
-    </p>
-
-    <div class="lookup-card">
-        <div class="lookup-row">
-            <input type="text" class="lookup-input" id="apnInput" placeholder="APN (e.g. 5435-006-029) or address" autocomplete="off">
-            <button class="lookup-btn" onclick="runLookup()">Check</button>
+    <div class="wrap">
+        <div class="section-head">
+            <div>
+                <div class="eyebrow">Parcel lookup</div>
+                <h2 class="section-title">Check an APN <em>or an address.</em></h2>
+            </div>
+            <p class="lede">Enter a Los Angeles County APN (for example <code>5435-006-029</code>) or a street address. The result shows the parcel's status in the City's list, its tier and distance band, the scenarios that status allows, and the source page for every fact.</p>
         </div>
-        <p class="lookup-hint" id="lookupHint">Free. No signup required.</p>
-    </div>
+        <div class="lookup-card">
+            <input type="text" class="lookup-input" id="apnInput" placeholder="APN or street address" autocomplete="off" aria-label="APN or street address">
+            <button class="lookup-btn" onclick="runLookup()">Check parcel</button>
+        </div>
+        <p class="lookup-hint" id="lookupHint">Free. No sign-up required.</p>
 
-    <div class="verdict-card" id="verdictCard">
-        <span class="verdict-pill pill-eligible" id="verdictPill">Eligible by-right</span>
-        <h3 id="verdictTitle" style="margin-bottom:0.4rem;"></h3>
-        <p id="verdictSummary" style="color:var(--text-light);"></p>
-        <div class="verdict-grid" id="verdictGrid"></div>
-        <div class="scenario-grid" id="verdictScenarios"></div>
-        <div class="verdict-source" id="verdictSource"></div>
-        <p id="verdictNotes" style="font-size:0.82rem;color:var(--text-muted);margin-top:1rem;font-style:italic;"></p>
+        <div class="verdict-card" id="verdictCard">
+            <span class="verdict-pill pill-eligible" id="verdictPill">Result</span>
+            <h3 id="verdictTitle"></h3>
+            <p id="verdictSummary" style="color:var(--ink-2);margin-top:4px;"></p>
+            <div class="verdict-grid" id="verdictGrid"></div>
+            <div class="scenario-grid" id="verdictScenarios"></div>
+            <div class="verdict-source" id="verdictSource"></div>
+            <p id="verdictNotes" style="font-size:13px;color:var(--muted);margin-top:12px;"></p>
+        </div>
     </div>
 </section>
 
-<!-- ═══════════════════════════════════ SECTION 3: WHAT IS SB 79 ═══════════════════════════════════ -->
-<section class="section" id="what-is-sb79" style="background:var(--bg-alt);max-width:none;padding-left:1.5rem;padding-right:1.5rem;">
-    <div style="max-width:1280px;margin:0 auto;">
-        <span class="section-eyebrow">The Statute</span>
-        <h2 class="section-title">What SB 79 actually does.</h2>
-        <p class="section-lead">
-            SB 79 — the <em>Abundant and Affordable Homes Near Transit Act</em>, Cal. Gov. Code
-            §65912.155–162 — declares housing a <strong>permitted use</strong> on any residential-,
-            mixed-, or commercial-zoned site within ½ mile of a qualifying transit stop. Local zoning
-            cannot override SB 79's density, height, and FAR standards. Review is
-            <strong>ministerial</strong>: no CEQA, no Planning Commission, no Council.
-        </p>
-
-        <div class="container-narrow">
+<section class="section alt" id="what-is-sb79">
+    <div class="wrap faq-wrap">
+        <div>
+            <div class="eyebrow">The statute</div>
+            <h2 class="section-title">What SB 79 does, <em>and what it does not.</em></h2>
+            <p class="lede" style="margin-top:18px">A summary for orientation. The chaptered text controls.</p>
+            <div style="margin-top:18px"><span class="cite-chip">Gov. Code §§ 65912.155 to 65912.162</span></div>
+        </div>
+        <div class="faq-list">
             <div class="faq-item open">
-                <div class="faq-q" onclick="toggleFaq(this)">Who passed it, and when does it take effect?</div>
-                <div class="faq-a">
-                    The California Legislature enacted SB 79 (Wiener) in 2025. It takes effect statewide on
-                    <strong>July 1, 2026</strong>. Local jurisdictions including LA have authority to publish
-                    implementation models that classify parcels for permanent exclusion or temporary exemption.
-                </div>
+                <div class="faq-q" onclick="toggleFaq(this)">What does the statute require?</div>
+                <div class="faq-a">SB 79 (Wiener, 2025) requires cities to allow housing on eligible sites within one half mile of qualifying transit at statutory minimums for height, density, and floor area. The minimums depend on the transit tier and the distance band. It became operative statewide on July 1, 2026.</div>
             </div>
             <div class="faq-item">
-                <div class="faq-q" onclick="toggleFaq(this)">What's the difference from SB 35, SB 9, AB 2011, SB 423?</div>
-                <div class="faq-a">
-                    SB 35 (2017) provides ministerial review when a jurisdiction misses RHNA targets and requires
-                    significant affordability set-asides. SB 9 (2021) allows lot splits and duplexes on single-family
-                    parcels. AB 2011 (2022) permits affordable housing on commercial corridors with prevailing-wage
-                    triggers. SB 423 (2023) extended SB 35. <strong>SB 79 is broader than all of them:</strong>
-                    it covers any residential/mixed/commercial parcel near transit, requires no affordability
-                    set-aside (though Density Bonus stacks if desired), and is ministerial.
-                </div>
+                <div class="faq-q" onclick="toggleFaq(this)">Is approval ministerial?</div>
+                <div class="faq-a">The statute provides a streamlined path for qualifying projects, but qualification is conditional. Affordability, labor, demolition, and site requirements all apply, and a city's implementation can change whether and when the statute reaches a parcel. Whether a specific project qualifies is a parcel and project question for counsel.</div>
             </div>
             <div class="faq-item">
-                <div class="faq-q" onclick="toggleFaq(this)">Does SB 79 require affordable housing?</div>
-                <div class="faq-a">
-                    No. SB 79's base entitlement requires <em>no</em> affordable set-aside. You can build
-                    100% market-rate. However, if you stack the State Density Bonus Law (§65915) you can
-                    add up to 50% bonus units in exchange for a defined affordable set-aside (5–24% depending
-                    on income tier).
-                </div>
+                <div class="faq-q" onclick="toggleFaq(this)">Does it require affordable housing?</div>
+                <div class="faq-a">For most projects, yes. The statute offers tiered affordability options, and projects of 10 units or fewer are exempt from that requirement. State Density Bonus Law can be layered for additional units. Confirm the controlling percentages in the chaptered text before underwriting.</div>
             </div>
             <div class="faq-item">
                 <div class="faq-q" onclick="toggleFaq(this)">What about parking?</div>
-                <div class="faq-a">
-                    AB 2097 (2022) already eliminated minimum parking near major transit. Every SB 79 site
-                    is within ½ mile of qualifying transit by definition, so AB 2097 applies — zero minimum
-                    parking required. Some Tier 2 ½-mile sites have a 0.5/unit parking ratio in LA's
-                    implementation model.
-                </div>
+                <div class="faq-a">AB 2097 generally bars minimum parking requirements near major transit. This portal's screen carries a 0.5 space per unit assumption in the outer half-mile band from the City's implementation model. The Low-Rise Ordinance's base menu has no parking minimum. Verify for each parcel.</div>
             </div>
             <div class="faq-item">
-                <div class="faq-q" onclick="toggleFaq(this)">What stops SB 79 from applying to my parcel?</div>
-                <div class="faq-a">
-                    Three things: (1) <strong>permanent exclusion</strong> — your parcel is in an Industrial Employment
-                    Hub (LAX, Van Nuys, Downtown/SE LA, Chatsworth, Pacoima, Atwater/Cypress Park) or has no walking
-                    path under one mile to the TOD stop; (2) <strong>statutory exemption</strong> — your parcel is zoned
-                    Public Facilities, Parking, or Open Space; (3) <strong>RSO demolition</strong> — your project on a
-                    site with > 2 units would require demolition of any LA Rent Stabilization Ordinance unit occupied
-                    in the last 7 years. Beyond these, eight temporary exemption pathways may apply (see the Phasing section).
-                </div>
+                <div class="faq-q" onclick="toggleFaq(this)">What keeps the statute off a parcel?</div>
+                <div class="faq-a">Permanent exclusions (Industrial Employment Hubs, and sites without a walking path to the stop under one mile), statutory exemptions (public facilities, parking, and open space zones), protections against demolishing occupied rent-stabilized units, and the temporary exemption pathways in § 65912.161(b), described below.</div>
             </div>
             <div class="faq-item">
-                <div class="faq-q" onclick="toggleFaq(this)">How fast is approval?</div>
-                <div class="faq-a">
-                    Per §65912.158(b): <strong>60 days</strong> for projects of 150 units or fewer; <strong>90 days</strong>
-                    for larger projects. Plan-check only; no entitlement, no hearings.
-                </div>
+                <div class="faq-q" onclick="toggleFaq(this)">How did Los Angeles respond?</div>
+                <div class="faq-a">With two ordinances, both effective June 30, 2026. The Phased Implementation Ordinance (188968) sequences where the statute applies, placing most station-area parcels on temporary hold. The Low-Rise Ordinance (188967) offers a local menu of small multi-unit buildings in residential neighborhoods near transit. Eligibility layers are published in ZIMAS.</div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- ═══════════════════════════════════ SECTION 4: LA PHASED IMPLEMENTATION ═══════════════════════════════════ -->
 <section class="section" id="phasing">
-    <span class="section-eyebrow">LA's Phased Implementation Model</span>
-    <h2 class="section-title">From 138,192 sites to 135,474 eligible.</h2>
-    <p class="section-lead">
-        The City of LA Department of City Planning ran a parcel-level model (BOE PIN summed to LA County APN)
-        against every qualifying TOD Zone. Here's how the funnel actually narrows. Hover any step for the
-        statutory citation.
-    </p>
-
-    <div class="funnel-wrap">
-        <div class="funnel-step funnel-step-start">
-            <div class="funnel-step-num">138,192</div>
+    <div class="wrap">
+        <div class="section-head">
             <div>
-                <div class="funnel-step-label">Total sites in qualifying TOD Zones</div>
-                <div class="funnel-step-sub">All parcels within ½ mile of a qualifying Tier 1 or Tier 2 transit stop.</div>
+                <div class="eyebrow">What the City's reply did</div>
+                <h2 class="section-title">Fewer than one in ten parcels were <em>available to study.</em></h2>
             </div>
-            <div class="funnel-step-citation">§65912.155</div>
+            <p class="lede">Every station-area APN in the City's list carries one of four statuses. Status comes first: a parcel on temporary hold or excluded does not receive a statutory envelope from proximity alone.</p>
         </div>
-        <div class="funnel-step funnel-step-deduct">
-            <div class="funnel-step-num">−3,976</div>
-            <div>
-                <div class="funnel-step-label">Statutorily exempt</div>
-                <div class="funnel-step-sub">Public Facility, Parking, Open Space zones — no residential or commercial use permitted.</div>
-            </div>
-            <div class="funnel-step-citation">§65912.157(a)</div>
+        <div class="split-bar" role="img" aria-label="13,585 available, 121,519 temporary hold, 2,718 permanent exclusion, 1,628 statutory exclusion">
+            <span class="seg-a" style="--w:9.74%"></span><span class="seg-t" style="--w:87.14%"></span><span class="seg-x" style="--w:1.95%"></span><span class="seg-s" style="--w:1.17%"></span>
         </div>
-        <div class="funnel-step funnel-step-deduct">
-            <div class="funnel-step-num">−341</div>
-            <div>
-                <div class="funnel-step-label">Permanently excluded — No walking path &lt; 1 mile</div>
-                <div class="funnel-step-sub">ArcGIS Network Analysis of street network within ½-mile buffer; natural impediments excluded.</div>
-            </div>
-            <div class="funnel-step-citation">§65912.160(e)(1)</div>
+        <div class="split-key">
+            <div><div class="v">13,585</div><div class="k"><span class="dot" style="background:var(--green)"></span>Available to study · 9.7%</div><div class="d">No exclusion or temporary exemption flag. Still subject to parcel diligence.</div></div>
+            <div><div class="v">121,519</div><div class="k"><span class="dot" style="background:#C9B48C"></span>Temporary hold · 87.1%</div><div class="d">At least one § 65912.161(b) pathway applies. Low-Rise may apply in residential zones.</div></div>
+            <div><div class="v">2,718</div><div class="k"><span class="dot" style="background:var(--brass)"></span>Permanent exclusion · 1.9%</div><div class="d">Industrial Employment Hubs and sites without a qualifying walking path. § 65912.160(e).</div></div>
+            <div><div class="v">1,628</div><div class="k"><span class="dot" style="background:#5E6873"></span>Statutory exclusion · 1.2%</div><div class="d">Zones where the statute does not reach residential use, such as public facilities and open space.</div></div>
         </div>
-        <div class="funnel-step funnel-step-deduct">
-            <div class="funnel-step-num">−2,377</div>
-            <div>
-                <div class="funnel-step-label">Permanently excluded — Industrial Employment Hub</div>
-                <div class="funnel-step-sub">Six hubs ≥ 250 contiguous acres: LAX, Van Nuys, Downtown/SE LA, Chatsworth, Pacoima, Atwater/Cypress Park.</div>
-            </div>
-            <div class="funnel-step-citation">§65912.160(e)(2)</div>
-        </div>
-        <div class="funnel-step funnel-step-warn">
-            <div class="funnel-step-num">17,562</div>
-            <div>
-                <div class="funnel-step-label">Local capacity retained ≥ 50% under Low-Rise Ordinance</div>
-                <div class="funnel-step-sub">After May 19, 2026 amendments. Still developable — under local rules.</div>
-            </div>
-            <div class="funnel-step-citation">§65912.161(b)(1)(A)</div>
-        </div>
-        <div class="funnel-step funnel-step-end">
-            <div class="funnel-step-num">135,474</div>
-            <div>
-                <div class="funnel-step-label">Eligible for SB 79 Phased Implementation</div>
-                <div class="funnel-step-sub">The universe of by-right action on July 1, 2026 — subject to per-site temporary exemption tests.</div>
-            </div>
-            <div class="funnel-step-citation">§65912.161(b)</div>
-        </div>
-    </div>
-
-    <h3 style="margin:2.5rem 0 1rem;font-size:1.3rem;color:var(--primary);">The 8 Temporary Exemption Pathways</h3>
-    <p style="color:var(--text-light);margin-bottom:1.5rem;font-size:0.95rem;">
-        A site can be temporarily exempt from SB 79's standards under any one of these criteria. Six are site-level,
-        two are TOD-Zone-level. Sites may qualify for multiple pathways.
-    </p>
-    <div class="pathway-grid" id="pathwayGrid">
-        <!-- Populated by JS from SB79_EXEMPTION_PATHWAYS -->
+        <p class="note">Source: City Planning parcel lists (Table 1C), May 5, 2026 snapshot, 139,450 APNs. City Planning's Exhibit 4 reports a 138,192 site universe on a different counting basis (BOE PIN), so the two totals do not match exactly. Both predate the final June ordinance maps.</p>
     </div>
 </section>
 
-<!-- ═══════════════════════════════════ SECTION 5: TIER COMPARATOR ═══════════════════════════════════ -->
-<section class="section" id="tiers" style="background:var(--bg-alt);max-width:none;padding-left:1.5rem;padding-right:1.5rem;">
-    <div style="max-width:1280px;margin:0 auto;">
-        <span class="section-eyebrow">Development Envelope</span>
-        <h2 class="section-title">Tier 1 vs Tier 2 — what you can build.</h2>
-        <p class="section-lead">
-            Tier is determined by the service type of the nearest qualifying stop, not your parcel location.
-            Distance bands are measured from the stop platform. Values shown are from §65912.157(a) Table.
-        </p>
-
-        <div class="tier-grid">
-            <div class="tier-card tier-1">
-                <div class="tier-card-label">Tier 1 · Heavy Rail</div>
-                <div class="tier-card-title">160 du/ac · 4.5 FAR · 95 ft</div>
-                <div class="tier-card-sub">Maximum allowance @ 200 feet from station</div>
-                <div class="tier-envelope">
-                    <div class="tier-envelope-cell">
-                        <div class="tier-envelope-band">200 ft</div>
-                        <div class="tier-envelope-val">160</div>
-                        <div class="tier-envelope-unit">du/ac · 4.5 FAR</div>
-                    </div>
-                    <div class="tier-envelope-cell">
-                        <div class="tier-envelope-band">¼ mile</div>
-                        <div class="tier-envelope-val">120</div>
-                        <div class="tier-envelope-unit">du/ac · 3.5 FAR</div>
-                    </div>
-                    <div class="tier-envelope-cell">
-                        <div class="tier-envelope-band">½ mile</div>
-                        <div class="tier-envelope-val">100</div>
-                        <div class="tier-envelope-unit">du/ac · 3.0 FAR</div>
-                    </div>
-                    <div class="tier-envelope-cell">
-                        <div class="tier-envelope-band">Height</div>
-                        <div class="tier-envelope-val">95'</div>
-                        <div class="tier-envelope-unit">all bands</div>
-                    </div>
-                </div>
-                <div class="tier-stations">
-                    <strong>Stations:</strong> Red/B Line and Purple/D Line — Union Station to North Hollywood;
-                    Wilshire/Vermont through Westwood/VA Hospital.
-                </div>
+<section class="section alt" id="tiers">
+    <div class="wrap">
+        <div class="section-head">
+            <div>
+                <div class="eyebrow">Development envelopes</div>
+                <h2 class="section-title">The State's floor, <em>and the City's menu.</em></h2>
             </div>
-
-            <div class="tier-card tier-2">
-                <div class="tier-card-label">Tier 2 · Light Rail · Commuter · BRT</div>
-                <div class="tier-card-title">140 du/ac · 4.0 FAR · 85 ft</div>
-                <div class="tier-card-sub">Maximum allowance @ 200 feet from station</div>
-                <div class="tier-envelope">
-                    <div class="tier-envelope-cell">
-                        <div class="tier-envelope-band">200 ft</div>
-                        <div class="tier-envelope-val">140</div>
-                        <div class="tier-envelope-unit">du/ac · 4.0 FAR</div>
-                    </div>
-                    <div class="tier-envelope-cell">
-                        <div class="tier-envelope-band">¼ mile</div>
-                        <div class="tier-envelope-val">100</div>
-                        <div class="tier-envelope-unit">du/ac · 3.0 FAR</div>
-                    </div>
-                    <div class="tier-envelope-cell">
-                        <div class="tier-envelope-band">½ mile</div>
-                        <div class="tier-envelope-val">80</div>
-                        <div class="tier-envelope-unit">du/ac · 2.5 FAR</div>
-                    </div>
-                    <div class="tier-envelope-cell">
-                        <div class="tier-envelope-band">Height</div>
-                        <div class="tier-envelope-val">85'</div>
-                        <div class="tier-envelope-unit">all bands</div>
-                    </div>
-                </div>
-                <div class="tier-stations">
-                    <strong>Stations:</strong> Blue/A, Expo/E, Gold/L, Green/C, K Line, Regional Connector,
-                    NoHo–Pasadena BRT, Vermont BRT, Metrolink, Metro 234/910/70/78/81, Orange Line.
-                </div>
+            <p class="lede">Tier comes from the service type of the qualifying stop. Distance is measured from the stop. The Low-Rise menu is the local alternative where the statute is on hold in residential zones.</p>
+        </div>
+        <div class="env-grid">
+            <div class="env-card">
+                <div class="k">Tier 1 · Heavy rail</div>
+                <h3>Up to 95 ft, 160 du/ac, 4.5 FAR</h3>
+                <table class="env-table">
+                    <thead><tr><th>Distance</th><th>Height</th><th>Density</th><th>FAR</th></tr></thead>
+                    <tbody>
+                        <tr><td>Within 200 ft</td><td class="h">95 ft</td><td>160</td><td>4.5</td></tr>
+                        <tr><td>Within ¼ mile</td><td class="h">75 ft</td><td>120</td><td>3.5</td></tr>
+                        <tr><td>¼ to ½ mile</td><td class="h">65 ft</td><td>100</td><td>3.0</td></tr>
+                    </tbody>
+                </table>
+                <p class="env-foot">B and D Lines, including Union Station to North Hollywood and the Wilshire corridor. Density in du/ac. § 65912.157.</p>
+            </div>
+            <div class="env-card">
+                <div class="k">Tier 2 · Light rail, commuter, BRT</div>
+                <h3>Up to 85 ft, 140 du/ac, 4.0 FAR</h3>
+                <table class="env-table">
+                    <thead><tr><th>Distance</th><th>Height</th><th>Density</th><th>FAR</th></tr></thead>
+                    <tbody>
+                        <tr><td>Within 200 ft</td><td class="h">85 ft</td><td>140</td><td>4.0</td></tr>
+                        <tr><td>Within ¼ mile</td><td class="h">65 ft</td><td>100</td><td>3.0</td></tr>
+                        <tr><td>¼ to ½ mile</td><td class="h">55 ft</td><td>80</td><td>2.5</td></tr>
+                    </tbody>
+                </table>
+                <p class="env-foot">A, C, E, K and L Lines, the Regional Connector, G Line and other qualifying BRT, and Metrolink. § 65912.157.</p>
+            </div>
+            <div class="env-card local">
+                <div class="k">Los Angeles · Low-Rise Ordinance 188967</div>
+                <h3>5 to 16 units, two to three stories</h3>
+                <table class="env-table">
+                    <thead><tr><th>Subarea</th><th>Units</th><th>FAR</th><th>Stories</th></tr></thead>
+                    <tbody>
+                        <tr><td>LR-1</td><td>5 to 11</td><td>1.30 to 2.15</td><td class="h">2 to 3</td></tr>
+                        <tr><td>LR-2</td><td>12 to 16</td><td>2.30 to 2.90</td><td class="h">3</td></tr>
+                    </tbody>
+                </table>
+                <p class="env-foot">No parking minimum. Restricted affordable units required. A multi-bedroom option adds 0.5 FAR and one story. HPOZs are excluded. LAMC 12.22 A.38.</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- ═══════════════════════════════════ SECTION 6: STATION BROWSER ═══════════════════════════════════ -->
-<section class="section" id="stations">
-    <span class="section-eyebrow">Station Browser</span>
-    <h2 class="section-title">Browse every qualifying TOD Zone.</h2>
-    <p class="section-lead">
-        ~150 stations across LA Metro Rail, Metrolink, and qualifying BRT. Filter by tier or line.
-        Click a station to see the TOD Zone polygon and top eligible parcels within ½ mile.
-    </p>
-
-    <div style="background:var(--card);border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow);border:1px solid var(--border);">
-        <div class="overlay-toolbar">
+<section class="section" id="pathways">
+    <div class="wrap">
+        <div class="section-head">
             <div>
-                <strong style="color:var(--primary);font-size:0.9rem;">Strategic parcel overlay</strong>
+                <div class="eyebrow">§ 65912.161(b)(1)</div>
+                <h2 class="section-title">The eight temporary <em>exemption pathways.</em></h2>
+            </div>
+            <p class="lede">Six apply site by site and two apply to a whole TOD zone. A parcel can qualify under more than one. Counts are from City Planning's May 2026 model results.</p>
+        </div>
+        <div class="pathway-grid" id="pathwayGrid"></div>
+    </div>
+</section>
+
+<section class="section alt" id="stations">
+    <div class="wrap">
+        <div class="section-head">
+            <div>
+                <div class="eyebrow">Station browser</div>
+                <h2 class="section-title">Every qualifying stop, <em>on one map.</em></h2>
+            </div>
+            <p class="lede">Zoom into a station area to level 15 or closer, then shade the visible parcels by their status in the City's list. Click any parcel for its tier, band, and source page.</p>
+        </div>
+        <div class="map-card">
+            <div class="overlay-toolbar">
                 <div class="overlay-status" id="sb79OverlayStatus">Zoom into a station area, then shade visible parcels by APN status.</div>
+                <button type="button" class="map-overlay-btn" id="sb79OverlayBtn" onclick="toggleSb79StatusOverlay()">Load Status Overlay</button>
+                <div class="overlay-legend" aria-label="SB 79 status legend">
+                    <span><span class="overlay-swatch" style="background:#2f855a;"></span>Available to study</span>
+                    <span><span class="overlay-swatch" style="background:#b7791f;"></span>Temporary exemption</span>
+                    <span><span class="overlay-swatch" style="background:#c53030;"></span>Excluded</span>
+                    <span><span class="overlay-swatch" style="background:#4a5568;"></span>Not in Table 1C</span>
+                </div>
             </div>
-            <button type="button" class="map-overlay-btn" id="sb79OverlayBtn" onclick="toggleSb79StatusOverlay()">Load Status Overlay</button>
-            <div class="overlay-legend" aria-label="SB 79 status legend">
-                <span><span class="overlay-swatch" style="background:#48bb78;"></span>Available to study</span>
-                <span><span class="overlay-swatch" style="background:#ecc94b;"></span>Temporary exemption</span>
-                <span><span class="overlay-swatch" style="background:#f56565;"></span>Excluded</span>
-                <span><span class="overlay-swatch" style="background:#a0aec0;"></span>Not in Table 1C</span>
+            <div id="stationMap"></div>
+            <div class="map-legend">
+                <span><span class="dot" style="background:var(--tier1)"></span>Tier 1 (heavy rail)</span>
+                <span><span class="dot" style="background:var(--tier2)"></span>Tier 2 (light rail, Metrolink, BRT)</span>
+                <span><span class="dot" style="background:transparent;border:1.5px dashed var(--brass)"></span>Industrial Employment Hub (excluded)</span>
             </div>
-        </div>
-        <div id="stationMap"></div>
-        <div id="stationLegend" style="margin-top:1rem;display:flex;gap:1rem;flex-wrap:wrap;font-size:0.82rem;color:var(--text-light);">
-            <span><span style="display:inline-block;width:12px;height:12px;background:var(--tier1);border-radius:50%;vertical-align:middle;margin-right:6px;"></span>Tier 1 (Heavy Rail)</span>
-            <span><span style="display:inline-block;width:12px;height:12px;background:var(--tier2);border-radius:50%;vertical-align:middle;margin-right:6px;"></span>Tier 2 (Light Rail / Metrolink / BRT)</span>
-            <span><span style="display:inline-block;width:12px;height:12px;background:var(--danger);border-radius:50%;vertical-align:middle;margin-right:6px;"></span>Industrial Hub (excluded zone)</span>
         </div>
     </div>
 </section>
 
-<!-- ═══════════════════════════════════ SECTION 7: APN DATABASE ═══════════════════════════════════ -->
-<section class="section" id="database" style="background:var(--bg-alt);max-width:none;padding-left:1.5rem;padding-right:1.5rem;">
-    <div style="max-width:1280px;margin:0 auto;">
-        <span class="section-eyebrow">APN Database</span>
-        <h2 class="section-title">Search the full 139,450-APN phased dataset.</h2>
-        <p class="section-lead">
-            Filter by tier, distance band, APN prefix, and exemption status. CSV export and batch upload
-            belong in the developer portal.
-        </p>
-
+<section class="section" id="database">
+    <div class="wrap">
+        <div class="section-head">
+            <div>
+                <div class="eyebrow">APN database</div>
+                <h2 class="section-title">Search all <em>139,450 APNs.</em></h2>
+            </div>
+            <p class="lede">Filter by tier, distance band, status, and APN prefix. Click any APN in the results to run the full lookup.</p>
+        </div>
         <div class="db-search-card">
             <div class="db-controls">
                 <div class="db-field">
-                    <label>Tier</label>
+                    <label for="dbTier">Tier</label>
                     <select id="dbTier"><option value="">All</option><option value="1">Tier 1</option><option value="2">Tier 2</option></select>
                 </div>
                 <div class="db-field">
-                    <label>Distance Band</label>
+                    <label for="dbBand">Distance band</label>
                     <select id="dbBand"><option value="">All</option><option value="adjacent">200 ft</option><option value="inner">¼ mile</option><option value="outer">½ mile</option></select>
                 </div>
                 <div class="db-field">
-                    <label>Status</label>
+                    <label for="dbStatus">Status</label>
                     <select id="dbStatus">
                         <option value="">All</option>
                         <option value="study_ready">Available to study</option>
                         <option value="temporary_hold">Temporary exemption</option>
-                        <option value="excluded">Excluded / statutory</option>
+                        <option value="excluded">Excluded or statutory</option>
                     </select>
                 </div>
                 <div class="db-field">
-                    <label>APN Prefix</label>
+                    <label for="dbApnPrefix">APN prefix</label>
                     <input type="text" id="dbApnPrefix" placeholder="e.g. 2534" inputmode="numeric">
                 </div>
             </div>
             <div class="db-action-row">
-                <button type="button" class="lookup-btn" onclick="runDbFilterSample()">Preview Matching APNs</button>
-                <span style="font-size:0.8rem;color:var(--text-muted);">Public preview samples up to 250 APNs.</span>
+                <button type="button" class="lookup-btn" onclick="runDbFilterSample()">Preview matching APNs</button>
+                <span style="font-size:13px;color:var(--muted);">Public preview returns up to 250 APNs.</span>
             </div>
-            <div id="dbResults" style="margin-top:1.5rem;color:var(--text-muted);font-size:0.88rem;">
+            <div id="dbResults" style="margin-top:18px;color:var(--muted);font-size:14px;">
                 <em id="dbLoadStatus">Loading Table 1C APN index…</em>
             </div>
         </div>
     </div>
 </section>
 
-<!-- ═══════════════════════════════════ SECTION 8: ELIGIBILITY CALCULATOR (GATED) ═══════════════════════════════════ -->
-<section class="section" id="calculator">
-    <span class="section-eyebrow">Eligibility Calculator · <strong style="color:var(--accent-dark);">PRO</strong></span>
-    <h2 class="section-title">Run all 8 pathways on a single APN.</h2>
-    <p class="section-lead">
-        Enter an APN to evaluate each pathway with a rule-by-rule verdict and statutory citation.
-        Shows which exemption (if any) applies and why.
-    </p>
-
-    <div class="gate-overlay" id="calcGate">
-        <div class="db-search-card gate-blur">
-            <div class="db-controls">
-                <div class="db-field" style="grid-column:span 2;">
-                    <label>APN</label>
-                    <input type="text" placeholder="5435-006-029">
-                </div>
-                <div class="db-field" style="display:flex;align-items:flex-end;">
-                    <button class="lookup-btn">Run All Pathways</button>
-                </div>
-            </div>
-            <p style="font-size:0.85rem;color:var(--text-muted);margin-top:1rem;">
-                Each pathway runs against the parcel's TCAC tier, fire hazard, historic, and capacity data —
-                with the statutory citation alongside each verdict.
-            </p>
-        </div>
-        <div class="gate-prompt">
-            <h4>🔒 Pro feature</h4>
-            <p>Unlock the full eligibility calculator with all 8 exemption pathway tests, statutory citations, and supporting parcel data.</p>
-            <a href="trial.html" class="gate-prompt-btn">Start a trial</a>
-        </div>
-    </div>
-</section>
-
-<!-- ═══════════════════════════════════ SECTION 9: ENVELOPE VISUALIZER (GATED) ═══════════════════════════════════ -->
-<section class="section" id="envelope" style="background:var(--bg-alt);max-width:none;padding-left:1.5rem;padding-right:1.5rem;">
-    <div style="max-width:1280px;margin:0 auto;">
-        <span class="section-eyebrow">Envelope Visualizer · <strong style="color:var(--accent-dark);">PRO</strong></span>
-        <h2 class="section-title">See your max build, drawn to scale.</h2>
-        <p class="section-lead">
-            Given lot SF + tier + distance band, the calculator returns max units, max height, max FAR/GFA,
-            and parking ratio — and renders an SVG sketch of the buildable envelope.
-        </p>
-
-        <div class="gate-overlay">
-            <div class="db-search-card gate-blur">
-                <div class="db-controls">
-                    <div class="db-field"><label>Lot SF</label><input type="number" placeholder="6750"></div>
-                    <div class="db-field"><label>Tier</label><select><option>Tier 1</option><option>Tier 2</option></select></div>
-                    <div class="db-field"><label>Band</label><select><option>200 ft</option><option>¼ mile</option><option>½ mile</option></select></div>
-                    <div class="db-field" style="display:flex;align-items:flex-end;"><button class="lookup-btn">Calculate</button></div>
-                </div>
-            </div>
-            <div class="gate-prompt">
-                <h4>🔒 Pro feature</h4>
-                <p>Unlock the envelope visualizer for max units, height, FAR/GFA, parking, and an SVG sketch of the buildable mass.</p>
-                <a href="trial.html" class="gate-prompt-btn">Start a trial</a>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ═══════════════════════════════════ SECTION 10: PRO FORMA (GATED) ═══════════════════════════════════ -->
-<section class="section" id="proforma">
-    <span class="section-eyebrow">Pro Forma Modeler · <strong style="color:var(--accent-dark);">PRO</strong></span>
-    <h2 class="section-title">Base zoning vs. SB 79 — side by side.</h2>
-    <p class="section-lead">
-        Underwriting comparison: residual land value, yield on cost, and total dev cost under the base-zoning
-        scenario vs. the SB 79 envelope. Stack Density Bonus and MIIP to push higher.
-    </p>
-
-    <div class="gate-overlay">
-        <div class="db-search-card gate-blur">
-            <p style="color:var(--text-muted);">Full residual-land-value pro forma comparing local and SB 79 envelopes, with construction $/SF, rents, vacancy, opex, cap rate, and target yield inputs — reusing Land to Yield's core HBU and finance modules.</p>
-        </div>
-        <div class="gate-prompt">
-            <h4>🔒 Pro feature</h4>
-            <p>Unlock the full pro forma modeler with base-vs-SB 79 scenario comparison and density-bonus stacking.</p>
-            <a href="trial.html" class="gate-prompt-btn">Start a trial</a>
-        </div>
-    </div>
-</section>
-
-<!-- ═══════════════════════════════════ SECTION 11: READINESS CHECKLIST ═══════════════════════════════════ -->
-<section class="section" id="checklist" style="background:var(--bg-alt);max-width:none;padding-left:1.5rem;padding-right:1.5rem;">
-    <div style="max-width:1280px;margin:0 auto;">
-        <span class="section-eyebrow">Developer Playbook</span>
-        <h2 class="section-title">Current parcel diligence checklist.</h2>
-        <p class="section-lead">
-            Current action items for screening, design and filing. Check items off — your progress saves locally.
-        </p>
-
-        <div class="checklist-week">
-            <h4>Week 1 · Site identification (days 1–7)</h4>
-            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Pull APN-level eligibility for every site you own or are tracking.</span></label>
-            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>For each eligible APN, confirm tier, distance band, RSO status, and existing zoning.</span></label>
-            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Pull title and identify deed restrictions, easements, or covenants that would block ministerial use.</span></label>
-        </div>
-        <div class="checklist-week">
-            <h4>Week 2 · Schematic design (days 8–14)</h4>
-            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Engage architect for SB 79 schematic on top 3 sites.</span></label>
-            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Confirm whether stacking Density Bonus is worthwhile for the project mix.</span></label>
-            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Order Phase I ESA on top sites (lenders will want it).</span></label>
-        </div>
-        <div class="checklist-week">
-            <h4>Week 3 · Pre-app coordination (days 15–21)</h4>
-            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Begin pre-app conversations with DCP and LADBS plan check.</span></label>
-            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Finalize project mix (market vs. affordable).</span></label>
-            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Talk to construction lender; align term-sheet timing with ministerial entitlement.</span></label>
-        </div>
-        <div class="checklist-week">
-            <h4>Week 4 · Construction documents (days 22–28)</h4>
-            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Finalize architectural drawings for ministerial submittal.</span></label>
-            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Coordinate utility will-serve letters (LADWP, DOT, DPW).</span></label>
-            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Confirm demolition permit timing for any existing structures (note RSO restriction).</span></label>
-        </div>
-        <div class="checklist-week">
-            <h4>Pre-submittal</h4>
-            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Reconcile the APN against current ZIMAS and the final City eligibility map before relying on a ministerial path.</span></label>
-            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Schedule pre-submittal meeting with LADBS.</span></label>
-            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Confirm financial close timing aligns with SB 79 entitlement.</span></label>
-        </div>
-        <div class="checklist-week">
-            <h4>Filing and plan check</h4>
-            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Confirm the applicable direct SB 79 or LA Low-Rise path with the project team, then file the current application package.</span></label>
-            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Track the 60/90-day plan check clock.</span></label>
-            <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Begin construction mobilization planning.</span></label>
-        </div>
-    </div>
-</section>
-
-<!-- ═══════════════════════════════════ SECTION 12: DOCS LIBRARY ═══════════════════════════════════ -->
-<section class="section" id="docs">
-    <span class="section-eyebrow">Source Documents</span>
-    <h2 class="section-title">The official record.</h2>
-    <p class="section-lead">
-        Every claim in this portal traces back to a primary source. Below is LA Planning's full
-        SB 79 implementation package. May 2026 materials are provenance controls and must be reconciled to the signed June ordinances and current ZIMAS.
-    </p>
-
-    <div class="docs-grid">
-        <a class="doc-card" href="sb79-data/docs/appendix-1-methodology.pdf" target="_blank" rel="noopener">
-            <span class="doc-card-tag">Methodology</span>
-            <div class="doc-card-title">Appendix 1 — SB 79 Phased Implementation Model</div>
-            <div class="doc-card-desc">The definitive technical framework — capacity assumptions, MIIP hierarchy, exemption logic, plurality methodology. CPC-2026-1798-MSC, May 14, 2026.</div>
-        </a>
-        <a class="doc-card" href="sb79-data/docs/exhibit-4-results.pdf" target="_blank" rel="noopener">
-            <span class="doc-card-tag">Results</span>
-            <div class="doc-card-title">Exhibit 4 — Phased Implementation Model Results</div>
-            <div class="doc-card-desc">Citywide funnel and TOD-Zone-by-TOD-Zone breakdown of eligibility, exemption counts, and capacity comparisons.</div>
-        </a>
-        <a class="doc-card" href="https://planning.lacity.gov/odocument/d40476e6-daf9-429e-b688-cde5c74ad6dc/Table_1C-Sites_Eligible_for_Phased_Implementation.pdf" target="_blank" rel="noopener">
-            <span class="doc-card-tag">APN Table</span>
-            <div class="doc-card-title">Table 1C — Sites Eligible for Phased Implementation</div>
-            <div class="doc-card-desc">139,450 individual APNs with permanent/statutory and temporary exemption flags. The dataset this portal queries.</div>
-        </a>
-        <a class="doc-card" href="sb79-data/docs/low-rise-ordinance-may-2026.pdf" target="_blank" rel="noopener">
-            <span class="doc-card-tag">Ordinance</span>
-            <div class="doc-card-title">Low-Rise Ordinance — May 19, 2026</div>
-            <div class="doc-card-desc">LAMC residential zoning updates that add 17,562 sites with ≥ 50% SB 79 capacity (Pathway A exemption).</div>
-        </a>
-        <a class="doc-card" href="sb79-data/docs/letter-of-determination-may-2026.pdf" target="_blank" rel="noopener">
-            <span class="doc-card-tag">Determination</span>
-            <div class="doc-card-title">Letter of Determination — May 2026</div>
-            <div class="doc-card-desc">DCP's interpretive guidance to LADBS and the public on SB 79 application, tier definitions, and ministerial review.</div>
-        </a>
-        <a class="doc-card" href="sb79-data/docs/cpc-technical-modification.pdf" target="_blank" rel="noopener">
-            <span class="doc-card-tag">Tech Modification</span>
-            <div class="doc-card-title">CPC-2026-1797 and CPC-2026-1798 — Technical Modification</div>
-            <div class="doc-card-desc">May 14, 2026 City Planning Commission action adopting technical modifications and aligning LAMC with SB 79 ministerial process.</div>
-        </a>
-        <a class="doc-card" href="sb79-data/docs/plum-2-18-26.pdf" target="_blank" rel="noopener">
-            <span class="doc-card-tag">PLUM Committee</span>
-            <div class="doc-card-title">PLUM Committee Hearing — February 18, 2026</div>
-            <div class="doc-card-desc">City Council Planning and Land Use Management committee materials and findings supporting the SB 79 implementation framework.</div>
-        </a>
-        <a class="doc-card" href="https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?lawCode=GOV&division=1.&title=7.&part=&chapter=4.6.&article=" target="_blank" rel="noopener">
-            <span class="doc-card-tag">Statute</span>
-            <div class="doc-card-title">Cal. Gov. Code §65912.155–65912.162</div>
-            <div class="doc-card-desc">The statutory text of SB 79. Primary source for development standards, permanent exclusions, and temporary exemption pathways.</div>
-        </a>
-    </div>
-</section>
-
-<!-- ═══════════════════════════════════ SECTION 13: LIVE UPDATES ═══════════════════════════════════ -->
-<section class="section" id="updates" style="background:var(--bg-alt);max-width:none;padding-left:1.5rem;padding-right:1.5rem;">
-    <div style="max-width:1280px;margin:0 auto;">
-        <span class="section-eyebrow">Live Updates</span>
-        <h2 class="section-title">What's changed this month.</h2>
-        <p class="section-lead">
-            Curated tracking of LA implementation actions, legal interpretations, court rulings, and industry analysis.
-            Refreshed monthly.
-        </p>
-
-        <div id="updatesFeed">
-            <div class="update-card">
-                <div class="update-meta">
-                    <span class="update-meta-date">2026-05-19</span>
-                    <span class="update-meta-source">LA Department of City Planning</span>
-                </div>
-                <div class="update-card-title">Low-Rise Ordinance adopted</div>
-                <div class="update-card-summary">LAMC residential zoning amendments take effect alongside SB 79 on July 1, 2026. Adds 17,562 sites that retain ≥ 50% SB 79 capacity under local rules — meaning SB 79 will apply to ~29,000 fewer sites than the un-amended baseline.</div>
-            </div>
-            <div class="update-card">
-                <div class="update-meta">
-                    <span class="update-meta-date">2026-05-14</span>
-                    <span class="update-meta-source">LA City Planning Commission</span>
-                </div>
-                <div class="update-card-title">CPC adopts Phased Implementation Model and technical modifications</div>
-                <div class="update-card-summary">CPC-2026-1797 (Code Amendment) and CPC-2026-1798 (Modifications) approved May 14, 2026. Aligns LAMC procedures with SB 79's ministerial review and sets the official APN-level eligibility dataset.</div>
-            </div>
-            <div class="update-card">
-                <div class="update-meta">
-                    <span class="update-meta-date">2026-02-18</span>
-                    <span class="update-meta-source">PLUM Committee</span>
-                </div>
-                <div class="update-card-title">PLUM Committee findings published</div>
-                <div class="update-card-summary">Planning and Land Use Management Committee held hearing on SB 79 implementation framework. Findings support Phased Implementation Model methodology and identify open coordination items with HCD on industrial-zoned land treatment.</div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ═══════════════════════════════════ FOOTER ═══════════════════════════════════ -->
-<footer>
-    <div class="footer-inner">
-        <div class="footer-grid">
+<section class="section alt" id="tools">
+    <div class="wrap">
+        <div class="section-head">
             <div>
-                <div class="footer-brand">land<span>to</span>yield</div>
-                <p class="footer-tag">The CRE intelligence platform built for California's incentive-law era. Trusted by developers, lenders, agents, and city planners.</p>
+                <div class="eyebrow">In the full portal</div>
+                <h2 class="section-title">From status <em>to underwriting.</em></h2>
             </div>
-            <div class="footer-col">
-                <h5>SB 79</h5>
-                <a href="#what-is-sb79">What is SB 79</a>
-                <a href="#phasing">LA Phasing</a>
-                <a href="#calculator">Calculator</a>
-                <a href="#docs">Source docs</a>
+            <p class="lede">The parcel analyzer carries the same APN decision into yield, envelope, and economics, with every assumption editable and every unverified fact flagged.</p>
+        </div>
+        <div class="tools">
+            <a href="app.html">
+                <div class="k">Pathway screen</div>
+                <h3>Every exemption pathway, one parcel.</h3>
+                <p>Rule by rule results with the statutory citation for each, and the parcel facts each test still needs.</p>
+                <span class="go">Analyze a parcel &rarr;</span>
+            </a>
+            <a href="app.html">
+                <div class="k">Envelope</div>
+                <h3>Statute and Low-Rise, side by side.</h3>
+                <p>Units, floor area, height, and parking under the statutory cell and the LR-1 or LR-2 menu for the same lot.</p>
+                <span class="go">Analyze a parcel &rarr;</span>
+            </a>
+            <a href="app.html">
+                <div class="k">Pro forma</div>
+                <h3>Base zoning against each path.</h3>
+                <p>Residual land value and yield on cost for each scenario, with Density Bonus layering where it applies.</p>
+                <span class="go">Analyze a parcel &rarr;</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="checklist">
+    <div class="wrap">
+        <div class="section-head">
+            <div>
+                <div class="eyebrow">Diligence checklist</div>
+                <h2 class="section-title">Before relying on <em>any path.</em></h2>
             </div>
-            <div class="footer-col">
-                <h5>Tools</h5>
-                <a href="app.html">HBU Calculator</a>
+            <p class="lede">A working list for a station-area site. Check items off as you go; nothing here is saved or sent.</p>
+        </div>
+        <div class="check-grid">
+            <div class="checklist-week">
+                <h4><span>01</span>Confirm the parcel</h4>
+                <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Reconcile the APN against current ZIMAS and the final City eligibility map.</span></label>
+                <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Confirm tier, distance band, base zoning, overlays, and any specific plan.</span></label>
+                <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Check RSO status and seven-year demolition and tenancy history.</span></label>
+            </div>
+            <div class="checklist-week">
+                <h4><span>02</span>Confirm the rule path</h4>
+                <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Identify whether the statute applies now, the parcel is on temporary hold, or it is excluded.</span></label>
+                <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Where Low-Rise may apply, confirm the LR-1 or LR-2 subarea in ZIMAS.</span></label>
+                <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Review historic, fire hazard, and coastal constraints with counsel.</span></label>
+            </div>
+            <div class="checklist-week">
+                <h4><span>03</span>Design and finance</h4>
+                <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Pull title and identify restrictions, easements, or covenants.</span></label>
+                <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Test the affordability options and whether Density Bonus layering pays.</span></label>
+                <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Order a Phase I ESA and align lender timing with the entitlement path.</span></label>
+            </div>
+            <div class="checklist-week">
+                <h4><span>04</span>File</h4>
+                <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Confirm the applicable direct SB 79 or LA Low-Rise path with the project team.</span></label>
+                <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Hold a pre-submittal meeting with City Planning and LADBS.</span></label>
+                <label class="checklist-item"><input type="checkbox" class="checklist-checkbox"><span>Track the statutory review deadlines once the application is filed.</span></label>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section alt" id="docs">
+    <div class="wrap">
+        <div class="section-head">
+            <div>
+                <div class="eyebrow">Sources</div>
+                <h2 class="section-title">The official <em>record.</em></h2>
+            </div>
+            <p class="lede">Primary sources behind this portal. The signed ordinances and current ZIMAS control; the May 2026 materials are kept for provenance.</p>
+        </div>
+        <div class="docs-grid">
+            <a class="doc-card signed" href="https://cityclerk.lacity.org/onlinedocs/2025/25-1083-S3_ord_188967_06-30-26.pdf" target="_blank" rel="noopener">
+                <span class="doc-card-tag">Signed ordinance</span>
+                <div class="doc-card-title">Ordinance 188967: Low-Rise</div>
+                <div class="doc-card-desc">Effective June 30, 2026. The LR-1 and LR-2 menu, eligibility, and development standards in LAMC 12.22 A.38.</div>
+            </a>
+            <a class="doc-card signed" href="https://cityclerk.lacity.org/onlinedocs/2025/25-1083-S4_ord_188968_06-30-26.pdf" target="_blank" rel="noopener">
+                <span class="doc-card-tag">Signed ordinance</span>
+                <div class="doc-card-title">Ordinance 188968: Phased Implementation</div>
+                <div class="doc-card-desc">Effective June 30, 2026. How and when the statute applies across the City's station areas.</div>
+            </a>
+            <a class="doc-card signed" href="https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202520260SB79" target="_blank" rel="noopener">
+                <span class="doc-card-tag">Statute</span>
+                <div class="doc-card-title">SB 79, chaptered</div>
+                <div class="doc-card-desc">Gov. Code §§ 65912.155 to 65912.162: development standards, exclusions, and temporary exemption pathways.</div>
+            </a>
+            <a class="doc-card" href="https://planning.lacity.gov/resources/senate-bill-sb-79" target="_blank" rel="noopener">
+                <span class="doc-card-tag">City Planning</span>
+                <div class="doc-card-title">LA City Planning: SB 79</div>
+                <div class="doc-card-desc">The City's implementation page, with links to the ZIMAS eligibility layers.</div>
+            </a>
+            <a class="doc-card" href="https://planning.lacity.gov/odocument/d40476e6-daf9-429e-b688-cde5c74ad6dc/Table_1C-Sites_Eligible_for_Phased_Implementation.pdf" target="_blank" rel="noopener">
+                <span class="doc-card-tag">APN table · May 2026</span>
+                <div class="doc-card-title">Table 1C: Sites in Phased Implementation</div>
+                <div class="doc-card-desc">139,450 APNs with exclusion and temporary exemption flags. The dataset this portal queries.</div>
+            </a>
+            <a class="doc-card" href="sb79-data/docs/appendix-1-methodology.pdf" target="_blank" rel="noopener">
+                <span class="doc-card-tag">Methodology · May 2026</span>
+                <div class="doc-card-title">Appendix 1: Phased Implementation Model</div>
+                <div class="doc-card-desc">Capacity assumptions, exemption logic, and plurality methodology. CPC-2026-1798-MSC.</div>
+            </a>
+            <a class="doc-card" href="sb79-data/docs/exhibit-4-results.pdf" target="_blank" rel="noopener">
+                <span class="doc-card-tag">Results · May 2026</span>
+                <div class="doc-card-title">Exhibit 4: Model results</div>
+                <div class="doc-card-desc">Citywide and TOD zone breakdown of exclusions, exemptions, and capacity comparisons.</div>
+            </a>
+            <a class="doc-card" href="sb79-data/docs/low-rise-ordinance-may-2026.pdf" target="_blank" rel="noopener">
+                <span class="doc-card-tag">Draft · May 2026</span>
+                <div class="doc-card-title">Low-Rise Ordinance, Commission draft</div>
+                <div class="doc-card-desc">The version recommended in May. Superseded by signed Ordinance 188967.</div>
+            </a>
+            <a class="doc-card" href="sb79-data/docs/letter-of-determination-may-2026.pdf" target="_blank" rel="noopener">
+                <span class="doc-card-tag">Determination · May 2026</span>
+                <div class="doc-card-title">Letters of Determination</div>
+                <div class="doc-card-desc">City Planning Commission determinations for CPC-2026-1797-CA and CPC-2026-1798-MSC.</div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="updates">
+    <div class="wrap">
+        <div class="section-head">
+            <div>
+                <div class="eyebrow">Implementation timeline</div>
+                <h2 class="section-title">What has <em>changed.</em></h2>
+            </div>
+            <p class="lede">The milestones that moved the answer for Los Angeles parcels, most recent first.</p>
+        </div>
+        <div class="updates" id="updatesFeed">
+            <div class="update-card">
+                <div><span class="update-meta-date">2026-07-01</span><span class="update-meta-source">State of California</span></div>
+                <div><div class="update-card-title">SB 79 becomes operative statewide</div><div class="update-card-summary">The statutory standards take effect. In Los Angeles they reach parcels through the City's phased implementation and status lists.</div></div>
+            </div>
+            <div class="update-card">
+                <div><span class="update-meta-date">2026-06-30</span><span class="update-meta-source">City of Los Angeles</span></div>
+                <div><div class="update-card-title">Ordinances 188967 and 188968 take effect</div><div class="update-card-summary">The Low-Rise and Phased Implementation ordinances are signed and effective. City Planning publishes the eligibility layers in ZIMAS.</div></div>
+            </div>
+            <div class="update-card">
+                <div><span class="update-meta-date">2026-06-23</span><span class="update-meta-source">Los Angeles City Council</span></div>
+                <div><div class="update-card-title">Council adopts both ordinances</div><div class="update-card-summary">Final adoption of the Low-Rise and Phased Implementation ordinances, including changes made after the Commission's May recommendation.</div></div>
+            </div>
+            <div class="update-card">
+                <div><span class="update-meta-date">2026-05-19</span><span class="update-meta-source">City Planning</span></div>
+                <div><div class="update-card-title">Letters of Determination issued</div><div class="update-card-summary">Determinations for CPC-2026-1797-CA and CPC-2026-1798-MSC are mailed following the Commission's action.</div></div>
+            </div>
+            <div class="update-card">
+                <div><span class="update-meta-date">2026-05-14</span><span class="update-meta-source">City Planning Commission</span></div>
+                <div><div class="update-card-title">Commission recommends both ordinances</div><div class="update-card-summary">The Commission recommends approval of the Low-Rise Ordinance and the Phased Implementation Ordinance, based on the May 5 parcel snapshot used in this portal.</div></div>
+            </div>
+            <div class="update-card">
+                <div><span class="update-meta-date">2026-03-24</span><span class="update-meta-source">Los Angeles City Council</span></div>
+                <div><div class="update-card-title">Council selects a phased approach</div><div class="update-card-summary">Council directs a phased implementation path with a horizon around 2030 rather than immediate citywide application.</div></div>
+            </div>
+            <div class="update-card">
+                <div><span class="update-meta-date">2026-02-18</span><span class="update-meta-source">PLUM Committee</span></div>
+                <div><div class="update-card-title">PLUM hearing on the implementation framework</div><div class="update-card-summary">Planning and Land Use Management Committee materials support the phased methodology and flag coordination items with HCD.</div></div>
+            </div>
+        </div>
+    </div>
+</section>
+</main>
+
+<footer class="footer">
+    <div class="wrap">
+        <div class="footer-top">
+            <a class="brand" href="/">Land <span>to</span> Yield</a>
+            <div class="footer-links">
+                <a href="/">Home</a>
+                <a href="app.html">Analyze a Parcel</a>
                 <a href="bill-finder.html">Bill Finder</a>
-                <a href="agent.html">Agent Portal</a>
-                <a href="lender.html">Lender Portal</a>
-            </div>
-            <div class="footer-col">
-                <h5>Resources</h5>
-                <a href="newsletter.html">Legislative Edge</a>
-                <a href="trial.html">Start trial</a>
-                <a href="mailto:trevor@clscre.com">Contact</a>
+                <a href="land-use-attorneys/">For Attorneys</a>
+                <a href="guides/">Insights</a>
+                <a href="newsletter.html">Newsletter</a>
                 <a href="privacy.html">Privacy</a>
+                <a href="terms.html">Terms</a>
             </div>
         </div>
-        <div class="footer-bottom">
-            © 2026 Land to Yield by CLS CRE. SB 79 portal content reflects the LA Department of City Planning
-            Phased Implementation Model as of May 2026. Not legal advice — consult counsel before relying on
-            any specific eligibility determination.
-        </div>
+        <p class="disclaimer">Land to Yield by CLS CRE provides preliminary screening for informational purposes. It is not legal advice and does not create an attorney-client relationship. Parcel statuses reflect City Planning's May 5, 2026 snapshot and must be confirmed against the signed ordinances and current ZIMAS records before any reliance. &copy; 2026 Land to Yield.</p>
     </div>
 </footer>
 
@@ -1386,7 +804,7 @@
         } catch (e) {
             console.warn('SB79 APN index load failed:', e);
             if (statusEl) {
-                statusEl.innerHTML = 'Table 1C index not loaded — run <code>scripts/run_ingest_table_1c.ps1</code> '
+                statusEl.innerHTML = 'Table 1C index not loaded. Run <code>scripts/run_ingest_table_1c.ps1</code> '
                     + 'or check <code>sb79-data/apn-index.json</code>. Coordinate fallback still works for addresses.';
             }
         }
@@ -1615,7 +1033,7 @@
             card.classList.add('exempt');
             pillClass = 'pill-exempt';
             pillText = 'Temporary Exemption Watchlist';
-            summaryText = 'Site is in the final phased Low-Rise universe, but at least one temporary exemption pathway applies.';
+            summaryText = 'Site appears in the City’s May 2026 phased universe, and at least one temporary exemption pathway applies. Check whether the Low-Rise menu applies in ZIMAS.';
         } else if (r.phase === 'eligible') {
             pillClass = 'pill-eligible';
             pillText = 'Available to Study';
@@ -1636,7 +1054,7 @@
             pillText = 'Needs verification';
             summaryText = (r.notes && r.notes.length)
                 ? r.notes.join(' ')
-                : 'APN not in Table 1C — may still qualify via coordinate check. Enter an address or run full ingest.';
+                : 'APN not in Table 1C. It may still screen by location; enter the street address to check.';
         }
 
         pill.className = 'verdict-pill ' + pillClass;
@@ -1646,8 +1064,8 @@
 
         // Grid stats
         const stats = [];
-        if (r.station) stats.push(['Nearest station', r.station.name + ' (' + (r.station.line || 'N/A') + ')']);
-        if (r.tier)    stats.push(['Tier', 'Tier ' + r.tier + ' · ' + (r.station ? r.station.serviceType : '')]);
+        if (r.station) stats.push(['Nearest station', r.station.name + (r.station.line ? ' (' + r.station.line + ')' : '')]);
+        if (r.tier)    stats.push(['Tier', 'Tier ' + r.tier + (r.station && r.station.serviceType ? ' · ' + r.station.serviceType : '')]);
         if (r.distanceBand) {
             const bandLabel = { adjacent: '200 ft', inner: '¼ mile', outer: '½ mile', beyond: 'beyond ½ mile' }[r.distanceBand];
             stats.push(['Distance band', bandLabel]);
@@ -1795,7 +1213,7 @@
             }).addTo(map);
 
             METRO_STATIONS.forEach(s => {
-                const color = s.tier === 1 ? '#805ad5' : '#3182ce';
+                const color = s.tier === 1 ? '#153D63' : '#5B8DB8';
                 L.circleMarker([s.lat, s.lon], {
                     radius: 6, color: color, fillColor: color, fillOpacity: 0.85, weight: 2,
                 }).addTo(map).bindPopup(
@@ -1810,12 +1228,12 @@
                 SB79_INDUSTRIAL_HUBS.forEach(h => {
                     L.circle([h.centroid.lat, h.centroid.lon], {
                         radius: h.radius * 1609,
-                        color: '#e53e3e', fillColor: '#e53e3e', fillOpacity: 0.06, weight: 1.5,
+                        color: '#8A5A12', fillColor: '#8A5A12', fillOpacity: 0.05, weight: 1.5,
                         dashArray: '6,4',
                     }).addTo(map).bindPopup(
                         '<strong>' + h.name + '</strong><br>Industrial Employment Hub<br>' +
                         h.acreage + ' acres · ' + h.sites + ' sites<br>' +
-                        '<em>Permanently excluded — §65912.160(e)(2)</em>'
+                        '<em>Permanently excluded, §65912.160(e)(2)</em>'
                     );
                 });
             }
