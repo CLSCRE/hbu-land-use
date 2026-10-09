@@ -4510,7 +4510,7 @@ function renderSB79Eligibility(eligibility) {
             ? (lr ? `${lr.subarea}: up to ${lr.maxUnits} units, ${lr.maxFar} FAR, ${lr.maxStories} stories, no required parking.` : 'Local Low-Rise flag found; parcel facts are incomplete for an envelope.')
             : (isExcluded ? 'The APN control record blocks direct SB 79 and LA Low-Rise.' : 'Transit proximity is a screening result only. Resolve the assessor APN in current ZIMAS before applying an envelope.');
         el.style.display = 'block';
-        el.innerHTML = `<h3>${title}</h3><p>${detail}</p><p style="font-size:0.78rem;color:var(--text-light);">APN ${apn}. Sean Lahijani / LA Planning snapshot ${sourceDate}; verify the final/current ZIMAS map before underwriting.</p>`;
+        el.innerHTML = `<h3>${title}</h3><p>${detail}</p><p style="font-size:0.78rem;color:var(--text-light);">APN ${apn}. LA Planning snapshot ${sourceDate}; verify the final/current ZIMAS map before underwriting.</p>`;
         return;
     }
     eligibility.pathLabel = currentPath === 'sb79_and_la_low_rise' ? 'Direct SB 79 + LA Low-Rise Comparison' : 'Direct SB 79 Current Path';
@@ -4535,7 +4535,7 @@ function renderSB79Eligibility(eligibility) {
             &mdash; ${eligibility.distMiles.toFixed(2)} mi from <strong>${eligibility.station.name}</strong>
             (${LINE_LABELS[eligibility.station.line] || eligibility.station.line})
         </p>
-        <p style="font-size:0.78rem;color:var(--text-light);">APN ${apn}. Sean Lahijani / LA Planning snapshot ${sourceDate}; confirm final/current ZIMAS before underwriting.</p>
+        <p style="font-size:0.78rem;color:var(--text-light);">APN ${apn}. LA Planning snapshot ${sourceDate}; confirm final/current ZIMAS before underwriting.</p>
         <div class="sb79-grid">
             <div class="sb79-stat"><div class="stat-label">Max Height</div><div class="stat-value">${a.maxHeight} ft</div></div>
             <div class="sb79-stat"><div class="stat-label">Max Density</div><div class="stat-value">${a.densityDuAc} du/ac</div></div>
@@ -6047,7 +6047,7 @@ function generateListingOnePager(result, inp, address) {
                 <div style="font-size:0.8rem;color:#334155;">
                     <strong>${sb79Decision.currentPath === 'la_low_rise' ? 'LA Low-Rise' : 'Direct SB 79'}</strong> — APN-gated current path<br>
                     ${sb79.zone.charAt(0).toUpperCase()+sb79.zone.slice(1)} transit band (${sb79.distMiles.toFixed(2)} mi from ${st.name})<br>
-                    Verify the Sean Lahijani / LA Planning May snapshot against current ZIMAS before underwriting.
+                    Verify the LA Planning May snapshot against current ZIMAS before underwriting.
                 </div>
             </div>`;
         } else if (sb79 && sb79.eligible) {

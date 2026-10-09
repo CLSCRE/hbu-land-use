@@ -3,29 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Los Angeles Parcel Feasibility — Land to Yield</title>
-    <meta name="description" content="Screen City of Los Angeles parcels for development potential, applicable housing programs, preliminary economics, and the issues that still require professional verification.">
+    <title>Los Angeles Parcel Feasibility | Land to Yield</title>
+    <meta name="description" content="Screen City of Los Angeles parcels against SB 79, the Low-Rise and Phased Implementation ordinances, and base zoning, with every unresolved question kept visible for professional verification.">
     <link rel="canonical" href="https://landtoyield.com/">
 
-    <!-- Open Graph / Social Sharing -->
-    <meta property="og:title" content="Los Angeles Parcel Feasibility — Land to Yield">
-    <meta property="og:description" content="Screen a City of Los Angeles parcel before spending time and money on full diligence.">
+    <meta property="og:title" content="Los Angeles Parcel Feasibility | Land to Yield">
+    <meta property="og:description" content="State law, city law, and the parcel, resolved in one documented screen before full diligence.">
     <meta property="og:image" content="https://landtoyield.com/og-image.png">
     <meta property="og:url" content="https://landtoyield.com/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Land to Yield">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Los Angeles Parcel Feasibility — Land to Yield">
-    <meta name="twitter:description" content="Screen a City of Los Angeles parcel before spending time and money on full diligence.">
+    <meta name="twitter:title" content="Los Angeles Parcel Feasibility | Land to Yield">
+    <meta name="twitter:description" content="State law, city law, and the parcel, resolved in one documented screen before full diligence.">
     <meta name="twitter:image" content="https://landtoyield.com/og-image.png">
+    <meta name="theme-color" content="#F3F1EC">
 
-    <!-- Favicon -->
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-
-    <!-- Analytics -->
     <script defer data-domain="landtoyield.com" src="https://plausible.io/js/script.js"></script>
 
-    <!-- Structured Data -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -36,1938 +32,1314 @@
       "url": "https://landtoyield.com/",
       "description": "Preliminary development-potential screening for City of Los Angeles parcels, with source-linked verification steps and editable underwriting assumptions.",
       "offers": [
-        {
-          "@type": "Offer",
-          "name": "Broker",
-          "price": "149",
-          "priceCurrency": "USD",
-          "priceSpecification": {
-            "@type": "UnitPriceSpecification",
-            "price": "149",
-            "priceCurrency": "USD",
-            "billingDuration": "P1M"
-          }
-        },
-        {
-          "@type": "Offer",
-          "name": "Developer",
-          "price": "299",
-          "priceCurrency": "USD",
-          "priceSpecification": {
-            "@type": "UnitPriceSpecification",
-            "price": "299",
-            "priceCurrency": "USD",
-            "billingDuration": "P1M"
-          }
-        },
-        {
-          "@type": "Offer",
-          "name": "Team",
-          "price": "799",
-          "priceCurrency": "USD",
-          "priceSpecification": {
-            "@type": "UnitPriceSpecification",
-            "price": "799",
-            "priceCurrency": "USD",
-            "billingDuration": "P1M"
-          }
-        }
+        {"@type": "Offer", "name": "Broker", "price": "149", "priceCurrency": "USD",
+         "priceSpecification": {"@type": "UnitPriceSpecification", "price": "149", "priceCurrency": "USD", "billingDuration": "P1M"}},
+        {"@type": "Offer", "name": "Developer", "price": "299", "priceCurrency": "USD",
+         "priceSpecification": {"@type": "UnitPriceSpecification", "price": "299", "priceCurrency": "USD", "billingDuration": "P1M"}},
+        {"@type": "Offer", "name": "Team", "price": "799", "priceCurrency": "USD",
+         "priceSpecification": {"@type": "UnitPriceSpecification", "price": "799", "priceCurrency": "USD", "billingDuration": "P1M"}}
       ],
-      "creator": {
-        "@type": "Organization",
-        "name": "Land to Yield",
-        "url": "https://landtoyield.com/"
-      }
+      "creator": {"@type": "Organization", "name": "Land to Yield", "url": "https://landtoyield.com/"}
     }
     </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
-            --primary-light: #3b82f6;
-            --accent: #f59e0b;
-            --accent-light: #fbbf24;
-            --bg: #ffffff;
-            --bg-alt: #f5f5f7;
+            --paper: #F3F1EC;
+            --paper-2: #EAE6DE;
+            --card: #FBFAF7;
             --white: #ffffff;
-            --text: #1d1d1f;
-            --text-dark: #000000;
-            --text-light: #86868b;
-            --border: #d2d2d7;
-            --radius: 16px;
-            --shadow: 0 2px 12px rgba(0,0,0,0.06);
-            --shadow-lg: 0 8px 40px rgba(0,0,0,0.10);
+            --ink: #0E1B2A;
+            --ink-2: #2B3846;
+            --muted: #5E6873;
+            --line: #D9D4C9;
+            --line-soft: #E5E1D8;
+            --navy: #153D63;
+            --navy-deep: #0C2237;
+            --glass: #8FAACB;
+            --brass: #8A5A12;
+            --green: #006A4E;
+            --serif: 'Newsreader', 'Iowan Old Style', Georgia, serif;
+            --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+            --max: 1240px;
+            --gutter: clamp(16px, 4vw, 40px);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { font-size: 18px; scroll-behavior: smooth; }
-
+        html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            color: var(--text);
-            background: var(--bg);
+            font-family: var(--sans);
+            font-size: 17px;
             line-height: 1.6;
+            color: var(--ink);
+            background: var(--paper);
             -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
         }
+        a { color: inherit; }
+        ::selection { background: var(--navy); color: #fff; }
+        .wrap { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+
+        .eyebrow {
+            font-family: var(--mono);
+            font-size: 12px;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--muted);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .eyebrow::before { content: ""; width: 22px; height: 1px; background: currentColor; }
+        h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02em; }
+        h2 { font-size: clamp(34px, 4.4vw, 58px); line-height: 1.04; }
+        h2 em, h1 em { font-style: italic; color: var(--navy); }
+        .lede { font-size: clamp(17px, 1.4vw, 20px); color: var(--ink-2); max-width: 58ch; }
 
         /* ── NAV ── */
         .nav {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-            background: rgba(255,255,255,0.80);
-            backdrop-filter: saturate(180%) blur(20px);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
-            border-bottom: 1px solid rgba(0,0,0,0.06);
-            padding: 0 2rem;
+            position: sticky; top: 0; z-index: 50;
+            background: rgba(243, 241, 236, .82);
+            backdrop-filter: saturate(160%) blur(16px);
+            -webkit-backdrop-filter: saturate(160%) blur(16px);
+            border-bottom: 1px solid transparent;
+            transition: border-color .3s;
         }
+        .nav.scrolled { border-bottom-color: var(--line); }
         .nav-inner {
-            max-width: 1200px; margin: 0 auto;
-            display: flex; align-items: center; justify-content: space-between;
-            height: 72px;
+            max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter);
+            height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 24px;
         }
-        .nav-brand {
-            display: flex; align-items: center; gap: .75rem;
+        .brand {
+            display: flex; align-items: center; gap: 10px;
+            font-family: var(--serif); font-size: 23px; letter-spacing: -0.02em;
+            text-decoration: none; color: var(--ink); white-space: nowrap;
         }
-        .nav-brand-text {
-            font-weight: 900; font-size: 1.7rem; color: var(--text-dark);
-            letter-spacing: -0.05em; line-height: 1;
-            text-decoration: none;
-            background: linear-gradient(135deg, #1d4ed8 0%, #0f172a 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .nav-brand-text span {
-            -webkit-text-fill-color: var(--accent); color: var(--accent);
-        }
-        .nav-divider {
-            width: 1px; height: 32px; background: var(--border);
-        }
-        .nav-powered-row {
-            display: flex; align-items: center; gap: .4rem;
-        }
-        .nav-powered {
-            font-size: 0.55rem; font-weight: 600; color: var(--text-light);
-            letter-spacing: 0.06em; text-transform: uppercase;
-            white-space: nowrap;
-        }
-        .cls-logo {
-            height: 150px; width: auto; opacity: 0.8;
-            transition: opacity .2s; display: block;
-        }
-        .cls-logo:hover { opacity: 1; }
-        .nav-links { display: flex; align-items: center; gap: 2rem; list-style: none; }
+        .brand span { font-style: italic; color: var(--brass); }
+        .brand-mark { width: 26px; height: 26px; flex: none; }
+        .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
         .nav-links a {
-            text-decoration: none; color: var(--text); font-size: .82rem; font-weight: 500;
-            transition: color .2s;
-        }
-        .nav-links a:hover { color: var(--primary); }
-        .btn {
-            display: inline-block; padding: .55rem 1.3rem; border-radius: 980px;
-            font-weight: 600; font-size: .85rem; text-decoration: none;
-            transition: all .2s; cursor: pointer; border: none;
-        }
-        .btn-primary {
-            background: var(--white); color: var(--primary-dark);
-            border: 1.5px solid var(--primary-dark);
-        }
-        .btn-primary:hover { background: var(--primary-dark); color: var(--white); }
-        .btn-outline {
-            background: transparent; color: var(--primary);
-            border: 1.5px solid var(--primary);
-        }
-        .btn-outline:hover { background: var(--primary); color: var(--white); }
-        .btn-lg { padding: .75rem 2rem; font-size: .95rem; }
-        .btn-dark {
-            background: var(--text-dark); color: var(--white);
-        }
-        .btn-dark:hover { background: #333; }
-
-        .hamburger {
-            display: none; background: none; border: none; cursor: pointer;
-            flex-direction: column; gap: 4px; padding: 4px;
-        }
-        .hamburger span {
-            display: block; width: 18px; height: 1.5px; background: var(--text-dark);
-            transition: all .3s;
-        }
-
-        /* ── HERO ── */
-        .hero {
-            padding: 0; min-height: 100vh;
-            position: relative; overflow: hidden;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .hero-bg {
-            position: absolute; inset: 0;
-            background: url('https://images.unsplash.com/photo-1515896769750-31548aa180ed?w=1920&q=80') center/cover no-repeat;
-        }
-        .hero-bg::after {
-            content: ''; position: absolute; inset: 0;
-            background: linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.25) 50%, rgba(0,0,0,0.50) 100%);
-        }
-        .hero-inner {
-            max-width: 1060px; margin: 0 auto; position: relative; z-index: 1;
-            text-align: center; padding: 8rem 2rem 5rem; color: var(--white);
-        }
-        .hero-brand {
-            margin-bottom: 1.5rem;
-        }
-        .hero-brand-name {
-            font-size: 4.2rem; font-weight: 900; letter-spacing: -0.04em;
-            line-height: 1; margin-bottom: 0.4rem;
-            color: var(--white);
-        }
-        .hero-brand-by {
-            position: absolute; top: 80px; right: 2rem;
-        }
-        .hero-brand-by a {
-            display: inline-block;
-        }
-        .hero-brand-by .cls-logo-hero {
-            height: 36px; width: auto; opacity: 0.6;
-            transition: opacity .2s;
-            filter: brightness(0) invert(1);
-        }
-        .hero-brand-by .cls-logo-hero:hover { opacity: 1; }
-        .hero-divider {
-            width: 40px; height: 2px; border-radius: 2px;
-            background: var(--accent-light); margin: 1.5rem auto 1.75rem;
-            opacity: 0.8;
-        }
-        .hero h1 {
-            font-size: 2.6rem; font-weight: 700; line-height: 1.2;
-            margin-bottom: 1rem; letter-spacing: -0.025em;
-            max-width: 720px; margin-left: auto; margin-right: auto;
-        }
-        .hero h1 em { font-style: normal; color: var(--accent-light); }
-        .hero p.sub {
-            font-size: 1.15rem; color: rgba(255,255,255,0.75);
-            max-width: 580px; margin: 0 auto 3rem; line-height: 1.65;
-            font-weight: 400;
-        }
-
-        /* Portal Cards */
-        .portal-cards {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem;
-            max-width: 900px; margin: 0 auto 2.5rem;
-        }
-        .portal-card {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 2rem 1.5rem;
-            text-decoration: none; color: var(--text);
-            transition: all .3s; cursor: pointer;
-        }
-        .portal-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-        .portal-icon { font-size: 2.2rem; margin-bottom: .75rem; }
-        .portal-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--text-dark); }
-        .portal-card p { font-size: 0.82rem; color: var(--text-light); line-height: 1.5; }
-        .portal-arrow {
-            display: inline-block; margin-top: .85rem; font-size: 0.82rem;
-            font-weight: 600; color: var(--primary);
-            transition: transform .2s;
-        }
-        .portal-card:hover .portal-arrow { transform: translateX(4px); }
-
-        .hero-links {
-            display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
-        }
-        .hero-links a {
-            color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.85rem;
-            font-weight: 500; transition: color .2s;
-        }
-        .hero-links a[data-primary-cta] {
-            background: var(--primary); color: var(--white);
-            padding: .85rem 1.5rem; border-radius: 999px;
-            font-size: 1rem; font-weight: 800;
-            box-shadow: 0 10px 30px rgba(0,0,0,.25);
-        }
-        .hero-links a[data-primary-cta]:hover { background: var(--primary-dark); color: var(--white); }
-        .hero-links + .hero-links { margin-top: 1.15rem; }
-        .hero-links a:hover { color: var(--white); }
-
-        /* ── SECTIONS ── */
-        section { padding: 6rem 2rem; }
-        .section-inner { max-width: 980px; margin: 0 auto; }
-        .section-header { text-align: center; margin-bottom: 3.5rem; }
-        .section-header h2 {
-            font-size: 2.8rem; color: var(--text-dark); font-weight: 800;
-            margin-bottom: .5rem; letter-spacing: -0.03em;
-        }
-        .section-header p {
-            color: var(--text-light); font-size: 1.1rem; max-width: 520px; margin: 0 auto;
-            font-weight: 400;
-        }
-        .section-label {
-            display: inline-block; font-size: .72rem; font-weight: 700;
-            text-transform: uppercase; letter-spacing: .12em;
-            color: var(--text-light); margin-bottom: .6rem;
-        }
-
-        /* ── PHOTO BANNER ── */
-        .photo-banner {
-            height: 420px; position: relative; overflow: hidden;
-        }
-        .photo-banner img {
-            width: 100%; height: 100%; object-fit: cover; display: block;
-        }
-        .photo-banner-text {
-            position: absolute; inset: 0; z-index: 1;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: var(--white); text-align: center; padding: 2rem;
-        }
-        .photo-banner::after {
-            content: ''; position: absolute; inset: 0;
-            background: rgba(0,0,0,0.35);
-        }
-        .photo-banner-text { z-index: 2; }
-        .photo-banner-text h3 {
-            font-size: 2.4rem; font-weight: 800; letter-spacing: -0.03em;
-            margin-bottom: .5rem;
-        }
-        .photo-banner-text p {
-            font-size: 1.05rem; color: rgba(255,255,255,0.8);
-            max-width: 480px; font-weight: 400;
-        }
-
-        /* ── PAIN POINTS ── */
-        .pain { background: var(--bg); }
-        .pain-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
-        .pain-card {
-            background: var(--white); padding: 2rem; border-radius: var(--radius);
-            border: 1px solid var(--border);
-            text-align: center;
-            transition: transform .2s, box-shadow .2s;
-        }
-        .pain-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-        .pain-icon {
-            width: 52px; height: 52px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 1.25rem; font-size: 1.35rem;
-        }
-        .pain-icon.icon-red { background: #fee2e2; }
-        .pain-icon.icon-orange { background: #ffedd5; }
-        .pain-icon.icon-amber { background: #fef3c7; }
-        .pain-card h3 { font-size: 1.1rem; color: var(--text-dark); margin-bottom: .5rem; font-weight: 700; }
-        .pain-card p { color: var(--text-light); font-size: .88rem; line-height: 1.65; }
-
-        /* ── FEATURES ── */
-        .features-section { background: var(--bg-alt); }
-        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
-        .feature-card {
-            background: var(--white); padding: 2rem; border-radius: var(--radius);
-            border: 1px solid var(--border);
-            transition: transform .2s, box-shadow .2s;
-        }
-        .feature-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-        .feature-card h3 { font-size: 1rem; color: var(--text-dark); margin-bottom: .4rem; font-weight: 700; }
-        .feature-card p { color: var(--text-light); font-size: .85rem; line-height: 1.6; }
-        .feature-icon {
-            width: 44px; height: 44px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            margin-bottom: 1.15rem; font-size: 1.2rem;
-        }
-        .feature-icon.icon-blue { background: #dbeafe; }
-        .feature-icon.icon-indigo { background: #e0e7ff; }
-        .feature-icon.icon-purple { background: #ede9fe; }
-        .feature-icon.icon-amber { background: #fef3c7; }
-        .feature-icon.icon-rose { background: #ffe4e6; }
-        .feature-icon.icon-teal { background: #ccfbf1; }
-
-        /* ── HOW IT WORKS ── */
-        .how {
-            position: relative; overflow: hidden;
-            background: var(--text-dark); color: var(--white);
-        }
-        .how-video-bg {
-            position: absolute; inset: 0; z-index: 0;
-            background: url('https://images.unsplash.com/photo-1534190239940-9ba8944ea261?w=1920&q=80') center/cover no-repeat;
-        }
-        .how-video-bg video {
-            width: 100%; height: 100%; object-fit: cover;
-        }
-        .how-video-bg::after {
-            content: ''; position: absolute; inset: 0;
-            background: rgba(0,0,0,0.75);
-        }
-        .how .section-inner { position: relative; z-index: 1; }
-        .how .section-header h2 { color: var(--white); }
-        .how .section-header p { color: rgba(255,255,255,0.6); }
-        .how .section-label { color: var(--accent-light); }
-        .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; text-align: center; }
-        .step-num {
-            width: 44px; height: 44px; border-radius: 50%;
-            background: var(--white); color: var(--text-dark);
-            font-weight: 800; font-size: 1.1rem;
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 1.25rem;
-        }
-        .step h3 { font-size: 1.05rem; color: var(--white); margin-bottom: .4rem; font-weight: 700; }
-        .step p { color: rgba(255,255,255,0.55); font-size: .85rem; margin-bottom: 1.25rem; }
-
-        /* Mock-up screenshot cards */
-        .step-screenshot {
-            background: var(--white);
-            border: 1.5px solid var(--text-dark); border-radius: var(--radius);
-            padding: 1rem; text-align: left; min-height: 200px;
-        }
-        .mock-bar {
-            display: flex; align-items: center; gap: .4rem;
-            background: var(--bg-alt); border-radius: 8px;
-            padding: .4rem .65rem; margin-bottom: .65rem; font-size: .75rem;
-            color: var(--text-light);
-        }
-        .mock-bar .dot { width: 7px; height: 7px; border-radius: 50%; }
-        .mock-bar .dot-r { background: #ef4444; }
-        .mock-bar .dot-y { background: #eab308; }
-        .mock-bar .dot-g { background: #22c55e; }
-        .mock-bar span.mock-url { margin-left: .4rem; }
-        .mock-line { height: 6px; border-radius: 3px; margin-bottom: .35rem; }
-        .mock-line.w100 { width: 100%; }
-        .mock-line.w75 { width: 75%; }
-        .mock-line.w60 { width: 60%; }
-        .mock-line.w50 { width: 50%; }
-        .mock-line.bg-blue { background: #dbeafe; }
-        .mock-line.bg-purple { background: #ede9fe; }
-        .mock-line.bg-indigo { background: #e0e7ff; }
-        .mock-line.bg-muted { background: var(--bg-alt); }
-        .mock-badge {
-            display: inline-block; padding: .15rem .5rem; border-radius: 6px;
-            font-size: .65rem; font-weight: 600; margin-right: .3rem; margin-bottom: .3rem;
-        }
-        .mock-badge.blue { background: #dbeafe; color: #1d4ed8; }
-        .mock-badge.purple { background: #ede9fe; color: #6d28d9; }
-        .mock-badge.amber { background: #fef3c7; color: #92400e; }
-        .mock-badge.rose { background: #ffe4e6; color: #be123c; }
-        .mock-badge.indigo { background: #e0e7ff; color: #3730a3; }
-        .mock-score { font-size: 1.6rem; font-weight: 800; margin: .4rem 0 .2rem; color: var(--text-dark); }
-        .mock-tabs { display: flex; gap: .3rem; margin-bottom: .65rem; flex-wrap: wrap; }
-        .mock-tab {
-            padding: .15rem .4rem; border-radius: 4px; font-size: .6rem; font-weight: 600;
-            background: var(--bg-alt); color: var(--text-light);
-        }
-        .mock-tab.active { background: #dbeafe; color: #1d4ed8; }
-
-        /* ── PHOTO STRIP ── */
-        .photo-strip {
-            display: grid; grid-template-columns: repeat(3, 1fr);
-            height: 320px; overflow: hidden;
-        }
-        .photo-strip-item { position: relative; overflow: hidden; }
-        .photo-strip-item img {
-            width: 100%; height: 100%; object-fit: cover; display: block;
-            transition: transform 6s ease;
-        }
-        .photo-strip-item:hover img { transform: scale(1.08); }
-
-        /* ── PRICING ── */
-        .pricing {
-            background: var(--bg-alt);
-        }
-        .pricing .section-label { color: var(--primary); }
-
-        .founding-banner {
-            background: linear-gradient(135deg, #fef3c7, #fff7ed);
-            color: #92400e; font-weight: 700; text-align: center;
-            padding: .85rem 1.5rem; border-radius: var(--radius);
-            max-width: 550px; margin: 0 auto 3rem; font-size: .95rem;
-            border: 1px solid #fde68a;
-        }
-
-        .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; align-items: start; }
-        .price-card {
-            background: var(--white); color: var(--text); border-radius: var(--radius);
-            padding: 2.5rem 2rem; text-align: center; position: relative;
-            border: 1px solid var(--border);
-            transition: transform .2s, box-shadow .2s;
-        }
-        .price-card:hover { box-shadow: var(--shadow-lg); }
-        .price-card.featured {
-            transform: scale(1.04);
-            border: 1.5px solid var(--primary);
-            box-shadow: var(--shadow-lg);
-        }
-        .price-card.featured:hover { box-shadow: 0 12px 48px rgba(37,99,235,0.15); }
-        .price-badge {
-            position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
-            background: var(--primary); color: var(--white);
-            font-size: .7rem; font-weight: 700;
-            padding: .3rem .9rem; border-radius: 980px; text-transform: uppercase;
-            letter-spacing: .05em;
-        }
-        .price-card h3 { font-size: 1.1rem; color: var(--text-dark); margin-bottom: .2rem; font-weight: 700; }
-        .price-card .price {
-            font-size: 3rem; font-weight: 900; color: var(--text-dark);
-            margin: .5rem 0 .15rem; letter-spacing: -0.03em;
-        }
-        .price-card .price span { font-size: .95rem; font-weight: 400; color: var(--text-light); }
-        .price-card .price-desc { color: var(--text-light); font-size: .82rem; margin-bottom: 1.5rem; }
-        .price-features { list-style: none; text-align: left; margin-bottom: 2rem; }
-        .price-features li {
-            padding: .4rem 0; font-size: .88rem; color: var(--text);
-            display: flex; align-items: flex-start; gap: .5rem;
-        }
-        .price-features li::before {
-            content: '\2713'; color: var(--primary); font-weight: 700; flex-shrink: 0;
-        }
-        .price-card .btn {
-            width: 100%; text-align: center; display: block;
-            position: relative; z-index: 2;
-        }
-
-        .per-report {
-            text-align: center; margin-top: 2.5rem; color: var(--text-light);
-            font-size: .92rem;
-        }
-        .per-report strong { color: var(--text-dark); }
-
-        /* ── FAQ ── */
-        .faq { background: var(--bg); }
-        .faq-list { max-width: 680px; margin: 0 auto; }
-        .faq-item {
-            border-bottom: 1px solid var(--border); padding: 1.25rem 0;
-        }
-        .faq-q {
-            font-weight: 600; color: var(--text-dark); cursor: pointer;
-            display: flex; justify-content: space-between; align-items: center;
-            font-size: .95rem; background: none; border: none; width: 100%;
-            text-align: left; font-family: inherit; padding: 0;
-        }
-        .faq-q::after {
-            content: '+'; font-size: 1.3rem; color: var(--text-light);
-            transition: transform .2s; flex-shrink: 0; margin-left: 1rem;
-        }
-        .faq-item.open .faq-q::after { content: '\2212'; color: var(--primary); }
-        .faq-a {
-            max-height: 0; overflow: hidden; transition: max-height .3s ease, padding .3s ease;
-            color: var(--text-light); font-size: .88rem; line-height: 1.7;
-        }
-        .faq-item.open .faq-a { max-height: 300px; padding-top: .75rem; }
-
-        /* ── LEAD CAPTURE ── */
-        .lead-capture {
-            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
-            color: var(--white);
-        }
-        .lead-capture .section-header h2 { color: var(--white); }
-        .lead-capture .section-header p { color: rgba(255,255,255,0.6); }
-        .lead-capture .section-label { color: var(--accent-light); }
-        .lead-form {
-            display: flex; gap: .75rem; max-width: 520px; margin: 0 auto;
-            justify-content: center; flex-wrap: wrap;
-        }
-        .lead-form input[type="email"] {
-            flex: 1; min-width: 240px; padding: .75rem 1.25rem;
-            border: 1.5px solid rgba(255,255,255,0.2); border-radius: 980px;
-            background: rgba(255,255,255,0.08); color: var(--white);
-            font-size: .92rem; font-family: inherit;
-            transition: border-color .2s, background .2s;
-        }
-        .lead-form input[type="email"]::placeholder { color: rgba(255,255,255,0.4); }
-        .lead-form input[type="email"]:focus {
-            outline: none; border-color: var(--accent-light);
-            background: rgba(255,255,255,0.12);
-        }
-        .lead-form .btn-accent {
-            background: var(--accent); color: var(--text-dark);
-            padding: .75rem 2rem; border-radius: 980px; font-weight: 700;
-            font-size: .92rem; border: none; cursor: pointer;
-            transition: background .2s, transform .1s;
-        }
-        .lead-form .btn-accent:hover { background: var(--accent-light); transform: translateY(-1px); }
-        .lead-success {
-            display: none; text-align: center; color: #86efac;
-            font-weight: 600; font-size: .95rem; margin-top: 1rem;
-        }
-        .lead-note {
-            text-align: center; color: rgba(255,255,255,0.35);
-            font-size: .78rem; margin-top: 1rem;
-        }
-
-        /* ── DEMO VIDEO ── */
-        .demo-video { background: var(--bg); }
-        .demo-video-wrapper {
-            max-width: 900px; margin: 0 auto;
-            position: relative;
-            background: #0f172a; border-radius: var(--radius);
-            overflow: hidden; border: 1px solid var(--border);
-            box-shadow: var(--shadow-lg);
-        }
-        /* Walkthrough carousel */
-        .wt-viewport {
-            position: relative; overflow: hidden;
-            width: 100%; height: 0; padding-bottom: 56.25%; /* 16:9 */
-        }
-        .wt-slide {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0; transition: opacity 0.6s ease;
-            display: flex; flex-direction: column;
-            pointer-events: none;
-        }
-        .wt-slide.active { opacity: 1; pointer-events: auto; }
-        /* Slide chrome — fake app titlebar */
-        .wt-chrome {
-            background: #1e293b; padding: 0.4rem 0.75rem;
-            display: flex; align-items: center; gap: 0.5rem;
-            border-bottom: 1px solid #334155; flex-shrink: 0;
-        }
-        .wt-dot { width: 8px; height: 8px; border-radius: 50%; }
-        .wt-dot.r { background: #ef4444; } .wt-dot.y { background: #f59e0b; } .wt-dot.g { background: #22c55e; }
-        .wt-tab {
-            margin-left: 0.75rem; background: #334155; padding: 0.2rem 0.7rem;
-            border-radius: 6px 6px 0 0; font-size: 0.6rem; color: #94a3b8;
-            display: flex; align-items: center; gap: 0.3rem;
-        }
-        .wt-tab.active { background: #0f172a; color: #e2e8f0; }
-        .wt-tab-icon { font-size: 0.7rem; }
-        /* Slide body */
-        .wt-body {
-            flex: 1; padding: 0.9rem; overflow-y: auto; overflow-x: hidden;
-            background: linear-gradient(180deg, #0f172a 0%, #1a2332 100%);
-            font-size: 0.65rem; color: #e2e8f0; line-height: 1.5;
-            display: flex; flex-direction: column; gap: 0.5rem;
-            min-height: 0; /* allow flex shrink */
-        }
-        .wt-card {
-            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 8px; padding: 0.6rem; display: flex; flex-direction: column; gap: 0.3rem;
-        }
-        .wt-card-title {
-            font-size: 0.6rem; font-weight: 700; color: #60a5fa;
-            text-transform: uppercase; letter-spacing: 0.05em;
-        }
-        .wt-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-        .wt-col { flex: 1; min-width: 0; }
-        .wt-stat {
-            background: rgba(255,255,255,0.04); border-radius: 6px; padding: 0.35rem 0.5rem;
-            display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.06);
-        }
-        .wt-stat-label { font-size: 0.48rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; }
-        .wt-stat-value { font-size: 0.72rem; font-weight: 700; color: #f8fafc; }
-        .wt-stat-value.green { color: #4ade80; }
-        .wt-stat-value.amber { color: #fbbf24; }
-        .wt-stat-value.blue { color: #60a5fa; }
-        .wt-badge {
-            display: inline-block; padding: 0.12rem 0.4rem; border-radius: 4px;
-            font-size: 0.5rem; font-weight: 600;
-        }
-        .wt-badge-green { background: rgba(34,197,94,0.15); color: #4ade80; }
-        .wt-badge-blue { background: rgba(59,130,246,0.15); color: #60a5fa; }
-        .wt-badge-amber { background: rgba(245,158,11,0.15); color: #fbbf24; }
-        .wt-badge-red { background: rgba(239,68,68,0.15); color: #f87171; }
-        .wt-input-row {
-            display: flex; gap: 0.4rem; align-items: center;
-        }
-        .wt-input {
-            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 6px; padding: 0.3rem 0.5rem; color: #f8fafc;
-            font-size: 0.6rem; flex: 1;
-        }
-        .wt-btn {
-            background: #2563eb; color: white; border-radius: 6px;
-            padding: 0.3rem 0.7rem; font-size: 0.55rem; font-weight: 600;
-            white-space: nowrap; border: none;
-        }
-        .wt-btn-green { background: #059669; }
-        .wt-table { width: 100%; border-collapse: collapse; font-size: 0.5rem; }
-        .wt-table th {
-            background: rgba(255,255,255,0.06); text-align: left;
-            padding: 0.25rem 0.35rem; color: #94a3b8; font-weight: 600;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-        }
-        .wt-table td {
-            padding: 0.22rem 0.35rem; border-bottom: 1px solid rgba(255,255,255,0.04);
-            color: #cbd5e1;
-        }
-        .wt-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
-        .wt-map-placeholder {
-            flex: 1; background: linear-gradient(135deg, #1a3a2a 0%, #0f2318 100%);
-            border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);
-            position: relative; overflow: hidden; min-height: 100px;
-        }
-        .wt-map-dot {
-            position: absolute; width: 6px; height: 6px; border-radius: 50%;
-            background: #f59e0b; box-shadow: 0 0 8px rgba(245,158,11,0.6);
-        }
-        .wt-map-ring {
-            position: absolute; border-radius: 50%;
-            border: 1px solid rgba(59,130,246,0.3);
-            background: rgba(59,130,246,0.05);
-        }
-        .wt-map-label {
-            position: absolute; font-size: 0.45rem; color: rgba(255,255,255,0.5);
-            white-space: nowrap;
-        }
-        .wt-h2 { font-size: 0.78rem; font-weight: 700; color: #f8fafc; }
-        .wt-h3 { font-size: 0.62rem; font-weight: 600; color: #e2e8f0; }
-        .wt-sub { font-size: 0.52rem; color: #94a3b8; }
-        .wt-rank-cards { display: flex; gap: 0.4rem; }
-        .wt-rank-card {
-            flex: 1; background: rgba(255,255,255,0.05); border-radius: 8px;
-            padding: 0.5rem; border: 1px solid rgba(255,255,255,0.08);
-            display: flex; flex-direction: column; gap: 0.2rem;
-        }
-        .wt-rank-card.gold { border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.06); }
-        .wt-rank-num { font-size: 0.55rem; font-weight: 800; }
-        .wt-rank-num.n1 { color: #fbbf24; } .wt-rank-num.n2 { color: #94a3b8; } .wt-rank-num.n3 { color: #b45309; }
-        .wt-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 0.2rem 0; }
-        /* Progress bar & controls */
-        .wt-controls {
-            display: flex; align-items: center; gap: 0.5rem;
-            padding: 0.5rem 0.75rem; background: #1e293b;
-            border-top: 1px solid #334155;
-        }
-        .wt-progress {
-            flex: 1; height: 3px; background: rgba(255,255,255,0.1);
-            border-radius: 2px; overflow: hidden; cursor: pointer;
-        }
-        .wt-progress-fill {
-            height: 100%; background: var(--primary-light);
-            transition: width 0.3s linear; width: 0%;
-        }
-        .wt-ctrl-btn {
-            background: none; border: none; color: #94a3b8; cursor: pointer;
-            font-size: 0.75rem; padding: 0.2rem; transition: color 0.2s;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .wt-ctrl-btn:hover { color: #e2e8f0; }
-        .wt-step-label { font-size: 0.52rem; color: #94a3b8; white-space: nowrap; min-width: 60px; }
-        .wt-caption {
-            text-align: center; padding: 0.5rem 0.75rem; background: #1e293b;
-            font-size: 0.62rem; color: #94a3b8; min-height: 2em;
-            border-top: 1px solid rgba(255,255,255,0.04);
-        }
-        .wt-caption strong { color: #e2e8f0; }
-        .wt-proforma-row { display: flex; justify-content: space-between; padding: 0.15rem 0; }
-        .wt-proforma-row.total { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.25rem; margin-top: 0.15rem; font-weight: 700; }
-        .wt-filter-btn {
-            display: inline-block; padding: 0.15rem 0.4rem; border-radius: 4px;
-            font-size: 0.48rem; border: 1px solid rgba(255,255,255,0.15);
-            color: #94a3b8; background: transparent;
-        }
-        .wt-filter-btn.on { background: rgba(59,130,246,0.2); border-color: #3b82f6; color: #60a5fa; }
-
-        /* ── COMPETITIVE COMPARISON ── */
-        .compare { background: var(--bg-alt); }
-        .compare-table {
-            width: 100%; border-collapse: collapse;
-            background: var(--white); border-radius: var(--radius);
-            overflow: hidden; border: 1px solid var(--border);
-            margin-top: 2rem;
-        }
-        .compare-table thead th {
-            padding: 1.25rem 1rem; font-size: .82rem; font-weight: 700;
-            text-transform: uppercase; letter-spacing: .06em;
-            color: var(--text-light); text-align: left;
-            border-bottom: 2px solid var(--border);
-        }
-        .compare-table thead th:first-child { width: 32%; }
-        .compare-table thead th.highlight {
-            background: var(--primary); color: var(--white);
-        }
-        .compare-table td {
-            padding: .85rem 1rem; font-size: .88rem; color: var(--text);
-            border-bottom: 1px solid var(--border);
-            vertical-align: middle;
-        }
-        .compare-table td.highlight {
-            background: #eff6ff; font-weight: 600; color: var(--primary-dark);
-        }
-        .compare-table .check { color: #16a34a; font-weight: 700; }
-        .compare-table .cross { color: #dc2626; font-weight: 700; }
-        .compare-table .partial { color: #d97706; font-weight: 600; }
-        .compare-tagline {
-            text-align: center; margin-top: 2.5rem;
-            color: var(--text); font-size: 1.15rem; font-weight: 700;
-        }
-        .compare-tagline em { font-style: normal; color: var(--primary); }
-
-        /* ── SOCIAL PROOF ── */
-        .social-proof { background: var(--bg); }
-        .proof-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem; margin-top: .5rem;
-        }
-        .proof-card {
-            background: var(--white); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 2rem;
-            text-align: center; transition: transform .2s, box-shadow .2s;
-        }
-        .proof-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-        .proof-stat {
-            font-size: 2.8rem; font-weight: 900; color: var(--primary);
-            letter-spacing: -0.03em; line-height: 1;
-        }
-        .proof-label { color: var(--text-light); font-size: .88rem; margin-top: .5rem; }
-        .proof-quote {
-            background: var(--white); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 2rem 2.5rem;
-            max-width: 680px; margin: 2.5rem auto 0;
-            font-style: italic; color: var(--text); font-size: 1rem;
-            line-height: 1.7; position: relative;
-        }
-        .proof-quote::before {
-            content: '\201C'; position: absolute; top: -.15rem; left: .75rem;
-            font-size: 4rem; color: var(--primary); opacity: 0.15;
-            font-family: Georgia, serif; line-height: 1;
-        }
-        .proof-attribution {
-            text-align: center; margin-top: 1rem;
-            font-size: .85rem; color: var(--text-light); font-style: normal;
-        }
-
-        /* ── STICKY CTA (Mobile) ── */
-        .sticky-cta {
-            display: none; position: fixed; bottom: 0; left: 0; right: 0;
-            z-index: 99; background: var(--white);
-            border-top: 1px solid var(--border);
-            padding: .65rem 1.5rem;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
-        }
-        .sticky-cta-inner {
-            max-width: 600px; margin: 0 auto;
-            display: flex; align-items: center; justify-content: space-between; gap: .75rem;
-        }
-        .sticky-cta-text { font-size: .82rem; font-weight: 600; color: var(--text-dark); }
-        .sticky-cta-text span { display: block; font-size: .72rem; font-weight: 400; color: var(--text-light); }
-        .sticky-cta .btn-cta {
-            background: var(--primary); color: var(--white);
-            padding: .6rem 1.5rem; border-radius: 980px;
-            font-weight: 700; font-size: .85rem; text-decoration: none;
-            white-space: nowrap; min-height: 44px;
-            display: flex; align-items: center;
+            text-decoration: none; font-size: 14px; font-weight: 500; color: var(--ink-2);
+            transition: color .2s; white-space: nowrap;
+        }
+        .nav-links a:hover { color: var(--navy); }
+        .nav-links li:first-child { order: 9; }
+        .nav-links a.nav-cta {
+            background: var(--ink); color: #fff; padding: 9px 16px; border-radius: 999px;
             transition: background .2s;
         }
-        .sticky-cta .btn-cta:hover { background: var(--primary-dark); }
+        .nav-links a.nav-cta:hover { background: var(--navy); color: #fff; }
 
-        @media (max-width: 640px) {
-            .sticky-cta { display: block; }
-            body { padding-bottom: 70px; }
-            .compare-table { font-size: .72rem; display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-            .compare-table td, .compare-table thead th { padding: .55rem .4rem; white-space: nowrap; }
-            .compare-table thead th:first-child { min-width: 90px; }
-            .compare-table small { display: none; }
-            .compare-tagline { font-size: .95rem; }
-            .proof-grid { grid-template-columns: 1fr; }
-            .proof-quote { padding: 1.5rem; font-size: .92rem; }
-            .lead-form { flex-direction: column; }
-            .lead-form input[type="email"] { min-width: 100%; }
-            .lead-form .btn-accent { width: 100%; min-height: 48px; }
-            .wt-body { font-size: 0.55rem; padding: 0.5rem; }
-            .wt-stat-value { font-size: 0.6rem; }
-            .wt-rank-cards { flex-direction: column; }
-            .wt-table { font-size: 0.42rem; }
+        /* ── HERO ── */
+        .hero { padding: clamp(40px, 5vw, 72px) 0 0; }
+        .hero-top {
+            display: grid; grid-template-columns: 1.25fr 1fr; gap: clamp(28px, 5vw, 80px);
+            align-items: end;
         }
-        @media (max-width: 900px) {
-            .proof-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
+        .hero h1 {
+            font-size: clamp(46px, 7vw, 100px);
+            line-height: .96; letter-spacing: -0.035em;
+            margin-top: 22px;
+        }
+        .hero-side .lede { margin-bottom: 28px; }
+        .hero-links { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; }
+        .hero-links a[data-primary-cta] {
+            background: var(--navy); color: #fff;
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 14px 22px; border-radius: 999px;
+            font-weight: 600; font-size: 15px; text-decoration: none;
+            transition: background .2s, transform .2s;
+        }
+        .hero-links a[data-primary-cta]:hover { background: var(--navy-deep); transform: translateY(-1px); }
+        .hero-links a.text-link {
+            font-size: 15px; font-weight: 500; text-decoration: none; color: var(--ink);
+            border-bottom: 1px solid var(--line); padding-bottom: 2px; transition: border-color .2s;
+        }
+        .hero-links a.text-link:hover { border-color: var(--ink); }
+        .arrow { transition: transform .2s; display: inline-block; }
+        a:hover > .arrow { transform: translateX(3px); }
+
+        /* ── 3D MODEL STAGE ── */
+        .stage {
+            position: relative; margin-top: clamp(36px, 5vw, 64px);
+            height: min(74vh, 700px); min-height: 460px;
+            border-radius: 22px; overflow: hidden;
+            background:
+                radial-gradient(120% 90% at 50% 40%, #F8F6F2 0%, #EFECE5 60%, #E7E3DA 100%);
+            border: 1px solid var(--line-soft);
+        }
+        .stage-canvas { position: absolute; inset: 0; cursor: grab; touch-action: pan-y; }
+        .stage-canvas:active { cursor: grabbing; }
+        .stage-canvas canvas { display: block; width: 100%; height: 100%; }
+        .stage-labels { position: absolute; inset: 0; pointer-events: none; }
+        .ring-label {
+            position: absolute; transform: translate(-50%, -50%);
+            font-family: var(--mono); font-size: 11px; letter-spacing: .08em;
+            color: var(--navy); background: rgba(251, 250, 247, .9);
+            padding: 3px 7px; border-radius: 4px; border: 1px solid rgba(21, 61, 99, .18);
+            white-space: nowrap; transition: opacity .3s;
+        }
+        .station-label {
+            position: absolute; transform: translate(-50%, -100%);
+            font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+            color: #fff; background: var(--navy); padding: 5px 9px; border-radius: 4px; white-space: nowrap;
         }
 
-        /* ── FOOTER ── */
-        .footer {
-            background: var(--bg-alt);
-            color: var(--text-light);
-            padding: 3rem 2rem; text-align: center;
-            border-top: 1px solid var(--border);
+        .stage-ui {
+            position: absolute; left: 20px; right: 20px; bottom: 20px;
+            display: flex; justify-content: space-between; align-items: flex-end; gap: 16px;
+            pointer-events: none;
         }
-        .footer-inner { max-width: 1100px; margin: 0 auto; }
-        .footer-brand {
-            font-size: 1.3rem; font-weight: 700; color: var(--text-dark);
-            letter-spacing: -0.02em; margin-bottom: 0.2rem;
+        .stage-ui > * { pointer-events: auto; }
+        .modes {
+            display: flex; background: rgba(251, 250, 247, .92);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--line); border-radius: 14px; padding: 5px; gap: 4px;
+            box-shadow: 0 10px 30px -12px rgba(14, 27, 42, .25);
         }
-        .footer-brand-sub {
-            font-size: 0.68rem; font-weight: 500; text-transform: uppercase;
-            letter-spacing: 0.1em; color: var(--text-light); margin-bottom: 1.5rem;
+        .mode {
+            appearance: none; border: 0; background: transparent; cursor: pointer;
+            text-align: left; padding: 10px 14px; border-radius: 10px; min-width: 150px;
+            font-family: var(--sans); color: var(--ink-2); transition: background .25s, color .25s;
+            position: relative; overflow: hidden;
         }
-        .footer-brand-sub a { color: var(--text-light); text-decoration: none; }
-        .footer-brand-sub a:hover { color: var(--primary); }
-        .footer-links { display: flex; gap: 1.75rem; justify-content: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
-        .footer-links a { color: var(--text-light); text-decoration: none; font-size: .82rem; transition: color .2s; }
-        .footer-links a:hover { color: var(--primary); }
-        .footer p { font-size: .78rem; color: #aeaeb2; }
-        .footer a { color: var(--primary); text-decoration: none; }
-        .footer a:hover { text-decoration: underline; }
+        .mode:hover { background: rgba(14, 27, 42, .05); }
+        .mode .n { font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; color: var(--muted); display: block; }
+        .mode .t { font-size: 14px; font-weight: 600; display: block; margin-top: 2px; }
+        .mode[aria-pressed="true"] { background: var(--ink); color: #fff; }
+        .mode[aria-pressed="true"] .n { color: rgba(255, 255, 255, .6); }
+        .mode .bar { position: absolute; left: 14px; right: 14px; bottom: 5px; height: 2px; background: rgba(255,255,255,.18); border-radius: 2px; overflow: hidden; opacity: 0; }
+        .mode[aria-pressed="true"] .bar { opacity: 1; }
+        .mode .bar i { display: block; height: 100%; width: 0; background: rgba(255,255,255,.75); }
+
+        .readout {
+            width: 330px; background: rgba(251, 250, 247, .94);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px;
+            box-shadow: 0 10px 30px -12px rgba(14, 27, 42, .25);
+        }
+        .readout .cite { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--brass); }
+        .readout h3 { font-size: 22px; line-height: 1.15; margin: 4px 0 10px; }
+        .readout dl { display: grid; grid-template-columns: auto 1fr; gap: 5px 14px; font-size: 13px; }
+        .readout dt { color: var(--muted); }
+        .readout dd { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+        .readout .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line-soft); font-size: 12px; color: var(--muted); }
+        .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+        .sw.white { background: #fff; border: 1px solid #bdb6a8; }
+        .sw.navy { background: var(--navy); }
+        .sw.glass { background: rgba(143, 170, 203, .45); border: 1px solid rgba(21, 61, 99, .45); }
+        .readout-body { transition: opacity .25s; }
+        .readout-body.fade { opacity: 0; }
+
+        .stage-hint {
+            position: absolute; top: 18px; left: 20px;
+            font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+        }
+        .stage-fallback { display: none; position: absolute; inset: 0; place-items: center; text-align: center; padding: 40px; color: var(--muted); }
+        .stage.no-webgl .stage-fallback { display: grid; }
+        .stage.no-webgl .stage-ui, .stage.no-webgl .stage-hint { display: none; }
+
+        .figcaption {
+            margin-top: 14px; font-size: 13px; color: var(--muted); max-width: 900px;
+        }
+        .figcaption strong { color: var(--ink-2); font-weight: 600; }
+
+        /* ── SECTIONS ── */
+        section { padding: clamp(80px, 11vw, 150px) 0; }
+        .section-head { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(24px, 5vw, 80px); align-items: end; margin-bottom: clamp(40px, 6vw, 72px); }
+        .section-head h2 { margin-top: 18px; }
+
+        /* Rule and reply */
+        .rule-reply { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--ink); }
+        .rr-col { padding: 34px 0 0; }
+        .rr-col + .rr-col { border-left: 1px solid var(--line); padding-left: clamp(24px, 4vw, 56px); }
+        .rr-col:first-child { padding-right: clamp(24px, 4vw, 56px); }
+        .rr-kicker { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+        .rr-col h3 { font-size: clamp(28px, 2.6vw, 38px); line-height: 1.1; margin: 10px 0 12px; }
+        .rr-col > p { color: var(--ink-2); margin-bottom: 26px; max-width: 52ch; }
+        .cite-chip {
+            display: inline-block; font-family: var(--mono); font-size: 12px; color: var(--brass);
+            border: 1px solid rgba(138, 90, 18, .3); border-radius: 4px; padding: 2px 7px; margin: 0 6px 6px 0;
+        }
+
+        table.floors { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+        .floors th, .floors td { text-align: right; padding: 12px 10px; border-bottom: 1px solid var(--line-soft); font-size: 15px; }
+        .floors th:first-child, .floors td:first-child { text-align: left; padding-left: 0; }
+        .floors thead th { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 400; border-bottom: 1px solid var(--line); }
+        .floors tbody tr.tier td { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--navy); padding-top: 22px; border-bottom: 0; text-align: left; }
+        .floors td.h { font-weight: 600; }
+        .floors .bar-cell { width: 34%; }
+        .hbar { height: 6px; border-radius: 3px; background: var(--paper-2); position: relative; overflow: hidden; }
+        .hbar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--navy); border-radius: 3px; width: 0; transition: width 1.2s cubic-bezier(.2,.7,.2,1); }
+        .in-view .hbar i { width: var(--w); }
+
+        .ord { border-top: 1px solid var(--line-soft); padding: 20px 0; display: grid; grid-template-columns: 92px 1fr; gap: 18px; }
+        .ord:first-of-type { border-top: 0; padding-top: 0; }
+        .ord-no { font-family: var(--mono); font-size: 13px; color: var(--green); padding-top: 3px; }
+        .ord h4 { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+        .ord p { font-size: 15px; color: var(--ink-2); }
+        .ord ul { list-style: none; margin-top: 10px; display: grid; gap: 6px; }
+        .ord li { font-size: 14px; color: var(--ink-2); padding-left: 16px; position: relative; }
+        .ord li::before { content: ""; position: absolute; left: 0; top: .7em; width: 7px; height: 1px; background: var(--green); }
+
+        /* Timeline */
+        .timeline { margin-top: clamp(56px, 7vw, 96px); display: grid; grid-template-columns: repeat(5, 1fr); position: relative; }
+        .timeline::before { content: ""; position: absolute; left: 0; right: 0; top: 7px; height: 1px; background: var(--line); }
+        .tl { position: relative; padding-top: 30px; padding-right: 18px; }
+        .tl::before { content: ""; position: absolute; left: 0; top: 0; width: 15px; height: 15px; border-radius: 50%; background: var(--paper); border: 1px solid var(--navy); }
+        .tl.key::before { background: var(--navy); }
+        .tl time { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; color: var(--navy); }
+        .tl p { font-size: 14px; color: var(--ink-2); margin-top: 6px; line-height: 1.5; }
+
+        /* Numbers (dark) */
+        .dark { background: var(--navy-deep); color: #E9EEF4; }
+        .dark .eyebrow { color: rgba(233, 238, 244, .6); }
+        .dark h2 em { color: #B9CCE2; }
+        .dark .lede { color: rgba(233, 238, 244, .78); }
+        .big-num { margin-top: 28px; font-family: var(--serif); font-size: clamp(76px, 12vw, 168px); line-height: .9; letter-spacing: -0.04em; font-variant-numeric: lining-nums tabular-nums; }
+        .big-row { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(28px, 5vw, 80px); align-items: end; }
+        .big-row .lab { font-size: 15px; color: rgba(233, 238, 244, .7); margin-top: 14px; max-width: 34ch; }
+        .split-bar { display: flex; height: 64px; border-radius: 10px; overflow: hidden; margin-top: clamp(48px, 6vw, 80px); background: rgba(255,255,255,.04); }
+        .split-bar span { display: block; height: 100%; flex: 0 0 0; transition: flex-basis 1.6s cubic-bezier(.2,.7,.2,1); position: relative; }
+        .split-bar span + span { border-left: 2px solid var(--navy-deep); }
+        .in-view .split-bar span { flex-basis: var(--w); }
+        .seg-a { background: #E9EEF4; }
+        .seg-t { background: repeating-linear-gradient(135deg, #2A4D72 0 6px, #24466A 6px 12px); }
+        .seg-x { background: #B08640; }
+        .seg-s { background: #6F8FB3; }
+        .split-key { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 26px; }
+        .split-key div { border-top: 1px solid rgba(233, 238, 244, .18); padding-top: 14px; }
+        .split-key .v { font-family: var(--serif); font-size: 32px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+        .split-key .k { font-size: 13px; color: rgba(233, 238, 244, .7); }
+        .split-key .sw { width: 9px; height: 9px; border-radius: 50%; }
+        .source-note { margin-top: 40px; font-size: 13px; color: rgba(233, 238, 244, .55); max-width: 90ch; }
+
+        /* Exploded stack (CSS 3D) */
+        .stack-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(28px, 5vw, 80px); align-items: center; }
+        .stack-scene { position: relative; height: 600px; perspective: 1800px; perspective-origin: 50% 20%; }
+        .stack-rig {
+            position: absolute; left: 50%; top: 66%; width: 340px; height: 340px; margin: -170px 0 0 -170px;
+            transform-style: preserve-3d; transform: rotateX(58deg) rotateZ(-38deg);
+            transition: transform 1.2s cubic-bezier(.2,.7,.2,1);
+        }
+        .plate {
+            position: absolute; inset: 0; border-radius: 6px;
+            transform-style: preserve-3d;
+            transform: translateZ(calc(var(--i) * 14px));
+            transition: transform 1.3s cubic-bezier(.2,.7,.2,1), box-shadow .4s, background .4s;
+            border: 1px solid rgba(14, 27, 42, .22);
+            box-shadow: 0 0 0 rgba(0,0,0,0);
+        }
+        .exploded .plate { transform: translateZ(calc(var(--i) * 88px)); box-shadow: -18px 22px 40px -18px rgba(14, 27, 42, .28); }
+        .plate::after {
+            content: ""; position: absolute; inset: 0; border-radius: 6px;
+            background-image: linear-gradient(rgba(14,27,42,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(14,27,42,.07) 1px, transparent 1px);
+            background-size: 34px 34px;
+        }
+        .p0 { background: #E4DFD4; }
+        .p1 { background: rgba(21, 61, 99, .80); border-color: rgba(21, 61, 99, .9); }
+        .p1::after { background-image: linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px); }
+        .p2 { background: rgba(0, 106, 78, .72); border-color: rgba(0, 106, 78, .9); }
+        .p2::after { background-image: linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px); }
+        .p3 { background: rgba(251, 250, 247, .9); }
+        .plate .blk { position: absolute; background: var(--ink); opacity: .85; border-radius: 1px; }
+        .p3 .parcel { position: absolute; left: 34%; top: 30%; width: 32%; height: 40%; border: 2px solid var(--brass); background: rgba(138, 90, 18, .12); border-radius: 2px; }
+        .p3 .parcel::after { content: ""; position: absolute; inset: 22%; background: var(--ink); border-radius: 1px; transform: translateZ(0); }
+        .plate.hl { box-shadow: 0 0 0 3px var(--brass), -18px 22px 40px -18px rgba(14, 27, 42, .28); }
+
+        .layers { list-style: none; counter-reset: layer; }
+        .layers li { border-top: 1px solid var(--line); padding: 22px 0; display: grid; grid-template-columns: 54px 1fr; gap: 14px; cursor: default; transition: background .3s; }
+        .layers li:last-child { border-bottom: 1px solid var(--line); }
+        .layers .ln { font-family: var(--mono); font-size: 12px; color: var(--muted); padding-top: 6px; }
+        .layers h4 { font-family: var(--serif); font-weight: 400; font-size: 25px; letter-spacing: -0.01em; line-height: 1.2; }
+        .layers p { font-size: 15px; color: var(--ink-2); margin-top: 4px; }
+        .layers li.on h4 { color: var(--navy); }
+        .layers li.on .ln { color: var(--brass); }
+
+        /* Audience */
+        .aud { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--ink); }
+        .aud a { display: block; text-decoration: none; padding: 30px clamp(18px, 2.5vw, 34px) 34px 0; transition: background .3s; }
+        .aud a + a { border-left: 1px solid var(--line); padding-left: clamp(18px, 2.5vw, 34px); }
+        .aud .k { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+        .aud h3 { font-size: 30px; line-height: 1.12; margin: 14px 0 12px; }
+        .aud p { color: var(--ink-2); font-size: 15.5px; }
+        .aud .go { display: inline-block; margin-top: 20px; font-size: 14px; font-weight: 600; color: var(--navy); }
+
+        /* Principles */
+        .principles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: clamp(56px, 7vw, 90px); }
+        .pr { background: var(--card); border: 1px solid var(--line-soft); border-radius: 16px; padding: 26px; }
+        .pr .k { font-family: var(--serif); font-size: 26px; font-style: italic; color: var(--navy); }
+        .pr p { font-size: 15px; color: var(--ink-2); margin-top: 8px; }
+
+        /* Pricing */
+        .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .plan { background: var(--card); border: 1px solid var(--line-soft); border-radius: 18px; padding: 30px; display: flex; flex-direction: column; }
+        .plan.feat { background: var(--ink); color: #E9EEF4; border-color: var(--ink); }
+        .plan .k { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+        .plan.feat .k { color: rgba(233,238,244,.6); }
+        .plan .price { font-family: var(--serif); font-size: 58px; letter-spacing: -0.03em; line-height: 1; margin: 18px 0 6px; }
+        .plan .price small { font-family: var(--sans); font-size: 15px; letter-spacing: 0; color: var(--muted); }
+        .plan.feat .price small { color: rgba(233,238,244,.6); }
+        .plan .for { font-size: 14px; color: var(--muted); }
+        .plan.feat .for { color: rgba(233,238,244,.7); }
+        .plan ul { list-style: none; margin: 24px 0 28px; display: grid; gap: 10px; flex: 1; }
+        .plan li { font-size: 15px; padding-left: 22px; position: relative; }
+        .plan li::before { content: ""; position: absolute; left: 0; top: .55em; width: 10px; height: 5px; border-left: 1.5px solid var(--green); border-bottom: 1.5px solid var(--green); transform: rotate(-45deg); }
+        .plan.feat li::before { border-color: #8FD3BE; }
+        .plan .btn {
+            display: block; text-align: center; text-decoration: none; padding: 13px 18px; border-radius: 999px;
+            font-weight: 600; font-size: 15px; border: 1px solid var(--ink); color: var(--ink); transition: background .2s, color .2s;
+        }
+        .plan .btn:hover { background: var(--ink); color: #fff; }
+        .plan.feat .btn { background: #fff; color: var(--ink); border-color: #fff; }
+        .plan.feat .btn:hover { background: #DCE6F1; }
+        .pricing-foot { margin-top: 22px; font-size: 15px; color: var(--ink-2); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+        .pricing-foot a { color: var(--navy); font-weight: 600; }
+
+        /* FAQ */
+        .faq-list { border-top: 1px solid var(--ink); }
+        details { border-bottom: 1px solid var(--line); }
+        summary {
+            list-style: none; cursor: pointer; padding: 24px 40px 24px 0; position: relative;
+            font-family: var(--serif); font-size: clamp(21px, 2vw, 26px); letter-spacing: -0.01em; line-height: 1.25;
+        }
+        summary::-webkit-details-marker { display: none; }
+        summary::after { content: ""; position: absolute; right: 6px; top: 50%; width: 12px; height: 12px; margin-top: -8px; border-right: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); transform: rotate(45deg); transition: transform .3s; }
+        details[open] summary::after { transform: rotate(225deg); margin-top: -2px; }
+        details p { padding: 0 0 26px; color: var(--ink-2); max-width: 74ch; }
+        .faq-wrap { display: grid; grid-template-columns: 1fr 1.6fr; gap: clamp(28px, 5vw, 80px); }
+
+        /* Closing */
+        .closing { text-align: center; padding-bottom: clamp(70px, 9vw, 120px); }
+        .closing h2 { font-size: clamp(40px, 6vw, 84px); max-width: 16ch; margin: 18px auto 26px; }
+        .closing .eyebrow { justify-content: center; }
+        .closing .eyebrow::after { content: ""; width: 22px; height: 1px; background: currentColor; }
+        .closing .hero-links { justify-content: center; }
+
+        /* Footer */
+        .footer { border-top: 1px solid var(--line); padding: 44px 0 56px; font-size: 14px; color: var(--muted); }
+        .footer-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 24px; align-items: center; }
+        .footer-links { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+        .footer-links a { text-decoration: none; color: var(--ink-2); }
+        .footer-links a:hover { color: var(--navy); }
+        .disclaimer { margin-top: 26px; font-size: 13px; max-width: 110ch; line-height: 1.6; }
+
+        /* Reveal */
+        .reveal { opacity: 0; transform: translateY(18px); transition: opacity .9s ease, transform .9s cubic-bezier(.2,.7,.2,1); }
+        .reveal.in-view { opacity: 1; transform: none; }
+
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            .reveal { opacity: 1; transform: none; transition: none; }
+            .hbar i, .split-bar span, .plate, .stack-rig { transition: none; }
+        }
 
         /* ── RESPONSIVE ── */
-        @media (max-width: 900px) {
-            .pain-grid, .features-grid, .pricing-grid, .steps {
-                grid-template-columns: 1fr;
-            }
-            .portal-cards { grid-template-columns: 1fr; max-width: 380px; }
-            .price-card.featured { transform: none; }
-            .hero-brand-name { font-size: 3rem; }
-            .hero h1 { font-size: 1.9rem; }
-            .hero p.sub { font-size: 1rem; }
-            .section-header h2 { font-size: 2rem; }
-            .photo-strip { grid-template-columns: 1fr; height: auto; }
-            .photo-strip-item { height: 220px; }
-            .photo-banner { height: 300px; }
-            .photo-banner-text h3 { font-size: 1.8rem; }
+        @media (max-width: 1020px) {
+            .hero-top, .section-head, .big-row, .stack-grid, .faq-wrap { grid-template-columns: 1fr; }
+            .rule-reply { grid-template-columns: 1fr; }
+            .rr-col + .rr-col { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); margin-top: 40px; }
+            .rr-col:first-child { padding-right: 0; }
+            .readout { width: 290px; }
+            .stack-scene { height: 460px; }
         }
-
-        @media (max-width: 640px) {
-            .how-video-bg video { display: none; }
-            .photo-banner { height: 240px; }
-            .photo-banner-text h3 { font-size: 1.4rem; }
-            .nav-links {
-                display: none; flex-direction: column; position: absolute;
-                top: 72px; left: 0; right: 0; background: var(--white);
-                padding: 1.25rem 2rem; border-bottom: 1px solid var(--border);
-                gap: 1rem; box-shadow: var(--shadow-lg);
-            }
-            .nav-links.open { display: flex; }
-            .nav-links a { min-height: 44px; display: flex; align-items: center; }
-            .hamburger { display: flex; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; }
-            .nav-brand-text { font-size: 1.4rem; }
-            .cls-logo { height: 100px; }
-            .hero-inner { padding: 7rem 1.5rem 3rem; }
-            .hero-brand-name { font-size: 2.4rem; }
-            .hero-brand-by { position: static; text-align: center; margin-top: .5rem; }
-            .hero-brand-by .cls-logo-hero { height: 28px; }
-            .hero h1 { font-size: 1.5rem; }
-            section { padding: 4rem 1.5rem; }
-            .photo-strip { grid-template-columns: 1fr; }
-            .photo-strip-item:nth-child(2),
-            .photo-strip-item:nth-child(3) { display: none; }
-            /* Touch-friendly CTAs */
-            .btn { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
-            .btn-lg { min-height: 48px; padding: .75rem 1.5rem; }
-            .portal-card { padding: 1.5rem 1.25rem; }
-            .portal-arrow { min-height: 44px; display: inline-flex; align-items: center; }
-            .price-card { padding: 2rem 1.5rem; }
-            .price-card .btn { min-height: 48px; font-size: .9rem; }
-            .faq-q { min-height: 44px; padding: .5rem 0; }
-            .hero-links a { min-height: 44px; display: inline-flex; align-items: center; }
-            .founding-banner { font-size: .85rem; padding: .75rem 1rem; }
-            .section-header h2 { font-size: 1.7rem; }
+        @media (max-width: 780px) {
+            .nav-inner { height: auto; padding-top: 12px; padding-bottom: 10px; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; width: 100%; }
+            .nav-links { width: 100%; overflow-x: auto; gap: 18px; padding-bottom: 4px; scrollbar-width: none; }
+            .nav-links::-webkit-scrollbar { display: none; }
+            .nav-links li:first-child { order: 0; }
+            .stage { height: auto; min-height: 0; border-radius: 16px; }
+            .stage-canvas { position: relative; height: 400px; }
+            .stage-labels { bottom: auto; height: 400px; overflow: hidden; }
+            .stage-ui { position: static; padding: 0 10px 10px; flex-direction: column; align-items: stretch; gap: 10px; }
+            .modes { overflow-x: auto; }
+            .mode { min-width: 0; flex: 1; padding: 9px 10px; }
+            .mode .t { font-size: 13px; }
+            .readout { width: auto; padding: 12px 14px; }
+            .readout h3 { font-size: 18px; margin-bottom: 6px; }
+            .readout dl { font-size: 12px; }
+            .timeline { grid-template-columns: 1fr; gap: 26px; }
+            .timeline::before { left: 7px; right: auto; top: 0; bottom: 0; width: 1px; height: auto; }
+            .tl { padding: 0 0 0 34px; }
+            .split-key { grid-template-columns: 1fr 1fr; }
+            .aud, .principles, .pricing-grid { grid-template-columns: 1fr; }
+            .aud a + a { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); }
+            .stack-scene { height: 380px; }
+            .stack-rig { width: 220px; height: 220px; margin: -110px 0 0 -110px; }
+            .exploded .plate { transform: translateZ(calc(var(--i) * 56px)); }
+            .floors .bar-cell { display: none; }
+            .floors th, .floors td { padding: 10px 6px; font-size: 14px; }
         }
     </style>
 </head>
 <body>
 
-<!-- ── NAV ── -->
-<nav class="nav">
+<nav class="nav" id="nav">
     <div class="nav-inner">
-        <div class="nav-brand">
-            <a href="#" class="nav-brand-text">Land <span>to</span> Yield</a>
-        </div>
+        <a class="brand" href="/" aria-label="Land to Yield home">
+            <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true">
+                <path d="M13 3 L23 8.5 L13 14 L3 8.5 Z" fill="none" stroke="#153D63" stroke-width="1.3"/>
+                <path d="M3 13 L13 18.5 L23 13" fill="none" stroke="#153D63" stroke-width="1.3" opacity=".6"/>
+                <path d="M3 17.5 L13 23 L23 17.5" fill="none" stroke="#8A5A12" stroke-width="1.3"/>
+            </svg>
+            Land <span>to</span> Yield
+        </a>
         <ul class="nav-links" id="navLinks">
-            <li><a href="app.html" class="btn btn-primary">Analyze a Parcel</a></li>
+            <li><a href="app.html" class="nav-cta">Analyze a Parcel</a></li>
             <li><a href="developers/">For Developers</a></li>
             <li><a href="land-use-attorneys/">For Attorneys</a></li>
             <li><a href="guides/">Insights</a></li>
             <li><a href="login.html">Sign In</a></li>
         </ul>
-        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
-            <span></span><span></span><span></span>
-        </button>
     </div>
 </nav>
 
-<!-- ── HERO ── -->
-<section class="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-inner">
-        <div class="hero-brand">
-            <div class="hero-brand-name">Land to Yield</div>
+<main>
+<header class="hero">
+    <div class="wrap">
+        <div class="hero-top">
+            <div>
+                <div class="eyebrow">City of Los Angeles · SB 79 · Ords. 188967 and 188968</div>
+                <h1>State law. City law. <em>One parcel.</em></h1>
+            </div>
+            <div class="hero-side">
+                <p class="lede">Land to Yield screens Los Angeles parcels against the SB 79 statute, the City's Low-Rise and Phased Implementation ordinances, and base zoning, then shows exactly which questions still need a professional answer.</p>
+                <div class="hero-links">
+                    <a href="app.html" data-primary-cta class="btn-solid">Analyze a Parcel</a>
+                    <a class="text-link" href="#rule">How LA answered SB 79 <span class="arrow">&rarr;</span></a>
+                </div>
+            </div>
         </div>
-        <div class="hero-divider"></div>
-        <h1>Screen an LA Parcel<br>Before You Spend on <em>Full Diligence</em></h1>
-        <p class="sub">Identify preliminary development pathways, economics, and unresolved issues for City of Los Angeles parcels. Verify controlling zoning and legal conclusions before relying on any result.</p>
 
-        <div class="hero-links">
-            <a href="app.html" data-primary-cta class="btn btn-solid btn-lg">Analyze a Parcel</a>
-            <a href="newsletter.html">Get the LA Development Brief &rarr;</a>
+        <figure>
+            <div class="stage" id="stage">
+                <div class="stage-canvas" id="stageCanvas" aria-hidden="true"></div>
+                <div class="stage-labels" id="stageLabels" aria-hidden="true"></div>
+                <div class="stage-hint">Drag to rotate</div>
+                <div class="stage-fallback"><p>The interactive massing model needs WebGL. The three regimes it compares are summarized in the next section.</p></div>
+                <div class="stage-ui">
+                    <div class="modes" role="group" aria-label="Compare zoning regimes">
+                        <button class="mode" data-mode="base" aria-pressed="true"><span class="n">01</span><span class="t">Base zoning</span><span class="bar"><i></i></span></button>
+                        <button class="mode" data-mode="state" aria-pressed="false"><span class="n">02</span><span class="t">The State's rule</span><span class="bar"><i></i></span></button>
+                        <button class="mode" data-mode="city" aria-pressed="false"><span class="n">03</span><span class="t">The City's reply</span><span class="bar"><i></i></span></button>
+                    </div>
+                    <div class="readout" aria-live="polite">
+                        <div class="readout-body" id="readout"></div>
+                    </div>
+                </div>
+            </div>
+            <figcaption class="figcaption"><strong>Illustrative example only.</strong> A fictional single-family neighborhood around a fictional Tier 1 heavy rail station. Massing is schematic, vertical scale is exaggerated 1.5x, and nothing shown is a zoning or eligibility determination for any real parcel.</figcaption>
+        </figure>
+    </div>
+</header>
+
+<section id="rule">
+    <div class="wrap">
+        <div class="section-head reveal">
+            <div>
+                <div class="eyebrow">The rule and the reply</div>
+                <h2>The State wrote the rule. <em>Los Angeles wrote the reply.</em></h2>
+            </div>
+            <p class="lede">SB 79 sets statewide development floors around qualifying transit. Los Angeles used the statute's own alternative and exclusion provisions to phase it in and to offer a smaller-scale path in its lower-density neighborhoods. A parcel's answer depends on both.</p>
         </div>
-        <div class="hero-links" aria-label="Professional pathways">
-            <a href="developers/">Built for developers</a>
-            <a href="land-use-attorneys/">Built with attorneys in mind</a>
+
+        <div class="rule-reply reveal">
+            <div class="rr-col">
+                <div class="rr-kicker">The rule · State</div>
+                <h3>SB 79 development floors</h3>
+                <p>Height, density, and floor area a city must allow on eligible sites, by transit tier and distance from the station.</p>
+                <div><span class="cite-chip">Gov. Code §§ 65912.155 to 65912.162</span><span class="cite-chip">Operative July 1, 2026</span></div>
+                <table class="floors" aria-label="SB 79 statutory floors by tier and distance">
+                    <thead><tr><th>Distance</th><th>Height</th><th>Density</th><th>FAR</th><th class="bar-cell"></th></tr></thead>
+                    <tbody>
+                        <tr class="tier"><td colspan="5">Tier 1 · Heavy rail</td></tr>
+                        <tr><td>Within 200 ft</td><td class="h">95 ft</td><td>160 du/ac</td><td>4.5</td><td class="bar-cell"><div class="hbar"><i style="--w:100%"></i></div></td></tr>
+                        <tr><td>Within ¼ mile</td><td class="h">75 ft</td><td>120 du/ac</td><td>3.5</td><td class="bar-cell"><div class="hbar"><i style="--w:79%"></i></div></td></tr>
+                        <tr><td>¼ to ½ mile</td><td class="h">65 ft</td><td>100 du/ac</td><td>3.0</td><td class="bar-cell"><div class="hbar"><i style="--w:68%"></i></div></td></tr>
+                        <tr class="tier"><td colspan="5">Tier 2 · Light rail, commuter rail, BRT</td></tr>
+                        <tr><td>Within 200 ft</td><td class="h">85 ft</td><td>140 du/ac</td><td>4.0</td><td class="bar-cell"><div class="hbar"><i style="--w:89%"></i></div></td></tr>
+                        <tr><td>Within ¼ mile</td><td class="h">65 ft</td><td>100 du/ac</td><td>3.0</td><td class="bar-cell"><div class="hbar"><i style="--w:68%"></i></div></td></tr>
+                        <tr><td>¼ to ½ mile</td><td class="h">55 ft</td><td>80 du/ac</td><td>2.5</td><td class="bar-cell"><div class="hbar"><i style="--w:58%"></i></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="rr-col">
+                <div class="rr-kicker">The reply · City of Los Angeles</div>
+                <h3>Two ordinances, effective June 30, 2026</h3>
+                <p>Adopted under § 65912.161, which lets a city substitute an alternative plan and seek temporary exclusions, subject to state review.</p>
+                <div class="ord">
+                    <div class="ord-no">No. 188968</div>
+                    <div>
+                        <h4>Phased Implementation Ordinance</h4>
+                        <p>Sequences where the statute applies. Most station-area parcels sit on temporary hold while the City completes its alternative plan, with a horizon around 2030.</p>
+                        <ul>
+                            <li>Temporary pathways: fire hazard, sea level rise, historic resources, low-resource areas, coastal zone</li>
+                            <li>Some stations cannot be delayed and apply the statute now</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="ord">
+                    <div class="ord-no">No. 188967</div>
+                    <div>
+                        <h4>Low-Rise Ordinance</h4>
+                        <p>A local menu for residential neighborhoods near transit: small multi-unit buildings instead of the statutory envelope.</p>
+                        <ul>
+                            <li>LR-1: 5 to 11 units · LR-2: 12 to 16 units</li>
+                            <li>FAR from 1.30 to 2.90, two to three stories</li>
+                            <li>No parking minimum · restricted affordable units required</li>
+                        </ul>
+                    </div>
+                </div>
+                <div><span class="cite-chip">LAMC 12.22 A.38</span><span class="cite-chip">ZIMAS is the controlling map</span></div>
+            </div>
+        </div>
+
+        <div class="timeline reveal" aria-label="Timeline">
+            <div class="tl"><time>Mar 24, 2026</time><p>Council selects a phased implementation approach.</p></div>
+            <div class="tl"><time>May 14, 2026</time><p>City Planning Commission recommends both ordinances.</p></div>
+            <div class="tl"><time>Jun 23, 2026</time><p>City Council adopts the Low-Rise and Phased Implementation ordinances.</p></div>
+            <div class="tl key"><time>Jun 30, 2026</time><p>Ordinances 188967 and 188968 take effect; eligibility layers go live in ZIMAS.</p></div>
+            <div class="tl key"><time>Jul 1, 2026</time><p>SB 79 becomes operative statewide.</p></div>
         </div>
     </div>
 </section>
 
-<!-- ── PAIN POINTS ── -->
-<section class="pain">
-    <div class="section-inner">
-        <div class="section-header">
-            <div class="section-label">The Problem</div>
-            <h2>Land use analysis<br>shouldn't take days.</h2>
-            <p>Traditional zoning research is slow, fragmented, and error-prone.</p>
-        </div>
-        <div class="pain-grid">
-            <div class="pain-card">
-                <div class="pain-icon icon-red">⏳</div>
-                <h3>Zoning Research Takes Days</h3>
-                <p>Cross-referencing zone codes, overlays, and specific plans across multiple city databases burns hours of billable time per parcel.</p>
+<section class="dark" id="numbers">
+    <div class="wrap">
+        <div class="big-row reveal">
+            <div>
+                <div class="eyebrow">What the reply did to the map</div>
+                <div class="big-num" data-count="139450">139,450</div>
+                <p class="lab">parcels inside Los Angeles's SB 79 station areas in the City's May 2026 screening snapshot.</p>
             </div>
-            <div class="pain-card">
-                <div class="pain-icon icon-orange">📜</div>
-                <h3>Legislation Changes Constantly</h3>
-                <p>SB 79, AB 1893, TOC guidelines, ED1 — keeping up with stacking legislation and understanding what applies to each site is a full-time job.</p>
-            </div>
-            <div class="pain-card">
-                <div class="pain-icon icon-amber">📊</div>
-                <h3>Excel Pro Formas Break</h3>
-                <p>Fragile spreadsheets with hardcoded assumptions lead to errors, version conflicts, and zero sensitivity analysis.</p>
+            <div>
+                <h2>Fewer than one in ten were <em>available to study</em> under the statute.</h2>
             </div>
         </div>
-    </div>
-</section>
-
-<!-- ── PHOTO BANNER ── -->
-<div class="photo-banner">
-    <img src="https://images.unsplash.com/photo-1580655653885-65763b2597d0?w=1920&q=80" alt="Los Angeles skyline at sunset" loading="lazy">
-    <div class="photo-banner-text">
-        <h3>Built for Los Angeles.</h3>
-        <p>Parcel facts, planning controls, legislative pathways, and verification questions in one documented screen.</p>
-    </div>
-</div>
-
-<!-- ── FEATURES ── -->
-<section id="features" class="features-section">
-    <div class="section-inner">
-        <div class="section-header">
-            <div class="section-label">Features</div>
-            <h2>Everything you need for<br>land use decisions.</h2>
-            <p>One tool replaces hours of manual research, multiple databases, and error-prone spreadsheets.</p>
-        </div>
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon icon-amber">🏆</div>
-                <h3>HBU Scoring Engine</h3>
-                <p>Compare preliminary residential, commercial, mixed-use, and industrial scenarios using visible legal, physical, financial, and productivity assumptions.</p>
+        <div class="reveal" id="splitWrap">
+            <div class="split-bar" role="img" aria-label="Of 139,450 parcels: 13,585 available to study, 121,519 on temporary hold, 2,718 permanently excluded, 1,628 statutorily excluded">
+                <span class="seg-a" style="--w:9.74%"></span>
+                <span class="seg-t" style="--w:87.14%"></span>
+                <span class="seg-x" style="--w:1.95%"></span>
+                <span class="seg-s" style="--w:1.17%"></span>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon icon-blue">🚇</div>
-                <h3>SB 79 Transit Finder</h3>
-                <p>Maps transit proximity and potential SB 79 study areas while preserving the parcel-specific evidence and local implementation questions that still require verification.</p>
+            <div class="split-key">
+                <div><div class="v">13,585</div><div class="k"><span class="sw seg-a"></span>Available to study · 9.7%</div></div>
+                <div><div class="v">121,519</div><div class="k"><span class="sw seg-t"></span>Temporary hold · 87.1%</div></div>
+                <div><div class="v">2,718</div><div class="k"><span class="sw seg-x"></span>Permanent exclusion · 1.9%</div></div>
+                <div><div class="v">1,628</div><div class="k"><span class="sw seg-s"></span>Statutory exclusion · 1.2%</div></div>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon icon-purple">📋</div>
-                <h3>27-Tab Deep Analysis</h3>
-                <p>From zoning to financial feasibility in 27 structured tabs. Every assumption is editable, every calculation transparent and auditable.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon icon-rose">⚖️</div>
-                <h3>Legislation Stacking</h3>
-                <p>Screens potential state and local pathways — including SB 79, TOC, density bonus, ED1, and ADU rules — and identifies what still must be verified.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon icon-indigo">💰</div>
-                <h3>Pro Forma &amp; Sensitivity</h3>
-                <p>Built-in development pro forma with tornado charts and sensitivity analysis. Adjust assumptions in real time and see how they impact returns.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon icon-teal">🤝</div>
-                <h3>Investor Module</h3>
-                <p>Generate investor-ready summaries with capital stack modeling, return waterfalls, and exportable PDF reports.</p>
-            </div>
+            <p class="source-note">Source: City Planning parcel lists, May 5, 2026 snapshot prepared for the May 14 Commission hearing. This predates final Council adoption and the June ordinance maps, so it is a screening control only. Confirm any individual parcel against the current ZIMAS record.</p>
         </div>
     </div>
 </section>
 
-<!-- ── HOW IT WORKS ── -->
-<section class="how" id="how">
-    <div class="how-video-bg">
-        <video autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1534190239940-9ba8944ea261?w=1920&q=80">
-            <source src="https://videos.pexels.com/video-files/855271/855271-hd_1920_1080_30fps.mp4" type="video/mp4">
-        </video>
-    </div>
-    <div class="section-inner">
-        <div class="section-header">
-            <div class="section-label">How It Works</div>
-            <h2>From address to analysis<br>in 3 steps.</h2>
-            <p>No training required. Enter a City of Los Angeles address or APN to begin a preliminary, source-linked screen.</p>
+<section id="how">
+    <div class="wrap">
+        <div class="stack-grid">
+            <div class="stack-scene" id="stackScene" aria-hidden="true">
+                <div class="stack-rig" id="stackRig">
+                    <div class="plate p0" style="--i:0" data-layer="0">
+                        <div class="blk" style="left:8%;top:10%;width:14%;height:9%"></div>
+                        <div class="blk" style="left:30%;top:10%;width:10%;height:9%"></div>
+                        <div class="blk" style="left:62%;top:12%;width:16%;height:8%"></div>
+                        <div class="blk" style="left:10%;top:42%;width:12%;height:10%"></div>
+                        <div class="blk" style="left:72%;top:46%;width:14%;height:9%"></div>
+                        <div class="blk" style="left:14%;top:76%;width:15%;height:9%"></div>
+                        <div class="blk" style="left:48%;top:78%;width:11%;height:8%"></div>
+                        <div class="blk" style="left:74%;top:80%;width:13%;height:8%"></div>
+                    </div>
+                    <div class="plate p1" style="--i:1" data-layer="1"></div>
+                    <div class="plate p2" style="--i:2" data-layer="2"></div>
+                    <div class="plate p3" style="--i:3" data-layer="3"><div class="parcel"></div></div>
+                </div>
+            </div>
+            <div>
+                <div class="eyebrow">How a screen resolves one parcel</div>
+                <h2 style="margin:18px 0 22px">Every answer is a <em>stack</em>, read top down.</h2>
+                <p class="lede" style="margin-bottom:34px">Land to Yield does not label a parcel eligible because it sits near a station. It resolves the parcel's status first, then applies the rule path that status allows, and keeps anything unproven on the open list.</p>
+                <ol class="layers" id="layers">
+                    <li data-layer="3"><span class="ln">04</span><div><h4>Parcel evidence</h4><p>APN identity, the dated ZIMAS record, and the City's status for that parcel: available, temporary hold, or excluded.</p></div></li>
+                    <li data-layer="2"><span class="ln">03</span><div><h4>City ordinances</h4><p>Phased Implementation decides whether the statute applies yet. Low-Rise supplies the LR-1 or LR-2 menu where it does not.</p></div></li>
+                    <li data-layer="1"><span class="ln">02</span><div><h4>State statute</h4><p>The SB 79 tier and distance band set the statutory floor for height, density, and floor area.</p></div></li>
+                    <li data-layer="0"><span class="ln">01</span><div><h4>Base zoning</h4><p>Zone, height district, overlays, and specific plans: what the parcel can do with no state or local incentive at all.</p></div></li>
+                </ol>
+            </div>
         </div>
-        <div class="steps">
-            <div class="step">
-                <div class="step-num">1</div>
-                <h3>Enter an Address</h3>
-                <p>Enter a City of Los Angeles address or APN. Review the parcel identity and public-source evidence before relying on the result.</p>
-                <div class="step-screenshot">
-                    <div class="mock-bar">
-                        <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-                        <span class="mock-url">landtoyield.com</span>
-                    </div>
-                    <div style="padding:.4rem">
-                        <div style="background:#f5f5f7;border-radius:8px;padding:.5rem .65rem;margin-bottom:.6rem;color:#86868b;font-size:.75rem;">📍 1234 Wilshire Blvd, Los Angeles, CA 90017</div>
-                        <div class="mock-line w100 bg-muted"></div>
-                        <div class="mock-line w75 bg-muted"></div>
-                        <div style="display:flex;gap:.3rem;margin-top:.4rem;">
-                            <span class="mock-badge blue">R4 Zoning</span>
-                            <span class="mock-badge indigo">TOC Tier 3</span>
-                            <span class="mock-badge purple">SB 79</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="step">
-                <div class="step-num">2</div>
-                <h3>Get Your HBU Score</h3>
-                <p>Compare preliminary land-use scenarios and potential legislative pathways, with unresolved evidence kept visible.</p>
-                <div class="step-screenshot">
-                    <div style="padding:.4rem">
-                        <div style="color:#86868b;font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">HBU Score</div>
-                        <div class="mock-score" style="color:#1d4ed8;">94<span style="font-size:.8rem;font-weight:400;color:#86868b">/100</span></div>
-                        <div style="color:#86868b;font-size:.7rem;margin-bottom:.6rem;">Mixed-Use Residential — Highest Potential</div>
-                        <div style="display:flex;gap:.3rem;flex-wrap:wrap;">
-                            <span class="mock-badge amber">Mixed-Use — 94</span>
-                            <span class="mock-badge blue">Multi-Family — 87</span>
-                            <span class="mock-badge purple">Commercial — 72</span>
-                            <span class="mock-badge rose">Industrial — 31</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="step">
-                <div class="step-num">3</div>
-                <h3>Run Deep Analysis</h3>
-                <p>Dive into 27 tabs of detailed feasibility — zoning, pro forma, sensitivity analysis, and investor reports.</p>
-                <div class="step-screenshot">
-                    <div style="padding:.4rem">
-                        <div class="mock-tabs">
-                            <span class="mock-tab active">Zoning</span>
-                            <span class="mock-tab">Pro Forma</span>
-                            <span class="mock-tab">Sensitivity</span>
-                            <span class="mock-tab">Investor</span>
-                            <span class="mock-tab">+23</span>
-                        </div>
-                        <div class="mock-line w100 bg-purple"></div>
-                        <div class="mock-line w75 bg-blue"></div>
-                        <div class="mock-line w60 bg-indigo"></div>
-                        <div class="mock-line w100 bg-muted"></div>
-                        <div class="mock-line w50 bg-muted"></div>
-                        <div style="display:flex;gap:.3rem;margin-top:.4rem;">
-                            <span class="mock-badge indigo">FAR 6:1</span>
-                            <span class="mock-badge amber">IRR 18.2%</span>
-                            <span class="mock-badge purple">120 Units</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
+        <div class="principles reveal">
+            <div class="pr"><div class="k">Source-linked</div><p>Official records, dates, and parcel identity stay reviewable next to every result.</p></div>
+            <div class="pr"><div class="k">Fail-closed</div><p>Missing critical evidence blocks a final eligibility or offer conclusion instead of guessing.</p></div>
+            <div class="pr"><div class="k">Transparent</div><p>Sourced facts, derived calculations, and user assumptions are kept visibly distinct.</p></div>
         </div>
     </div>
 </section>
 
-<!-- ── LEAD CAPTURE ── -->
-<section class="lead-capture">
-    <div class="section-inner">
-        <div class="section-header">
-            <div class="section-label">Get Started</div>
-            <h2>Start your free analysis.</h2>
-            <p>Enter your email to access preliminary City of Los Angeles parcel screening and transparent underwriting tools.</p>
+<section id="who" style="padding-top:0">
+    <div class="wrap">
+        <div class="section-head reveal">
+            <div>
+                <div class="eyebrow">Who it is for</div>
+                <h2>One record, read three ways.</h2>
+            </div>
+            <p class="lede">The same parcel screen serves the people who have to agree before anything gets built: the client who wants to build it, the counsel who has to defend it, and the lender who has to fund it.</p>
         </div>
-        <form class="lead-form" id="leadForm">
-            <input type="email" placeholder="you@company.com" required id="leadEmail">
-            <button type="submit" class="btn-accent">Get Free Access</button>
-        </form>
-        <div class="lead-success" id="leadSuccess">You're in! Check your email for next steps.</div>
-        <p class="lead-note">No credit card required. Free tier includes 3 analyses per month.</p>
+        <div class="aud reveal">
+            <a href="land-use-attorneys/">
+                <div class="k">Land-use counsel</div>
+                <h3>Get to the real questions faster.</h3>
+                <p>A source-linked intake record with the statute, the ordinance path, and the unresolved issues already separated for review.</p>
+                <span class="go">For attorneys <span class="arrow">&rarr;</span></span>
+            </a>
+            <a href="developers/">
+                <div class="k">Developers</div>
+                <h3>Triage sites before you spend.</h3>
+                <p>Compare base zoning, statutory, and Low-Rise scenarios side by side, with yield and economics you can edit.</p>
+                <span class="go">For developers <span class="arrow">&rarr;</span></span>
+            </a>
+            <a href="guides/">
+                <div class="k">Lenders and advisors</div>
+                <h3>See what the entitlement rests on.</h3>
+                <p>Know which assumptions are verified and which are still open before a term sheet depends on them.</p>
+                <span class="go">Read the insights <span class="arrow">&rarr;</span></span>
+            </a>
+        </div>
     </div>
 </section>
 
-<!-- ── INTERACTIVE WALKTHROUGH ── -->
-<section class="demo-video">
-    <div class="section-inner">
-        <div class="section-header">
-            <div class="section-label">See It In Action</div>
-            <h2>From parcel lookup<br>to a documented issue list.</h2>
-            <p>See an illustrative workflow from parcel lookup through verification and preliminary underwriting.</p>
-        </div>
-        <div class="notice" style="max-width:900px;margin:0 auto 1rem;background:#fff7e9;border-left:5px solid #f59e0b;padding:.9rem 1.1rem;text-align:left;border-radius:8px;"><strong>Illustrative example only.</strong> The parcel, values, scores, program flags, and conclusions shown below are fictional and are not a live zoning or legal analysis.</div>
-        <div class="demo-video-wrapper" id="demoVideoWrapper">
-
-            <div class="wt-viewport" id="wtViewport">
-
-                <!-- Slide 1: Enter Address -->
-                <div class="wt-slide active" data-caption="<strong>Illustrative Step 1:</strong> Enter a City of Los Angeles address or APN, then verify the returned parcel identity and sources.">
-                    <div class="wt-chrome">
-                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
-                        <div class="wt-tab active"><span class="wt-tab-icon">&#128200;</span> Developer Portal</div>
-                    </div>
-                    <div class="wt-body">
-                        <div class="wt-h2">Highest &amp; Best Use Calculator</div>
-                        <div class="wt-sub">Enter a property address to begin your development analysis</div>
-                        <div class="wt-card">
-                            <div class="wt-card-title">Property Lookup</div>
-                            <div class="wt-input-row">
-                                <div class="wt-input" style="flex:3;">6801 Hollywood Blvd, Los Angeles, CA 90028</div>
-                                <div class="wt-btn">Look Up</div>
-                            </div>
-                        </div>
-                        <div class="wt-card" style="opacity:0.5;">
-                            <div class="wt-card-title">Site Characteristics</div>
-                            <div class="wt-row">
-                                <div class="wt-stat"><span class="wt-stat-label">Parcel Size</span><span class="wt-stat-value" style="color:#475569;">Awaiting lookup...</span></div>
-                                <div class="wt-stat"><span class="wt-stat-label">Zoning</span><span class="wt-stat-value" style="color:#475569;">&#8212;</span></div>
-                                <div class="wt-stat"><span class="wt-stat-label">Neighborhood</span><span class="wt-stat-value" style="color:#475569;">&#8212;</span></div>
-                            </div>
-                        </div>
-                        <div class="wt-sub" style="text-align:center;margin-top:auto;opacity:0.5;">Results appear below after lookup</div>
-                    </div>
-                </div>
-
-                <!-- Slide 2: Parcel Data Auto-Filled -->
-                <div class="wt-slide" data-caption="<strong>Step 2:</strong> Parcel data populates automatically &mdash; lot size, zoning, assessed values, year built, and more.">
-                    <div class="wt-chrome">
-                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
-                        <div class="wt-tab active"><span class="wt-tab-icon">&#128200;</span> Developer Portal</div>
-                    </div>
-                    <div class="wt-body">
-                        <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <div class="wt-h2">6801 Hollywood Blvd</div>
-                            <div class="wt-badge wt-badge-green">&#10003; Data loaded</div>
-                        </div>
-                        <div class="wt-card">
-                            <div class="wt-card-title">Site Characteristics (Auto-filled)</div>
-                            <div class="wt-row">
-                                <div class="wt-stat"><span class="wt-stat-label">Parcel Size</span><span class="wt-stat-value">12,430 SF</span></div>
-                                <div class="wt-stat"><span class="wt-stat-label">Zoning</span><span class="wt-stat-value blue">C4-2D</span></div>
-                                <div class="wt-stat"><span class="wt-stat-label">Neighborhood</span><span class="wt-stat-value">Hollywood</span></div>
-                            </div>
-                            <div class="wt-row">
-                                <div class="wt-stat"><span class="wt-stat-label">Year Built</span><span class="wt-stat-value">1953</span></div>
-                                <div class="wt-stat"><span class="wt-stat-label">Structure SF</span><span class="wt-stat-value">4,280</span></div>
-                                <div class="wt-stat"><span class="wt-stat-label">Imp/Land Ratio</span><span class="wt-stat-value green">0.38</span></div>
-                            </div>
-                        </div>
-                        <div class="wt-card">
-                            <div class="wt-card-title">Valuation</div>
-                            <div class="wt-row">
-                                <div class="wt-stat"><span class="wt-stat-label">Est. Market Value</span><span class="wt-stat-value">$2,996,000</span></div>
-                                <div class="wt-stat"><span class="wt-stat-label">Land Value</span><span class="wt-stat-value">$1,850,000</span></div>
-                                <div class="wt-stat"><span class="wt-stat-label">Imp. Value</span><span class="wt-stat-value">$702,000</span></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 3: HBU Results - Top 3 Uses -->
-                <div class="wt-slide" data-caption="<strong>Step 3:</strong> AI ranks all 16 land uses and surfaces the top 3 — each scored on feasibility, revenue, and risk.">
-                    <div class="wt-chrome">
-                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
-                        <div class="wt-tab active"><span class="wt-tab-icon">&#128200;</span> Developer Portal</div>
-                    </div>
-                    <div class="wt-body">
-                        <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <div class="wt-h2">Highest &amp; Best Use Results</div>
-                            <div class="wt-badge wt-badge-amber">16 uses scored</div>
-                        </div>
-                        <div class="wt-rank-cards">
-                            <div class="wt-rank-card gold">
-                                <div class="wt-rank-num n1">&#127942; #1 Best Use</div>
-                                <div class="wt-h3">Mid-Rise Multifamily</div>
-                                <div class="wt-row">
-                                    <div class="wt-stat"><span class="wt-stat-label">HBU Score</span><span class="wt-stat-value green">92</span></div>
-                                    <div class="wt-stat"><span class="wt-stat-label">Opp Ratio</span><span class="wt-stat-value green">1.8x</span></div>
-                                </div>
-                                <div class="wt-sub">5 stories &middot; 62 units &middot; 3.2 FAR</div>
-                            </div>
-                            <div class="wt-rank-card">
-                                <div class="wt-rank-num n2">#2 Alternative</div>
-                                <div class="wt-h3">Mixed-Use</div>
-                                <div class="wt-row">
-                                    <div class="wt-stat"><span class="wt-stat-label">HBU Score</span><span class="wt-stat-value">84</span></div>
-                                    <div class="wt-stat"><span class="wt-stat-label">Opp Ratio</span><span class="wt-stat-value">1.5x</span></div>
-                                </div>
-                                <div class="wt-sub">4 stories &middot; Retail + 48 units</div>
-                            </div>
-                            <div class="wt-rank-card">
-                                <div class="wt-rank-num n3">#3 Alternative</div>
-                                <div class="wt-h3">Hotel/Hospitality</div>
-                                <div class="wt-row">
-                                    <div class="wt-stat"><span class="wt-stat-label">HBU Score</span><span class="wt-stat-value">76</span></div>
-                                    <div class="wt-stat"><span class="wt-stat-label">Opp Ratio</span><span class="wt-stat-value amber">1.2x</span></div>
-                                </div>
-                                <div class="wt-sub">6 stories &middot; 95 keys</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 4: Deep Analysis Pro Forma -->
-                <div class="wt-slide" data-caption="<strong>Step 4:</strong> One-click deep analysis generates a full pro forma &mdash; construction costs, revenue projections, and stabilized NOI.">
-                    <div class="wt-chrome">
-                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
-                        <div class="wt-tab active"><span class="wt-tab-icon">&#128200;</span> Deep Analysis</div>
-                    </div>
-                    <div class="wt-body">
-                        <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <div class="wt-h2">Pro Forma: Mid-Rise Multifamily</div>
-                            <div class="wt-badge wt-badge-green">62 units &middot; 5 stories</div>
-                        </div>
-                        <div class="wt-row">
-                            <div class="wt-card wt-col">
-                                <div class="wt-card-title">Development Budget</div>
-                                <div class="wt-proforma-row"><span>Hard Costs (construction)</span><span class="wt-stat-value">$14,920,000</span></div>
-                                <div class="wt-proforma-row"><span>Soft Costs (fees, permits)</span><span>$2,984,000</span></div>
-                                <div class="wt-proforma-row"><span>Land Acquisition</span><span>$2,996,000</span></div>
-                                <div class="wt-proforma-row"><span>Contingency (10%)</span><span>$1,790,000</span></div>
-                                <div class="wt-proforma-row total"><span>Total Development Cost</span><span class="wt-stat-value amber">$22,690,000</span></div>
-                            </div>
-                            <div class="wt-card wt-col">
-                                <div class="wt-card-title">Revenue &amp; Returns</div>
-                                <div class="wt-proforma-row"><span>Gross Revenue (annual)</span><span class="wt-stat-value">$2,678,400</span></div>
-                                <div class="wt-proforma-row"><span>Operating Expenses (35%)</span><span>($937,440)</span></div>
-                                <div class="wt-proforma-row total"><span>Net Operating Income</span><span class="wt-stat-value green">$1,740,960</span></div>
-                                <div class="wt-divider"></div>
-                                <div class="wt-proforma-row"><span>Stabilized Value (4.75% cap)</span><span class="wt-stat-value green">$36,652,000</span></div>
-                                <div class="wt-proforma-row"><span>Residual Land Value</span><span class="wt-stat-value green">$18,748,000</span></div>
-                                <div class="wt-proforma-row"><span>Development Spread</span><span class="wt-stat-value green">$13,962,000</span></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 5: Legislation Scanner -->
-                <div class="wt-slide" data-caption="<strong>Step 5:</strong> Applicable CA housing legislation auto-detected &mdash; SB 9, AB 1287, SB 79, and density bonus programs.">
-                    <div class="wt-chrome">
-                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
-                        <div class="wt-tab active"><span class="wt-tab-icon">&#128220;</span> Legislation</div>
-                    </div>
-                    <div class="wt-body">
-                        <div class="wt-h2">Applicable CA Housing Legislation</div>
-                        <div class="wt-sub">7 hypothetical pathways shown for illustration; parcel-specific evidence is not verified</div>
-                        <div class="wt-card">
-                            <div style="display:flex;justify-content:space-between;align-items:center;">
-                                <div class="wt-h3">SB 79 — Transit-Oriented Development</div>
-                                <div class="wt-badge wt-badge-green">Tier 1 — Heavy Rail</div>
-                            </div>
-                            <div class="wt-sub">Overrides local zoning within 1/2 mi of qualifying transit. Allows 95ft, 160 du/acre, 4.5 FAR.</div>
-                            <div class="wt-row">
-                                <div class="wt-stat"><span class="wt-stat-label">Max Height</span><span class="wt-stat-value blue">95 ft</span></div>
-                                <div class="wt-stat"><span class="wt-stat-label">Max Density</span><span class="wt-stat-value blue">160 du/ac</span></div>
-                                <div class="wt-stat"><span class="wt-stat-label">Max FAR</span><span class="wt-stat-value blue">4.5</span></div>
-                                <div class="wt-stat"><span class="wt-stat-label">Parking</span><span class="wt-stat-value green">0.5/unit</span></div>
-                            </div>
-                        </div>
-                        <div class="wt-row">
-                            <div class="wt-card wt-col" style="padding:0.4rem;">
-                                <div class="wt-h3">AB 2011</div>
-                                <div class="wt-badge wt-badge-blue">By-right</div>
-                                <div class="wt-sub" style="margin-top:0.15rem;">Commercial-to-residential conversion</div>
-                            </div>
-                            <div class="wt-card wt-col" style="padding:0.4rem;">
-                                <div class="wt-h3">AB 1287</div>
-                                <div class="wt-badge wt-badge-blue">Density Bonus</div>
-                                <div class="wt-sub" style="margin-top:0.15rem;">Up to 50% bonus with affordable set-aside</div>
-                            </div>
-                            <div class="wt-card wt-col" style="padding:0.4rem;">
-                                <div class="wt-h3">SB 9</div>
-                                <div class="wt-badge wt-badge-amber">Lot Split</div>
-                                <div class="wt-sub" style="margin-top:0.15rem;">Ministerial duplex/split on SFR lots</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 6: SB 79 Opportunity Finder Map -->
-                <div class="wt-slide" data-caption="<strong>Step 6:</strong> The Opportunity Finder scans thousands of parcels near any Metro station for underbuilt teardown candidates.">
-                    <div class="wt-chrome">
-                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
-                        <div class="wt-tab active"><span class="wt-tab-icon">&#128270;</span> Opportunity Finder</div>
-                    </div>
-                    <div class="wt-body" style="gap:0.4rem;">
-                        <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <div class="wt-h2">SB 79 Opportunity Finder</div>
-                            <div class="wt-badge wt-badge-amber">1,247 parcels scanned</div>
-                        </div>
-                        <div class="wt-input-row">
-                            <div class="wt-input" style="flex:2;">Hollywood / Western (Red Line)</div>
-                            <span class="wt-filter-btn on">&#10003; Outer (1/2 mi)</span>
-                            <span class="wt-filter-btn on">&#10003; Residential</span>
-                            <span class="wt-filter-btn on">&#10003; Commercial</span>
-                            <div class="wt-btn">Search</div>
-                        </div>
-                        <div class="wt-map-placeholder" style="flex:1;">
-                            <div class="wt-map-ring" style="width:140px;height:140px;top:50%;left:50%;transform:translate(-50%,-50%);"></div>
-                            <div class="wt-map-ring" style="width:90px;height:90px;top:50%;left:50%;transform:translate(-50%,-50%);"></div>
-                            <div class="wt-map-ring" style="width:30px;height:30px;top:50%;left:50%;transform:translate(-50%,-50%);"></div>
-                            <div class="wt-map-dot" style="top:50%;left:50%;transform:translate(-50%,-50%);width:8px;height:8px;"></div>
-                            <div class="wt-map-dot" style="top:35%;left:40%;"></div>
-                            <div class="wt-map-dot" style="top:42%;left:58%;"></div>
-                            <div class="wt-map-dot" style="top:60%;left:45%;background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,0.6);"></div>
-                            <div class="wt-map-dot" style="top:55%;left:62%;background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,0.6);"></div>
-                            <div class="wt-map-dot" style="top:38%;left:52%;background:#ef4444;box-shadow:0 0 8px rgba(239,68,68,0.4);"></div>
-                            <div class="wt-map-dot" style="top:65%;left:38%;"></div>
-                            <div class="wt-map-dot" style="top:30%;left:55%;background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,0.6);"></div>
-                            <div class="wt-map-dot" style="top:48%;left:35%;"></div>
-                            <div class="wt-map-dot" style="top:70%;left:55%;background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,0.6);"></div>
-                            <div class="wt-map-label" style="top:50%;left:50%;transform:translate(8px,-50%);">Hollywood/Western Station</div>
-                            <div class="wt-map-label" style="bottom:6px;right:8px;font-size:0.4rem;">&#9679; Hot &nbsp; &#9679; Strong &nbsp; &#9679; Moderate</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 7: Finder Results Table -->
-                <div class="wt-slide" data-caption="<strong>Step 7:</strong> Results ranked by opportunity ratio &mdash; sortable by any column, with year-built filters for teardown analysis.">
-                    <div class="wt-chrome">
-                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
-                        <div class="wt-tab active"><span class="wt-tab-icon">&#128270;</span> Opportunity Finder</div>
-                    </div>
-                    <div class="wt-body" style="gap:0.3rem;">
-                        <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <div class="wt-h3">187 opportunities near Hollywood / Western</div>
-                            <div class="wt-btn" style="font-size:0.5rem;">Export CSV</div>
-                        </div>
-                        <div style="overflow:hidden;border-radius:6px;border:1px solid rgba(255,255,255,0.08);flex:1;">
-                        <table class="wt-table">
-                            <thead><tr>
-                                <th>Address</th><th>Lot SF</th><th>Use</th><th>Yr Built</th><th>Est. MV</th><th>Imp Ratio</th><th>Zone</th><th>Allowances</th>
-                            </tr></thead>
-                            <tbody>
-                                <tr><td>5411 Hollywood Blvd</td><td>8,200</td><td>SFR</td><td>1948</td><td>$1,820,000</td><td style="color:#4ade80;">0.22</td><td>Inner</td><td>95ft / 160du / 4.5 FAR</td></tr>
-                                <tr><td>1825 N Western Ave</td><td>6,500</td><td>Commercial</td><td>1962</td><td>$2,145,000</td><td style="color:#4ade80;">0.31</td><td>Adjacent</td><td>95ft / 160du / 4.5 FAR</td></tr>
-                                <tr><td>5520 Carlton Way</td><td>7,100</td><td>SFR</td><td>1941</td><td>$1,560,000</td><td style="color:#4ade80;">0.18</td><td>Inner</td><td>95ft / 160du / 4.5 FAR</td></tr>
-                                <tr><td>1910 N Serrano Ave</td><td>5,800</td><td>Duplex</td><td>1955</td><td>$1,380,000</td><td style="color:#fbbf24;">0.45</td><td>Outer</td><td>85ft / 140du / 4.0 FAR</td></tr>
-                                <tr><td>5600 De Longpre Ave</td><td>11,400</td><td>Commercial</td><td>1967</td><td>$3,410,000</td><td style="color:#4ade80;">0.29</td><td>Inner</td><td>95ft / 160du / 4.5 FAR</td></tr>
-                                <tr><td>1734 N Kingsley Dr</td><td>6,200</td><td>SFR</td><td>1938</td><td>$1,290,000</td><td style="color:#4ade80;">0.15</td><td>Outer</td><td>85ft / 140du / 4.0 FAR</td></tr>
-                                <tr><td>5481 Santa Monica Blvd</td><td>9,300</td><td>Vacant</td><td>&#8212;</td><td>$2,325,000</td><td style="color:#4ade80;">0.00</td><td>Inner</td><td>95ft / 160du / 4.5 FAR</td></tr>
-                                <tr><td>1655 N St Andrews Pl</td><td>5,100</td><td>SFR</td><td>1952</td><td>$1,075,000</td><td style="color:#fbbf24;">0.52</td><td>Outer</td><td>85ft / 140du / 4.0 FAR</td></tr>
-                            </tbody>
-                        </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 8: Agent Portal PDA -->
-                <div class="wt-slide" data-caption="<strong>Step 8:</strong> The Agent Portal generates a branded Property Development Advisory (PDA) one-pager for client presentations.">
-                    <div class="wt-chrome">
-                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
-                        <div class="wt-tab"><span class="wt-tab-icon">&#128200;</span> Developer</div>
-                        <div class="wt-tab active"><span class="wt-tab-icon">&#128101;</span> Agent Portal</div>
-                    </div>
-                    <div class="wt-body">
-                        <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <div class="wt-h2">Property Development Advisory</div>
-                            <div class="wt-btn-green wt-btn">&#128424; Export PDF</div>
-                        </div>
-                        <div class="wt-card" style="background:rgba(37,99,235,0.08);border-color:rgba(59,130,246,0.2);">
-                            <div style="display:flex;justify-content:space-between;">
-                                <div>
-                                    <div class="wt-h3" style="color:#60a5fa;">6801 Hollywood Blvd, Los Angeles 90028</div>
-                                    <div class="wt-sub">APN: 5546-018-012 &middot; C4-2D &middot; 12,430 SF lot</div>
-                                </div>
-                                <div style="text-align:right;">
-                                    <div class="wt-badge wt-badge-green" style="font-size:0.55rem;">&#128293; Hot Opportunity</div>
-                                    <div class="wt-stat-value green" style="font-size:0.8rem;">1.8x</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="wt-row">
-                            <div class="wt-card wt-col">
-                                <div class="wt-card-title">Best Use: Mid-Rise Multifamily</div>
-                                <div class="wt-proforma-row"><span>Units</span><span>62</span></div>
-                                <div class="wt-proforma-row"><span>Stories</span><span>5</span></div>
-                                <div class="wt-proforma-row"><span>Buildable SF</span><span>39,776</span></div>
-                                <div class="wt-proforma-row"><span>Parking</span><span>31 spaces</span></div>
-                            </div>
-                            <div class="wt-card wt-col">
-                                <div class="wt-card-title">Investment Summary</div>
-                                <div class="wt-proforma-row"><span>As-Is Value</span><span>$2,996,000</span></div>
-                                <div class="wt-proforma-row"><span>Dev Value</span><span class="wt-stat-value green" style="font-size:0.6rem;">$36,652,000</span></div>
-                                <div class="wt-proforma-row"><span>Dev Cost</span><span>$22,690,000</span></div>
-                                <div class="wt-proforma-row total"><span>Uplift</span><span style="color:#4ade80;">+$13,962,000</span></div>
-                            </div>
-                        </div>
-                        <div class="wt-card" style="padding:0.35rem 0.5rem;">
-                            <div class="wt-row" style="gap:0.6rem;">
-                                <div><span class="wt-stat-label">SB 79 Screen</span> <span class="wt-badge wt-badge-amber">Verify parcel</span></div>
-                                <div><span class="wt-stat-label">Potential pathway</span> <span class="wt-badge wt-badge-blue">Requires counsel</span></div>
-                                <div><span class="wt-stat-label">Ease of Execution</span> <span class="wt-badge wt-badge-green">82/100</span></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 9: Lender Portal -->
-                <div class="wt-slide" data-caption="<strong>Step 9:</strong> The Lender Portal provides underwriting-grade analysis with LTV, DSCR, and construction draw schedules.">
-                    <div class="wt-chrome">
-                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
-                        <div class="wt-tab"><span class="wt-tab-icon">&#128200;</span> Developer</div>
-                        <div class="wt-tab"><span class="wt-tab-icon">&#128101;</span> Agent</div>
-                        <div class="wt-tab active"><span class="wt-tab-icon">&#127974;</span> Lender Portal</div>
-                    </div>
-                    <div class="wt-body">
-                        <div class="wt-h2">Loan Underwriting Analysis</div>
-                        <div class="wt-row">
-                            <div class="wt-stat"><span class="wt-stat-label">Loan Amount</span><span class="wt-stat-value">$15,749,000</span></div>
-                            <div class="wt-stat"><span class="wt-stat-label">LTV</span><span class="wt-stat-value green">65%</span></div>
-                            <div class="wt-stat"><span class="wt-stat-label">LTC</span><span class="wt-stat-value green">69%</span></div>
-                            <div class="wt-stat"><span class="wt-stat-label">DSCR</span><span class="wt-stat-value green">1.42x</span></div>
-                        </div>
-                        <div class="wt-row">
-                            <div class="wt-card wt-col">
-                                <div class="wt-card-title">Loan Structure</div>
-                                <div class="wt-proforma-row"><span>Interest Rate</span><span>7.25%</span></div>
-                                <div class="wt-proforma-row"><span>Term</span><span>24 months + 12 ext</span></div>
-                                <div class="wt-proforma-row"><span>Interest Reserve</span><span>$1,142,000</span></div>
-                                <div class="wt-proforma-row"><span>Origination (1.5%)</span><span>$236,000</span></div>
-                                <div class="wt-proforma-row total"><span>All-In Cost</span><span>$1,378,000</span></div>
-                            </div>
-                            <div class="wt-card wt-col">
-                                <div class="wt-card-title">Risk Assessment</div>
-                                <div class="wt-row">
-                                    <div class="wt-stat"><span class="wt-stat-label">Market Risk</span><span class="wt-badge wt-badge-green">Low</span></div>
-                                    <div class="wt-stat"><span class="wt-stat-label">Entitlement</span><span class="wt-badge wt-badge-amber">Unverified</span></div>
-                                </div>
-                                <div class="wt-row">
-                                    <div class="wt-stat"><span class="wt-stat-label">Construction</span><span class="wt-badge wt-badge-amber">Moderate</span></div>
-                                    <div class="wt-stat"><span class="wt-stat-label">Exit</span><span class="wt-badge wt-badge-green">Strong</span></div>
-                                </div>
-                                <div class="wt-divider"></div>
-                                <div style="text-align:center;"><span class="wt-stat-label">Overall: </span><span class="wt-badge wt-badge-amber" style="font-size:0.55rem;">HOLD — Verify inputs</span></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 10: Saved Properties & Batch Export -->
-                <div class="wt-slide" data-caption="<strong>Step 10:</strong> Save properties to your pipeline, combine parcels for assemblage analysis, and batch-export one-pagers.">
-                    <div class="wt-chrome">
-                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
-                        <div class="wt-tab active"><span class="wt-tab-icon">&#128190;</span> Saved Properties</div>
-                    </div>
-                    <div class="wt-body" style="gap:0.3rem;">
-                        <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <div class="wt-h2">Pipeline — 12 Saved Properties</div>
-                            <div style="display:flex;gap:0.3rem;">
-                                <div class="wt-btn" style="font-size:0.5rem;">Combine Selected</div>
-                                <div class="wt-btn-green wt-btn" style="font-size:0.5rem;">Batch One-Pagers</div>
-                                <div class="wt-btn" style="font-size:0.5rem;background:#6366f1;">Export CSV</div>
-                            </div>
-                        </div>
-                        <div style="overflow:hidden;border-radius:6px;border:1px solid rgba(255,255,255,0.08);flex:1;">
-                        <table class="wt-table">
-                            <thead><tr>
-                                <th style="width:20px;">&#9744;</th><th>Address</th><th>Best Use</th><th>Opp Ratio</th><th>Premium</th><th>Score</th><th>SB 79</th>
-                            </tr></thead>
-                            <tbody>
-                                <tr><td>&#9745;</td><td>6801 Hollywood Blvd</td><td>Mid-Rise MF</td><td style="color:#4ade80;">1.8x</td><td style="color:#4ade80;">+$13.9M</td><td>92</td><td><span class="wt-badge wt-badge-green">T1</span></td></tr>
-                                <tr><td>&#9745;</td><td>5411 Hollywood Blvd</td><td>Mixed-Use</td><td style="color:#4ade80;">2.1x</td><td style="color:#4ade80;">+$4.2M</td><td>88</td><td><span class="wt-badge wt-badge-green">T1</span></td></tr>
-                                <tr><td>&#9744;</td><td>1825 N Western Ave</td><td>Mid-Rise MF</td><td style="color:#4ade80;">1.6x</td><td style="color:#4ade80;">+$3.8M</td><td>85</td><td><span class="wt-badge wt-badge-green">T1</span></td></tr>
-                                <tr><td>&#9744;</td><td>5520 Carlton Way</td><td>Duplex + ADU</td><td style="color:#fbbf24;">1.3x</td><td style="color:#fbbf24;">+$480K</td><td>74</td><td><span class="wt-badge wt-badge-amber">T2</span></td></tr>
-                                <tr><td>&#9744;</td><td>1910 N Serrano Ave</td><td>Low-Rise MF</td><td style="color:#fbbf24;">1.2x</td><td style="color:#fbbf24;">+$310K</td><td>71</td><td><span class="wt-badge wt-badge-amber">T2</span></td></tr>
-                                <tr><td>&#9744;</td><td>5600 De Longpre Ave</td><td>Mixed-Use</td><td style="color:#4ade80;">1.9x</td><td style="color:#4ade80;">+$6.1M</td><td>90</td><td><span class="wt-badge wt-badge-green">T1</span></td></tr>
-                                <tr><td>&#9744;</td><td>1734 N Kingsley Dr</td><td>Mid-Rise MF</td><td style="color:#4ade80;">1.7x</td><td style="color:#4ade80;">+$2.1M</td><td>82</td><td><span class="wt-badge wt-badge-blue">T2</span></td></tr>
-                            </tbody>
-                        </table>
-                        </div>
-                        <div class="wt-sub" style="text-align:center;">Select properties to combine for assemblage analysis or batch-generate investor one-pagers</div>
-                    </div>
-                </div>
-
-                <!-- Slide 11: Jurisdiction & Entitlement -->
-                <div class="wt-slide" data-caption="<strong>Step 11:</strong> Illustrative jurisdiction screen showing where local permit, fee, and entitlement research belongs.">
-                    <div class="wt-chrome">
-                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
-                        <div class="wt-tab active"><span class="wt-tab-icon">&#127963;</span> Entitlement</div>
-                    </div>
-                    <div class="wt-body">
-                        <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <div class="wt-h2">Entitlement &amp; Permit Pathway</div>
-                            <div class="wt-badge wt-badge-blue">City of Los Angeles</div>
-                        </div>
-                        <div class="wt-row">
-                            <div class="wt-stat"><span class="wt-stat-label">Permit Type</span><span class="wt-stat-value blue">By-Right (SB 79)</span></div>
-                            <div class="wt-stat"><span class="wt-stat-label">Est. Timeline</span><span class="wt-stat-value">12-18 months</span></div>
-                            <div class="wt-stat"><span class="wt-stat-label">Impact Fees</span><span class="wt-stat-value amber">$486,000</span></div>
-                            <div class="wt-stat"><span class="wt-stat-label">Risk Score</span><span class="wt-stat-value green">Low (82/100)</span></div>
-                        </div>
-                        <div class="wt-card">
-                            <div class="wt-card-title">Impact Fee Breakdown</div>
-                            <div class="wt-proforma-row"><span>Park Fees (Quimby)</span><span>$186,000</span></div>
-                            <div class="wt-proforma-row"><span>School Fees</span><span>$127,000</span></div>
-                            <div class="wt-proforma-row"><span>Transportation</span><span>$98,000</span></div>
-                            <div class="wt-proforma-row"><span>Sewer/Water Connection</span><span>$75,000</span></div>
-                            <div class="wt-proforma-row total"><span>Total Impact Fees</span><span class="wt-stat-value amber">$486,000</span></div>
-                        </div>
-                        <div class="wt-card">
-                            <div class="wt-card-title">Recommended Consultants</div>
-                            <div class="wt-sub">Example team roles include land-use counsel, an expediter, and environmental consultants; actual needs depend on the verified project.</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 12: Final CTA -->
-                <div class="wt-slide" data-caption="<strong>Ready to start?</strong> Begin a preliminary parcel screen and verify the evidence before relying on the result.">
-                    <div class="wt-chrome">
-                        <div class="wt-dot r"></div><div class="wt-dot y"></div><div class="wt-dot g"></div>
-                        <div class="wt-tab active"><span class="wt-tab-icon">&#127968;</span> Land to Yield</div>
-                    </div>
-                    <div class="wt-body" style="align-items:center;justify-content:center;text-align:center;gap:0.8rem;">
-                        <div style="font-size:2rem;">&#127919;</div>
-                        <div class="wt-h2" style="font-size:1rem;">Every parcel decision starts with evidence.<br>Organize it before full diligence.</div>
-                        <div class="wt-sub" style="max-width:360px;font-size:0.6rem;">16 land uses scored &middot; Full pro forma &middot; SB 79 transit analysis &middot; Legislation scanner &middot; Opportunity finder &middot; Lender underwriting &middot; Agent one-pagers</div>
-                        <div class="wt-row" style="justify-content:center;gap:0.6rem;margin-top:0.3rem;">
-                            <a href="app.html" class="wt-btn" style="padding:0.4rem 1rem;font-size:0.65rem;text-decoration:none;">Developer Portal &#8594;</a>
-                            <a href="lender.html" class="wt-btn" style="padding:0.4rem 1rem;font-size:0.65rem;background:#059669;text-decoration:none;">Lender Portal &#8594;</a>
-                            <a href="agent.html" class="wt-btn" style="padding:0.4rem 1rem;font-size:0.65rem;background:#7c3aed;text-decoration:none;">Agent Portal &#8594;</a>
-                        </div>
-                        <div class="wt-sub" style="font-size:0.5rem;">No credit card required &middot; Free tier includes 3 analyses/month</div>
-                    </div>
-                </div>
-
-            </div><!-- /wt-viewport -->
-
-            <!-- Caption -->
-            <div class="wt-caption" id="wtCaption"></div>
-
-            <!-- Controls -->
-            <div class="wt-controls">
-                <button class="wt-ctrl-btn" id="wtPrev" onclick="wtNav(-1)" title="Previous">&#9664;</button>
-                <button class="wt-ctrl-btn" id="wtPlayPause" onclick="wtTogglePlay()" title="Play/Pause">&#9646;&#9646;</button>
-                <button class="wt-ctrl-btn" id="wtNext" onclick="wtNav(1)" title="Next">&#9654;</button>
-                <div class="wt-progress" id="wtProgress" onclick="wtClickProgress(event)">
-                    <div class="wt-progress-fill" id="wtProgressFill"></div>
-                </div>
-                <div class="wt-step-label" id="wtStepLabel">1 / 12</div>
+<section id="pricing" style="background:var(--paper-2)">
+    <div class="wrap">
+        <div class="section-head reveal">
+            <div>
+                <div class="eyebrow">Pricing</div>
+                <h2>Simple plans. <em>Cancel anytime.</em></h2>
             </div>
-
-        </div><!-- /demo-video-wrapper -->
-    </div>
-</section>
-
-<!-- ── COMPETITIVE COMPARISON ── -->
-<section class="compare">
-    <div class="section-inner">
-        <div class="section-header">
-            <div class="section-label">Why Land to Yield</div>
-            <h2>Automate the first screen.<br>Keep professional judgment in the loop.</h2>
-            <p>Each tool has a different role in a defensible development decision.</p>
+            <p class="lede">Founding members: the first 50 subscribers keep 50% off for as long as they subscribe.</p>
         </div>
-        <table class="compare-table">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>Professional diligence</th>
-                    <th>Data products</th>
-                    <th class="highlight">Land to Yield</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>Primary role</strong></td>
-                    <td>Verify and advise</td>
-                    <td>Supply records or market data</td>
-                    <td class="highlight">Organize a preliminary screen</td>
-                </tr>
-                <tr>
-                    <td><strong>Timing</strong></td>
-                    <td>Depends on scope and team</td>
-                    <td>Depends on provider and record</td>
-                    <td class="highlight">Browser-based workflow</td>
-                </tr>
-                <tr>
-                    <td><strong>Development scenarios</strong></td>
-                    <td class="check">Professional analysis</td>
-                    <td class="partial">Varies</td>
-                    <td class="highlight check">Editable preliminary comparisons</td>
-                </tr>
-                <tr>
-                    <td><strong>Legislation</strong></td>
-                    <td class="check">Controlling legal review</td>
-                    <td class="partial">Source-dependent</td>
-                    <td class="highlight check">Potential-pathway screen</td>
-                </tr>
-                <tr>
-                    <td><strong>Economics</strong></td>
-                    <td class="check">Project-specific advice</td>
-                    <td class="partial">Market inputs may be available</td>
-                    <td class="highlight check">Interactive assumptions</td>
-                </tr>
-                <tr>
-                    <td><strong>Unresolved questions</strong></td>
-                    <td class="check">Resolved through diligence</td>
-                    <td class="partial">Usually outside scope</td>
-                    <td class="highlight check">Kept visible and assigned</td>
-                </tr>
-                <tr>
-                    <td><strong>Best used for</strong></td>
-                    <td class="check">Reliance and decisions</td>
-                    <td class="check">Specific facts and datasets</td>
-                    <td class="highlight check">Triage before full diligence</td>
-                </tr>
-            </tbody>
-        </table>
-        <p class="compare-tagline">Land to Yield supports the first screen; qualified professionals verify the decision.</p>
-    </div>
-</section>
-
-<!-- ── TRUST PRINCIPLES ── -->
-<section class="social-proof">
-    <div class="section-inner">
-        <div class="section-header">
-            <div class="section-label">Designed for Professional Diligence</div>
-            <h2>Useful because uncertainty<br>stays visible.</h2>
-        </div>
-        <div class="proof-grid">
-            <div class="proof-card">
-                <div class="proof-stat">Source-linked</div>
-                <div class="proof-label">Official records, dates, and parcel identity remain reviewable</div>
-            </div>
-            <div class="proof-card">
-                <div class="proof-stat">Fail-closed</div>
-                <div class="proof-label">Missing critical evidence blocks final eligibility and offer conclusions</div>
-            </div>
-            <div class="proof-card">
-                <div class="proof-stat">Transparent</div>
-                <div class="proof-label">Sourced facts, derived calculations, and user assumptions stay distinct</div>
-            </div>
-        </div>
-        <p class="compare-tagline">Preliminary screening is the start of diligence—not a legal, architectural, appraisal, title, tax, environmental, or lending conclusion.</p>
-    </div>
-</section>
-
-<!-- ── PHOTO STRIP ── -->
-<div class="photo-strip">
-    <div class="photo-strip-item">
-        <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=80" alt="Construction site with cranes" loading="lazy">
-    </div>
-    <div class="photo-strip-item">
-        <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80" alt="Glass high-rise looking up" loading="lazy">
-    </div>
-    <div class="photo-strip-item">
-        <img src="https://images.unsplash.com/photo-1460317442991-0ec209397118?w=800&q=80" alt="Luxury apartment exterior" loading="lazy">
-    </div>
-</div>
-
-<!-- ── PRICING ── -->
-<section class="pricing" id="pricing">
-    <div class="section-inner">
-        <div class="section-header">
-            <div class="section-label">Pricing</div>
-            <h2>Simple, transparent pricing.</h2>
-            <p>Choose the plan that fits your deal flow. Cancel anytime.</p>
-        </div>
-
-        <div class="founding-banner">
-            🎉 Founding Member Offer — First 50 subscribers get 50% off, permanently.
-        </div>
-
-        <div class="pricing-grid">
-            <!-- Broker -->
-            <div class="price-card">
-                <h3>Broker</h3>
-                <div class="price">$149<span>/mo</span></div>
-                <div class="price-desc">For individual brokers and agents</div>
-                <ul class="price-features">
+        <div class="pricing-grid reveal">
+            <div class="plan">
+                <div class="k">Broker</div>
+                <div class="price">$149<small> /mo</small></div>
+                <div class="for">For individual brokers and agents</div>
+                <ul>
                     <li>Unlimited address lookups</li>
                     <li>Preliminary HBU screening within stated coverage</li>
-                    <li>SB 79 transit analysis</li>
+                    <li>SB 79 and Low-Rise screening</li>
                     <li>Legislation stacking</li>
-                    <li>5 Deep Analysis reports/mo</li>
+                    <li>5 Deep Analysis reports per month</li>
                 </ul>
-                <a href="https://buy.stripe.com/8x26oG7eO9JW0iMaMhgw008" class="btn btn-primary btn-lg" target="_blank" rel="noopener">Subscribe — $149/mo</a>
+                <a href="https://buy.stripe.com/8x26oG7eO9JW0iMaMhgw008" class="btn" target="_blank" rel="noopener">Subscribe</a>
             </div>
-
-            <!-- Developer (Featured) -->
-            <div class="price-card featured">
-                <div class="price-badge">Most Popular</div>
-                <h3>Developer</h3>
-                <div class="price">$299<span>/mo</span></div>
-                <div class="price-desc">For developers and acquisitions teams</div>
-                <ul class="price-features">
+            <div class="plan feat">
+                <div class="k">Developer · Most popular</div>
+                <div class="price">$299<small> /mo</small></div>
+                <div class="for">For developers and acquisitions teams</div>
+                <ul>
                     <li>Everything in Broker</li>
                     <li>Unlimited Deep Analysis</li>
-                    <li>Pro forma &amp; sensitivity tools</li>
-                    <li>Tornado charts &amp; heat maps</li>
-                    <li>Investor module &amp; PDF export</li>
+                    <li>Pro forma and sensitivity tools</li>
+                    <li>Investor module and PDF export</li>
                     <li>Priority support</li>
                 </ul>
-                <a href="https://buy.stripe.com/28EaEW1Uuf4g5D607Dgw007" class="btn btn-dark btn-lg" target="_blank" rel="noopener">Subscribe — $299/mo</a>
+                <a href="https://buy.stripe.com/28EaEW1Uuf4g5D607Dgw007" class="btn" target="_blank" rel="noopener">Subscribe</a>
             </div>
-
-            <!-- Team -->
-            <div class="price-card">
-                <h3>Team</h3>
-                <div class="price">$799<span>/mo</span></div>
-                <div class="price-desc">For brokerages and development firms</div>
-                <ul class="price-features">
+            <div class="plan">
+                <div class="k">Team</div>
+                <div class="price">$799<small> /mo</small></div>
+                <div class="for">For brokerages, firms, and development teams</div>
+                <ul>
                     <li>Everything in Developer</li>
-                    <li>Up to 10 team seats</li>
+                    <li>Up to 10 seats</li>
                     <li>Shared report library</li>
                     <li>Custom branding on exports</li>
                     <li>Dedicated account manager</li>
-                    <li>API access (coming soon)</li>
                 </ul>
-                <a href="https://buy.stripe.com/14AdR856G8FS4z24nTgw006" class="btn btn-primary btn-lg" target="_blank" rel="noopener">Subscribe — $799/mo</a>
+                <a href="https://buy.stripe.com/14AdR856G8FS4z24nTgw006" class="btn" target="_blank" rel="noopener">Subscribe</a>
             </div>
         </div>
-
-        <p class="per-report">Need just one report? <a href="https://buy.stripe.com/6oU5kC56G6xK0iMaMhgw005" target="_blank" rel="noopener"><strong>$59 per report</strong></a> — no subscription required.</p>
-    </div>
-</section>
-
-<!-- ── FAQ ── -->
-<section class="faq" id="faq">
-    <div class="section-inner">
-        <div class="section-header">
-            <div class="section-label">FAQ</div>
-            <h2>Frequently asked questions.</h2>
-        </div>
-        <div class="faq-list">
-            <div class="faq-item">
-                <button class="faq-q">How accurate is the zoning and legislation data?</button>
-                <div class="faq-a">Land to Yield is a preliminary screening tool. It uses public parcel, zoning, planning, and legislative sources and shows unresolved verification steps. Confirm the current ZIMAS record, controlling maps, overlays, and legal pathway with qualified professionals before relying on a result.</div>
-            </div>
-            <div class="faq-item">
-                <button class="faq-q">What areas does the tool cover?</button>
-                <div class="faq-a">The core workflow is currently designed for parcel screening within the City of Los Angeles. Source availability and workflow support vary by parcel and tool. We are evaluating broader LA County and Southern California coverage.</div>
-            </div>
-            <div class="faq-item">
-                <button class="faq-q">How is this different from CoStar or ZIMAS?</button>
-                <div class="faq-a">CoStar focuses on market data, while ZIMAS provides official parcel-linked planning information. Land to Yield organizes those kinds of inputs into preliminary pathway screens, transparent scenarios, and a verification list; qualified professionals still determine what can legally and physically be built.</div>
-            </div>
-            <div class="faq-item">
-                <button class="faq-q">Can I cancel my subscription anytime?</button>
-                <div class="faq-a">Yes, you can cancel your subscription at any time. There are no contracts or cancellation fees. Your access continues through the end of your current billing period.</div>
-            </div>
-            <div class="faq-item">
-                <button class="faq-q">Do I need any special software or training?</button>
-                <div class="faq-a">No. The tool runs entirely in your web browser — no downloads, no installations, no plugins. If you can type an address, you can use it. The interface is designed for commercial real estate professionals, not software engineers.</div>
-            </div>
-            <div class="faq-item">
-                <button class="faq-q">Can I export reports for clients or investors?</button>
-                <div class="faq-a">Yes. Developer and Team plans include PDF export with professional formatting. The Investor Module generates capital stack summaries and return waterfalls ready for equity presentations. Team plans include custom branding on all exports.</div>
-            </div>
+        <div class="pricing-foot">
+            <span>Need a single parcel? <a href="https://buy.stripe.com/6oU5kC56G6xK0iMaMhgw005" target="_blank" rel="noopener">$59 per report</a>, no subscription.</span>
+            <span>Free tier: 3 analyses per month, no card required.</span>
         </div>
     </div>
 </section>
 
-<!-- ── FOOTER ── -->
+<section id="faq">
+    <div class="wrap faq-wrap">
+        <div class="reveal">
+            <div class="eyebrow">Questions</div>
+            <h2 style="margin-top:18px">What it is, <em>and what it is not.</em></h2>
+        </div>
+        <div class="faq-list reveal">
+            <details>
+                <summary>Is a Land to Yield result a legal conclusion?</summary>
+                <p>No. It is a preliminary screen built from public parcel, zoning, planning, and legislative sources, with the unresolved verification steps listed. Confirm the current ZIMAS record, controlling maps, overlays, and legal pathway with qualified professionals before relying on any result.</p>
+            </details>
+            <details>
+                <summary>How does it handle LA's response to SB 79?</summary>
+                <p>Parcel status comes first. A parcel on temporary hold or excluded under the City's lists does not receive a statutory envelope from proximity alone. Where the Low-Rise Ordinance may apply, the screen calculates the LR-1 or LR-2 menu and flags that the subarea must be confirmed in ZIMAS.</p>
+            </details>
+            <details>
+                <summary>What areas does it cover?</summary>
+                <p>The core workflow is designed for parcels within the City of Los Angeles. Source availability varies by parcel and tool. Broader LA County and Southern California coverage is being evaluated.</p>
+            </details>
+            <details>
+                <summary>How is this different from ZIMAS or CoStar?</summary>
+                <p>ZIMAS provides official parcel-linked planning information, and CoStar focuses on market data. Land to Yield organizes those kinds of inputs into pathway screens, transparent scenarios, and a verification list. Qualified professionals still determine what can legally and physically be built.</p>
+            </details>
+            <details>
+                <summary>Can I export reports for clients or investors?</summary>
+                <p>Yes. Developer and Team plans include PDF export. Team plans add custom branding on exports.</p>
+            </details>
+            <details>
+                <summary>Can I cancel anytime?</summary>
+                <p>Yes. There are no contracts or cancellation fees, and access continues through the end of the current billing period.</p>
+            </details>
+        </div>
+    </div>
+</section>
+
+<section class="closing">
+    <div class="wrap reveal">
+        <div class="eyebrow">Start with the evidence</div>
+        <h2>Know the question before you <em>pay for the answer.</em></h2>
+        <div class="hero-links">
+            <a href="app.html" class="cta-solid" style="background:var(--navy);color:#fff;padding:14px 22px;border-radius:999px;font-weight:600;font-size:15px;text-decoration:none">Analyze a Parcel</a>
+            <a class="text-link" href="newsletter.html">Get the LA Development Brief <span class="arrow">&rarr;</span></a>
+        </div>
+    </div>
+</section>
+</main>
+
 <footer class="footer">
-    <div class="footer-inner">
-        <div class="footer-brand">Land to Yield</div>
-        <div class="footer-links">
-            <a href="app.html">Analyze a Parcel</a>
-            <a href="developers/">For Developers</a>
-            <a href="land-use-attorneys/">For Attorneys</a>
-            <a href="guides/">Insights</a>
-            <a href="privacy.html">Privacy</a>
-            <a href="terms.html">Terms</a>
-            <a href="mailto:contact@landtoyield.com">Contact</a>
+    <div class="wrap">
+        <div class="footer-top">
+            <a class="brand" href="/">Land <span>to</span> Yield</a>
+            <div class="footer-links">
+                <a href="app.html">Analyze a Parcel</a>
+                <a href="developers/">For Developers</a>
+                <a href="land-use-attorneys/">For Attorneys</a>
+                <a href="guides/">Insights</a>
+                <a href="about-methodology/">Methodology</a>
+                <a href="privacy.html">Privacy</a>
+                <a href="terms.html">Terms</a>
+                <a href="mailto:contact@landtoyield.com">Contact</a>
+            </div>
         </div>
-        <p>&copy; 2026 Land to Yield. All rights reserved.</p>
+        <p class="disclaimer">Land to Yield provides preliminary screening for informational purposes. It is not legal, architectural, appraisal, title, tax, environmental, or lending advice, and it does not create an attorney-client relationship. Statutory figures summarize Gov. Code §§ 65912.155 to 65912.162 and City of Los Angeles Ordinances 188967 and 188968; the controlling text, current ZIMAS records, and qualified professionals govern. &copy; 2026 Land to Yield.</p>
     </div>
 </footer>
 
-<!-- ── STICKY CTA (Mobile) ── -->
-<div class="sticky-cta" id="stickyCta">
-    <div class="sticky-cta-inner">
-        <div class="sticky-cta-text">
-            Land to Yield
-            <span>Preliminary parcel screening</span>
-        </div>
-        <a href="app.html" class="btn-cta">Analyze a Parcel</a>
-    </div>
-</div>
-
 <script>
-    // Hamburger menu toggle
-    document.getElementById('hamburger').addEventListener('click', function() {
-        document.getElementById('navLinks').classList.toggle('open');
-    });
+    // Nav border on scroll
+    (function () {
+        var nav = document.getElementById('nav');
+        function onScroll() { nav.classList.toggle('scrolled', window.scrollY > 8); }
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    })();
 
-    // Close mobile menu on link click
-    document.querySelectorAll('.nav-links a').forEach(function(link) {
-        link.addEventListener('click', function() {
-            document.getElementById('navLinks').classList.remove('open');
+    // Reveal on scroll
+    (function () {
+        var els = document.querySelectorAll('.reveal, #splitWrap, #rule .rule-reply');
+        if (!('IntersectionObserver' in window)) { els.forEach(function (e) { e.classList.add('in-view'); }); return; }
+        var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('in-view'); io.unobserve(en.target); } });
+        }, { threshold: 0.18 });
+        els.forEach(function (e) { io.observe(e); });
+    })();
+
+    // Count-up for the headline number
+    (function () {
+        var el = document.querySelector('[data-count]');
+        if (!el || !('IntersectionObserver' in window)) return;
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        var target = +el.getAttribute('data-count'), done = false;
+        new IntersectionObserver(function (en, obs) {
+            if (!en[0].isIntersecting || done) return;
+            done = true; obs.disconnect();
+            var t0 = performance.now(), dur = 1600;
+            (function step(t) {
+                var p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 4);
+                el.textContent = Math.round(target * e).toLocaleString('en-US');
+                if (p < 1) requestAnimationFrame(step);
+            })(t0);
+        }, { threshold: 0.4 }).observe(el);
+    })();
+
+    // Exploded stack: separates on scroll, highlights the hovered layer
+    (function () {
+        var scene = document.getElementById('stackScene');
+        var rig = document.getElementById('stackRig');
+        var plates = rig.querySelectorAll('.plate');
+        var items = document.querySelectorAll('#layers li');
+        if ('IntersectionObserver' in window) {
+            new IntersectionObserver(function (en) {
+                en.forEach(function (e) { scene.classList.toggle('exploded', e.isIntersecting); });
+            }, { threshold: 0.35 }).observe(scene);
+        } else { scene.classList.add('exploded'); }
+        function highlight(n) {
+            plates.forEach(function (p) { p.classList.toggle('hl', p.getAttribute('data-layer') === n); });
+            items.forEach(function (li) { li.classList.toggle('on', li.getAttribute('data-layer') === n); });
+        }
+        items.forEach(function (li) {
+            li.addEventListener('mouseenter', function () { highlight(li.getAttribute('data-layer')); });
+            li.addEventListener('mouseleave', function () { highlight(null); });
         });
-    });
-
-    // Lead capture form
-    document.getElementById('leadForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        var email = document.getElementById('leadEmail').value.trim();
-        if (email) {
-            // Store to localStorage (upgrade to backend/Mailchimp later)
-            var leads = JSON.parse(localStorage.getItem('lty_leads') || '[]');
-            leads.push({ email: email, timestamp: new Date().toISOString() });
-            localStorage.setItem('lty_leads', JSON.stringify(leads));
-            document.getElementById('leadForm').style.display = 'none';
-            document.getElementById('leadSuccess').style.display = 'block';
+        // Gentle tilt with the pointer
+        var fine = matchMedia('(pointer: fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (fine) {
+            scene.addEventListener('mousemove', function (e) {
+                var r = scene.getBoundingClientRect();
+                var dx = (e.clientX - r.left) / r.width - 0.5, dy = (e.clientY - r.top) / r.height - 0.5;
+                rig.style.transform = 'rotateX(' + (58 - dy * 8) + 'deg) rotateZ(' + (-38 + dx * 14) + 'deg)';
+            });
+            scene.addEventListener('mouseleave', function () { rig.style.transform = ''; });
         }
-    });
-
-    // Sticky CTA — show after scrolling past hero
-    var stickyCta = document.getElementById('stickyCta');
-    window.addEventListener('scroll', function() {
-        if (window.innerWidth <= 640) {
-            stickyCta.style.display = window.scrollY > 600 ? 'block' : 'none';
-        }
-    });
-
-    // FAQ accordion
-    document.querySelectorAll('.faq-q').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var item = this.parentElement;
-            var wasOpen = item.classList.contains('open');
-            document.querySelectorAll('.faq-item').forEach(function(i) { i.classList.remove('open'); });
-            if (!wasOpen) item.classList.add('open');
-        });
-    });
-
-    // Walkthrough carousel controller
-    (function() {
-        var slides = document.querySelectorAll('.wt-slide');
-        var total = slides.length;
-        var current = 0;
-        var playing = true;
-        var interval = null;
-        var SLIDE_DURATION = 5000; // 5s per slide
-
-        function show(idx) {
-            current = ((idx % total) + total) % total;
-            slides.forEach(function(s, i) { s.classList.toggle('active', i === current); });
-            var cap = slides[current].getAttribute('data-caption') || '';
-            document.getElementById('wtCaption').innerHTML = cap;
-            document.getElementById('wtStepLabel').textContent = (current + 1) + ' / ' + total;
-            document.getElementById('wtProgressFill').style.width = ((current + 1) / total * 100) + '%';
-        }
-
-        function next() { show(current + 1); }
-
-        function startAutoplay() {
-            if (interval) clearInterval(interval);
-            interval = setInterval(next, SLIDE_DURATION);
-            playing = true;
-            document.getElementById('wtPlayPause').innerHTML = '&#9646;&#9646;';
-        }
-
-        function stopAutoplay() {
-            if (interval) clearInterval(interval);
-            interval = null;
-            playing = false;
-            document.getElementById('wtPlayPause').innerHTML = '&#9654;';
-        }
-
-        window.wtNav = function(dir) {
-            show(current + dir);
-            if (playing) { stopAutoplay(); startAutoplay(); } // reset timer
-        };
-
-        window.wtTogglePlay = function() {
-            if (playing) stopAutoplay(); else startAutoplay();
-        };
-
-        window.wtClickProgress = function(e) {
-            var rect = e.currentTarget.getBoundingClientRect();
-            var pct = (e.clientX - rect.left) / rect.width;
-            show(Math.floor(pct * total));
-            if (playing) { stopAutoplay(); startAutoplay(); }
-        };
-
-        // Init
-        show(0);
-        startAutoplay();
     })();
 </script>
 
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+const stage = document.getElementById('stage');
+const host = document.getElementById('stageCanvas');
+const labelHost = document.getElementById('stageLabels');
+const readout = document.getElementById('readout');
+const modeButtons = [...document.querySelectorAll('.mode')];
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ── Regime descriptions for the readout card ──
+const MODES = {
+    base: {
+        cite: 'LAMC · R1 One-Family Zone',
+        title: 'What the neighborhood allows today',
+        rows: [['Zone', 'R1 single-family'], ['Height', '33 ft'], ['Floor area', 'about 0.45 of lot'], ['Units', '1 home plus ADUs']],
+        legend: [['white', 'Permitted massing']]
+    },
+    state: {
+        cite: 'SB 79 · Gov. Code § 65912.157',
+        title: 'The statutory floor, Tier 1',
+        rows: [['Within 200 ft', '95 ft · 4.5 FAR'], ['Within ¼ mile', '75 ft · 3.5 FAR'], ['¼ to ½ mile', '65 ft · 3.0 FAR'], ['Density', '100 to 160 du/ac']],
+        legend: [['white', 'Statutory envelope']]
+    },
+    city: {
+        cite: 'Ords. 188967 and 188968',
+        title: 'Phased in, with a Low-Rise menu',
+        rows: [['Statute applies', 'listed sites only'], ['Low-Rise LR-2', '12 to 16 units'], ['Envelope', '3 stories · 2.90 FAR'], ['Parking minimum', 'none']],
+        legend: [['white', 'Low-Rise massing'], ['navy', 'Statute applies'], ['glass', 'Statutory envelope on hold']]
+    }
+};
+
+function renderReadout(mode) {
+    const m = MODES[mode];
+    readout.classList.add('fade');
+    setTimeout(() => {
+        readout.innerHTML =
+            '<div class="cite">' + m.cite + '</div><h3>' + m.title + '</h3><dl>' +
+            m.rows.map(r => '<dt>' + r[0] + '</dt><dd>' + r[1] + '</dd>').join('') + '</dl>' +
+            '<div class="legend">' + m.legend.map(l => '<span><span class="sw ' + l[0] + '"></span>' + l[1] + '</span>').join('') + '</div>';
+        readout.classList.remove('fade');
+    }, reduceMotion ? 0 : 180);
+}
+
+function init() {
+    let renderer;
+    try {
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+    } catch (e) { return false; }
+    if (!renderer.getContext()) return false;
+
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    host.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    const BG = new THREE.Color('#EEEBE4');
+    scene.fog = new THREE.Fog(BG, 520, 900);
+
+    const camera = new THREE.PerspectiveCamera(26, 1, 1, 3000);
+
+    // Units: 1 unit = 10 ft. Vertical exaggeration noted in the caption.
+    const VEX = 1.5;
+    const ftToY = ft => (ft / 10) * VEX;
+    const DISC_R = 290;
+
+    // ── Lights ──
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xd9d2c4, 1.15));
+    const sun = new THREE.DirectionalLight(0xffffff, 1.9);
+    sun.position.set(-220, 330, 160);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048);
+    const sc = sun.shadow.camera;
+    sc.left = -320; sc.right = 320; sc.top = 320; sc.bottom = -320; sc.near = 50; sc.far = 900;
+    sun.shadow.bias = -0.0004;
+    sun.shadow.radius = 3;
+    scene.add(sun);
+
+    // ── Plinth and ground ──
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(4000, 4000), new THREE.ShadowMaterial({ opacity: 0.07 }));
+    ground.rotation.x = -Math.PI / 2; ground.position.y = -6; ground.receiveShadow = true;
+    scene.add(ground);
+
+    const plinth = new THREE.Mesh(
+        new THREE.CylinderGeometry(DISC_R, DISC_R, 6, 160),
+        new THREE.MeshStandardMaterial({ color: 0xE6E1D7, roughness: 1 })
+    );
+    plinth.position.y = -3; plinth.receiveShadow = true; plinth.castShadow = true;
+    scene.add(plinth);
+
+    // ── Street grid geometry ──
+    const NS_PERIOD = 62, NS_STREET = 6;          // north-south streets every 620 ft
+    const BLVD = 7;                                // boulevard half-width (70 ft)
+    const COM_D = 13, ALLEY = 3, FIRST_STREET = 6; // commercial frontage depth, alley, first cross street
+    const ROW_D = 13, BLOCK_P = 34;                // residential lot depth, block period
+
+    const blockMat = new THREE.MeshStandardMaterial({ color: 0xF4F1EB, roughness: 1 });
+    const blockGeo = new THREE.BoxGeometry(1, 1, 1);
+    const blocks = [];
+
+    const lots = [];
+    const rand = (() => { let s = 7; return () => (s = (s * 16807) % 2147483647) / 2147483647; })();
+
+    // Historic district patch (excluded in the City's reply)
+    const HIST = { x: -150, z: 120, r: 46 };
+
+    function addLot(x, z, w, d, kind, frontSign) {
+        const dist = Math.hypot(x, z);
+        if (dist + Math.max(w, d) / 2 > DISC_R - 6) return;
+        lots.push({ x, z, w, d, kind, frontSign, dist });
+    }
+
+    const xMinK = Math.floor(-DISC_R / NS_PERIOD) - 1, xMaxK = Math.ceil(DISC_R / NS_PERIOD) + 1;
+    for (let k = xMinK; k <= xMaxK; k++) {
+        const x0 = k * NS_PERIOD + NS_STREET / 2, x1 = (k + 1) * NS_PERIOD - NS_STREET / 2;
+        const len = x1 - x0;
+        for (const side of [1, -1]) {
+            // Commercial frontage along the boulevard
+            const cz0 = BLVD, cz1 = BLVD + COM_D;
+            blocks.push({ x: (x0 + x1) / 2, z: side * (cz0 + cz1) / 2, w: len, d: COM_D });
+            const nCom = Math.floor(len / 8);
+            const cw = len / nCom;
+            for (let i = 0; i < nCom; i++) addLot(x0 + cw * (i + 0.5), side * (cz0 + cz1) / 2, cw, COM_D, 'com', side);
+            // Residential blocks
+            let z = cz1 + ALLEY + FIRST_STREET;
+            while (z < DISC_R) {
+                const rowA = z, rowB = z + ROW_D + 2;
+                blocks.push({ x: (x0 + x1) / 2, z: side * (z + (ROW_D * 2 + 2) / 2), w: len, d: ROW_D * 2 + 2 });
+                const nRes = Math.floor(len / 5);
+                const rw = len / nRes;
+                for (let i = 0; i < nRes; i++) {
+                    addLot(x0 + rw * (i + 0.5), side * (rowA + ROW_D / 2), rw, ROW_D, 'res', -side);
+                    addLot(x0 + rw * (i + 0.5), side * (rowB + ROW_D / 2), rw, ROW_D, 'res', side);
+                }
+                z += BLOCK_P;
+            }
+        }
+    }
+
+    // Block pads (clipped to the plinth)
+    const padMesh = new THREE.InstancedMesh(blockGeo, blockMat, blocks.length);
+    const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), v3 = new THREE.Vector3(), s3 = new THREE.Vector3();
+    let padCount = 0;
+    blocks.forEach(b => {
+        if (Math.hypot(b.x, b.z) > DISC_R + 20) return;
+        m4.compose(v3.set(b.x, 0.25, b.z), q, s3.set(b.w, 0.5, b.d));
+        padMesh.setMatrixAt(padCount++, m4);
+    });
+    padMesh.count = padCount;
+    padMesh.receiveShadow = true;
+    // Clip pads to the disc so the plinth edge stays clean
+    blockMat.onBeforeCompile = shader => {
+        shader.vertexShader = shader.vertexShader
+            .replace('#include <common>', '#include <common>\nvarying vec3 vW;')
+            .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvW = (modelMatrix * instanceMatrix * vec4(transformed,1.0)).xyz;');
+        shader.fragmentShader = shader.fragmentShader
+            .replace('#include <common>', '#include <common>\nvarying vec3 vW;')
+            .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\nif (length(vW.xz) > ' + (DISC_R - 2).toFixed(1) + ') discard;');
+    };
+    scene.add(padMesh);
+
+    // ── Per-lot regime heights (feet) and footprints ──
+    function sb79Height(distFt) {
+        if (distFt <= 200) return 95;
+        if (distFt <= 1320) return 75;
+        if (distFt <= 2640) return 65;
+        return null;
+    }
+    lots.forEach(l => {
+        const distFt = l.dist * 10;
+        const inHist = Math.hypot(l.x - HIST.x, l.z - HIST.z) < HIST.r;
+        l.baseH = l.kind === 'res' ? (rand() < 0.35 ? 22 + rand() * 6 : 13 + rand() * 4) : 14 + rand() * 26;
+        l.baseFp = l.kind === 'res' ? [0.62, 0.42] : [0.9, 0.78];
+        l.stateH = sb79Height(distFt) ?? l.baseH;
+        l.stateFp = l.kind === 'res' ? [0.84, 0.82] : [0.94, 0.9];
+        // City's reply: a minority of listed sites apply the statute; residential lots get the Low-Rise menu;
+        // the historic district stays on its base zoning.
+        l.direct = !inHist && (l.kind === 'com' ? rand() < 0.42 : rand() < 0.03);
+        if (inHist) { l.cityH = l.baseH; l.cityFp = l.baseFp; }
+        else if (l.direct) { l.cityH = l.stateH; l.cityFp = l.stateFp; }
+        else if (l.kind === 'res') { l.cityH = 31 + rand() * 4; l.cityFp = [0.8, 0.7]; }
+        else { l.cityH = l.baseH; l.cityFp = l.baseFp; }
+        l.ghost = !l.direct && sb79Height(distFt) !== null;
+        l.inHist = inHist;
+        // Footprint offset toward the street frontage
+        l.cur = { h: l.baseH, fw: l.baseFp[0], fd: l.baseFp[1] };
+        l.from = { ...l.cur }; l.to = { ...l.cur };
+        l.delay = Math.min(1, l.dist / 270) * 0.9 + rand() * 0.12;
+    });
+
+    // ── Building solids ──
+    const solidMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85, metalness: 0 });
+    const solids = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), solidMat, lots.length);
+    solids.castShadow = true; solids.receiveShadow = true;
+    solids.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    const WHITE = new THREE.Color('#FBFAF7'), NAVY = new THREE.Color('#2B5885'), HISTC = new THREE.Color('#E2C99A'), BAND = new THREE.Color('#ECE8E0');
+    lots.forEach((l, i) => { l.col = WHITE.clone(); l.colFrom = WHITE.clone(); l.colTo = WHITE.clone(); solids.setColorAt(i, l.col); });
+    scene.add(solids);
+
+    function writeSolid(i) {
+        const l = lots[i];
+        const w = l.w * l.cur.fw, d = l.d * l.cur.fd;
+        const zOff = l.frontSign * (l.d - d) / 2 * 0.55; // pull toward frontage
+        m4.compose(v3.set(l.x, 0.5, l.z - zOff), q, s3.set(w, Math.max(0.01, ftToY(l.cur.h)), d));
+        solids.setMatrixAt(i, m4);
+        solids.setColorAt(i, l.col);
+    }
+    lots.forEach((_, i) => writeSolid(i));
+
+    // ── Ghost envelopes (SB 79 envelope where the City's reply holds it back) ──
+    const ghostLots = lots.filter(l => l.ghost);
+    const ghostMat = new THREE.MeshStandardMaterial({ color: 0xA9BED6, transparent: true, opacity: 0, depthWrite: false, roughness: 0.3 });
+    const ghosts = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), ghostMat, ghostLots.length);
+    ghostLots.forEach((l, i) => {
+        const w = l.w * l.stateFp[0], d = l.d * l.stateFp[1];
+        const zOff = l.frontSign * (l.d - d) / 2 * 0.55;
+        m4.compose(v3.set(l.x, 0.5, l.z - zOff), q, s3.set(w, ftToY(l.stateH), d));
+        ghosts.setMatrixAt(i, m4);
+    });
+    ghosts.renderOrder = 2;
+    ghosts.visible = false;
+    scene.add(ghosts);
+
+    // Ghost edges (one merged line set)
+    const edgePos = [];
+    const unitEdges = new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0)).attributes.position.array;
+    ghostLots.forEach(l => {
+        const w = l.w * l.stateFp[0], d = l.d * l.stateFp[1], h = ftToY(l.stateH);
+        const zOff = l.frontSign * (l.d - d) / 2 * 0.55;
+        for (let j = 0; j < unitEdges.length; j += 3) {
+            edgePos.push(l.x + unitEdges[j] * w, 0.5 + unitEdges[j + 1] * h, l.z - zOff + unitEdges[j + 2] * d);
+        }
+    });
+    const edgeGeo = new THREE.BufferGeometry();
+    edgeGeo.setAttribute('position', new THREE.Float32BufferAttribute(edgePos, 3));
+    const edgeMat = new THREE.LineBasicMaterial({ color: 0x153D63, transparent: true, opacity: 0, depthWrite: false });
+    const ghostEdges = new THREE.LineSegments(edgeGeo, edgeMat);
+    ghostEdges.renderOrder = 3; ghostEdges.visible = false;
+    scene.add(ghostEdges);
+
+    // ── Transit: alignment, station, rings ──
+    const navyMat = new THREE.MeshBasicMaterial({ color: 0x153D63 });
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(DISC_R * 2 - 8, 0.3, 1.4), new THREE.MeshBasicMaterial({ color: 0x153D63, transparent: true, opacity: 0.55 }));
+    rail.position.y = 0.2;
+    scene.add(rail);
+    const portal = new THREE.Mesh(new THREE.BoxGeometry(16, 1.6, 4.5), navyMat);
+    portal.position.set(0, 0.8, 0);
+    scene.add(portal);
+    const pinGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 1.6, 0), new THREE.Vector3(0, 44, 0)]);
+    scene.add(new THREE.Line(pinGeo, new THREE.LineBasicMaterial({ color: 0x153D63 })));
+
+    function ring(radius, dashed, opacity) {
+        const pts = [];
+        for (let a = 0; a <= 256; a++) { const t = a / 256 * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(t) * radius, 0.7, Math.sin(t) * radius)); }
+        const g = new THREE.BufferGeometry().setFromPoints(pts);
+        const mat = dashed
+            ? new THREE.LineDashedMaterial({ color: 0x153D63, dashSize: 4, gapSize: 3, transparent: true, opacity })
+            : new THREE.LineBasicMaterial({ color: 0x153D63, transparent: true, opacity });
+        const line = new THREE.Line(g, mat);
+        if (dashed) line.computeLineDistances();
+        scene.add(line);
+    }
+    ring(20, false, 0.9);
+    ring(132, true, 0.75);
+    ring(264, true, 0.75);
+
+    // Historic district outline
+    (function () {
+        const pts = [];
+        for (let a = 0; a <= 128; a++) { const t = a / 128 * Math.PI * 2; pts.push(new THREE.Vector3(HIST.x + Math.cos(t) * HIST.r, 0.8, HIST.z + Math.sin(t) * HIST.r)); }
+        const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineDashedMaterial({ color: 0x8A5A12, dashSize: 2, gapSize: 2, transparent: true, opacity: 0 }));
+        line.computeLineDistances();
+        line.name = 'hist';
+        scene.add(line);
+    })();
+    const histLine = scene.getObjectByName('hist');
+
+    // ── HTML labels projected from world space ──
+    const angleL = -0.72;
+    const labelDefs = [
+        { text: '200 FT', pos: new THREE.Vector3(Math.cos(angleL) * 20, 1, Math.sin(angleL) * 20 + 0.01), cls: 'ring-label' },
+        { text: '1/4 MILE', pos: new THREE.Vector3(Math.cos(angleL) * 132, 1, Math.sin(angleL) * 132), cls: 'ring-label' },
+        { text: '1/2 MILE', pos: new THREE.Vector3(Math.cos(angleL) * 264, 1, Math.sin(angleL) * 264), cls: 'ring-label' },
+        { text: 'Station', pos: new THREE.Vector3(0, 46, 0), cls: 'station-label' },
+        { text: 'HISTORIC DISTRICT · EXCLUDED', pos: new THREE.Vector3(HIST.x, 1, HIST.z - HIST.r), cls: 'ring-label', mode: 'city' }
+    ];
+    labelDefs.forEach(d => {
+        d.el = document.createElement('div');
+        d.el.className = d.cls; d.el.textContent = d.text;
+        if (d.mode) { d.el.style.color = '#8A5A12'; d.el.style.borderColor = 'rgba(138,90,18,.35)'; }
+        labelHost.appendChild(d.el);
+    });
+    // Ring labels hide when they fall behind tall buildings would be ideal; we keep it simple and fade near the frame edge.
+    const proj = new THREE.Vector3();
+    let narrow = false;
+    function placeLabels(w, h) {
+        labelDefs.forEach(d => {
+            proj.copy(d.pos).project(camera);
+            const x = (proj.x * 0.5 + 0.5) * w, y = (-proj.y * 0.5 + 0.5) * h;
+            const visible = proj.z < 1 && x > 30 && x < w - 30 && y > 30 && y < h - 30 && (!d.mode || (d.mode === currentMode && !narrow));
+            d.el.style.opacity = visible ? '1' : '0';
+            d.el.style.left = x + 'px'; d.el.style.top = y + 'px';
+        });
+    }
+
+    // ── Camera orbit ──
+    let az = 0.62, targetAz = az, dragging = false, lastX = 0;
+    const EL = 0.72;  // elevation (radians)
+    let dist = 700;
+    function placeCamera() {
+        const cx = Math.cos(az) * Math.cos(EL) * dist, cz = Math.sin(az) * Math.cos(EL) * dist, cy = Math.sin(EL) * dist;
+        camera.position.set(cx, cy, cz);
+        camera.lookAt(0, 6, 0);
+    }
+    host.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; host.setPointerCapture(e.pointerId); stopAuto(); });
+    host.addEventListener('pointermove', e => { if (!dragging) return; targetAz += (e.clientX - lastX) * 0.006; lastX = e.clientX; });
+    const endDrag = () => { dragging = false; };
+    host.addEventListener('pointerup', endDrag); host.addEventListener('pointercancel', endDrag);
+
+    function resize() {
+        const w = host.clientWidth, h = host.clientHeight;
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        // Pull back on narrow screens so the ¼-mile ring stays in frame
+        dist = w < 700 ? 980 : w < 1000 ? 800 : 700;
+        scene.fog.near = dist * 0.74; scene.fog.far = dist * 1.3;
+        narrow = w < 700;
+        camera.updateProjectionMatrix();
+    }
+    new ResizeObserver(resize).observe(host);
+    resize();
+
+    // ── Mode transitions ──
+    let currentMode = 'base';
+    let tStart = 0, animating = false, ghostTarget = 0, ghostFrom = 0;
+    const DUR = reduceMotion ? 0.001 : 1.5, SPREAD = reduceMotion ? 0 : 1.0;
+    const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+    function setMode(mode) {
+        if (mode === currentMode && animating) return;
+        currentMode = mode;
+        modeButtons.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
+        renderReadout(mode);
+        lots.forEach(l => {
+            l.from = { ...l.cur };
+            l.colFrom.copy(l.col);
+            if (mode === 'base') { l.to = { h: l.baseH, fw: l.baseFp[0], fd: l.baseFp[1] }; l.colTo.copy(WHITE); }
+            if (mode === 'state') { l.to = { h: l.stateH, fw: l.stateFp[0], fd: l.stateFp[1] }; l.colTo.copy(l.dist * 10 > 1320 ? BAND : WHITE); }
+            if (mode === 'city') {
+                l.to = { h: l.cityH, fw: l.cityFp[0], fd: l.cityFp[1] };
+                l.colTo.copy(l.direct ? NAVY : l.inHist ? HISTC : WHITE);
+            }
+        });
+        ghostFrom = ghostMat.opacity / 0.13;
+        ghostTarget = mode === 'city' ? 1 : 0;
+        tStart = performance.now() / 1000;
+        animating = true;
+    }
+
+    function stepTransition(now) {
+        if (!animating) return;
+        const t = now - tStart;
+        let allDone = true;
+        lots.forEach((l, i) => {
+            let p = (t - l.delay * SPREAD) / DUR;
+            if (p < 1) allDone = false;
+            p = ease(Math.max(0, Math.min(1, p)));
+            l.cur.h = l.from.h + (l.to.h - l.from.h) * p;
+            l.cur.fw = l.from.fw + (l.to.fw - l.from.fw) * p;
+            l.cur.fd = l.from.fd + (l.to.fd - l.from.fd) * p;
+            l.col.copy(l.colFrom).lerp(l.colTo, p);
+            writeSolid(i);
+        });
+        solids.instanceMatrix.needsUpdate = true;
+        if (solids.instanceColor) solids.instanceColor.needsUpdate = true;
+        // Ghosts fade in after the buildings settle
+        const gp = ease(Math.max(0, Math.min(1, (t - (ghostTarget ? DUR * 0.9 : 0)) / (DUR * 0.8))));
+        const g = ghostFrom + (ghostTarget - ghostFrom) * gp;
+        ghostMat.opacity = 0.13 * g; edgeMat.opacity = 0.22 * g; histLine.material.opacity = g;
+        ghosts.visible = ghostEdges.visible = g > 0.001;
+        if (allDone && gp >= 1) animating = false;
+    }
+
+    // ── Autoplay through the three regimes until the viewer takes over ──
+    const ORDER = ['base', 'state', 'city'];
+    const HOLD = 6.5;
+    let auto = !reduceMotion, autoT0 = performance.now() / 1000;
+    function stopAuto() {
+        auto = false;
+        modeButtons.forEach(b => { const i = b.querySelector('.bar i'); i.style.width = '0'; });
+    }
+    modeButtons.forEach(b => b.addEventListener('click', () => { stopAuto(); setMode(b.dataset.mode); }));
+
+    // Pause rendering when the stage is offscreen
+    let onScreen = true;
+    new IntersectionObserver(en => { onScreen = en[0].isIntersecting; if (onScreen) loop(); }, { threshold: 0 }).observe(stage);
+
+    let raf = 0;
+    function loop() {
+        cancelAnimationFrame(raf);
+        if (!onScreen) return;
+        raf = requestAnimationFrame(frame);
+    }
+    function frame(ms) {
+        const now = ms / 1000;
+        if (auto) {
+            const el = now - autoT0;
+            const idx = ORDER.indexOf(currentMode);
+            const bar = modeButtons[idx].querySelector('.bar i');
+            bar.style.width = Math.min(100, el / HOLD * 100) + '%';
+            if (el > HOLD) {
+                bar.style.width = '0';
+                autoT0 = now;
+                setMode(ORDER[(idx + 1) % ORDER.length]);
+            }
+        }
+        if (!dragging && !reduceMotion) targetAz += 0.0009;
+        az += (targetAz - az) * 0.08;
+        placeCamera();
+        stepTransition(now);
+        renderer.render(scene, camera);
+        placeLabels(host.clientWidth, host.clientHeight);
+        raf = requestAnimationFrame(frame);
+    }
+
+    renderReadout('base');
+    loop();
+    return true;
+}
+
+let ok = false;
+try { ok = init(); } catch (e) { console.error(e); ok = false; }
+if (!ok) { stage.classList.add('no-webgl'); }
+</script>
 </body>
 </html>
