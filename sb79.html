@@ -19,7 +19,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
     <style>
@@ -277,6 +277,38 @@
             .update-card { grid-template-columns: 1fr; gap: 6px; }
             #stationMap { height: 400px; }
         }
+
+        /* ── Type system: Libre Franklin throughout (2026-10-12) ──
+           One grotesque family for headings, body, labels, and figures.
+           --serif and --mono are kept as aliases so existing rules and the 3D labels still resolve. */
+        :root {
+            --sans: 'Libre Franklin', 'Helvetica Neue', Arial, sans-serif;
+            --serif: var(--sans);
+            --mono: var(--sans);
+        }
+        body { font-family: var(--sans); font-feature-settings: "tnum" 0; }
+        h1, h2, h3, h4 { font-family: var(--sans); font-weight: 700; letter-spacing: -0.025em; }
+        h1 { font-weight: 800; letter-spacing: -0.035em; }
+        .hero h1 { font-size: clamp(40px, 4.6vw, 64px); line-height: 1.04; max-width: 16ch; }
+        h1 em, h2 em, h3 em { font-style: normal; color: inherit; }
+        .brand, .footer .brand { font-family: var(--sans); font-weight: 800; letter-spacing: -0.03em; }
+        .brand span { font-style: normal; }
+        .eyebrow { font-family: var(--sans); font-size: 14px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--navy); }
+        .eyebrow::before, .eyebrow::after { display: none; }
+        .rr-kicker, .aud .k, .plan .k, .tools .k, .env-card .k, .status-card .k, .readout .cite, .mode .n,
+        .floors thead th, .floors tbody tr.tier td, .env-table th, .db-field label, .db-results-table th,
+        .verdict-stat-label, .doc-card-tag, .kpi-sub, .subnav-link, .stage-hint, .station-label, .ring-label,
+        .height-label, .lookup-hint, .pathway-id, .update-meta-date, .tl time, .ord-no, .layers .ln, .cite-chip,
+        .status-chip, .verdict-pill, .brand .tag, .brand-tag {
+            font-family: var(--sans); letter-spacing: .01em; text-transform: none; font-weight: 600;
+        }
+        .floors thead th, .env-table th, .db-results-table th, .verdict-stat-label { font-size: 12.5px; color: var(--muted); }
+        .pr .k, .layers h4, .pathway-label, .doc-card-title, .update-card-title, .faq-q, summary,
+        .status-card h3, .readout h3, .verdict-card h3, .env-card h3, .tools h3, .aud h3, .rr-col h3, .checklist-week h4 {
+            font-family: var(--sans); font-style: normal; font-weight: 700; letter-spacing: -0.02em;
+        }
+        .big-num, .kpi-num, .split-key .v, .plan .price { font-family: var(--sans); font-weight: 700; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+        .lede { color: var(--ink-2); }
     </style>
 </head>
 <body>
@@ -315,7 +347,7 @@
         <div class="hero-grid">
             <div>
                 <div class="eyebrow">SB 79 portal · City of Los Angeles</div>
-                <h1>SB 79 in Los Angeles, <em>parcel by parcel.</em></h1>
+                <h1>SB 79 in Los Angeles, parcel by parcel.</h1>
                 <p class="lede">The statute sets development floors near transit. Ordinances 188967 and 188968 decide how, and when, those floors reach a given Los Angeles parcel. Look up an APN to see its City status, the rule path that status allows, and what still needs verification in ZIMAS.</p>
                 <div class="actions">
                     <a class="btn-solid" href="#lookup">Look up an APN</a>
@@ -324,7 +356,7 @@
             </div>
             <aside class="status-card">
                 <div class="k">Current status · October 2026</div>
-                <h3>The statute is operative. The City's reply governs how it lands.</h3>
+                <h3>SB 79 is operative. City ordinances decide how it reaches each parcel.</h3>
                 <dl>
                     <dt>SB 79 operative</dt><dd>July 1, 2026</dd>
                     <dt>Ords. 188967 and 188968</dt><dd>Effective June 30, 2026</dd>
@@ -351,7 +383,7 @@
         <div class="section-head">
             <div>
                 <div class="eyebrow">Parcel lookup</div>
-                <h2 class="section-title">Check an APN <em>or an address.</em></h2>
+                <h2 class="section-title">Check an APN or address.</h2>
             </div>
             <p class="lede">Enter a Los Angeles County APN (for example <code>5435-006-029</code>) or a street address. The result shows the parcel's status in the City's list, its tier and distance band, the scenarios that status allows, and the source page for every fact.</p>
         </div>
@@ -377,7 +409,7 @@
     <div class="wrap faq-wrap">
         <div>
             <div class="eyebrow">The statute</div>
-            <h2 class="section-title">What SB 79 does, <em>and what it does not.</em></h2>
+            <h2 class="section-title">What the statute does.</h2>
             <p class="lede" style="margin-top:18px">A summary for orientation. The chaptered text controls.</p>
             <div style="margin-top:18px"><span class="cite-chip">Gov. Code §§ 65912.155 to 65912.162</span></div>
         </div>
@@ -415,7 +447,7 @@
         <div class="section-head">
             <div>
                 <div class="eyebrow">What the City's reply did</div>
-                <h2 class="section-title">Fewer than one in ten parcels were <em>available to study.</em></h2>
+                <h2 class="section-title">Fewer than one in ten parcels were available to study.</h2>
             </div>
             <p class="lede">Every station-area APN in the City's list carries one of four statuses. Status comes first: a parcel on temporary hold or excluded does not receive a statutory envelope from proximity alone.</p>
         </div>
@@ -437,7 +469,7 @@
         <div class="section-head">
             <div>
                 <div class="eyebrow">Development envelopes</div>
-                <h2 class="section-title">The State's floor, <em>and the City's menu.</em></h2>
+                <h2 class="section-title">Development standards.</h2>
             </div>
             <p class="lede">Tier comes from the service type of the qualifying stop. Distance is measured from the stop. The Low-Rise menu is the local alternative where the statute is on hold in residential zones.</p>
         </div>
@@ -489,7 +521,7 @@
         <div class="section-head">
             <div>
                 <div class="eyebrow">§ 65912.161(b)(1)</div>
-                <h2 class="section-title">The eight temporary <em>exemption pathways.</em></h2>
+                <h2 class="section-title">The eight temporary exemption pathways.</h2>
             </div>
             <p class="lede">Six apply site by site and two apply to a whole TOD zone. A parcel can qualify under more than one. Counts are from City Planning's May 2026 model results.</p>
         </div>
@@ -502,7 +534,7 @@
         <div class="section-head">
             <div>
                 <div class="eyebrow">Station browser</div>
-                <h2 class="section-title">Every qualifying stop, <em>on one map.</em></h2>
+                <h2 class="section-title">Station map.</h2>
             </div>
             <p class="lede">Zoom into a station area to level 15 or closer, then shade the visible parcels by their status in the City's list. Click any parcel for its tier, band, and source page.</p>
         </div>
@@ -532,7 +564,7 @@
         <div class="section-head">
             <div>
                 <div class="eyebrow">APN database</div>
-                <h2 class="section-title">Search all <em>139,450 APNs.</em></h2>
+                <h2 class="section-title">Search all 139,450 APNs.</h2>
             </div>
             <p class="lede">Filter by tier, distance band, status, and APN prefix. Click any APN in the results to run the full lookup.</p>
         </div>
@@ -576,7 +608,7 @@
         <div class="section-head">
             <div>
                 <div class="eyebrow">In the full portal</div>
-                <h2 class="section-title">From status <em>to underwriting.</em></h2>
+                <h2 class="section-title">In the parcel analyzer.</h2>
             </div>
             <p class="lede">The parcel analyzer carries the same APN decision into yield, envelope, and economics, with every assumption editable and every unverified fact flagged.</p>
         </div>
@@ -608,7 +640,7 @@
         <div class="section-head">
             <div>
                 <div class="eyebrow">Diligence checklist</div>
-                <h2 class="section-title">Before relying on <em>any path.</em></h2>
+                <h2 class="section-title">Diligence checklist.</h2>
             </div>
             <p class="lede">A working list for a station-area site. Check items off as you go; nothing here is saved or sent.</p>
         </div>
@@ -646,7 +678,7 @@
         <div class="section-head">
             <div>
                 <div class="eyebrow">Sources</div>
-                <h2 class="section-title">The official <em>record.</em></h2>
+                <h2 class="section-title">Sources.</h2>
             </div>
             <p class="lede">Primary sources behind this portal. The signed ordinances and current ZIMAS control; the May 2026 materials are kept for provenance.</p>
         </div>
@@ -705,7 +737,7 @@
         <div class="section-head">
             <div>
                 <div class="eyebrow">Implementation timeline</div>
-                <h2 class="section-title">What has <em>changed.</em></h2>
+                <h2 class="section-title">Implementation timeline.</h2>
             </div>
             <p class="lede">The milestones that moved the answer for Los Angeles parcels, most recent first.</p>
         </div>
@@ -751,7 +783,7 @@
                 <a href="/">Home</a>
                 <a href="app.html">Analyze a Parcel</a>
                 <a href="bill-finder.html">Bill Finder</a>
-                <a href="land-use-attorneys/">For Attorneys</a>
+                <a href="how-it-works/">How It Works</a>
                 <a href="guides/">Insights</a>
                 <a href="newsletter.html">Newsletter</a>
                 <a href="privacy.html">Privacy</a>

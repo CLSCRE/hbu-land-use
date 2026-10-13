@@ -1,0 +1,281 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+/* ─────────────────────────────────────────────────────────────
+   Land to Yield: developer portal theme
+   Loaded after core-styles.css on app.html only. Remaps the legacy
+   portal tokens onto the homepage design system (paper, ink, navy,
+   brass; Libre Franklin) so the 17k lines of
+   tool UI inherit the new look without touching their logic.
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+    /* Homepage tokens */
+    --paper: #F3F1EC;
+    --paper-2: #EAE6DE;
+    --ink: #0E1B2A;
+    --ink-2: #2B3846;
+    --muted: #5E6873;
+    --line: #D9D4C9;
+    --line-soft: #E5E1D8;
+    --navy: #153D63;
+    --navy-deep: #0C2237;
+    --brass: #8A5A12;
+    --green: #006A4E;
+    --serif: 'Newsreader', 'Iowan Old Style', Georgia, serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    --max: 1240px;
+    --gutter: clamp(16px, 4vw, 40px);
+
+    /* Legacy portal tokens, remapped */
+    --primary: #153D63;
+    --primary-light: #2B5885;
+    --accent: #8A5A12;
+    --accent-dark: #6E4709;
+    --bg: #F3F1EC;
+    --card: #FBFAF7;
+    --text: #2B3846;
+    --text-light: #5E6873;
+    --border: #D9D4C9;
+    --success: #006A4E;
+}
+
+html { font-size: 16px; scroll-behavior: smooth; }
+body {
+    font-family: var(--sans);
+    background: var(--paper);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+}
+::selection { background: var(--navy); color: #fff; }
+
+/* ── Nav (mirrors index.html) ── */
+.nav {
+    position: sticky; top: 0; z-index: 950;
+    background: rgba(243, 241, 236, .86);
+    backdrop-filter: saturate(160%) blur(16px);
+    -webkit-backdrop-filter: saturate(160%) blur(16px);
+    border-bottom: 1px solid var(--line);
+}
+.nav-inner {
+    max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter);
+    height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 24px;
+}
+.brand {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--serif); font-size: 23px; letter-spacing: -0.02em;
+    text-decoration: none; color: var(--ink); white-space: nowrap;
+}
+.brand span { font-style: italic; color: var(--brass); }
+.brand-mark { width: 26px; height: 26px; flex: none; }
+.brand-tag {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--muted); border-left: 1px solid var(--line); padding-left: 12px; margin-left: 4px;
+}
+.nav-links { display: flex; align-items: center; gap: 24px; list-style: none; margin: 0; padding: 0; }
+.nav-links a {
+    text-decoration: none; font-size: 14px; font-weight: 500; color: var(--ink-2);
+    transition: color .2s; white-space: nowrap;
+}
+.nav-links a:hover { color: var(--navy); }
+.nav-links a.newsletter-side-cta { color: var(--muted); }
+.nav-links a.nav-pill {
+    border: 1px solid var(--line); padding: 7px 14px; border-radius: 999px; color: var(--ink);
+    transition: border-color .2s, background .2s;
+}
+.nav-links a.nav-pill:hover { border-color: var(--ink); background: #fff; }
+
+/* Newsletter now lives in the nav instead of a fixed side tab */
+.newsletter-side-cta { display: inline-flex; align-items: center; gap: 6px; }
+.newsletter-side-cta .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--brass); }
+
+/* ── Tab bar: one segmented control, numbered like the homepage modes ── */
+.app-tabs {
+    position: sticky; top: 64px; z-index: 940;
+    background: linear-gradient(var(--paper) 70%, rgba(243, 241, 236, 0));
+    padding: 18px 0 14px;
+}
+.app-tabs-inner { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+.tab-bar {
+    counter-reset: tab;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+    background: rgba(251, 250, 247, .92); border: 1px solid var(--line); border-radius: 14px; padding: 5px;
+    box-shadow: 0 10px 30px -18px rgba(14, 27, 42, .3);
+    border-bottom: 1px solid var(--line);
+}
+.tab-btn {
+    counter-increment: tab;
+    max-width: none; flex: none;
+    appearance: none; border: 0; border-radius: 10px; background: transparent; cursor: pointer;
+    text-align: left; padding: 10px 14px 11px;
+    font-family: var(--sans); font-size: 14px; font-weight: 600; line-height: 1.25; color: var(--ink-2);
+    transition: background .2s, color .2s;
+    border-bottom: 0;
+}
+.tab-btn::before {
+    content: counter(tab, decimal-leading-zero);
+    display: block; font-family: var(--mono); font-size: 10.5px; font-weight: 400; letter-spacing: .12em; color: var(--muted);
+    margin-bottom: 2px;
+}
+.tab-btn:hover { background: rgba(14, 27, 42, .05); color: var(--ink); }
+.tab-btn.active, .tab-btn.active:hover { background: var(--ink); color: #fff; border-bottom: 0; }
+.tab-btn.active::before { color: rgba(255, 255, 255, .6); }
+.tab-btn:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+
+/* ── Layout ── */
+.container { max-width: var(--max); padding: 12px var(--gutter) 48px; }
+
+/* Panel intro: an editorial header instead of a colored callout box */
+.intro-box {
+    background: transparent; box-shadow: none; border: 0 !important; border-radius: 0;
+    padding: 6px 0 22px; margin-bottom: 22px; border-bottom: 1px solid var(--line) !important;
+}
+.intro-box .kicker {
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--brass);
+}
+.intro-box h3 {
+    font-family: var(--serif); font-weight: 400; font-size: clamp(30px, 3.4vw, 44px); line-height: 1.05;
+    letter-spacing: -0.02em; color: var(--ink); margin: 6px 0 10px;
+}
+.intro-box p { font-size: 16px; color: var(--ink-2); max-width: 74ch; line-height: 1.6; }
+.intro-box p + p { margin-top: 8px; }
+.intro-box a { color: var(--navy); font-weight: 600; text-underline-offset: 3px; }
+
+/* Cards */
+.section, .address-section, #finderMapContainer, #pipelineMapContainer,
+#tabFinder .container > div[style*="background:var(--card)"],
+#tabPipeline .container > div[style*="background:var(--card)"],
+#tabContacts .container > div[style*="background:var(--card)"] {
+    background: var(--card) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 0 rgba(14, 27, 42, .02), 0 12px 32px -24px rgba(14, 27, 42, .25) !important;
+}
+.address-section { border-color: rgba(21, 61, 99, .35) !important; }
+.section h2, .address-section h2,
+#tabFinder h2, #tabPipeline h2 {
+    font-family: var(--serif) !important; font-weight: 400 !important; font-size: 24px !important;
+    letter-spacing: -0.015em; color: var(--ink) !important;
+    border-bottom: 1px solid var(--line-soft) !important; padding-bottom: 10px; margin-bottom: 18px;
+}
+#finderMapContainer > div:first-child, #pipelineMapContainer > div:first-child { text-align: left !important; }
+#finderMapContainer > div:first-child h2, #pipelineMapContainer > div:first-child h2 { border-bottom: 0 !important; padding-bottom: 0; margin-bottom: 2px !important; }
+#finderMap, #pipelineMap { border-color: var(--line) !important; border-radius: 12px !important; }
+
+/* Forms */
+label { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+label .hint { color: var(--muted); }
+select, input[type="number"], input[type="text"], input[type="search"], input[type="email"], textarea {
+    font-family: var(--sans);
+    border: 1px solid var(--line) !important; border-radius: 10px !important; background: #fff;
+    color: var(--ink);
+}
+select:focus, input:focus, textarea:focus {
+    border-color: var(--navy) !important; box-shadow: 0 0 0 3px rgba(21, 61, 99, .12);
+}
+.checkbox-item input[type="checkbox"] { accent-color: var(--navy); }
+.field.autofilled select, .field.autofilled input { border-color: #8FAACB !important; background: #EEF3F8; }
+.field .autofill-badge { color: var(--navy); }
+.autofill-notice { background: #EEF3F8; border-color: #C9D7E6; color: var(--navy); border-radius: 10px; }
+
+/* Buttons: ink pills like the homepage CTA */
+.btn-lookup {
+    background: var(--ink); border-radius: 999px; box-shadow: none; font-weight: 600;
+    padding: 0 22px; height: 42px; font-size: 14px;
+}
+.btn-lookup:hover { background: var(--navy); transform: none; box-shadow: none; }
+.btn-calculate {
+    background: var(--navy); border-radius: 999px; box-shadow: 0 12px 28px -14px rgba(21, 61, 99, .7);
+    font-size: 16px; font-weight: 600; letter-spacing: .01em;
+}
+.btn-calculate:hover { background: var(--ink); box-shadow: 0 12px 28px -14px rgba(14, 27, 42, .7); }
+.btn-share { background: #fff; border-color: var(--line); color: var(--ink); border-radius: 999px; }
+.btn-share:hover { background: var(--paper-2); border-color: var(--ink); }
+.dev-scenario-btn.active { background: var(--ink); border-color: var(--ink); }
+
+/* SB 79 intelligence strip in the Finder */
+.sb79-intel-panel {
+    background: var(--card); border: 1px solid var(--line); border-left: 1px solid var(--line); border-radius: 16px;
+    padding: 18px 20px; margin-bottom: 22px;
+}
+.sb79-intel-panel h3 { font-family: var(--serif); font-weight: 400; font-size: 20px !important; color: var(--ink) !important; }
+.sb79-intel-panel a { color: var(--navy) !important; }
+.sb79-overlay-btn, .pipeline-overlay-btn {
+    background: var(--ink); border-radius: 999px; font-weight: 600; font-family: var(--sans); z-index: 500;
+}
+.sb79-overlay-btn.active, .pipeline-overlay-btn.active { background: var(--brass); }
+
+/* Contacts */
+#contactsGrid > * { border-radius: 14px !important; border-color: var(--line) !important; background: #fff; }
+
+/* Footer */
+footer.app-footer {
+    max-width: var(--max); margin: 40px auto 0; padding: 28px var(--gutter) 40px;
+    border-top: 1px solid var(--line); text-align: left;
+    display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    font-size: 13px; color: var(--muted);
+}
+footer.app-footer .brand { font-size: 18px; }
+footer.app-footer .ver { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; }
+
+/* Leaflet controls pick up the new type */
+.leaflet-container { font-family: var(--sans); }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+    .brand-tag { display: none; }
+    .nav-links { gap: 16px; }
+}
+@media (max-width: 760px) {
+    /* Phone: nav scrolls away, links wrap to a swipeable row, tool tabs stay pinned */
+    .nav { position: relative; }
+    .nav-inner { height: auto; padding-top: 12px; padding-bottom: 10px; flex-wrap: wrap; gap: 8px 16px; }
+    .nav-links { order: 3; width: 100%; overflow-x: auto; gap: 18px; padding-bottom: 2px; scrollbar-width: none; }
+    .nav-links::-webkit-scrollbar { display: none; }
+    .nav-links li:last-child { margin-left: auto; }
+    .app-tabs { top: 0; padding: 10px 0; }
+    .tab-bar { grid-template-columns: repeat(4, minmax(132px, 1fr)); overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; }
+    .tab-bar::-webkit-scrollbar { display: none; }
+    .tab-btn { font-size: 13px; padding: 8px 10px; scroll-snap-align: start; }
+    #contactsGrid { grid-template-columns: minmax(0, 1fr) !important; }
+    #tabFinder .container > div[style*="background:var(--card)"],
+    #tabPipeline .container > div[style*="background:var(--card)"],
+    #tabContacts .container > div[style*="background:var(--card)"],
+    .section, .address-section { padding: 18px 16px !important; }
+    #contactsGrid a { overflow-wrap: anywhere; }
+}
+
+@media print {
+    .nav, .app-tabs { display: none !important; }
+}
+
+
+        /* ── Type system: Libre Franklin throughout (2026-10-12) ──
+           One grotesque family for headings, body, labels, and figures.
+           --serif and --mono are kept as aliases so existing rules and the 3D labels still resolve. */
+        :root {
+            --sans: 'Libre Franklin', 'Helvetica Neue', Arial, sans-serif;
+            --serif: var(--sans);
+            --mono: var(--sans);
+        }
+        body { font-family: var(--sans); font-feature-settings: "tnum" 0; }
+        h1, h2, h3, h4 { font-family: var(--sans); font-weight: 700; letter-spacing: -0.025em; }
+        h1 { font-weight: 800; letter-spacing: -0.035em; }
+        h1 em, h2 em, h3 em { font-style: normal; color: inherit; }
+        .brand, .footer .brand { font-family: var(--sans); font-weight: 800; letter-spacing: -0.03em; }
+        .brand span { font-style: normal; }
+        .eyebrow { font-family: var(--sans); font-size: 14px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--navy); }
+        .eyebrow::before, .eyebrow::after { display: none; }
+        .rr-kicker, .aud .k, .plan .k, .tools .k, .env-card .k, .status-card .k, .readout .cite, .mode .n,
+        .floors thead th, .floors tbody tr.tier td, .env-table th, .db-field label, .db-results-table th,
+        .verdict-stat-label, .doc-card-tag, .kpi-sub, .subnav-link, .stage-hint, .station-label, .ring-label,
+        .height-label, .lookup-hint, .pathway-id, .update-meta-date, .tl time, .ord-no, .layers .ln, .cite-chip,
+        .status-chip, .verdict-pill, .brand .tag, .brand-tag {
+            font-family: var(--sans); letter-spacing: .01em; text-transform: none; font-weight: 600;
+        }
+        .floors thead th, .env-table th, .db-results-table th, .verdict-stat-label { font-size: 12.5px; color: var(--muted); }
+        .pr .k, .layers h4, .pathway-label, .doc-card-title, .update-card-title, .faq-q, summary,
+        .status-card h3, .readout h3, .verdict-card h3, .env-card h3, .tools h3, .aud h3, .rr-col h3, .checklist-week h4 {
+            font-family: var(--sans); font-style: normal; font-weight: 700; letter-spacing: -0.02em;
+        }
+        .big-num, .kpi-num, .split-key .v, .plan .price { font-family: var(--sans); font-weight: 700; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+        .lede { color: var(--ink-2); }

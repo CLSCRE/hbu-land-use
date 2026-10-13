@@ -5,9 +5,37 @@
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
-        { "key": "Pragma", "value": "no-cache" }
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        }
       ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/developers",
+      "destination": "/how-it-works/",
+      "permanent": true
+    },
+    {
+      "source": "/developers/(.*)",
+      "destination": "/how-it-works/",
+      "permanent": true
+    },
+    {
+      "source": "/land-use-attorneys",
+      "destination": "/how-it-works/",
+      "permanent": true
+    },
+    {
+      "source": "/land-use-attorneys/(.*)",
+      "destination": "/how-it-works/",
+      "permanent": true
     }
   ]
 }

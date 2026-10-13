@@ -1,12 +1,12 @@
 # Land to Yield
 
-> Land to Yield provides preliminary screening of development potential for parcels within the City of Los Angeles. It organizes parcel facts, planning sources, possible housing-program pathways, assumptions, economics, and unresolved verification steps for developers and land-use attorneys.
+> Land to Yield provides preliminary screening of development potential for parcels within the City of Los Angeles. It organizes parcel facts, planning sources, possible housing-program pathways, assumptions, economics, and unresolved verification steps for developers, land use attorneys, brokers, and lenders.
 
 ## Canonical public pages
 
 - [Home](https://landtoyield.com/): Product overview and parcel-analysis entry point.
-- [For Developers](https://landtoyield.com/developers/): Acquisition-screening workflow and product boundaries.
-- [For Land-Use Attorneys](https://landtoyield.com/land-use-attorneys/): Source-linked intake, uncertainty, and professional-verification workflow.
+- [How It Works](https://landtoyield.com/how-it-works/): The shared parcel record for developers, land use attorneys, brokers, and lenders, and its product boundaries.
+- [SB 79 Portal](https://landtoyield.com/sb79.html): APN status lookup under SB 79 and Los Angeles Ordinances 188967 and 188968.
 - [Data Sources and Methodology](https://landtoyield.com/about-methodology/): Coverage, evidence hierarchy, official sources, limitations, and corrections.
 - [Los Angeles Development Guides](https://landtoyield.com/guides/): Source-backed educational content.
 - [How to Evaluate an LA Development Parcel](https://landtoyield.com/guides/evaluate-la-development-parcel/): Seven-step preliminary diligence workflow.
@@ -27,4 +27,4 @@ The current core parcel workflow focuses on the City of Los Angeles. Do not infe
 - Los Angeles County Assessor Property Search: https://assessor.lacounty.gov/homeowners/property-search
 - Los Angeles City Planning SB 79: https://planning.lacity.gov/resources/senate-bill-sb-79
 
-Last reviewed: 2026-07-31
+Last reviewed: 2026-10-12

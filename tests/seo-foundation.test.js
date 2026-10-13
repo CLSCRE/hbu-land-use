@@ -20,7 +20,7 @@ const nav = html.match(/<ul class="nav-links"[^>]*>([\s\S]*?)<\/ul>/i);
 assert.ok(nav, 'homepage must have public navigation');
 const navItems = nav[1].match(/<li\b/g) || [];
 assert.strictEqual(navItems.length, 5, 'public navigation must contain exactly five choices');
-for (const href of ['app.html', 'developers/', 'land-use-attorneys/', 'guides/', 'login.html']) {
+for (const href of ['app.html', 'how-it-works/', 'sb79.html', 'guides/', 'login.html']) {
   assert.ok(nav[1].includes(`href="${href}"`), `public navigation must link to ${href}`);
 }
 
@@ -73,8 +73,7 @@ console.log('PASS homepage has one focused public conversion path');
 
 const publicPages = [
   ['index.html', 'https://landtoyield.com/'],
-  ['developers/index.html', 'https://landtoyield.com/developers/'],
-  ['land-use-attorneys/index.html', 'https://landtoyield.com/land-use-attorneys/'],
+  ['how-it-works/index.html', 'https://landtoyield.com/how-it-works/'],
   ['about-methodology/index.html', 'https://landtoyield.com/about-methodology/'],
   ['guides/index.html', 'https://landtoyield.com/guides/'],
   ['guides/evaluate-la-development-parcel/index.html', 'https://landtoyield.com/guides/evaluate-la-development-parcel/']

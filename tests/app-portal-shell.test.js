@@ -4,7 +4,7 @@ const assert = require('assert');
 
 const root = path.join(__dirname, '..');
 const app = fs.readFileSync(path.join(root, 'app.html'), 'utf8');
-const tabBarMatch = app.match(/<div class="tab-bar">([\s\S]*?)<\/div>/i);
+const tabBarMatch = app.match(/<div class="tab-bar"[^>]*>([\s\S]*?)<\/div>/i);
 
 assert.ok(tabBarMatch, 'development portal must retain its application tab bar');
 const tabBar = tabBarMatch[1];
@@ -30,11 +30,18 @@ assert.match(
   'portal must preserve newsletter access through a side CTA'
 );
 
-for (const tab of ['calculator', 'finder', 'pipeline', 'contacts']) {
-  assert.match(tabBar, new RegExp(`data-tab="${tab}"`, 'i'), `portal must retain the ${tab} application tab`);
-}
-for (const href of ['sb79.html', 'bill-finder.html']) {
-  assert.match(tabBar, new RegExp(`href="${href.replace('.', '\\.')}`), `portal must retain the ${href} destination`);
+const tabs = [...tabBar.matchAll(/data-tab="([a-z]+)"/gi)].map(m => m[1]);
+assert.deepStrictEqual(
+  tabs,
+  ['calculator', 'finder', 'pipeline', 'contacts'],
+  'portal must expose exactly four tools: HBU, finder, permit data, contacts'
+);
+assert.doesNotMatch(tabBar, /<a\b/i, 'tab bar holds in-page tools only; linked pages belong in the nav');
+assert.match(tabBar, /data-tab="pipeline"[^>]*>Active Permit Data<\/button>/i, 'pipeline tab must be labeled Active Permit Data');
+
+const nav = (app.match(/<nav class="nav"[\s\S]*?<\/nav>/i) || [''])[0];
+for (const href of ['sb79.html', 'bill-finder.html', '/api/auth/logout']) {
+  assert.ok(nav.includes(`href="${href}"`), `portal nav must keep the ${href} destination`);
 }
 
-console.log('PASS development portal has unified finder naming and side newsletter access');
+console.log('PASS development portal has four tools, unified finder naming, and nav access to SB 79, Bill Finder, and the newsletter');

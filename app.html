@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Highest &amp; Best Use Calculator — Los Angeles, CA</title>
+    <title>Developer Portal | Land to Yield</title>
     <meta name="description" content="Preliminary City of Los Angeles parcel screening with source-linked verification, editable development scenarios, and transparent underwriting assumptions.">
     <meta name="robots" content="noindex, follow">
 
@@ -176,51 +176,11 @@
 .sb79-overlay-btn { right: 165px; }
 .pipeline-overlay-btn { right: 18px; }
 .sb79-overlay-btn.active, .pipeline-overlay-btn.active { background: #b7791f; }
-.newsletter-side-cta {
-    position: fixed;
-    right: 0;
-    top: 50%;
-    z-index: 10000;
-    transform: translateY(-50%);
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.75rem 0.9rem;
-    max-width: 170px;
-    color: #fff;
-    background: #1a365d;
-    border: 1px solid rgba(255,255,255,0.3);
-    border-right: 0;
-    border-radius: 10px 0 0 10px;
-    box-shadow: 0 5px 18px rgba(26,54,93,0.3);
-    font-size: 0.8rem;
-    font-weight: 800;
-    line-height: 1.25;
-    text-decoration: none;
-    transition: background 0.2s, padding-right 0.2s;
-}
-.newsletter-side-cta:hover,
-.newsletter-side-cta:focus-visible {
-    background: #2b6cb0;
-    padding-right: 1.1rem;
-}
-.newsletter-side-cta:focus-visible {
-    outline: 3px solid #f6ad55;
-    outline-offset: 2px;
-}
-@media (max-width: 700px) {
-    .newsletter-side-cta {
-        top: auto;
-        right: 12px;
-        bottom: 12px;
-        transform: none;
-        max-width: none;
-        border-right: 1px solid rgba(255,255,255,0.3);
-        border-radius: 999px;
-        padding: 0.65rem 0.9rem;
-    }
-}
     </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="app-theme.css?v=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
@@ -258,45 +218,45 @@ sessionStorage.setItem('hbu_auth', 'ok');
 window.checkAuth    = window.checkAuth    || function() {};
 window.activateDemo = window.activateDemo || function() {};
 </script>
-<!-- Fixed sign-out link -->
-<a href="/api/auth/logout" id="signOutBtn"
-   style="position:fixed;top:12px;right:16px;z-index:99999;
-          background:rgba(10,22,40,0.88);color:#94a3b8;
-          font-size:0.7rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;
-          padding:4px 10px;border-radius:6px;text-decoration:none;
-          border:1px solid #1e3a5f;backdrop-filter:blur(6px);"
-   onmouseover="this.style.color='#e2e8f0'"
-   onmouseout="this.style.color='#94a3b8'"
-   title="Sign out of Land to Yield">Sign Out</a>
-
 <div id="demoBanner" class="demo-banner" style="display:none;">DEMO MODE — Sample data for illustration only</div>
 
-<header>
-    <h1>Highest &amp; Best Use Calculator</h1>
-    <p>Land Use Analysis for Los Angeles, CA</p>
-    <span class="badge">HBU Analysis Tool</span>
-    <span style="font-size:0.65rem;color:#a0aec0;margin-left:0.5rem;" id="buildVersion">v4.3</span>
-</header>
+<nav class="nav" id="nav">
+    <div class="nav-inner">
+        <a class="brand" href="/" aria-label="Land to Yield home">
+            <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true">
+                <path d="M13 3 L23 8.5 L13 14 L3 8.5 Z" fill="none" stroke="#153D63" stroke-width="1.3"/>
+                <path d="M3 13 L13 18.5 L23 13" fill="none" stroke="#153D63" stroke-width="1.3" opacity=".6"/>
+                <path d="M3 17.5 L13 23 L23 17.5" fill="none" stroke="#8A5A12" stroke-width="1.3"/>
+            </svg>
+            Land <span>to</span> Yield
+            <span class="brand-tag">Developer Portal</span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="sb79.html">SB 79 Portal</a></li>
+            <li><a href="bill-finder.html">Bill Finder</a></li>
+            <li><a class="newsletter-side-cta" href="newsletter.html" aria-label="Join Our Newsletter"><span class="dot" aria-hidden="true"></span>Join Our Newsletter</a></li>
+            <li><a href="/api/auth/logout" id="signOutBtn" class="nav-pill" title="Sign out of Land to Yield">Sign Out</a></li>
+        </ul>
+    </div>
+</nav>
 
-<div class="tab-bar">
-    <button class="tab-btn active" data-tab="calculator" onclick="switchTab('calculator')">HBU Calculator</button>
-    <button class="tab-btn" data-tab="finder" onclick="switchTab('finder')">Development Opportunity Finder</button>
-    <a class="tab-btn" href="sb79.html" style="text-decoration:none;background:linear-gradient(135deg,#805ad5,#6b46c1);color:white;">🏛️ SB 79 Portal</a>
-    <a class="tab-btn" href="bill-finder.html" style="text-decoration:none;">🔍 Bill-to-Property Finder</a>
-    <button class="tab-btn" data-tab="pipeline" onclick="switchTab('pipeline')">Development Pipeline</button>
-    <button class="tab-btn" data-tab="contacts" onclick="switchTab('contacts')">Contacts Directory</button>
+<div class="app-tabs">
+<div class="app-tabs-inner">
+<div class="tab-bar" role="tablist" aria-label="Portal tools">
+    <button class="tab-btn active" role="tab" data-tab="calculator" onclick="switchTab('calculator')">HBU Analyzer</button>
+    <button class="tab-btn" role="tab" data-tab="finder" onclick="switchTab('finder')">Development Opportunity Finder</button>
+    <button class="tab-btn" role="tab" data-tab="pipeline" onclick="switchTab('pipeline')">Active Permit Data</button>
+    <button class="tab-btn" role="tab" data-tab="contacts" onclick="switchTab('contacts')">Contacts Directory</button>
 </div>
-
-<a class="newsletter-side-cta" href="newsletter.html" aria-label="Join Our Newsletter">
-    <span aria-hidden="true">📬</span>
-    <span>Join Our Newsletter</span>
-</a>
+</div>
+</div>
 
 <div id="tabCalculator" class="tab-content active">
 <div class="container">
     <div class="intro-box">
-        <h3>How It Works</h3>
-        <p>Enter your parcel details below. The calculator evaluates potential land uses against the four standard HBU tests&mdash;<strong>Legally Permissible</strong>, <strong>Physically Possible</strong>, <strong>Financially Feasible</strong>, and <strong>Maximally Productive</strong>&mdash;then ranks the top 3 uses for your site.</p>
+        <div class="kicker">01 · One parcel</div>
+        <h3>Highest &amp; Best Use Analyzer</h3>
+        <p>Look up an address, adjust anything we pulled from public data, and run it. Every use is tested as legally permissible, physically possible, financially feasible, and maximally productive, then the top three are ranked.</p>
     </div>
 
     <div class="address-section">
@@ -610,12 +570,10 @@ window.activateDemo = window.activateDemo || function() {};
 
 <div id="tabFinder" class="tab-content">
 <div class="container">
-    <div class="intro-box" style="border-left-color:#805ad5;">
+    <div class="intro-box">
+        <div class="kicker">02 · The aerial view</div>
         <h3>Development Opportunity Finder</h3>
-        <p><strong>SB 79</strong> is operative statewide. This Finder screens transit proximity using the exact six statutory tier/distance envelopes, but proximity alone does not establish City of Los Angeles eligibility. Resolve the assessor APN, current ZIMAS/final City map status, temporary holds, exclusions, and any LA Low-Rise path before underwriting or changing yield.</p>
-        <p style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed rgba(128,90,213,0.3);font-size:0.88rem;">
-            💡 <strong>SB 79 research:</strong> Visit the <a href="sb79.html" style="color:#805ad5;font-weight:700;">SB 79 Portal</a> for preliminary APN screening, exemption checks, the official LA Planning dataset, and a readiness checklist. Verify parcel-specific evidence before relying on a result.
-        </p>
+        <p>Pick a station on the map, set your filters, and search the parcels around it. Results are screened against the SB 79 tier envelopes and joined to the City's Table 1C status. Proximity alone is not eligibility: confirm the APN, ZIMAS, holds, and exclusions before you underwrite. The <a href="sb79.html">SB 79 Portal</a> has the parcel checklist.</p>
     </div>
 
     <div class="sb79-intel-panel">
@@ -736,9 +694,10 @@ window.activateDemo = window.activateDemo || function() {};
 
 <div id="tabPipeline" class="tab-content">
 <div class="container">
-    <div class="intro-box" style="border-left-color:#3182ce;">
-        <h3>Development Pipeline</h3>
-        <p>Search <strong>active LA City building permits</strong> near any address. Results are color-coded by pipeline stage — from initial submission through Certificate of Occupancy. Use this to evaluate the competitive development landscape around any site. Data sourced from LA City Open Data (updated daily).</p>
+    <div class="intro-box">
+        <div class="kicker">03 · LADBS permits</div>
+        <h3>Active Permit Data</h3>
+        <p>Active City of Los Angeles building permits around any address, colored by stage from submittal through Certificate of Occupancy. Use it to size up what is already being built near a site. Source: LA City Open Data, refreshed daily.</p>
     </div>
 
     <div id="pipelineMapContainer" style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
@@ -866,9 +825,10 @@ window.activateDemo = window.activateDemo || function() {};
 
 <div id="tabContacts" class="tab-content">
 <div class="container">
-    <div class="intro-box" style="border-left-color:#805ad5;">
+    <div class="intro-box">
+        <div class="kicker">04 · Who to call</div>
         <h3>Contacts Directory</h3>
-        <p>Your <strong>one-stop shop</strong> for all development-related contacts in Los Angeles County. Planning departments, city officials, architects, engineers, contractors, lenders, and consultants. Filter by category or search by name.</p>
+        <p>Planning and building departments, housing agencies, architects, engineers, contractors, lenders, and land use counsel across Los Angeles County. Search by name or filter by category.</p>
     </div>
 
     <div style="background:var(--card);border-radius:12px;padding:1.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem;">
@@ -1007,9 +967,10 @@ window.activateDemo = window.activateDemo || function() {};
 <!-- Legislation Detail Popup -->
 <div class="leg-detail-overlay" id="legDetailModal" style="display:none;" onclick="if(event.target===this)closeLegislationDetail();"></div>
 
-<footer>
-    Land to Yield &mdash; HBU Land Use Calculator &mdash; Los Angeles, CA<br>
-    For educational and preliminary analysis purposes only.
+<footer class="app-footer">
+    <span><a class="brand" href="/" style="display:inline-flex">Land <span>to</span>&nbsp;Yield</a></span>
+    <span>Preliminary screening for City of Los Angeles parcels. Not legal advice or a zoning determination.</span>
+    <span class="ver">Portal v4.7</span>
 </footer>
 
 <script src="shared.js?v=4.7"></script>
@@ -4968,6 +4929,12 @@ function switchTab(tab) {
     document.getElementById('tabFinder').classList.toggle('active', tab === 'finder');
     document.getElementById('tabPipeline').classList.toggle('active', tab === 'pipeline');
     document.getElementById('tabContacts').classList.toggle('active', tab === 'contacts');
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.setAttribute('aria-selected', String(btn.dataset.tab === tab)));
+    const activeBtn = document.querySelector('.tab-btn[data-tab="' + tab + '"]');
+    if (activeBtn && activeBtn.parentElement.scrollWidth > activeBtn.parentElement.clientWidth) activeBtn.parentElement.scrollTo({ left: activeBtn.parentElement.scrollLeft + activeBtn.getBoundingClientRect().left - activeBtn.parentElement.getBoundingClientRect().left - 5, behavior: 'smooth' });
+    // Deep-linkable tabs (app.html#finder) and land at the top of the new tool
+    if (history.replaceState) history.replaceState(null, '', tab === 'calculator' ? location.pathname + location.search : '#' + tab);
+    if (window.scrollY > 0) window.scrollTo({ top: 0, behavior: 'smooth' });
 
     if (tab === 'contacts' && !contactsInitialized) {
         renderContactsDirectory();
@@ -4984,6 +4951,12 @@ function switchTab(tab) {
         setTimeout(() => pipelineMapInstance.invalidateSize(), 100);
     }
 }
+function switchTabFromHash() {
+    const hashTab = location.hash.slice(1);
+    if (['finder', 'pipeline', 'contacts'].includes(hashTab) && hashTab !== activeTab) switchTab(hashTab);
+}
+document.addEventListener('DOMContentLoaded', switchTabFromHash);
+window.addEventListener('hashchange', switchTabFromHash);
 
 /* ========================================================
    DEVELOPMENT PIPELINE — State, constants, functions
@@ -17443,7 +17416,7 @@ if (new URLSearchParams(window.location.search).get('demo') === 'true') {
     document.addEventListener('DOMContentLoaded', function() {
         var overlay = document.createElement('div');
         overlay.id = 'onboardingOverlay';
-        overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;padding:1.5rem;';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(14,27,42,0.6);display:flex;align-items:center;justify-content:center;padding:1.5rem;';
 
         var steps = [
             { icon: '📍', title: 'Enter Any LA Address', desc: 'Type an address or APN in the search bar above. We auto-fill zoning, lot size, transit proximity, and site constraints from public databases.' },
@@ -17458,20 +17431,19 @@ if (new URLSearchParams(window.location.search).get('demo') === 'true') {
             var s = steps[currentStep];
             var isLast = currentStep === steps.length - 1;
             var dots = steps.map(function(_, i) {
-                return '<span style="width:8px;height:8px;border-radius:50%;background:' + (i === currentStep ? '#2563eb' : '#cbd5e1') + ';display:inline-block;"></span>';
+                return '<span style="width:8px;height:8px;border-radius:50%;background:' + (i === currentStep ? '#0E1B2A' : '#D9D4C9') + ';display:inline-block;"></span>';
             }).join('');
 
-            overlay.innerHTML = '<div style="background:white;border-radius:20px;max-width:480px;width:100%;padding:2.5rem 2rem;text-align:center;box-shadow:0 25px 60px rgba(0,0,0,0.3);animation:fadeIn 0.3s ease;">' +
-                '<div style="font-size:3rem;margin-bottom:1rem;">' + s.icon + '</div>' +
-                '<div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;margin-bottom:0.5rem;">Step ' + (currentStep + 1) + ' of ' + steps.length + '</div>' +
-                '<h2 style="font-size:1.3rem;font-weight:800;color:#1e293b;margin-bottom:0.75rem;letter-spacing:-0.02em;">' + s.title + '</h2>' +
-                '<p style="font-size:0.92rem;color:#64748b;line-height:1.65;margin-bottom:1.75rem;">' + s.desc + '</p>' +
-                '<div style="display:flex;gap:6px;justify-content:center;margin-bottom:1.5rem;">' + dots + '</div>' +
-                '<div style="display:flex;gap:0.75rem;justify-content:center;">' +
-                    (currentStep > 0 ? '<button onclick="onboardBack()" style="padding:0.6rem 1.5rem;background:#f1f5f9;color:#475569;border:none;border-radius:980px;font-weight:600;font-size:0.88rem;cursor:pointer;min-height:44px;">Back</button>' : '') +
-                    '<button onclick="onboardNext()" style="padding:0.6rem 2rem;background:#2563eb;color:white;border:none;border-radius:980px;font-weight:700;font-size:0.88rem;cursor:pointer;min-height:44px;transition:background 0.2s;">' + (isLast ? 'Get Started' : 'Next') + '</button>' +
+            overlay.innerHTML = '<div style="background:#FBFAF7;border:1px solid #D9D4C9;border-radius:20px;max-width:480px;width:100%;padding:2.25rem 2rem 1.5rem;text-align:left;box-shadow:0 30px 60px -20px rgba(14,27,42,0.45);animation:fadeIn 0.3s ease;">' +
+                '<div style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#8A5A12;margin-bottom:0.5rem;">Step 0' + (currentStep + 1) + ' of 0' + steps.length + '</div>' +
+                '<h2 style="font-family:var(--serif);font-size:30px;font-weight:400;color:#0E1B2A;margin-bottom:0.6rem;letter-spacing:-0.02em;line-height:1.1;">' + s.title + '</h2>' +
+                '<p style="font-size:0.95rem;color:#2B3846;line-height:1.65;margin-bottom:1.75rem;">' + s.desc + '</p>' +
+                '<div style="display:flex;gap:6px;margin-bottom:1.5rem;">' + dots + '</div>' +
+                '<div style="display:flex;gap:0.75rem;align-items:center;">' +
+                    (currentStep > 0 ? '<button onclick="onboardBack()" style="padding:0.6rem 1.5rem;background:#fff;color:#0E1B2A;border:1px solid #D9D4C9;border-radius:980px;font-weight:600;font-size:0.88rem;cursor:pointer;min-height:44px;">Back</button>' : '') +
+                    '<button onclick="onboardNext()" style="padding:0.6rem 2rem;background:#0E1B2A;color:white;border:none;border-radius:980px;font-weight:600;font-size:0.88rem;cursor:pointer;min-height:44px;transition:background 0.2s;">' + (isLast ? 'Get Started' : 'Next') + '</button>' +
+                '<button onclick="onboardSkip()" style="background:none;border:none;color:#5E6873;font-size:0.82rem;cursor:pointer;margin-left:auto;padding:0.5rem;">Skip tour</button>' +
                 '</div>' +
-                '<button onclick="onboardSkip()" style="background:none;border:none;color:#94a3b8;font-size:0.78rem;cursor:pointer;margin-top:1rem;padding:0.5rem;">Skip tour</button>' +
             '</div>';
         }
 

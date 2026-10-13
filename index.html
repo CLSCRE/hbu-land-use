@@ -45,7 +45,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -231,6 +231,22 @@
         .sw.white { background: #fff; border: 1px solid #bdb6a8; }
         .sw.navy { background: var(--navy); }
         .sw.glass { background: rgba(143, 170, 203, .45); border: 1px solid rgba(21, 61, 99, .45); }
+        .sw.t95 { background: #1B4A78; }
+        .sw.t75 { background: #4F80B0; }
+        .sw.t65 { background: #A3C0DD; }
+        .sw.tiers { background: linear-gradient(90deg, #1B4A78 0 33%, #4F80B0 33% 66%, #A3C0DD 66%); }
+        .sw.lr { background: #8FB9A2; }
+        .sw.hist { background: #E2C99A; }
+        .sw.tree { background: #7E9B6F; border-radius: 50%; }
+        .height-label {
+            position: absolute; transform: translate(-50%, -100%);
+            font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: .08em;
+            color: #fff; padding: 3px 7px; border-radius: 4px; white-space: nowrap;
+            box-shadow: 0 4px 12px -4px rgba(14, 27, 42, .45); transition: opacity .35s;
+        }
+        .height-label::after {
+            content: ""; position: absolute; left: 50%; top: 100%; width: 1px; height: 10px; background: inherit; transform: translateX(-50%);
+        }
         .readout-body { transition: opacity .25s; }
         .readout-body.fade { opacity: 0; }
 
@@ -368,6 +384,13 @@
         .aud p { color: var(--ink-2); font-size: 15.5px; }
         .aud .go { display: inline-block; margin-top: 20px; font-size: 14px; font-weight: 600; color: var(--navy); }
 
+        /* Shared record */
+        .record { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--ink); }
+        .record > div { padding: 26px 24px 0 0; }
+        .record > div + div { border-left: 1px solid var(--line); padding-left: 24px; }
+        .record h3 { font-size: 21px; margin-bottom: 8px; }
+        .record p { font-size: 15px; color: var(--ink-2); }
+
         /* Principles */
         .principles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: clamp(56px, 7vw, 90px); }
         .pr { background: var(--card); border: 1px solid var(--line-soft); border-radius: 16px; padding: 26px; }
@@ -466,6 +489,8 @@
             .tl { padding: 0 0 0 34px; }
             .split-key { grid-template-columns: 1fr 1fr; }
             .aud, .principles, .pricing-grid { grid-template-columns: 1fr; }
+            .record { grid-template-columns: 1fr; }
+            .record > div + div { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); margin-top: 22px; }
             .aud a + a { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); }
             .stack-scene { height: 380px; }
             .stack-rig { width: 220px; height: 220px; margin: -110px 0 0 -110px; }
@@ -473,6 +498,38 @@
             .floors .bar-cell { display: none; }
             .floors th, .floors td { padding: 10px 6px; font-size: 14px; }
         }
+
+        /* ── Type system: Libre Franklin throughout (2026-10-12) ──
+           One grotesque family for headings, body, labels, and figures.
+           --serif and --mono are kept as aliases so existing rules and the 3D labels still resolve. */
+        :root {
+            --sans: 'Libre Franklin', 'Helvetica Neue', Arial, sans-serif;
+            --serif: var(--sans);
+            --mono: var(--sans);
+        }
+        body { font-family: var(--sans); font-feature-settings: "tnum" 0; }
+        h1, h2, h3, h4 { font-family: var(--sans); font-weight: 700; letter-spacing: -0.025em; }
+        h1 { font-weight: 800; letter-spacing: -0.035em; }
+        .hero h1 { font-size: clamp(40px, 4.6vw, 66px); line-height: 1.04; max-width: 15ch; }
+        h1 em, h2 em, h3 em { font-style: normal; color: inherit; }
+        .brand, .footer .brand { font-family: var(--sans); font-weight: 800; letter-spacing: -0.03em; }
+        .brand span { font-style: normal; }
+        .eyebrow { font-family: var(--sans); font-size: 14px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--navy); }
+        .eyebrow::before, .eyebrow::after { display: none; }
+        .rr-kicker, .aud .k, .plan .k, .tools .k, .env-card .k, .status-card .k, .readout .cite, .mode .n,
+        .floors thead th, .floors tbody tr.tier td, .env-table th, .db-field label, .db-results-table th,
+        .verdict-stat-label, .doc-card-tag, .kpi-sub, .subnav-link, .stage-hint, .station-label, .ring-label,
+        .height-label, .lookup-hint, .pathway-id, .update-meta-date, .tl time, .ord-no, .layers .ln, .cite-chip,
+        .status-chip, .verdict-pill, .brand .tag, .brand-tag {
+            font-family: var(--sans); letter-spacing: .01em; text-transform: none; font-weight: 600;
+        }
+        .floors thead th, .env-table th, .db-results-table th, .verdict-stat-label { font-size: 12.5px; color: var(--muted); }
+        .pr .k, .layers h4, .pathway-label, .doc-card-title, .update-card-title, .faq-q, summary,
+        .status-card h3, .readout h3, .verdict-card h3, .env-card h3, .tools h3, .aud h3, .rr-col h3, .checklist-week h4 {
+            font-family: var(--sans); font-style: normal; font-weight: 700; letter-spacing: -0.02em;
+        }
+        .big-num, .kpi-num, .split-key .v, .plan .price { font-family: var(--sans); font-weight: 700; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+        .lede { color: var(--ink-2); }
     </style>
 </head>
 <body>
@@ -489,8 +546,8 @@
         </a>
         <ul class="nav-links" id="navLinks">
             <li><a href="app.html" class="nav-cta">Analyze a Parcel</a></li>
-            <li><a href="developers/">For Developers</a></li>
-            <li><a href="land-use-attorneys/">For Attorneys</a></li>
+            <li><a href="how-it-works/">How It Works</a></li>
+            <li><a href="sb79.html">SB 79</a></li>
             <li><a href="guides/">Insights</a></li>
             <li><a href="login.html">Sign In</a></li>
         </ul>
@@ -503,7 +560,7 @@
         <div class="hero-top">
             <div>
                 <div class="eyebrow">City of Los Angeles · SB 79 · Ords. 188967 and 188968</div>
-                <h1>State law. City law. <em>One parcel.</em></h1>
+                <h1>See what a Los Angeles parcel can become under state and city law.</h1>
             </div>
             <div class="hero-side">
                 <p class="lede">Land to Yield screens Los Angeles parcels against the SB 79 statute, the City's Low-Rise and Phased Implementation ordinances, and base zoning, then shows exactly which questions still need a professional answer.</p>
@@ -531,7 +588,7 @@
                     </div>
                 </div>
             </div>
-            <figcaption class="figcaption"><strong>Illustrative example only.</strong> A fictional single-family neighborhood around a fictional Tier 1 heavy rail station. Massing is schematic, vertical scale is exaggerated 1.5x, and nothing shown is a zoning or eligibility determination for any real parcel.</figcaption>
+            <figcaption class="figcaption"><strong>Illustrative example only.</strong> A fictional single-family neighborhood around a fictional Tier 1 heavy rail station. Massing is schematic, vertical scale is exaggerated 2x, and nothing shown is a zoning or eligibility determination for any real parcel.</figcaption>
         </figure>
     </div>
 </header>
@@ -541,7 +598,7 @@
         <div class="section-head reveal">
             <div>
                 <div class="eyebrow">The rule and the reply</div>
-                <h2>The State wrote the rule. <em>Los Angeles wrote the reply.</em></h2>
+                <h2>The State wrote the rule. Los Angeles wrote the reply.</h2>
             </div>
             <p class="lede">SB 79 sets statewide development floors around qualifying transit. Los Angeles used the statute's own alternative and exclusion provisions to phase it in and to offer a smaller-scale path in its lower-density neighborhoods. A parcel's answer depends on both.</p>
         </div>
@@ -616,7 +673,7 @@
                 <p class="lab">parcels inside Los Angeles's SB 79 station areas in the City's May 2026 screening snapshot.</p>
             </div>
             <div>
-                <h2>Fewer than one in ten were <em>available to study</em> under the statute.</h2>
+                <h2>Fewer than one in ten were available to study under the statute.</h2>
             </div>
         </div>
         <div class="reveal" id="splitWrap">
@@ -659,7 +716,7 @@
             </div>
             <div>
                 <div class="eyebrow">How a screen resolves one parcel</div>
-                <h2 style="margin:18px 0 22px">Every answer is a <em>stack</em>, read top down.</h2>
+                <h2 style="margin:14px 0 22px">How a parcel gets screened.</h2>
                 <p class="lede" style="margin-bottom:34px">Land to Yield does not label a parcel eligible because it sits near a station. It resolves the parcel's status first, then applies the rule path that status allows, and keeps anything unproven on the open list.</p>
                 <ol class="layers" id="layers">
                     <li data-layer="3"><span class="ln">04</span><div><h4>Parcel evidence</h4><p>APN identity, the dated ZIMAS record, and the City's status for that parcel: available, temporary hold, or excluded.</p></div></li>
@@ -682,30 +739,19 @@
     <div class="wrap">
         <div class="section-head reveal">
             <div>
-                <div class="eyebrow">Who it is for</div>
-                <h2>One record, read three ways.</h2>
+                <div class="eyebrow">Who uses it</div>
+                <h2>One parcel record for the whole deal team.</h2>
             </div>
-            <p class="lede">The same parcel screen serves the people who have to agree before anything gets built: the client who wants to build it, the counsel who has to defend it, and the lender who has to fund it.</p>
+            <div>
+                <p class="lede">Developers, land use attorneys, brokers, and lenders all need the same answer about a site. Land to Yield gives everyone one shared record, with the source attached to every fact.</p>
+                <p style="margin-top:18px"><a class="text-link" href="how-it-works/">See how it works <span class="arrow">&rarr;</span></a></p>
+            </div>
         </div>
-        <div class="aud reveal">
-            <a href="land-use-attorneys/">
-                <div class="k">Land-use counsel</div>
-                <h3>Get to the real questions faster.</h3>
-                <p>A source-linked intake record with the statute, the ordinance path, and the unresolved issues already separated for review.</p>
-                <span class="go">For attorneys <span class="arrow">&rarr;</span></span>
-            </a>
-            <a href="developers/">
-                <div class="k">Developers</div>
-                <h3>Triage sites before you spend.</h3>
-                <p>Compare base zoning, statutory, and Low-Rise scenarios side by side, with yield and economics you can edit.</p>
-                <span class="go">For developers <span class="arrow">&rarr;</span></span>
-            </a>
-            <a href="guides/">
-                <div class="k">Lenders and advisors</div>
-                <h3>See what the entitlement rests on.</h3>
-                <p>Know which assumptions are verified and which are still open before a term sheet depends on them.</p>
-                <span class="go">Read the insights <span class="arrow">&rarr;</span></span>
-            </a>
+        <div class="record reveal">
+            <div><h3>Parcel facts</h3><p>APN, lot area, zoning, overlays, current use, and assessed value, each tied to its official source and date.</p></div>
+            <div><h3>Rule path</h3><p>Whether the statute applies, the parcel is on temporary hold, or the Low-Rise menu governs, with the citation for each.</p></div>
+            <div><h3>Yield and economics</h3><p>Units, floor area, and height under each path, carried into an editable pro forma.</p></div>
+            <div><h3>Open questions</h3><p>What still needs a ZIMAS check, a title review, or a legal read before anyone relies on it.</p></div>
         </div>
     </div>
 </section>
@@ -715,7 +761,7 @@
         <div class="section-head reveal">
             <div>
                 <div class="eyebrow">Pricing</div>
-                <h2>Simple plans. <em>Cancel anytime.</em></h2>
+                <h2>Month to month. Cancel anytime.</h2>
             </div>
             <p class="lede">Founding members: the first 50 subscribers keep 50% off for as long as they subscribe.</p>
         </div>
@@ -771,7 +817,7 @@
     <div class="wrap faq-wrap">
         <div class="reveal">
             <div class="eyebrow">Questions</div>
-            <h2 style="margin-top:18px">What it is, <em>and what it is not.</em></h2>
+            <h2 style="margin-top:14px">Common questions.</h2>
         </div>
         <div class="faq-list reveal">
             <details>
@@ -804,8 +850,7 @@
 
 <section class="closing">
     <div class="wrap reveal">
-        <div class="eyebrow">Start with the evidence</div>
-        <h2>Know the question before you <em>pay for the answer.</em></h2>
+        <h2>Screen your next parcel.</h2>
         <div class="hero-links">
             <a href="app.html" class="cta-solid" style="background:var(--navy);color:#fff;padding:14px 22px;border-radius:999px;font-weight:600;font-size:15px;text-decoration:none">Analyze a Parcel</a>
             <a class="text-link" href="newsletter.html">Get the LA Development Brief <span class="arrow">&rarr;</span></a>
@@ -820,8 +865,8 @@
             <a class="brand" href="/">Land <span>to</span> Yield</a>
             <div class="footer-links">
                 <a href="app.html">Analyze a Parcel</a>
-                <a href="developers/">For Developers</a>
-                <a href="land-use-attorneys/">For Attorneys</a>
+                <a href="how-it-works/">How It Works</a>
+                <a href="sb79.html">SB 79</a>
                 <a href="guides/">Insights</a>
                 <a href="about-methodology/">Methodology</a>
                 <a href="privacy.html">Privacy</a>
@@ -921,19 +966,19 @@ const MODES = {
         cite: 'LAMC · R1 One-Family Zone',
         title: 'What the neighborhood allows today',
         rows: [['Zone', 'R1 single-family'], ['Height', '33 ft'], ['Floor area', 'about 0.45 of lot'], ['Units', '1 home plus ADUs']],
-        legend: [['white', 'Permitted massing']]
+        legend: [['white', 'Existing homes and shops'], ['tree', 'Street trees']]
     },
     state: {
         cite: 'SB 79 · Gov. Code § 65912.157',
         title: 'The statutory floor, Tier 1',
         rows: [['Within 200 ft', '95 ft · 4.5 FAR'], ['Within ¼ mile', '75 ft · 3.5 FAR'], ['¼ to ½ mile', '65 ft · 3.0 FAR'], ['Density', '100 to 160 du/ac']],
-        legend: [['white', 'Statutory envelope']]
+        legend: [['t95', '95 ft'], ['t75', '75 ft'], ['t65', '65 ft'], ['white', 'Outside ½ mile']]
     },
     city: {
         cite: 'Ords. 188967 and 188968',
         title: 'Phased in, with a Low-Rise menu',
         rows: [['Statute applies', 'listed sites only'], ['Low-Rise LR-2', '12 to 16 units'], ['Envelope', '3 stories · 2.90 FAR'], ['Parking minimum', 'none']],
-        legend: [['white', 'Low-Rise massing'], ['navy', 'Statute applies'], ['glass', 'Statutory envelope on hold']]
+        legend: [['lr', 'Low-Rise LR-2'], ['tiers', 'Statute applies'], ['glass', 'Statutory envelope on hold'], ['hist', 'Historic, base zoning']]
     }
 };
 
@@ -969,14 +1014,15 @@ function init() {
     const camera = new THREE.PerspectiveCamera(26, 1, 1, 3000);
 
     // Units: 1 unit = 10 ft. Vertical exaggeration noted in the caption.
-    const VEX = 1.5;
+    const VEX = 2;
     const ftToY = ft => (ft / 10) * VEX;
     const DISC_R = 290;
 
     // ── Lights ──
-    scene.add(new THREE.HemisphereLight(0xffffff, 0xd9d2c4, 1.15));
-    const sun = new THREE.DirectionalLight(0xffffff, 1.9);
-    sun.position.set(-220, 330, 160);
+    // Lower, warmer sun and less fill than before: longer shadows and more face contrast read as height.
+    scene.add(new THREE.HemisphereLight(0xf4f6fb, 0xcfc6b4, 0.85));
+    const sun = new THREE.DirectionalLight(0xfff6e8, 2.5);
+    sun.position.set(-300, 250, 190);
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
     const sc = sun.shadow.camera;
@@ -1075,22 +1121,49 @@ function init() {
         if (distFt <= 2640) return 65;
         return null;
     }
+    // Tier colors: deeper and more saturated as the envelope gets taller.
+    const T95 = new THREE.Color('#1B4A78'), T75 = new THREE.Color('#4F80B0'), T65 = new THREE.Color('#A3C0DD');
+    const LR = new THREE.Color('#8FB9A2'), HISTC_ = new THREE.Color('#E2C99A');
+    const tierColor = h => h === 95 ? T95 : h === 75 ? T75 : h === 65 ? T65 : null;
+    // Existing-neighborhood palette: stucco, cream, and the odd terracotta or grey-green house.
+    const RES_TONES = ['#FBFAF7', '#F5F0E7', '#EFE7DA', '#F7F3EE', '#E9E2D4', '#F2E6DA', '#E6E8E1'].map(c => new THREE.Color(c));
+    const COM_TONES = ['#F4F2EE', '#ECE9E3', '#E8E2D6', '#F1ECE2', '#E3E2DE'].map(c => new THREE.Color(c));
+    const pick = arr => arr[Math.floor(rand() * arr.length)];
+
     lots.forEach(l => {
         const distFt = l.dist * 10;
         const inHist = Math.hypot(l.x - HIST.x, l.z - HIST.z) < HIST.r;
-        l.baseH = l.kind === 'res' ? (rand() < 0.35 ? 22 + rand() * 6 : 13 + rand() * 4) : 14 + rand() * 26;
-        l.baseFp = l.kind === 'res' ? [0.62, 0.42] : [0.9, 0.78];
-        l.stateH = sb79Height(distFt) ?? l.baseH;
-        l.stateFp = l.kind === 'res' ? [0.84, 0.82] : [0.94, 0.9];
+        // Base zoning: a real mix rather than a uniform carpet. Mostly one-story bungalows, a share of
+        // two-story homes, the occasional legacy fourplex; the boulevard mixes one-story retail with
+        // older two- to five-story buildings.
+        const r = rand();
+        if (l.kind === 'res') {
+            if (r < 0.56) { l.baseH = 12 + rand() * 5; l.baseFp = [0.5 + rand() * 0.16, 0.34 + rand() * 0.1]; }
+            else if (r < 0.9) { l.baseH = 21 + rand() * 7; l.baseFp = [0.58 + rand() * 0.14, 0.4 + rand() * 0.1]; }
+            else { l.baseH = 30 + rand() * 8; l.baseFp = [0.78 + rand() * 0.08, 0.6 + rand() * 0.1]; }
+            l.baseCol = pick(RES_TONES).clone();
+        } else {
+            if (r < 0.42) l.baseH = 13 + rand() * 5;
+            else if (r < 0.76) l.baseH = 24 + rand() * 8;
+            else if (r < 0.94) l.baseH = 36 + rand() * 10;
+            else l.baseH = 50 + rand() * 8;
+            l.baseFp = [0.82 + rand() * 0.12, 0.66 + rand() * 0.2];
+            l.baseCol = pick(COM_TONES).clone();
+        }
+        const tierH = sb79Height(distFt);
+        l.stateH = tierH ?? l.baseH;
+        l.stateFp = tierH ? (l.kind === 'res' ? [0.84, 0.82] : [0.94, 0.9]) : l.baseFp;
+        l.stateCol = tierH ? tierColor(tierH).clone() : l.baseCol.clone();
         // City's reply: a minority of listed sites apply the statute; residential lots get the Low-Rise menu;
         // the historic district stays on its base zoning.
         l.direct = !inHist && (l.kind === 'com' ? rand() < 0.42 : rand() < 0.03);
-        if (inHist) { l.cityH = l.baseH; l.cityFp = l.baseFp; }
-        else if (l.direct) { l.cityH = l.stateH; l.cityFp = l.stateFp; }
-        else if (l.kind === 'res') { l.cityH = 31 + rand() * 4; l.cityFp = [0.8, 0.7]; }
-        else { l.cityH = l.baseH; l.cityFp = l.baseFp; }
-        l.ghost = !l.direct && sb79Height(distFt) !== null;
+        if (inHist) { l.cityH = l.baseH; l.cityFp = l.baseFp; l.cityCol = HISTC_.clone(); }
+        else if (l.direct) { l.cityH = l.stateH; l.cityFp = l.stateFp; l.cityCol = l.stateCol.clone(); }
+        else if (l.kind === 'res') { l.cityH = 31 + rand() * 4; l.cityFp = [0.8, 0.7]; l.cityCol = LR.clone().offsetHSL(0, 0, (rand() - 0.5) * 0.05); }
+        else { l.cityH = l.baseH; l.cityFp = l.baseFp; l.cityCol = l.baseCol.clone(); }
+        l.ghost = !l.direct && tierH !== null;
         l.inHist = inHist;
+        l.tierH = tierH;
         // Footprint offset toward the street frontage
         l.cur = { h: l.baseH, fw: l.baseFp[0], fd: l.baseFp[1] };
         l.from = { ...l.cur }; l.to = { ...l.cur };
@@ -1099,12 +1172,54 @@ function init() {
 
     // ── Building solids ──
     const solidMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85, metalness: 0 });
+    // Fake ambient occlusion: darken each facade toward the ground and lift roofs slightly, so
+    // stacked heights separate visually even under flat light.
+    solidMat.onBeforeCompile = shader => {
+        shader.vertexShader = shader.vertexShader
+            .replace('#include <common>', '#include <common>\nvarying vec3 vWp; varying float vUp;')
+            .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWp = (modelMatrix * instanceMatrix * vec4(transformed,1.0)).xyz; vUp = normal.y;');
+        shader.fragmentShader = shader.fragmentShader
+            .replace('#include <common>', '#include <common>\nvarying vec3 vWp; varying float vUp;')
+            .replace('#include <color_fragment>', '#include <color_fragment>\n' +
+                'float ao = mix(0.72, 1.0, smoothstep(0.5, 4.5, vWp.y));\n' +
+                'diffuseColor.rgb *= (vUp > 0.5) ? 1.04 : ao;');
+    };
     const solids = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), solidMat, lots.length);
     solids.castShadow = true; solids.receiveShadow = true;
     solids.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-    const WHITE = new THREE.Color('#FBFAF7'), NAVY = new THREE.Color('#2B5885'), HISTC = new THREE.Color('#E2C99A'), BAND = new THREE.Color('#ECE8E0');
-    lots.forEach((l, i) => { l.col = WHITE.clone(); l.colFrom = WHITE.clone(); l.colTo = WHITE.clone(); solids.setColorAt(i, l.col); });
+    lots.forEach((l, i) => { l.col = l.baseCol.clone(); l.colFrom = l.baseCol.clone(); l.colTo = l.baseCol.clone(); solids.setColorAt(i, l.col); });
     scene.add(solids);
+
+    // ── Street trees (constant across regimes; give the base zoning texture and scale) ──
+    const trees = [];
+    lots.forEach(l => {
+        if (l.kind !== 'res' || rand() < 0.45) return;
+        // Parkway tree just off the lot frontage, a little jitter so rows don't read as a grid
+        const fz = l.z + l.frontSign * (l.d / 2 + 1.1);
+        const tx = l.x + (rand() - 0.5) * 2;
+        if (Math.hypot(tx, fz) > DISC_R - 8) return;
+        trees.push({ x: tx, z: fz, r: 1.3 + rand() * 0.9, h: ftToY(16 + rand() * 10) });
+    });
+    // Boulevard palms/canopy along the commercial frontage
+    for (let x = -DISC_R + 14; x < DISC_R - 14; x += 9 + rand() * 4) {
+        for (const side of [1, -1]) {
+            if (Math.abs(x) < 14 || Math.hypot(x, BLVD) > DISC_R - 10) continue;
+            trees.push({ x, z: side * (BLVD - 1.4), r: 1.1 + rand() * 0.5, h: ftToY(20 + rand() * 8) });
+        }
+    }
+    const treeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, flatShading: true });
+    const treeMesh = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 0), treeMat, trees.length);
+    const TREE_TONES = ['#7E9B6F', '#6F8E64', '#8DA77C', '#748F6A'].map(c => new THREE.Color(c));
+    const rot = new THREE.Euler();
+    trees.forEach((t, i) => {
+        q.setFromEuler(rot.set(rand() * 3, rand() * 3, 0));
+        m4.compose(v3.set(t.x, 0.5 + t.h, t.z), q, s3.set(t.r, t.r * 1.1, t.r));
+        treeMesh.setMatrixAt(i, m4);
+        treeMesh.setColorAt(i, pick(TREE_TONES));
+    });
+    q.identity();
+    treeMesh.castShadow = true; treeMesh.receiveShadow = true;
+    scene.add(treeMesh);
 
     function writeSolid(i) {
         const l = lots[i];
@@ -1118,13 +1233,15 @@ function init() {
 
     // ── Ghost envelopes (SB 79 envelope where the City's reply holds it back) ──
     const ghostLots = lots.filter(l => l.ghost);
-    const ghostMat = new THREE.MeshStandardMaterial({ color: 0xA9BED6, transparent: true, opacity: 0, depthWrite: false, roughness: 0.3 });
+    const ghostMat = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false, roughness: 0.3 });
     const ghosts = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), ghostMat, ghostLots.length);
     ghostLots.forEach((l, i) => {
         const w = l.w * l.stateFp[0], d = l.d * l.stateFp[1];
         const zOff = l.frontSign * (l.d - d) / 2 * 0.55;
         m4.compose(v3.set(l.x, 0.5, l.z - zOff), q, s3.set(w, ftToY(l.stateH), d));
         ghosts.setMatrixAt(i, m4);
+        // Tint the held-back envelope by its tier so it reads as the same 95/75/65 ft from State mode
+        ghosts.setColorAt(i, tierColor(l.tierH).clone().lerp(new THREE.Color('#DCE6F1'), 0.35));
     });
     ghosts.renderOrder = 2;
     ghosts.visible = false;
@@ -1191,12 +1308,31 @@ function init() {
         { text: '1/4 MILE', pos: new THREE.Vector3(Math.cos(angleL) * 132, 1, Math.sin(angleL) * 132), cls: 'ring-label' },
         { text: '1/2 MILE', pos: new THREE.Vector3(Math.cos(angleL) * 264, 1, Math.sin(angleL) * 264), cls: 'ring-label' },
         { text: 'Station', pos: new THREE.Vector3(0, 46, 0), cls: 'station-label' },
-        { text: 'HISTORIC DISTRICT · EXCLUDED', pos: new THREE.Vector3(HIST.x, 1, HIST.z - HIST.r), cls: 'ring-label', mode: 'city' }
+        { text: 'HISTORIC DISTRICT · EXCLUDED', pos: new THREE.Vector3(HIST.x, 1, HIST.z - HIST.r), cls: 'ring-label', mode: 'city', brass: true }
     ];
+    // Height callouts pinned to the roof of a representative boulevard building in each tier,
+    // on the opposite side of the station from the ring labels so they never collide.
+    function nearestLot(tx, tz, test) {
+        let best = null, bd = Infinity;
+        lots.forEach(l => { if (!test(l)) return; const dd = Math.hypot(l.x - tx, l.z - tz); if (dd < bd) { bd = dd; best = l; } });
+        return best;
+    }
+    [[95, -10], [75, -85], [65, -200]].forEach(([h, tx]) => {
+        const l = nearestLot(tx, 14, c => c.kind === 'com' && c.tierH === h && c.z > 0);
+        if (!l) return;
+        const top = 0.5 + ftToY(h) + 1;
+        labelDefs.push({ text: h + ' FT', pos: new THREE.Vector3(l.x, top, l.z), cls: 'height-label', mode: 'state', bg: tierColor(h).getStyle(), always: true });
+        // In the City's reply the same building is either built to the statute (listed site) or held back
+        if (l.direct) labelDefs.push({ text: h + ' FT · LISTED SITE', pos: new THREE.Vector3(l.x, top, l.z), cls: 'height-label', mode: 'city', bg: tierColor(h).getStyle() });
+    });
+    const lrLot = nearestLot(70, -95, c => c.kind === 'res' && !c.direct && !c.inHist && c.tierH);
+    if (lrLot) labelDefs.push({ text: 'LOW-RISE · 3 STORIES', pos: new THREE.Vector3(lrLot.x, 0.5 + ftToY(lrLot.cityH) + 1, lrLot.z), cls: 'height-label', mode: 'city', bg: '#4E8A6C', always: true });
+    labelDefs.push({ text: '1 TO 2 STORIES', pos: new THREE.Vector3(70, 0.5 + ftToY(28) + 1, -95), cls: 'height-label', mode: 'base', bg: '#8A8273', always: true });
     labelDefs.forEach(d => {
         d.el = document.createElement('div');
         d.el.className = d.cls; d.el.textContent = d.text;
-        if (d.mode) { d.el.style.color = '#8A5A12'; d.el.style.borderColor = 'rgba(138,90,18,.35)'; }
+        if (d.brass) { d.el.style.color = '#8A5A12'; d.el.style.borderColor = 'rgba(138,90,18,.35)'; }
+        if (d.bg) d.el.style.background = d.bg;
         labelHost.appendChild(d.el);
     });
     // Ring labels hide when they fall behind tall buildings would be ideal; we keep it simple and fade near the frame edge.
@@ -1206,7 +1342,10 @@ function init() {
         labelDefs.forEach(d => {
             proj.copy(d.pos).project(camera);
             const x = (proj.x * 0.5 + 0.5) * w, y = (-proj.y * 0.5 + 0.5) * h;
-            const visible = proj.z < 1 && x > 30 && x < w - 30 && y > 30 && y < h - 30 && (!d.mode || (d.mode === currentMode && !narrow));
+            // Mode labels wait until the buildings have mostly risen into place
+            const settled = performance.now() / 1000 - tStart > DUR * 0.9;
+            const visible = proj.z < 1 && x > 30 && x < w - 30 && y > 30 && y < h - 30 &&
+                (!d.mode || (d.mode === currentMode && settled && (!narrow || d.always)));
             d.el.style.opacity = visible ? '1' : '0';
             d.el.style.left = x + 'px'; d.el.style.top = y + 'px';
         });
@@ -1232,7 +1371,7 @@ function init() {
         camera.aspect = w / h;
         // Pull back on narrow screens so the ¼-mile ring stays in frame
         dist = w < 700 ? 980 : w < 1000 ? 800 : 700;
-        scene.fog.near = dist * 0.74; scene.fog.far = dist * 1.3;
+        scene.fog.near = dist * 0.86; scene.fog.far = dist * 1.5;
         narrow = w < 700;
         camera.updateProjectionMatrix();
     }
@@ -1242,6 +1381,7 @@ function init() {
     // ── Mode transitions ──
     let currentMode = 'base';
     let tStart = 0, animating = false, ghostTarget = 0, ghostFrom = 0;
+    const GHOST_OP = 0.2;
     const DUR = reduceMotion ? 0.001 : 1.5, SPREAD = reduceMotion ? 0 : 1.0;
     const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
@@ -1253,14 +1393,11 @@ function init() {
         lots.forEach(l => {
             l.from = { ...l.cur };
             l.colFrom.copy(l.col);
-            if (mode === 'base') { l.to = { h: l.baseH, fw: l.baseFp[0], fd: l.baseFp[1] }; l.colTo.copy(WHITE); }
-            if (mode === 'state') { l.to = { h: l.stateH, fw: l.stateFp[0], fd: l.stateFp[1] }; l.colTo.copy(l.dist * 10 > 1320 ? BAND : WHITE); }
-            if (mode === 'city') {
-                l.to = { h: l.cityH, fw: l.cityFp[0], fd: l.cityFp[1] };
-                l.colTo.copy(l.direct ? NAVY : l.inHist ? HISTC : WHITE);
-            }
+            if (mode === 'base') { l.to = { h: l.baseH, fw: l.baseFp[0], fd: l.baseFp[1] }; l.colTo.copy(l.baseCol); }
+            if (mode === 'state') { l.to = { h: l.stateH, fw: l.stateFp[0], fd: l.stateFp[1] }; l.colTo.copy(l.stateCol); }
+            if (mode === 'city') { l.to = { h: l.cityH, fw: l.cityFp[0], fd: l.cityFp[1] }; l.colTo.copy(l.cityCol); }
         });
-        ghostFrom = ghostMat.opacity / 0.13;
+        ghostFrom = ghostMat.opacity / GHOST_OP;
         ghostTarget = mode === 'city' ? 1 : 0;
         tStart = performance.now() / 1000;
         animating = true;
@@ -1285,7 +1422,7 @@ function init() {
         // Ghosts fade in after the buildings settle
         const gp = ease(Math.max(0, Math.min(1, (t - (ghostTarget ? DUR * 0.9 : 0)) / (DUR * 0.8))));
         const g = ghostFrom + (ghostTarget - ghostFrom) * gp;
-        ghostMat.opacity = 0.13 * g; edgeMat.opacity = 0.22 * g; histLine.material.opacity = g;
+        ghostMat.opacity = GHOST_OP * g; edgeMat.opacity = 0.4 * g; histLine.material.opacity = g;
         ghosts.visible = ghostEdges.visible = g > 0.001;
         if (allDone && gp >= 1) animating = false;
     }
