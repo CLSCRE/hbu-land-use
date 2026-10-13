@@ -35,7 +35,9 @@
         const a = (feature && feature.attributes) || {};
         const land = number(a.Roll_LandValue);
         const improvements = number(a.Roll_ImpValue);
-        const propertyType = normalizedPropertyType(a.UseType, a.UseDescription);
+        // The Assessor marks vacant land with a use code ending in "V" (e.g. 010V); require no assessed improvements too.
+        const vacantCode = /V$/i.test(String(a.UseCode || '').trim()) && !(improvements > 0);
+        const propertyType = vacantCode ? 'VACANT' : normalizedPropertyType(a.UseType, a.UseDescription);
         const lotSqft = Math.round(number(a['Shape.STArea()']));
         return {
             prop: {
@@ -49,7 +51,8 @@
                 summary: {
                     proptype: propertyType,
                     propclass: a.UseType || '',
-                    propsubtype: a.UseDescription || ''
+                    propsubtype: a.UseDescription || '',
+                    usecode: a.UseCode || ''
                 },
                 lot: { lotsize2: lotSqft },
                 building: {
@@ -298,7 +301,7 @@
         const records = [];
         const outFields = [
             'AIN', 'APN', 'SitusAddress', 'SitusCity', 'SitusZIP',
-            'UseType', 'UseDescription', 'YearBuilt1', 'Units1', 'SQFTmain1',
+            'UseCode', 'UseType', 'UseDescription', 'YearBuilt1', 'Units1', 'SQFTmain1',
             'Roll_Year', 'Roll_LandValue', 'Roll_ImpValue',
             'CENTER_LAT', 'CENTER_LON', 'Shape.STArea()'
         ].join(',');

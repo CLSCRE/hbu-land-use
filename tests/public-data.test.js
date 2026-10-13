@@ -33,6 +33,12 @@ assert.equal(result.assessment.property[0].assessment.assessed.assdttlvalue, 184
 assert.equal(result.source.name, 'LA County Assessor Parcel Map Service');
 console.log('PASS public parcel adapter maps authoritative county fields');
 
+const vacantLot = mapCountyParcel({ attributes: { ...feature.attributes, UseCode: '010V', Roll_ImpValue: 0 } });
+assert.equal(vacantLot.prop.summary.proptype, 'VACANT');
+const codedButImproved = mapCountyParcel({ attributes: { ...feature.attributes, UseCode: '010V', Roll_ImpValue: 959121 } });
+assert.equal(codedButImproved.prop.summary.proptype, 'SFR');
+console.log('PASS vacant land comes from the Assessor V use code with no assessed improvements');
+
 const cityParcel = {
   attributes: { BPP: '5510013020', PIN: '135B173   377', Shape_Area: 6100.06 },
   geometry: { rings: [[[-118.370, 34.065], [-118.369, 34.065], [-118.369, 34.066], [-118.370, 34.066], [-118.370, 34.065]]] }

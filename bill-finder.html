@@ -524,7 +524,7 @@
             <label class="field-label">Select Legislation</label>
             <select id="billSelect" class="bill-select" onchange="updateBillDesc()">
                 <option value="sb79">SB 79 — Transit-Oriented Development <span>Active</span></option>
-                <option value="sb1123">SB 1123 — Small Multifamily By-Right</option>
+                <option value="sb1123">SB 1123 — Starter Homes on Vacant SFR Lots</option>
                 <option value="ab2011">AB 2011 — Affordable Housing on Commercial Corridors</option>
                 <option value="ab1033">AB 1033 — ADU Separate Sale</option>
                 <option value="sb9">SB 9 — Single-Family Lot Split</option>
@@ -612,13 +612,14 @@ const BILLS = {
     },
     sb1123: {
         name: 'SB 1123',
-        title: 'Small Multifamily By-Right',
-        status: 'signed',
-        desc: '<strong>SB 1123</strong> permits ministerial approval for <strong>2–10 unit multifamily</strong> on SFR-zoned lots ≥4,000 sqft in urbanized areas. Eliminates discretionary review for qualifying small multifamily.',
+        title: 'Starter Homes on Vacant Single-Family Lots',
+        status: 'active',
+        desc: '<strong>SB 1123</strong> (Ch. 294, Stats. 2024) extends the Starter Home Revitalization Act to <strong>vacant lots zoned single-family</strong>, operative July 1, 2025. A lot of up to 1.5 acres, substantially surrounded by qualified urban uses, may be subdivided into as many as <strong>10 parcels with up to 10 homes</strong>. New parcels must average at least 1,200 sq ft, and homes may average no more than 1,750 net habitable sq ft. A map and project that meet objective standards are approved ministerially, with no public hearing, and the City must act within 60 days of a complete application. "Vacant" means no permanent structure unless abandoned and uninhabitable, and it excludes deed-restricted or rent-controlled housing and anything occupied by tenants in the past five years. This screen shows single-family-zoned parcels the County Assessor lists as vacant; confirm zoning, vacancy, tenancy history, and objective standards before relying on a result. Not legal advice.',
         eligibility: {
-            minLotSqft: 4000,
-            maxLotSqft: 20000,
-            propTypes: ['SFR', 'VACANT'],
+            minLotSqft: 2400,
+            maxLotSqft: 65340,
+            propTypes: ['SFR'],
+            existingUses: ['VACANT'],
             excludeTypes: [],
             maxImprovementRatio: 0.85,
             requiresTransit: false,
@@ -753,6 +754,19 @@ function checkEligibility(prop, bill) {
             weight: 'required'
         });
         if (!typeMatch) return { eligible: false, checks };
+    }
+
+    // Existing use from the County Assessor roll (e.g. SB 1123 requires a vacant lot)
+    if (bill.eligibility.existingUses && bill.eligibility.existingUses.length > 0) {
+        const existingUse = (summary.existingUse || '').toUpperCase();
+        const useMatch = bill.eligibility.existingUses.includes(existingUse);
+        checks.push({
+            label: `Assessor existing use (${bill.eligibility.existingUses.join(', ')})`,
+            pass: useMatch,
+            value: existingUse || 'Unknown',
+            weight: 'required'
+        });
+        if (!useMatch) return { eligible: false, checks };
     }
 
     // Exclude types
