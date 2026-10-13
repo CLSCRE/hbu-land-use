@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bill-to-Property Finder — Land to Yield</title>
-    <meta name="description" content="Find every qualifying parcel in any California ZIP code for SB 79, SB 1123, AB 2011 and more. Scored, ranked, and ready for development outreach.">
+    <meta name="description" content="Screen City of Los Angeles parcels by ZIP code for SB 79, SB 1123, AB 2011 and more, using official City zoning and County Assessor data.">
     <meta property="og:title" content="Bill-to-Property Finder — Land to Yield">
     <meta property="og:image" content="https://landtoyield.com/og-image.png">
     <meta property="og:url" content="https://landtoyield.com/bill-finder.html">
@@ -502,7 +502,7 @@
 
 <header>
     <h1>📋 Bill-to-Property Finder</h1>
-    <p>Scan any California ZIP for parcels qualifying under new development legislation</p>
+    <p>Scan a City of Los Angeles ZIP for parcels that may qualify under new housing legislation</p>
     <nav style="margin-top:0.75rem;font-size:0.82rem;">
         <a href="index.html" style="color:rgba(255,255,255,0.75);text-decoration:none;margin-right:1.25rem;">Home</a>
         <a href="app.html" style="color:rgba(255,255,255,0.75);text-decoration:none;margin-right:1.25rem;">HBU Calculator</a>
@@ -532,7 +532,7 @@
 
             <div id="billDesc" class="bill-desc"></div>
 
-            <label class="field-label">California ZIP Code</label>
+            <label class="field-label">Los Angeles ZIP Code</label>
             <div class="zip-row">
                 <input type="text" id="zipInput" class="zip-input" placeholder="e.g. 91405" maxlength="5" pattern="[0-9]{5}">
                 <button id="scanBtn" class="btn-scan" onclick="runScan()">🔍 Scan</button>
@@ -585,12 +585,9 @@
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="shared.js"></script>
+<script src="core-public-data.js"></script>
 <script>
-// ═══════════════════════════════════════════════════════════════
-//  CONFIGURATION
-// ═══════════════════════════════════════════════════════════════
-const ATTOM_KEY = '4400bc5382696e25a5bf569dce5a5ea3';
-const ATTOM_BASE = 'https://api.gateway.attomdata.com/propertyapi/v1.0.0';
+const { fetchPublicParcelsByZip } = window.LandToYieldPublicData;
 
 // ═══════════════════════════════════════════════════════════════
 //  BILL DEFINITIONS
@@ -683,9 +680,9 @@ let map, markersLayer;
 
 function initMap() {
     map = L.map('map', { zoomControl: true }).setView([34.05, -118.25], 11);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '© OpenStreetMap contributors © CARTO',
-        subdomains: 'abcd', maxZoom: 19
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 19
     }).addTo(map);
     markersLayer = L.layerGroup().addTo(map);
 }
@@ -705,32 +702,6 @@ function updateBillDesc() {
         `<span class="bill-badge ${badgeClass[bill.status]}">${statusMap[bill.status]}</span> ${bill.desc}`;
 }
 updateBillDesc();
-
-// ═══════════════════════════════════════════════════════════════
-//  ATTOM API HELPERS
-// ═══════════════════════════════════════════════════════════════
-async function attomFetch(endpoint, params) {
-    const url = `${ATTOM_BASE}${endpoint}?${new URLSearchParams(params)}`;
-    const res = await fetch(url, { headers: { 'apikey': ATTOM_KEY, 'Accept': 'application/json' } });
-    if (!res.ok) throw new Error(`ATTOM ${res.status}`);
-    return res.json();
-}
-
-async function fetchSnapshotPage(zip, page) {
-    return attomFetch('/property/snapshot', { postalcode: zip, pagesize: 100, page });
-}
-
-async function fetchPropertyDetail(address1, address2) {
-    return attomFetch('/property/detailwithschools', { address1, address2 });
-}
-
-async function fetchAVM(address1, address2) {
-    return attomFetch('/attomavm/detail', { address1, address2 });
-}
-
-async function fetchAssessment(address1, address2) {
-    return attomFetch('/assessment/detail', { address1, address2 });
-}
 
 // ═══════════════════════════════════════════════════════════════
 //  ELIGIBILITY ENGINE
@@ -795,7 +766,12 @@ function checkEligibility(prop, bill) {
         }
     }
 
-    checks.push({ label: 'Location in urbanized CA area', pass: true, value: 'Assumed (ATTOM CA data)', weight: 'info' });
+    checks.push({
+        label: 'Jurisdiction, zoning, overlays, and statutory geography',
+        pass: false,
+        value: 'Preliminary screen only; verify current ZIMAS and controlling maps',
+        weight: 'info'
+    });
 
     return { eligible: true, checks };
 }
@@ -899,7 +875,7 @@ async function runScan() {
     const bill = BILLS[billKey];
 
     if (!/^\d{5}$/.test(zip)) {
-        alert('Please enter a valid 5-digit California ZIP code.');
+        alert('Please enter a valid 5-digit Los Angeles ZIP code.');
         return;
     }
 
@@ -921,50 +897,44 @@ async function runScan() {
     progressFill.style.width = '0%';
 
     try {
-        // Step 1: Get total count
-        progressLabel.textContent = `Fetching parcels in ZIP ${zip}…`;
-        const firstPage = await fetchSnapshotPage(zip, 1);
-        const total = parseInt((firstPage.status || {}).total) || 0;
-        const totalPages = Math.ceil(total / 100);
-        const allProps = [...(firstPage.property || [])];
-
-        progressLabel.textContent = `Loading ${total.toLocaleString()} parcels (page 1 of ${totalPages})…`;
-        progressFill.style.width = `${Math.round(1/totalPages*50)}%`;
-
-        // Step 2: Fetch remaining pages (up to 20 pages = 2000 parcels max to control API usage)
-        const maxPages = Math.min(totalPages, 20);
-        for (let p = 2; p <= maxPages; p++) {
-            const pageData = await fetchSnapshotPage(zip, p);
-            allProps.push(...(pageData.property || []));
-            progressFill.style.width = `${Math.round(p/maxPages*50)}%`;
-            progressLabel.textContent = `Loading parcels… ${allProps.length.toLocaleString()} of ~${total.toLocaleString()}`;
-            await new Promise(r => setTimeout(r, 50)); // small delay to avoid rate limits
-        }
-
-        // Step 3: Filter eligible parcels
-        progressLabel.textContent = `Checking ${allProps.length.toLocaleString()} parcels for eligibility…`;
-        const eligible = [];
-        for (const prop of allProps) {
-            const { eligible: isEligible, checks } = checkEligibility(prop, bill);
-            if (isEligible) {
-                const loc = prop.location || {};
-                const lat = parseFloat(loc.latitude);
-                const lng = parseFloat(loc.longitude);
-                if (lat && lng) {
-                    eligible.push({ prop, checks, lat, lng });
+        progressLabel.textContent = `Fetching public parcels in ZIP ${zip}…`;
+        const publicScan = await fetchPublicParcelsByZip(zip, {
+            onProgress: ({ stage, loaded }) => {
+                if (stage === 'zip') {
+                    progressFill.style.width = '5%';
+                    progressLabel.textContent = `Loading Census ZIP ${zip} boundary…`;
+                } else if (stage === 'parcels') {
+                    progressFill.style.width = '40%';
+                    progressLabel.textContent = `Loading City of Los Angeles parcels… ${loaded.toLocaleString()}`;
+                } else if (stage === 'zoning') {
+                    progressFill.style.width = '55%';
+                    progressLabel.textContent = `Joining ${loaded.toLocaleString()} current ZIMAS zoning areas…`;
                 }
             }
+        });
+        const allRecords = publicScan.records;
+
+        progressLabel.textContent = `Checking ${allRecords.length.toLocaleString()} parcels for preliminary eligibility…`;
+        const eligible = [];
+        for (const record of allRecords) {
+            const { prop, assessment, source } = record;
+            const { eligible: isEligible, checks } = checkEligibility(prop, bill);
+            if (!isEligible) continue;
+            const loc = prop.location || {};
+            const lat = parseFloat(loc.latitude);
+            const lng = parseFloat(loc.longitude);
+            if (lat && lng) eligible.push({ prop, assessment, avm: null, source, checks, lat, lng });
         }
 
-        progressFill.style.width = '60%';
-        progressLabel.textContent = `${eligible.length} eligible parcels — fetching valuations for top candidates…`;
+        progressFill.style.width = '65%';
+        progressLabel.textContent = `${eligible.length} preliminary candidates — scoring public assessment data…`;
 
         if (eligible.length === 0) {
             progressWrap.classList.remove('visible');
             document.getElementById('resultsList').innerHTML = `
                 <div class="state-message">
                     <div class="icon">🔍</div>
-                    <p>No qualifying parcels found in ZIP ${zip} for ${bill.name}.<br>
+                    <p>No preliminary candidates found in ZIP ${zip} for ${bill.name}.<br>
                     Try a nearby ZIP or a different bill.</p>
                 </div>`;
             scanBtn.disabled = false;
@@ -972,49 +942,24 @@ async function runScan() {
             return;
         }
 
-        // Step 4: Get assessment data for top 50 (to compute land ratios + scores)
-        const topCandidates = eligible.slice(0, 50);
-        const enriched = [];
+        const enriched = eligible.map(({ prop, checks, lat, lng, assessment, source }, index) => {
+            if (index % 250 === 0) {
+                progressFill.style.width = `${65 + Math.round((index / eligible.length) * 30)}%`;
+            }
+            return {
+                prop, checks, lat, lng, assessment, avm: null, source,
+                scoreData: calcScore(prop, assessment, null, bill)
+            };
+        });
 
-        for (let i = 0; i < topCandidates.length; i++) {
-            const { prop, checks, lat, lng } = topCandidates[i];
-            progressFill.style.width = `${60 + Math.round(i/topCandidates.length*35)}%`;
-            progressLabel.textContent = `Enriching parcel ${i+1} of ${topCandidates.length}…`;
-
-            const addr = prop.address || {};
-            const address1 = addr.line1 || '';
-            const address2 = `${addr.locality || ''} ${addr.countrySubd || 'CA'} ${addr.postal1 || zip}`;
-
-            let assessment = null, avm = null;
-            try {
-                [assessment, avm] = await Promise.all([
-                    fetchAssessment(address1, address2),
-                    fetchAVM(address1, address2)
-                ]);
-            } catch (e) { /* continue without enrichment */ }
-
-            const scoreData = calcScore(prop, assessment, avm, bill);
-            enriched.push({ prop, checks, lat, lng, assessment, avm, scoreData });
-            await new Promise(r => setTimeout(r, 80));
-        }
-
-        // Add remaining eligible parcels with base score
-        for (let i = 50; i < eligible.length; i++) {
-            const { prop, checks, lat, lng } = eligible[i];
-            const scoreData = calcScore(prop, null, null, bill);
-            enriched.push({ prop, checks, lat, lng, assessment: null, avm: null, scoreData });
-        }
-
-        // Step 5: Sort by score descending
         enriched.sort((a, b) => b.scoreData.total - a.scoreData.total);
         scanResults = enriched;
 
         progressFill.style.width = '100%';
-        progressLabel.textContent = `Done! ${enriched.length} qualifying parcels ranked.`;
+        progressLabel.textContent = `Done! ${enriched.length} preliminary candidates ranked from free public data.`;
         await new Promise(r => setTimeout(r, 400));
         progressWrap.classList.remove('visible');
 
-        // Step 6: Render results
         renderResults(enriched, bill, zip);
 
     } catch (err) {
@@ -1162,6 +1107,9 @@ function selectParcel(idx) {
                     <div style="font-size:0.82rem;color:var(--text-light);">
                         ${addr.locality || ''}, CA ${addr.postal1 || ''} &nbsp;·&nbsp;
                         APN: ${prop.identifier?.apn || '?'}
+                    </div>
+                    <div style="font-size:0.7rem;color:var(--text-light);margin-top:0.25rem;">
+                        Source: City of Los Angeles ZIMAS Landbase and Zoning, joined to the Census ZIP boundary. Preliminary screening only; verify legal eligibility and controlling overlays in current ZIMAS.
                     </div>
                 </div>
                 <div style="text-align:right;flex-shrink:0;">
