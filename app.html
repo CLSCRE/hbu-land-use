@@ -1169,7 +1169,7 @@ function activateDemo() {
     + '<div style="max-width:800px;width:100%;">'
     + '<div style="text-align:center;margin-bottom:2rem;">'
     + '<h1 style="color:#fff;font-size:2rem;margin:0 0 0.5rem;">Land to Yield — Developer Portal</h1>'
-    + '<p style="color:#bee3f8;font-size:1rem;">Preview of what subscribers get access to</p>'
+    + '<p style="color:#bee3f8;font-size:1rem;">Preview of the full analysis</p>'
     + '</div>'
     + '<div style="display:grid;gap:1.25rem;">'
     + '<div style="background:#fff;border-radius:12px;padding:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.2);">'
@@ -1198,7 +1198,7 @@ function activateDemo() {
     + '<li>California housing legislation auto-analysis (AB 2011, SB 423, SB 79, and more)</li>'
     + '</ul></div>'
     + '<div style="text-align:center;margin-top:1rem;">'
-    + '<a href="index.html#pricing" style="display:inline-block;padding:0.85rem 2.5rem;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-radius:10px;font-size:1rem;font-weight:700;text-decoration:none;box-shadow:0 4px 15px rgba(102,126,234,.4);transition:transform .15s;">Subscribe for Full Access &rarr;</a>'
+    + '<a href="app.html" style="display:inline-block;padding:0.85rem 2.5rem;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-radius:10px;font-size:1rem;font-weight:700;text-decoration:none;box-shadow:0 4px 15px rgba(102,126,234,.4);transition:transform .15s;">Open the Free Portal &rarr;</a>'
     + '<p style="color:#bee3f8;font-size:0.8rem;margin-top:0.75rem;">Already have a code? <a href="app.html" style="color:#fff;text-decoration:underline;">Enter it here</a></p>'
     + '</div></div></div></div>';
 }
@@ -5815,7 +5815,7 @@ function exportPipelineSavedCSV() {
 }
 
 function deepAnalyzePipeline() {
-    if (window.isDemoMode) { alert('Deep Analysis is not available in Demo Mode. Subscribe for full access.'); return; }
+    if (window.isDemoMode) { alert('Deep Analysis is not available in Demo Mode. Open the free portal without ?demo=true for full access.'); return; }
     // Convert selected pipeline results to saved format and open deep analysis
     var checks = document.querySelectorAll('.pipeline-select:checked');
     if (checks.length === 0) { alert('Select at least one permit site.'); return; }
@@ -5850,7 +5850,7 @@ function deepAnalyzePipeline() {
 }
 
 function deepAnalyzePipelineSaved() {
-    if (window.isDemoMode) { alert('Deep Analysis is not available in Demo Mode. Subscribe for full access.'); return; }
+    if (window.isDemoMode) { alert('Deep Analysis is not available in Demo Mode. Open the free portal without ?demo=true for full access.'); return; }
     var saved = getPipelineSaved();
     if (saved.length === 0) { alert('No saved pipeline sites.'); return; }
     // Convert to compatible format for deep analysis
@@ -7403,7 +7403,7 @@ let deepAnalysisSelectedProps = []; // boolean array: which saved props are sele
 
 function openDeepAnalysis() {
     if (window.isDemoMode) {
-        alert('Deep Analysis is not available in Demo Mode. Subscribe for full access.');
+        alert('Deep Analysis is not available in Demo Mode. Open the free portal without ?demo=true for full access.');
         return;
     }
     const saved = getSavedList();
