@@ -3593,11 +3593,9 @@ function calculateHBU() {
     window.lastAcquisitionReadiness = acquisitionReadiness;
     lastResults = null;
     lastInputs = null;
-    if (!acquisitionReadiness.canUnderwrite) {
-        clearBlockedAcquisitionOutput(acquisitionReadiness.message);
-        if (typeof showToast === 'function') showToast(acquisitionReadiness.message, 7000);
-        return;
-    }
+    if (!acquisitionReadiness.canUnderwrite) clearBlockedAcquisitionOutput(acquisitionReadiness.message);
+    // Blocked readiness keeps offer pricing locked (calculateHBU wrapper below); the ranking
+    // still runs, labeled preliminary, with the open items listed in renderResults.
 
     // Score all uses
     const results = LAND_USES.map(use => {
@@ -3675,6 +3673,7 @@ function calculateHBU() {
 
 function renderResults(results, inp) {
     const container = document.getElementById('results');
+    container.style.display = '';
     container.classList.add('visible');
 
     // Summary
@@ -3683,7 +3682,24 @@ function renderResults(results, inp) {
 
     // Unverified-data warning banner — takes priority over the feasibility banner
     let warningHTML = '';
-    if (window._parcelSizeIsUnverified || window._zoningIsUnverified) {
+    const readiness = window.lastAcquisitionReadiness;
+    const preliminaryOnly = !!(readiness && !readiness.canUnderwrite);
+    if (preliminaryOnly) {
+        const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+        const items = [];
+        const b = readiness.blockers || [];
+        if (b.includes('apn_unresolved') || b.includes('apn_evidence_mismatch')) items.push('The exact APN for this address is not confirmed.');
+        if (b.includes('zoning_unresolved')) items.push(window._rawZoning
+            ? `ZIMAS lists the zoning as <strong>${esc(window._rawZoning)}</strong>, which carries conditions or overlays the model does not read (for example [Q], [T], D limits, HPOZ, or a specific plan). Confirm them in <a href="https://zimas.lacity.org" target="_blank" rel="noopener">ZIMAS</a>, then re-select the zone above to attest it.`
+            : 'Zoning was estimated, not read from ZIMAS. Select the correct zone above.');
+        if (b.includes('parcel_area_unresolved')) items.push('Lot area is not tied to a County or ZIMAS record for this APN (it was missing or edited).');
+        if (b.some(x => x === 'legal_path_unresolved' || x === 'critical_source_unresolved' || x === 'critical_source_stale')) items.push('Check “Current ZIMAS / final map reviewed for this APN” and enter the verification date.');
+        warningHTML += `<div style="grid-column:1/-1;background:#fffaf0;border:1px solid #dd6b20;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:0.88rem;color:#7b341e;">
+            <strong>Preliminary ranking. Offer pricing stays locked until the parcel is verified.</strong>
+            <ul style="margin:0.5rem 0 0 1.1rem;padding:0;">${items.map(i => `<li style="margin:0.25rem 0;">${i}</li>`).join('')}</ul>
+        </div>`;
+    }
+    if (!preliminaryOnly && (window._parcelSizeIsUnverified || window._zoningIsUnverified)) {
         const unverifiedParts = [];
         if (window._parcelSizeIsUnverified) unverifiedParts.push(`parcel size (defaulted to ${inp.parcelSize.toLocaleString()} SF)`);
         if (window._zoningIsUnverified) unverifiedParts.push(`zoning (defaulted to ${inp.zoning})`);
@@ -7623,6 +7639,11 @@ function computeAgentListingInsights(deal) { return; }
   var _origCalcHBU = calculateHBU;
   calculateHBU = function() {
     _origCalcHBU.apply(this, arguments);
+    // Unverified parcels get a preliminary ranking only; no land bid or underwriting panels.
+    if (!window.lastAcquisitionReadiness || !window.lastAcquisitionReadiness.canUnderwrite) {
+      ['agent-owner-panel', 'sources-uses-panel'].forEach(function(id) { var el = document.getElementById(id); if (el) el.style.display = 'none'; });
+      return;
+    }
     if (typeof lastResults !== 'undefined' && lastResults && lastResults.length > 0 && typeof lastInputs !== 'undefined') {
       var topResult = lastResults[0];
       var inp = lastInputs;

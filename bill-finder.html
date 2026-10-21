@@ -523,10 +523,10 @@
         <div class="search-area">
             <label class="field-label">Select Legislation</label>
             <select id="billSelect" class="bill-select" onchange="updateBillDesc()">
-                <option value="sb79">SB 79 — Transit-Oriented Development <span>Active</span></option>
+                <option value="sb79">SB 79 — Transit-Oriented Development</option>
                 <option value="sb1123">SB 1123 — Starter Homes on Vacant SFR Lots</option>
                 <option value="ab2011">AB 2011 — Affordable Housing on Commercial Corridors</option>
-                <option value="ab1033">AB 1033 — ADU Separate Sale</option>
+                <option value="ab1033">AB 1033 — ADU Separate Sale (local opt-in)</option>
                 <option value="sb9">SB 9 — Single-Family Lot Split</option>
             </select>
 
@@ -597,7 +597,7 @@ const BILLS = {
         name: 'SB 79',
         title: 'Transit-Oriented Development',
         status: 'active',
-        desc: '<strong>SB 79</strong> allows multifamily by-right within <strong>½ mile of major transit stops</strong>. Targets underutilized commercial and low-density residential parcels near rail/bus rapid transit. <a href="sb79.html" style="color:#805ad5;font-weight:700;">→ Open the full SB 79 Portal</a>',
+        desc: '<strong>SB 79</strong> (2025) sets minimum height, density, and FAR for housing within <strong>½ mile of qualifying transit stops</strong>, operative July 1, 2026. In Los Angeles, Ordinances 188967 and 188968 decide how it reaches each parcel, so check the parcel’s City status before relying on it. This screen targets underused commercial and low-density residential lots near rail and bus rapid transit. Not legal advice. <a href="sb79.html" style="color:#805ad5;font-weight:700;">→ Open the full SB 79 Portal</a>',
         eligibility: {
             minLotSqft: 5000,
             maxUnits: null,
@@ -631,7 +631,7 @@ const BILLS = {
         name: 'AB 2011',
         title: 'Affordable Housing on Commercial',
         status: 'active',
-        desc: '<strong>AB 2011</strong> allows residential development by-right on <strong>commercially-zoned parcels</strong> along major arterials. Requires affordable component (≥15–30% AMI units).',
+        desc: '<strong>AB 2011</strong> (Affordable Housing and High Road Jobs Act, operative July 1, 2023) allows streamlined, ministerial, CEQA-exempt housing on sites zoned for <strong>office, retail, or parking</strong>. A 100% affordable project can use most qualifying commercial sites. A mixed-income project must front a commercial corridor 70 to 150 feet wide and reserve 15% of rental units for lower-income households (or 8% very low plus 5% extremely low), or for sale, 30% moderate or 15% lower income. Prevailing wage and health benefits apply, and sites next to industrial uses and other listed sites are excluded. This screen shows commercially zoned parcels of 6,000 sq ft or more; confirm corridor width, site exclusions, and labor terms before relying on a result. Not legal advice.',
         eligibility: {
             minLotSqft: 6000,
             propTypes: ['COMMERCIAL', 'RETAIL', 'OFFICE', 'VACANT'],
@@ -645,8 +645,8 @@ const BILLS = {
     ab1033: {
         name: 'AB 1033',
         title: 'ADU Separate Sale',
-        status: 'active',
-        desc: '<strong>AB 1033</strong> allows <strong>ADUs to be sold separately</strong> from the primary residence as condominiums. Best targets: SFR lots with existing ADU potential (≥4,000 sqft).',
+        status: 'optin',
+        desc: '<strong>AB 1033</strong> (2023) lets a city <strong>opt in</strong>, by ordinance, to allowing ADUs to be sold separately from the main home as condominiums. It has no effect until the city adopts that ordinance. As of mid-2026 the City of Los Angeles had started one (Council motion, July 2025) but not adopted it, so a separate ADU sale is not yet available in the City; confirm current status before relying on it. This screen shows single-family lots of 4,000 sq ft or more with room for an ADU. Not legal advice.',
         eligibility: {
             minLotSqft: 4000,
             propTypes: ['SFR'],
@@ -661,8 +661,9 @@ const BILLS = {
         name: 'SB 9',
         title: 'Single-Family Lot Split',
         status: 'active',
-        desc: '<strong>SB 9</strong> allows ministerial <strong>lot splits and duplexes</strong> on SFR-zoned parcels statewide. Best targets: large SFR lots (≥6,000 sqft) with low improvement-to-land ratios.',
+        desc: '<strong>SB 9</strong> (2021) requires ministerial approval of a <strong>duplex</strong> and an <strong>urban lot split</strong> on single-family-zoned lots, for up to four units across the two lots. Each new lot must be at least 1,200 sq ft and no smaller than 40% of the original, and a lot split requires a three-year owner-occupancy affidavit. Excluded: historic districts and landmarks (including HPOZs), very high fire hazard zones without required mitigation, and projects that would demolish or alter rent-controlled or affordable housing, housing a tenant occupied in the past three years, or housing withdrawn under the Ellis Act in the past 15 years. This screen favors single-family lots of 6,000 sq ft or more with low improvement-to-land ratios and skips HPOZ parcels. Not legal advice.',
         eligibility: {
+            excludeZonePattern: /HPOZ/,
             minLotSqft: 6000,
             propTypes: ['SFR'],
             excludeTypes: [],
@@ -697,8 +698,8 @@ function updateBillDesc() {
     const val = document.getElementById('billSelect').value;
     const bill = BILLS[val];
     if (!bill) return;
-    const statusMap = { active: 'Active Law', signed: 'Signed', pending: 'Pending' };
-    const badgeClass = { active: 'badge-active', signed: 'badge-signed', pending: 'badge-pending' };
+    const statusMap = { active: 'Active Law', signed: 'Signed', pending: 'Pending', optin: 'Local Opt-In' };
+    const badgeClass = { active: 'badge-active', signed: 'badge-signed', pending: 'badge-pending', optin: 'badge-pending' };
     document.getElementById('billDesc').innerHTML =
         `<span class="bill-badge ${badgeClass[bill.status]}">${statusMap[bill.status]}</span> ${bill.desc}`;
 }
@@ -767,6 +768,15 @@ function checkEligibility(prop, bill) {
             weight: 'required'
         });
         if (!useMatch) return { eligible: false, checks };
+    }
+
+    // Excluded zoning overlays (e.g. SB 9 does not reach HPOZ parcels)
+    if (bill.eligibility.excludeZonePattern) {
+        const rawZone = String(summary.propsubtype || '').toUpperCase();
+        if (bill.eligibility.excludeZonePattern.test(rawZone)) {
+            checks.push({ label: 'Outside excluded overlays', pass: false, value: rawZone, weight: 'required' });
+            return { eligible: false, checks };
+        }
     }
 
     // Exclude types
